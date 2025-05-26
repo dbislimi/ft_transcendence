@@ -1,0 +1,18 @@
+services:
+  back:
+    build: ./backend
+    container_name: fastify
+
+    volumes:
+      - ./backend/app:/app
+    ports:
+      - 3000:3000
+  front:
+    build: ./frontend
+    container_name: front
+    volumes:
+      - ./frontend/src:/app
+    ports:
+      - 5173:5173
+    depends_on:
+      - back
