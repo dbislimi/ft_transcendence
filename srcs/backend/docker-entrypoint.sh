@@ -9,8 +9,10 @@ if [ ! -f "package.json" ]; then
   npm init -y
   npm install fastify
   npm install -D typescript ts-node-dev @types/node
-  npx tsc --init --rootDir src --outDir dist --moduleResolution node \
-      --resolveJsonModule --esModuleInterop --module ESNext --target ES2020
+  npx npm-add-script -k "build" -v "tsc -p tsconfig.json" && \
+  npx npm-add-script -k "start" -v "node index.js"
+  npx tsc --init
+
   mkdir src
   cat <<EOF > src/server.ts
 import Fastify from 'fastify';
@@ -27,6 +29,6 @@ EOF
   npx npm-add-script -k "dev" -v "ts-node-dev --respawn --transpile-only src/server.ts"
 fi
 
-echo "🚀 Starting dev server..."
+echo "Starting dev server..."
 npm run dev
 

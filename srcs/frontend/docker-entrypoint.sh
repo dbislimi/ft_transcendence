@@ -6,9 +6,10 @@ cd app
 # Only scaffold if package.json doesn't exist
 if [ ! -f "/app/package.json" ]; then
 
-  npm create vite@latest . -- --template react-ts
+  npm install tailwindcss @tailwindcss/vite
+
   npm install
-  npm install -D tailwindcss postcss autoprefixer
+  npm install -D tailwindcss
   npx tailwindcss init -p
 
 
