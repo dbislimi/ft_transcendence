@@ -1,11 +1,5 @@
 all : up
 
-back :
-	docker compose -f ./srcs/docker-compose.yml up back
-
-front :
-	docker compose -f ./srcs/docker-compose.yml up front
-
 up :
 	docker compose -f ./srcs/docker-compose.yml up --build
 

@@ -2,18 +2,19 @@ services:
   back:
     build: ./backend
     container_name: fastify
-
     volumes:
-      - ./backend/app:/app
+      - ./backend/app:/usr/app
+      - /usr/app/node_modules
     ports:
-      - 8080:3000
+      - 3000:3000
     expose:
       - 3000
   front:
     build: ./frontend
     container_name: front
     volumes:
-      - ./frontend/src:/app
+      - ./frontend/app:/usr/app
+      - /usr/app/node_modules
     ports:
       - 5173:5173
     depends_on:

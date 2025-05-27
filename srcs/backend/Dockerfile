@@ -1,6 +1,12 @@
 FROM node:20-alpine
 
-COPY docker-entrypoint.sh .
-RUN chmod +x docker-entrypoint.sh
+WORKDIR /usr/app
+RUN npm init -y && \
+	npm install fastify && \
+	npm install -D typescript ts-node-dev @types/node && \
+	npx npm-add-script -k "build" -v "tsc -p tsconfig.json" && \
+	npx npm-add-script -k "start" -v "node index.js" && \
+	npx npm-add-script -k "dev" -v "ts-node-dev --respawn --transpile-only src/server.ts" && \
+	npx tsc --init
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["npm", "run", "dev"]
