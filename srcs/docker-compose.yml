@@ -7,8 +7,6 @@ services:
       - /usr/app/node_modules
     ports:
       - 3000:3000
-    expose:
-      - 3000
   front:
     build: ./frontend
     container_name: front
