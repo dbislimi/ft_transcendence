@@ -11,6 +11,7 @@ export default defineConfig({
     checker({
       typescript: {
         tsconfigPath: 'tsconfig.app.json'
-      }})
+      }
+    }),
   ],
 })
