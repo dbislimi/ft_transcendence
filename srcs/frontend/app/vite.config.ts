@@ -6,8 +6,11 @@ import checker from 'vite-plugin-checker'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    tailwindcss(),
     react(),
-    checker({ typescript: {tsconfigPath: 'tsconfig.app.json'}}),
+    tailwindcss(),
+    checker({
+      typescript: {
+        tsconfigPath: 'tsconfig.app.json'
+      }})
   ],
 })
