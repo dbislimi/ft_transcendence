@@ -1,7 +1,7 @@
 services:
   back:
     build: ./backend
-    container_name: fastify
+    container_name: api
     volumes:
       - ./backend/app:/usr/app
       - /usr/app/node_modules

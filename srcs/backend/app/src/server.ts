@@ -8,7 +8,7 @@ await fastify.register(cors, {
   })
 
 fastify.get('/', async () => {
-  return { hello: 'from docker' };
+  return { hello: 'from dockrer' };
 });
 
 fastify.listen({ port: 3000, host: '0.0.0.0' });
