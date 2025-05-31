@@ -1,14 +1,12 @@
 services:
   back:
     build: ./backend
-    container_name: fastify
+    container_name: api
     volumes:
       - ./backend/app:/usr/app
       - /usr/app/node_modules
     ports:
       - 3000:3000
-    expose:
-      - 3000
   front:
     build: ./frontend
     container_name: front

@@ -1,7 +1,10 @@
-FROM node:20-alpine
+FROM node:24.1.0-alpine3.22
 
 WORKDIR /usr/app
-RUN npm create vite@latest . -- --template react-ts && \
-	npm install -D tailwindcss @tailwindcss/vite vite-plugin-checker typescript@5.4.5
 
-ENTRYPOINT ["npm", "run", "dev"]
+COPY ./app/package*.json ./
+RUN npm install
+
+COPY ./app .
+
+CMD ["npm", "run", "dev"]
