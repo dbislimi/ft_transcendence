@@ -1,13 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.jsx";
-import NotFoundPage from "./NotFoundPage.tsx";
+import * as pages from './pages'
 import { createBrowserRouter, RouterProvider } from "react-router";
 
 const router = createBrowserRouter([
-	{ path: "/", element: <App /> },
-	{ path: "*", element: <NotFoundPage /> },
+	{ path: "/", element: <pages.Home /> },
+	{ path: "/Connection", element: <pages.Connection /> },
+	{ path: "/Registration", element: <pages.Registration /> },
+	{ path: "*", element: <pages.NotFoundPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(

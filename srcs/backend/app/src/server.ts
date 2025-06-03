@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import type {FastifyRequest, FastifyReply} from "fastify";
 import cors from "@fastify/cors";
 
 const fastify = Fastify({
@@ -13,7 +14,7 @@ await fastify.register(cors, {
 	origin: "http://localhost:5173",
 });
 
-fastify.post("/api/users", {
+fastify.post("/api/auth", {
 	handler: async (
 		request: FastifyRequest<{
 			Body: {
