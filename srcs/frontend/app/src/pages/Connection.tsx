@@ -1,7 +1,7 @@
-import Form from "../Components/Form"
+import AuthentificationForm from "../Components/AuthentificationForm"
 
 export default function Connection(){
 	return (
-		<Form type="Connect"/>
+		<AuthentificationForm type="Connect"/>
 	);
 }

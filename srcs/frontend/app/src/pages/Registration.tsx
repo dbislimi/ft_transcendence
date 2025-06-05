@@ -1,7 +1,7 @@
-import Form from "../Components/Form"
+import AuthentificationForm from "../Components/AuthentificationForm"
 
 export default function Registration(){
 	return (
-		<Form type="Register"/>
+		<AuthentificationForm type="Register"/>
 	);
 }

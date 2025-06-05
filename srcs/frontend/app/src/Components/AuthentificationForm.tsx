@@ -8,7 +8,7 @@ interface Props {
 	type: string;
 }
 
-export default function Form({ type }: Props ) {
+export default function AuthentificationForm({ type }: Props ) {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
