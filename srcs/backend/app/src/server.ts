@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import type {FastifyRequest, FastifyReply} from "fastify";
 import cors from "@fastify/cors";
+import Field from "./game/types.ts";
 
 const fastify = Fastify({
 	logger: {
@@ -28,6 +29,13 @@ fastify.post("/api/auth", {
 		console.log({ body });
 		return reply.code(201).send(body);
 	},
+});
+
+fastify.get("/game", (req, reply) => {
+	const game: Field = new Field();
+	return {
+		size: game.getSize()
+	}
 });
 
 async function main() {
