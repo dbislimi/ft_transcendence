@@ -36,13 +36,6 @@ fastify.post("/api/auth", {
   },
 });
 
-fastify.get("/game", (req, reply) => {
-  const game: Field = new Field();
-  return {
-    size: game.getSize(),
-  };
-});
-
 async function main() {
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
