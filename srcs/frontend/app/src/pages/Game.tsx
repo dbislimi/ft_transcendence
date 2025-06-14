@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import PongCanvas from "../Components/PongCanvas";
 
 function useWebsocket(onMessage: (event: MessageEvent) => void) {
 	const ws = useRef<WebSocket | null>(null);
@@ -16,53 +17,29 @@ function useWebsocket(onMessage: (event: MessageEvent) => void) {
 }
 
 export default function Game() {
-	const [ballx, setBallx] = useState(0);
-	const [bally, setBally] = useState(0);
 	const [state, setState] = useState(false);
-
+	const posRef = useRef({ x: 100, y: 50 });
 	const onMessage = useCallback((event: MessageEvent) => {
 		const message = JSON.parse(event.data);
-		console.log(message);
-		setBallx(message.x * 4);
-		setBally(message.y * 4);
+		posRef.current = message;
 	}, []);
 	const wsRef = useWebsocket(onMessage);
 
-	const handleButton = () => {
+	const handleClick = () => {
 		setState(!state);
-		if (!state) wsRef.current?.send("start");
-		else wsRef.current?.send("stop");
+		state ? wsRef.current?.send("stop") : wsRef.current?.send("start");
 	};
-
 	return (
 		<>
 			<div className="h-screen w-screen flex items-center justify-center">
-				<div className="relative h-100 w-200 border-5 flex flex-col items-center justify-center">
-					{!state ? (
-						<button
-							onClick={handleButton}
-							type="button"
-							className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-						>
-							PLAY
-						</button>
-					) : (
-						<button
-							onClick={handleButton}
-							type="button"
-							className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-						>
-							STOP
-						</button>
-					)}
-					<div
-						className="absolute size-3 bg-red-700 rounded-full"
-						style={{
-							top: `${bally}px`,
-							left: `${ballx}px`,
-						}}
-					></div>
-				</div>
+				<button
+					className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
+					type="button"
+					onClick={handleClick}
+				>
+					{!state ? "start" : "stop"}
+				</button>
+				<PongCanvas ball={posRef} />
 			</div>
 		</>
 	);

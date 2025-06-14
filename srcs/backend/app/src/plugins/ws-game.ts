@@ -12,8 +12,8 @@ const wsGame = async (fastify: FastifyInstance) => {
 		const uid = uuidv4();
 		games[uid] = new Game(socket);
 		socket.on("message", (message) => {
-			console.log(uid);
 			const msg: string = message.toString();
+			console.log(msg);
 			if (msg === "start") games[uid].start();
 			if (msg === "stop") games[uid].stop();
 		});
