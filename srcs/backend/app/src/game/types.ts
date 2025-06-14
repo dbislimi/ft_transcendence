@@ -1,32 +1,51 @@
 import type WebSocket from "ws";
 const speed: number = 1;
 
-class Player {
-	private ypos: number;
+interface PlayerData {
+	size: number;
+	y: number;
+}
 
-	constructor(fieldHeight: number) {
-		this.ypos = fieldHeight / 2;
+class Player {
+	private width: number;
+	private size: number;
+	private x: number;
+	private y: number;
+	private static id: number = 0;
+
+	constructor(field: Field) {
+		this.y = field.H / 2;
+		this.size = field.H / 4;
+		this.width = field.W / 50;
+		if (Player.id++) this.x = 2 * this.width;
+		else this.x = field.W - 2 * this.width;
 	}
 
 	private moveUp() {
-		this.ypos -= speed;
+		this.y -= speed;
 	}
 	private moveDown() {
-		this.ypos += speed;
+		this.y += speed;
+	}
+
+	getData(): { size: number, y: number }{
+		return { size: this.size, y: this.y };
 	}
 }
 
 class Ball {
+	private radius: number;
 	private x: number;
 	private y: number;
 	private dx: number;
 	private dy: number;
 
-	constructor(fieldHeight: number, fieldWidth: number) {
-		this.x = fieldWidth / 2;
-		this.y = fieldHeight / 2;
+	constructor(field: Field, size: number = 6) {
+		this.x = field.W / 2;
+		this.y = field.H / 2;
 		this.dx = Math.random() - 0.5 < 0.5 ? -50 : 50;
 		this.dy = Math.random() * 60 - 30;
+		this.radius = size / 2;
 	}
 
 	bounceX(): void {
@@ -50,6 +69,9 @@ class Ball {
 	get dY() {
 		return this.dy;
 	}
+	get Radius() {
+		return this.radius;
+	}
 }
 
 class Field {
@@ -61,14 +83,21 @@ class Field {
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
 		this.width = width;
-		this.ball = new Ball(this.height, this.width);
-		this.players = [new Player(this.height)];
+		this.ball = new Ball(this);
+		this.players = [new Player(this), new Player(this)];
 	}
-	getSize(): { height: number; width: number } {
-		return { height: this.height, width: this.width };
+
+	//getBallPos(): { x: number; y: number } {
+	//	return this.ball.getXY();
+	//}
+	//getPlayersPos(): { y1: number; y2: number } {
+	//	return { y1: this.players[0].Y, y2: this.players[1].Y };
+	//}
+	getBallData(): { radius: number; x: number; y: number } {
+		return { radius: this.ballRadius, ...this.ball.getXY() };
 	}
-	getBallPos(): { x: number; y: number } {
-		return this.ball.getXY();
+	getPlayersData(): { p1: PlayerData, p2: PlayerData }{
+		return {p1: this.players[0].getData(), p2: this.players[1].getData()};
 	}
 	updateBallPosition(dt: number): void {
 		let { x, y } = this.ball.getXY();
@@ -77,6 +106,16 @@ class Field {
 		this.ball.X = x + this.ball.dX * dt;
 		this.ball.Y = y + this.ball.dY * dt;
 	}
+
+	get H(): number {
+		return this.height;
+	}
+	get W(): number {
+		return this.width;
+	}
+	get ballRadius() {
+		return this.ball.Radius;
+	}
 }
 
 export default class Game {
@@ -84,7 +123,6 @@ export default class Game {
 	private prevTime!: number;
 	private readonly ws: WebSocket;
 	private static readonly TICK_RATE = 1000 / 60;
-	private running = false;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(websocket: WebSocket) {
@@ -109,15 +147,14 @@ export default class Game {
 		this.prevTime = now;
 
 		this.field.updateBallPosition(deltaTime);
-		const pos = this.field.getBallPos();
-		this.ws.send(JSON.stringify(pos));
+		const data = {
+			ball: this.field.getBallData(),
+			players: this.field.getPlayersData(),
+		};
+		this.ws.send(JSON.stringify(data));
 
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);
 	}
-
-	//get WS() {
-	//	return this.ws;
-	//}
 }

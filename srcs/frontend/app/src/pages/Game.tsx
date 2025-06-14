@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
 
+export interface Players {
+	p1: { size: number; y: number };
+	p2: { size: number; y: number };
+}
+
+export interface Ball {
+	radius: number;
+	x: number;
+	y: number;
+}
+
 function useWebsocket(onMessage: (event: MessageEvent) => void) {
 	const ws = useRef<WebSocket | null>(null);
 
@@ -18,10 +29,17 @@ function useWebsocket(onMessage: (event: MessageEvent) => void) {
 
 export default function Game() {
 	const [state, setState] = useState(false);
-	const posRef = useRef({ x: 100, y: 50 });
+	const [scale, setScale] = useState(4);
+	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50 });
+	const playersRef = useRef<Players>({
+		p1: { size: 25, y: 50 },
+		p2: { size: 25, y: 50 },
+	});
 	const onMessage = useCallback((event: MessageEvent) => {
 		const message = JSON.parse(event.data);
-		posRef.current = message;
+		console.log(message);
+		ballRef.current = message.ball;
+		playersRef.current = message.players;
 	}, []);
 	const wsRef = useWebsocket(onMessage);
 
@@ -39,7 +57,18 @@ export default function Game() {
 				>
 					{!state ? "start" : "stop"}
 				</button>
-				<PongCanvas ball={posRef} />
+				<button
+					className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
+					type="button"
+					onClick={() => setScale(scale + 1)}
+				>
+					SCALE
+				</button>
+				<PongCanvas
+					ball={ballRef}
+					players={playersRef}
+					scale={scale}
+				/>
 			</div>
 		</>
 	);

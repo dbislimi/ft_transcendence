@@ -1,39 +1,55 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
-
-interface Ball {
-	x: number;
-	y: number;
-}
+import type { Players, Ball } from "../pages/Game";
 
 interface prop {
-	ball: React.RefObject<{
-		x: number;
-		y: number;
-	}>;
+	ball: React.RefObject<Ball>;
+	players: React.RefObject<Players>;
+	scale: number;
 }
 
-function PongCanvas({ ball }: prop) {
+function PongCanvas({ ball, players, scale }: prop) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 	console.log("pong rendered");
 	useEffect(() => {
+		console.log("useeffect");
 		const canvas = canvasRef.current;
+		const fieldHeight = 100;
+		const fieldWidth = 200;
+		const playerWidth = (fieldWidth / 50) * scale;
+		const PlayerPad = (fieldWidth / 100) * scale;
 		if (!canvas) return;
-		canvas.width = 200 * 4;
-		canvas.height = 100 * 4;
+		canvas.width = fieldWidth * scale;
+		canvas.height = fieldHeight * scale;
 		const c = canvas.getContext("2d");
 		if (!c) return;
 		const loop = () => {
+			const p1Size = players.current.p1.size * scale;
+			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
+			c.rect(
+				PlayerPad,
+				players.current.p1.y * scale,
+				playerWidth,
+				p1Size
+			);
+			c.rect(
+				fieldWidth * scale - 3 * PlayerPad,
+				players.current.p2.y * scale,
+				playerWidth,
+				p2Size
+			);
+			c.fillStyle = "blue";
+			c.fill();
 			c.beginPath();
 			c.arc(
 				ball.current.x * 4,
 				ball.current.y * 4,
-				5,
-				2 * Math.PI,
+				ball.current.radius * scale,
 				0,
-				true
+				2 * Math.PI,
+				false
 			);
 			c.fillStyle = "red";
 			c.fill();
@@ -42,7 +58,7 @@ function PongCanvas({ ball }: prop) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, []);
+	}, [scale]);
 	return <canvas ref={canvasRef} className="border-4 absolute"></canvas>;
 }
 
