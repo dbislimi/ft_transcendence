@@ -157,9 +157,9 @@ class Field {
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p1.Up && p1.Y > 0) p1.Y -= speed * dt;
-		else if (p1.Down && p1.Y < this.height) p1.Y += speed * dt;
+		else if (p1.Down && p1.Y + p1.Size < this.height) p1.Y += speed * dt;
 		if (p2.Up && p2.Y > 0) p2.Y -= speed * dt;
-		else if (p2.Down && p2.Y < this.height) p2.Y += speed * dt;
+		else if (p2.Down && p2.Y + p1.Size < this.height) p2.Y += speed * dt;
 	}
 	update(dt: number) {
 		this.updatePlayersPosition(dt);
