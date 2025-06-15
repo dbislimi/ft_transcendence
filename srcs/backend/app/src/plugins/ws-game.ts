@@ -10,6 +10,7 @@ const wsGame = async (fastify: FastifyInstance) => {
 	let games: IGames = {};
 	fastify.get("/ws/game", { websocket: true }, (socket: WebSocket, req) => {
 		const uid = uuidv4();
+		console.log(uid);
 		games[uid] = new Game(socket);
 		socket.on("message", (message) => {
 			const msg: string = message.toString();
@@ -17,6 +18,11 @@ const wsGame = async (fastify: FastifyInstance) => {
 			if (msg === "start") games[uid].start();
 			if (msg === "stop") games[uid].stop();
 		});
+		socket.on("close", () => {
+			console.log("close ", uid);
+			games[uid].stop();
+			delete games[uid];
+		})
 	});
 };
 

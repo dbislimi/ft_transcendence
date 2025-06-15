@@ -7,18 +7,19 @@ interface PlayerData {
 }
 
 class Player {
-	private width: number;
+	private static width: number;
 	private size: number;
 	private x: number;
 	private y: number;
 	private static id: number = 0;
 
 	constructor(field: Field) {
-		this.y = field.H / 2;
 		this.size = field.H / 4;
-		this.width = field.W / 50;
-		if (Player.id++) this.x = 2 * this.width;
-		else this.x = field.W - 2 * this.width;
+		this.y = field.H / 2 - this.size / 2;
+		Player.width = field.W / 50;
+		if (Player.id++ == 0) this.x = Player.width;
+		else this.x = field.W - 2 * Player.width;
+		console.log(this.x);
 	}
 
 	private moveUp() {
@@ -28,8 +29,21 @@ class Player {
 		this.y += speed;
 	}
 
-	getData(): { size: number, y: number }{
+	getData(): { size: number; y: number } {
 		return { size: this.size, y: this.y };
+	}
+
+	get X() {
+		return this.x;
+	}
+	get Y() {
+		return this.y;
+	}
+	get Width() {
+		return Player.width;
+	}
+	get Size() {
+		return this.size;
 	}
 }
 
@@ -49,6 +63,7 @@ class Ball {
 	}
 
 	bounceX(): void {
+		console.log("bounce");
 		this.dx = -this.dx;
 	}
 	bounceY(): void {
@@ -79,6 +94,7 @@ class Field {
 	private readonly width: number;
 	private players: Player[];
 	private ball: Ball;
+	private score: number[] = [0, 0];
 
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
@@ -87,6 +103,12 @@ class Field {
 		this.players = [new Player(this), new Player(this)];
 	}
 
+	addScore(player: number) {
+		this.score[player]++;
+		this.ball.X = this.width / 2;
+		this.ball.Y = this.height / 2;
+		this.ball.bounceX();
+	}
 	//getBallPos(): { x: number; y: number } {
 	//	return this.ball.getXY();
 	//}
@@ -96,15 +118,39 @@ class Field {
 	getBallData(): { radius: number; x: number; y: number } {
 		return { radius: this.ballRadius, ...this.ball.getXY() };
 	}
-	getPlayersData(): { p1: PlayerData, p2: PlayerData }{
-		return {p1: this.players[0].getData(), p2: this.players[1].getData()};
+	getPlayersData(): { p1: PlayerData; p2: PlayerData } {
+		return { p1: this.players[0].getData(), p2: this.players[1].getData() };
 	}
 	updateBallPosition(dt: number): void {
-		let { x, y } = this.ball.getXY();
-		if (y >= this.height || y <= 0) this.ball.bounceY();
-		if (x >= this.width || x <= 0) this.ball.bounceX();
-		this.ball.X = x + this.ball.dX * dt;
-		this.ball.Y = y + this.ball.dY * dt;
+		const { x, y } = this.ball.getXY();
+		const radius = this.ballRadius;
+		const pWidth = this.players[0].Width;
+		const { s1, s2 } = {
+			s1: this.players[0].Size,
+			s2: this.players[1].Size,
+		};
+		const { x1, x2 } = { x1: this.players[0].X, x2: this.players[1].X };
+		const { y1, y2 } = { y1: this.players[0].Y, y2: this.players[1].Y };
+		//console.log("x1: ", x1, " x: ", x, "x2: ", x2);
+		//console.log(y1);
+		//console.log("--------");
+		//console.log(x - radius <= x1 + pWidth);
+		//console.log(y + radius > y1);
+		//console.log(y - radius < y1 + s1);
+		if (x + radius >= this.width) this.addScore(0);
+		else if (x - radius <= 0) this.addScore(1);
+		else {
+			if (y + radius >= this.height || y - radius <= 0) this.ball.bounceY();
+			if (
+				(x - radius <= x1 + pWidth &&
+					y + radius > y1 &&
+					y - radius < y1 + s1) ||
+				(x + radius >= x2 && y + radius > y2 && y - radius < y2 + s2)
+			)
+				this.ball.bounceX();
+			this.ball.X = x + this.ball.dX * dt;
+			this.ball.Y = y + this.ball.dY * dt;
+		}
 	}
 
 	get H(): number {
@@ -145,7 +191,7 @@ export default class Game {
 		const now = performance.now();
 		const deltaTime = (now - this.prevTime) / 1000;
 		this.prevTime = now;
-
+		//console.log("loop");
 		this.field.updateBallPosition(deltaTime);
 		const data = {
 			ball: this.field.getBallData(),

@@ -15,27 +15,30 @@ function PongCanvas({ ball, players, scale }: prop) {
 	useEffect(() => {
 		console.log("useeffect");
 		const canvas = canvasRef.current;
-		const fieldHeight = 100;
-		const fieldWidth = 200;
-		const playerWidth = (fieldWidth / 50) * scale;
-		const PlayerPad = (fieldWidth / 100) * scale;
+		const fieldHeight = 100 * scale;
+		const fieldWidth = 200 * scale;
+		const playerWidth = (fieldWidth / 50);
 		if (!canvas) return;
-		canvas.width = fieldWidth * scale;
-		canvas.height = fieldHeight * scale;
+		canvas.width = fieldWidth;
+		canvas.height = fieldHeight;
 		const c = canvas.getContext("2d");
+		//canvas.addEventListener("keydown", (event) => {
+		//	const key = event.key;
+		//	console.log("key: ", key);
+		//})
 		if (!c) return;
 		const loop = () => {
 			const p1Size = players.current.p1.size * scale;
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.rect(
-				PlayerPad,
+				playerWidth,
 				players.current.p1.y * scale,
 				playerWidth,
 				p1Size
 			);
 			c.rect(
-				fieldWidth * scale - 3 * PlayerPad,
+				fieldWidth - 2 * playerWidth,
 				players.current.p2.y * scale,
 				playerWidth,
 				p2Size
@@ -59,7 +62,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [scale]);
-	return <canvas ref={canvasRef} className="border-4 absolute"></canvas>;
+	return <canvas ref={canvasRef} className="border absolute"></canvas>;
 }
 
 export default memo(PongCanvas);

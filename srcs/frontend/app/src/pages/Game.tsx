@@ -32,12 +32,12 @@ export default function Game() {
 	const [scale, setScale] = useState(4);
 	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50 });
 	const playersRef = useRef<Players>({
-		p1: { size: 25, y: 50 },
-		p2: { size: 25, y: 50 },
+		p1: { size: 25, y: 37.5 },
+		p2: { size: 25, y: 37.5 },
 	});
 	const onMessage = useCallback((event: MessageEvent) => {
 		const message = JSON.parse(event.data);
-		console.log(message);
+		//console.log(message);
 		ballRef.current = message.ball;
 		playersRef.current = message.players;
 	}, []);
