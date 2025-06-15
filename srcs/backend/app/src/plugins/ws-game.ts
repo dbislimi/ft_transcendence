@@ -13,10 +13,12 @@ const wsGame = async (fastify: FastifyInstance) => {
 		console.log(uid);
 		games[uid] = new Game(socket);
 		socket.on("message", (message) => {
-			const msg: string = message.toString();
+			const msg = JSON.parse(message.toString());
 			console.log(msg);
-			if (msg === "start") games[uid].start();
-			if (msg === "stop") games[uid].stop();
+			if (msg.event === "start") games[uid].start();
+			else if (msg.event === "stop") games[uid].stop();
+			else if (msg.event === 'up') games[uid].up(msg.type);
+			else if (msg.event === "down") games[uid].down(msg.type);
 		});
 		socket.on("close", () => {
 			console.log("close ", uid);

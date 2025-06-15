@@ -43,9 +43,28 @@ export default function Game() {
 	}, []);
 	const wsRef = useWebsocket(onMessage);
 
+	useEffect(() => {
+		const handleKey = (e: KeyboardEvent, type: string) => {
+			const key = e.key;
+			console.log("key");
+			if (["Shift", "s", "ArrowDown"].includes(e.key))
+				wsRef.current?.send(JSON.stringify({event: "down", type: type}));
+			else if ([" ", "w", "ArrowUp"].includes(e.key))
+				wsRef.current?.send(JSON.stringify({event: "up", type: type}));
+		};
+		const keydown = (e: KeyboardEvent) => handleKey(e, "press");
+		const keyup = (e: KeyboardEvent) => handleKey(e, "release");
+
+		document.addEventListener("keydown", keydown);
+		document.addEventListener("keyup", keyup);
+		return () => {
+			document.removeEventListener("keydown", keydown);
+			document.removeEventListener("keyup", keyup);
+		};
+	}, []);
 	const handleClick = () => {
 		setState(!state);
-		state ? wsRef.current?.send("stop") : wsRef.current?.send("start");
+		state ? wsRef.current?.send(JSON.stringify({event: "stop"})) : wsRef.current?.send(JSON.stringify({event: "start"}));
 	};
 	return (
 		<>
@@ -57,18 +76,7 @@ export default function Game() {
 				>
 					{!state ? "start" : "stop"}
 				</button>
-				<button
-					className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-					type="button"
-					onClick={() => setScale(scale + 1)}
-				>
-					SCALE
-				</button>
-				<PongCanvas
-					ball={ballRef}
-					players={playersRef}
-					scale={scale}
-				/>
+				<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
 			</div>
 		</>
 	);
