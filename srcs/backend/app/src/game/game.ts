@@ -76,8 +76,8 @@ class Ball {
 	constructor(field: Field, size: number = 4) {
 		this.xPos = field.W / 2;
 		this.yPos = field.H / 2;
-		this.xVel = Math.random() - 0.5 < 0.5 ? -50 : 50;
-		this.yVel = Math.random() * 60 - 30;
+		this.xVel = Math.random() - 0.5 < 0.5 ? -300 : 300;
+		this.yVel = Math.random() * 120 - 60;
 		this.xVel = 50;
 		this.ballRadius = size / 2;
 	}
@@ -198,14 +198,29 @@ class Field {
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p2.bot) {
-			if (this.ball.y < this.height - p2.size / 2 && this.ball.y > p2.size / 2)
+			if (
+				this.ball.y < this.height - p2.size / 2 &&
+				this.ball.y > p2.size / 2
+			)
 				p2.y = this.ball.y - p2.size / 2;
 		}
 		if (p1.up && p1.down) return;
-		if (p1.up && p1.y > 0) p1.y -= speed * dt;
-		else if (p1.down && p1.y + p1.size < this.height) p1.y += speed * dt;
-		if (p2.up && p2.y > 0) p2.y -= speed * dt;
-		else if (p2.down && p2.y + p1.size < this.height) p2.y += speed * dt;
+		if (p1.up && p1.y > 0) {
+			if (p1.y - speed * dt < 0) p1.y = 0;
+			else p1.y -= speed * dt;
+		} else if (p1.down && p1.y + p1.size < this.height) {
+			if (p1.y + speed * dt > this.height - p1.size)
+				p1.y = this.height - p1.size;
+			else p1.y += speed * dt;
+		}
+		if (p2.up && p2.y > 0) {
+			if (p2.y - speed * dt < 0) p2.y = 0;
+			else p2.y -= speed * dt;
+		} else if (p2.down && p2.y + p1.size < this.height) {
+			if (p2.y + speed * dt > this.height - p2.size)
+				p2.y = this.height - p2.size;
+			else p2.y += speed * dt;
+		}
 	}
 	update(dt: number) {
 		this.updatePlayersPosition(dt);
