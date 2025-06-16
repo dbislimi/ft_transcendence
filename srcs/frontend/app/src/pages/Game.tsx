@@ -48,23 +48,38 @@ export default function Game() {
 			const key = e.key;
 			console.log("key");
 			if (["Shift", "s", "ArrowDown"].includes(e.key))
-				wsRef.current?.send(JSON.stringify({event: "down", type: type}));
+				wsRef.current?.send(
+					JSON.stringify({ event: "down", type: type })
+				);
 			else if ([" ", "w", "ArrowUp"].includes(e.key))
-				wsRef.current?.send(JSON.stringify({event: "up", type: type}));
+				wsRef.current?.send(
+					JSON.stringify({ event: "up", type: type })
+				);
 		};
-		const keydown = (e: KeyboardEvent) => handleKey(e, "press");
+		const keydown = (e: KeyboardEvent) => {
+			if (e.repeat) return;
+			handleKey(e, "press");
+		};
 		const keyup = (e: KeyboardEvent) => handleKey(e, "release");
-
+		const click = (e: MouseEvent) => {
+			console.log(e);
+			wsRef.current?.send(JSON.stringify({event: "mouse", x: e.clientX, y: e.clientY}))
+		}
+		//document.addEventListener("mousemove",click);
 		document.addEventListener("keydown", keydown);
 		document.addEventListener("keyup", keyup);
 		return () => {
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
+			document.removeEventListener("mousedown",click);
+
 		};
 	}, []);
 	const handleClick = () => {
 		setState(!state);
-		state ? wsRef.current?.send(JSON.stringify({event: "stop"})) : wsRef.current?.send(JSON.stringify({event: "start"}));
+		state
+			? wsRef.current?.send(JSON.stringify({ event: "stop" }))
+			: wsRef.current?.send(JSON.stringify({ event: "start" }));
 	};
 	return (
 		<>

@@ -1,5 +1,5 @@
 import type WebSocket from "ws";
-const speed: number = 50;
+const speed: number = 100;
 
 interface PlayerData {
 	size: number;
@@ -7,96 +7,116 @@ interface PlayerData {
 }
 
 class Player {
-	private static width: number;
-	private size: number;
-	private x: number;
-	private y: number;
-	private up: boolean = false;
-	private down: boolean = false;
+	private static playerWidth: number;
+	private playerSize: number;
+	private xPos: number;
+	private yPos: number;
+	private movingUp: boolean = false;
+	private movingDown: boolean = false;
+	private isBot: boolean = true;
 
 	constructor(field: Field, id: 0 | 1) {
-		this.size = field.H / 4;
-		this.y = field.H / 2 - this.size / 2;
-		Player.width = field.W / 50;
-		if (id == 0) this.x = Player.width;
-		else this.x = field.W - 2 * Player.width;
+		this.playerSize = field.H / 4;
+		this.yPos = field.H / 2 - this.playerSize / 2;
+		Player.playerWidth = field.W / 100;
+		if (id == 0) this.xPos = Player.playerWidth;
+		else this.xPos = field.W - 2 * Player.playerWidth;
 	}
 
 	public moveUp(state: boolean) {
-		this.up = state;
+		this.movingUp = state;
 	}
 	public moveDown(state: boolean) {
-		this.down = state;
+		this.movingDown = state;
 	}
 
 	getData(): { size: number; y: number } {
-		return { size: this.size, y: this.y };
+		return { size: this.playerSize, y: this.yPos };
 	}
 
-	get X() {
-		return this.x;
+	get x() {
+		return this.xPos;
 	}
-	get Y() {
-		return this.y;
+	get y() {
+		return this.yPos;
 	}
-	get Width() {
-		return Player.width;
+	get width() {
+		return Player.playerWidth;
 	}
-	get Size() {
-		return this.size;
+	get size() {
+		return this.playerSize;
 	}
-	get Up() {
-		return this.up;
+	get up() {
+		return this.movingUp;
 	}
-	get Down() {
-		return this.down;
+	get down() {
+		return this.movingDown;
 	}
-	set X(x: number) {
-		this.x = x;
+	get bot() {
+		return this.isBot;
 	}
-	set Y(y: number) {
-		this.y = y;
+	set bot(bool: boolean) {
+		this.isBot = bool;
+	}
+	set x(x: number) {
+		this.xPos = x;
+	}
+	set y(y: number) {
+		this.yPos = y;
 	}
 }
 
 class Ball {
-	private radius: number;
-	private x: number;
-	private y: number;
-	private dx: number;
-	private dy: number;
+	private ballRadius: number;
+	private xPos: number;
+	private yPos: number;
+	private xVel: number = 0;
+	private yVel: number = 0;
 
-	constructor(field: Field, size: number = 6) {
-		this.x = field.W / 2;
-		this.y = field.H / 2;
-		this.dx = Math.random() - 0.5 < 0.5 ? -50 : 50;
-		this.dy = Math.random() * 60 - 30;
-		this.radius = size / 2;
+	constructor(field: Field, size: number = 4) {
+		this.xPos = field.W / 2;
+		this.yPos = field.H / 2;
+		this.xVel = Math.random() - 0.5 < 0.5 ? -50 : 50;
+		this.yVel = Math.random() * 60 - 30;
+		this.xVel = 50;
+		this.ballRadius = size / 2;
 	}
 
 	bounceX(): void {
-		this.dx = -this.dx;
+		//console.log("bounce X");
+		this.xVel = -this.xVel;
 	}
 	bounceY(): void {
-		this.dy = -this.dy;
+		//console.log("bounce Y");
+
+		this.yVel = -this.yVel;
 	}
-	set X(x: number) {
-		this.x = x;
+	set x(x: number) {
+		this.xPos = x;
 	}
-	set Y(y: number) {
-		this.y = y;
+	set y(y: number) {
+		this.yPos = y;
 	}
 	getXY(): { x: number; y: number } {
-		return { x: this.x, y: this.y };
+		return { x: this.xPos, y: this.yPos };
 	}
-	get dX() {
-		return this.dx;
+	getNextXY(dt: number): { nextX: number; nextY: number } {
+		return {
+			nextX: this.xPos + this.xVel * dt,
+			nextY: this.yPos + this.yVel * dt,
+		};
 	}
-	get dY() {
-		return this.dy;
+	get y() {
+		return this.yPos;
 	}
-	get Radius() {
-		return this.radius;
+	get dx() {
+		return this.xVel;
+	}
+	get dy() {
+		return this.yVel;
+	}
+	get radius() {
+		return this.ballRadius;
 	}
 }
 
@@ -114,10 +134,13 @@ class Field {
 		this.players = [new Player(this, 0), new Player(this, 1)];
 	}
 
+	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
+		this.ball.x = x;
+		this.ball.y = y;
+	}
 	private addScore(player: number) {
 		this.score[player]++;
-		this.ball.X = this.width / 2;
-		this.ball.Y = this.height / 2;
+		this.setBallPos();
 		this.ball.bounceX();
 	}
 
@@ -129,37 +152,60 @@ class Field {
 	}
 	updateBallPosition(dt: number): void {
 		const { x, y } = this.ball.getXY();
+		let { nextX, nextY } = this.ball.getNextXY(dt);
 		const radius = this.ballRadius;
-		const pWidth = this.players[0].Width;
-		const { s1, s2 } = {
-			s1: this.players[0].Size,
-			s2: this.players[1].Size,
-		};
-		const { x1, x2 } = { x1: this.players[0].X, x2: this.players[1].X };
-		const { y1, y2 } = { y1: this.players[0].Y, y2: this.players[1].Y };
+		const pWidth = this.players[0].width;
+		const s1 = this.players[0].size;
+		const s2 = this.players[1].size;
+		const { y1, y2 } = { y1: this.players[0].y, y2: this.players[1].y };
+		const face1 = this.players[0].x + pWidth;
+		const face2 = this.players[1].x;
+		const prevLeftEdge = x - radius;
+		const nextLeftEdge = nextX - radius;
+		const prevRightEdge = x + radius;
+		const nextRightEdge = nextX + radius;
+		if (nextY - radius <= 0 || nextY + radius >= this.height) {
+			this.ball.bounceY();
+			nextY = Math.max(radius, Math.min(nextY, this.height - radius));
+		}
+		if (prevLeftEdge > face1 && nextLeftEdge <= face1) {
+			const t = (face1 - prevLeftEdge) / (nextLeftEdge - prevLeftEdge);
+			const yCross = y + (nextY - y) * t;
 
-		if (x + radius >= this.width) this.addScore(0);
-		else if (x - radius <= 0) this.addScore(1);
-		else {
-			if (y + radius >= this.height || y - radius <= 0)
-				this.ball.bounceY();
-			if (
-				(x - radius <= x1 + pWidth &&
-					y + radius > y1 &&
-					y - radius < y1 + s1) ||
-				(x + radius >= x2 && y + radius > y2 && y - radius < y2 + s2)
-			)
+			if (yCross >= y1 && yCross <= y1 + s1) {
+				nextX = face1 + radius;
 				this.ball.bounceX();
-			this.ball.X = x + this.ball.dX * dt;
-			this.ball.Y = y + this.ball.dY * dt;
+			}
+		} else if (prevRightEdge < face2 && nextRightEdge >= face2) {
+			const t = (face2 - prevRightEdge) / (nextRightEdge - prevRightEdge);
+			const yCross = y + (nextY - y) * t;
+
+			if (yCross >= y2 && yCross <= y2 + s2) {
+				nextX = face2 - radius;
+				this.ball.bounceX();
+			}
+		}
+		this.ball.x = nextX;
+		this.ball.y = nextY;
+		if (nextX + radius >= this.width) {
+			console.log("score 0");
+			this.addScore(0);
+		} else if (nextX - radius <= 0) {
+			console.log("score 1");
+			this.addScore(1);
 		}
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p1.Up && p1.Y > 0) p1.Y -= speed * dt;
-		else if (p1.Down && p1.Y + p1.Size < this.height) p1.Y += speed * dt;
-		if (p2.Up && p2.Y > 0) p2.Y -= speed * dt;
-		else if (p2.Down && p2.Y + p1.Size < this.height) p2.Y += speed * dt;
+		if (p2.bot) {
+			if (this.ball.y < this.height - p2.size / 2 && this.ball.y > p2.size / 2)
+				p2.y = this.ball.y - p2.size / 2;
+		}
+		if (p1.up && p1.down) return;
+		if (p1.up && p1.y > 0) p1.y -= speed * dt;
+		else if (p1.down && p1.y + p1.size < this.height) p1.y += speed * dt;
+		if (p2.up && p2.y > 0) p2.y -= speed * dt;
+		else if (p2.down && p2.y + p1.size < this.height) p2.y += speed * dt;
 	}
 	update(dt: number) {
 		this.updatePlayersPosition(dt);
@@ -172,10 +218,13 @@ class Field {
 		return this.width;
 	}
 	get ballRadius() {
-		return this.ball.Radius;
+		return this.ball.radius;
 	}
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
-		return { up: this.players[id].Up, down: this.players[id].Down };
+		return { up: this.players[id].up, down: this.players[id].down };
+	}
+	connect() {
+		this.players[0].bot = false;
 	}
 }
 
@@ -189,6 +238,7 @@ export default class Game {
 	constructor(websocket: WebSocket) {
 		this.field = new Field();
 		this.ws = websocket;
+		this.field.connect();
 	}
 
 	public start(): void {
@@ -202,19 +252,19 @@ export default class Game {
 		}
 	}
 	up(type: string) {
-		if (!this.field.players[0].Up && type === "press"){
-			
-			console.log("debug");
+		if (!this.field.players[0].up && type === "press")
 			this.field.players[0].moveUp(true);
-		}
-		else if (this.field.players[0].Up && type === "release")
+		else if (this.field.players[0].up && type === "release")
 			this.field.players[0].moveUp(false);
 	}
 	down(type: string) {
-		if (!this.field.players[0].Down && type === "press")
+		if (!this.field.players[0].down && type === "press")
 			this.field.players[0].moveDown(true);
-		else if (this.field.players[0].Down && type === "release")
+		else if (this.field.players[0].down && type === "release")
 			this.field.players[0].moveDown(false);
+	}
+	setBall(x: number, y: number) {
+		this.field.setBallPos(x, y);
 	}
 
 	private gameLoop(): void {

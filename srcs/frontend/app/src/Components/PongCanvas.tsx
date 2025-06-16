@@ -17,15 +17,11 @@ function PongCanvas({ ball, players, scale }: prop) {
 		const canvas = canvasRef.current;
 		const fieldHeight = 100 * scale;
 		const fieldWidth = 200 * scale;
-		const playerWidth = (fieldWidth / 50);
+		const playerWidth = (fieldWidth / 100);
 		if (!canvas) return;
 		canvas.width = fieldWidth;
 		canvas.height = fieldHeight;
 		const c = canvas.getContext("2d");
-		//canvas.addEventListener("keydown", (event) => {
-		//	const key = event.key;
-		//	console.log("key: ", key);
-		//})
 		if (!c) return;
 		const loop = () => {
 			const p1Size = players.current.p1.size * scale;
@@ -62,7 +58,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [scale]);
-	return <canvas ref={canvasRef} className="border absolute"></canvas>;
+	return <canvas id="c1" ref={canvasRef} className="border absolute"></canvas>;
 }
 
 export default memo(PongCanvas);
