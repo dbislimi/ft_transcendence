@@ -78,18 +78,18 @@ class Ball {
 		this.yPos = field.H / 2;
 		this.xVel = Math.random() - 0.5 < 0.5 ? -300 : 300;
 		this.yVel = Math.random() * 120 - 60;
-		this.xVel = 50;
 		this.ballRadius = size / 2;
 	}
 
 	bounceX(): void {
-		//console.log("bounce X");
-		this.xVel = -this.xVel;
+		console.log(" debvug", this.xVel);
+		this.xVel *= -1;
 	}
-	bounceY(): void {
-		//console.log("bounce Y");
-
-		this.yVel = -this.yVel;
+	bounceY(dist: number = -1): void {
+		const coeff: number = (48 * dist) / 5 - 120;
+		console.log(coeff);
+		if (dist === -1) this.yVel *= -1;
+		else this.yVel = coeff;
 	}
 	set x(x: number) {
 		this.xPos = x;
@@ -172,17 +172,19 @@ class Field {
 			const t = (face1 - prevLeftEdge) / (nextLeftEdge - prevLeftEdge);
 			const yCross = y + (nextY - y) * t;
 
-			if (yCross >= y1 && yCross <= y1 + s1) {
+			if (yCross >= y1 - 1 && yCross <= y1 + s1 + 1) {
 				nextX = face1 + radius;
 				this.ball.bounceX();
+				this.ball.bounceY(yCross - y1);
 			}
 		} else if (prevRightEdge < face2 && nextRightEdge >= face2) {
 			const t = (face2 - prevRightEdge) / (nextRightEdge - prevRightEdge);
 			const yCross = y + (nextY - y) * t;
 
-			if (yCross >= y2 && yCross <= y2 + s2) {
+			if (yCross >= y2 - 1 && yCross <= y2 + s2 + 1) {
 				nextX = face2 - radius;
 				this.ball.bounceX();
+				this.ball.bounceY(yCross - y2);
 			}
 		}
 		this.ball.x = nextX;
