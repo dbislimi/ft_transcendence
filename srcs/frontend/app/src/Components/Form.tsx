@@ -1,122 +1,165 @@
+import React, { useState } from 'react';
+
 interface UserInfos {
-	type: string;
-	name: string;
-	password: string;
+  name: string;
+  email: string;
+  password: string;
 }
 
 interface Props {
-	type: string;
+  type: string;
 }
 
-export default function Form({ type }: Props ) {
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-
-		const info: UserInfos = { 
-			type: type,
-			name: e.currentTarget.Name.value,
-			password: e.currentTarget.password.value
-		};
-		await fetch("http://localhost:3000/api/auth", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(info),
-		});
-	};
-	return (
-		<>
-			{/*
-		  This example requires updating your template:
+export default function Form({ type }: Props) {
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
-		  ```
-		  <html class="h-full bg-white">
-		  <body class="h-full">
-		  ```
-		*/}
-			<div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-				<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-					<img
-						alt="Your Company"
-						src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-						className="mx-auto h-10 w-auto"
-					/>
-					<h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-						{type}
-					</h2>
-				</div>
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-				<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-					<form onSubmit={handleSubmit} className="space-y-6">
-						<div>
-							<label
-								htmlFor="Name"
-								className="block text-sm/6 font-medium text-gray-900"
-							>
-								Name
-							</label>
-							<div className="mt-2">
-								<input
-									id="Name"
-									name="Name"
-									type="text"
-									placeholder="Enter your name"
-									required
-									className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-								/>
-							</div>
-						</div>
+    const name = e.currentTarget.Name.value;
+    const email = e.currentTarget.email.value;
+    const password = e.currentTarget.password.value;
+    const confirmPassword = e.currentTarget.confirmPassword.value;
 
-						<div>
-							<div className="flex items-center justify-between">
-								<label
-									htmlFor="password"
-									className="block text-sm/6 font-medium text-gray-900"
-								>
-									Password
-								</label>
-								<div className="text-sm">
-									<a
-										href="#"
-										className="font-semibold text-indigo-600 hover:text-indigo-500"
-									>
-										Forgot password?
-									</a>
-								</div>
-							</div>
-							<div className="mt-2">
-								<input
-									id="password"
-									name="password"
-									type="password"
-									placeholder="Enter your password"
-									required
-									autoComplete="current-password"
-									className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-								/>
-							</div>
-						</div>
+    let formErrors: { [key: string]: string } = {};
 
-						<div>
-							<button
-								type="submit"
-								className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-							>
-								Sign in
-							</button>
-						</div>
-					</form>
+    if (password !== confirmPassword) {
+      formErrors.password = 'Les mots de passe ne correspondent pas';
+      formErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+    }
 
-					<p className="mt-10 text-center text-sm/6 text-gray-500">
-						Not a member?{" "}
-						<a
-							href="#"
-							className="font-semibold text-indigo-600 hover:text-indigo-500"
-						>
-							Start a 14 day free trial
-						</a>
-					</p>
-				</div>
-			</div>
-		</>
-	);
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{5,}$/;
+
+    if (!passwordRegex.test(password)) {
+      formErrors.password =
+        'Le mot de passe doit contenir :\n- 1 majuscule\n- 1 minuscule\n- 1 chiffre\n- 1 caractère spécial\n- 5 caractères minimum';
+    }
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    const info: UserInfos = { name, email, password };
+
+    try {
+      const response = await fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(info),
+      });
+
+      if (response.ok) {
+        alert("Inscription réussie");
+      } else {
+        const data = await response.json();
+        alert(`Erreur : ${data.error || "Erreur serveur"}`);
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    }
+  };
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <img
+          alt="Your Company"
+          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+          className="mx-auto h-10 w-auto"
+        />
+        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+          {type}
+        </h2>
+      </div>
+
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name field */}
+          <div>
+            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
+              Name
+            </label>
+            <div className="mt-2">
+              <input
+                id="Name"
+                name="Name"
+                type="text"
+                placeholder="Enter your name"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+            </div>
+          </div>
+
+          {/* Email field */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
+              Email
+            </label>
+            <div className="mt-2">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+            </div>
+          </div>
+
+          {/* Password field */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+              Password
+            </label>
+            <div className="mt-2">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+              {errors.password && (
+                <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Confirm Password field */}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
+              Confirm Password
+            </label>
+            <div className="mt-2">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <div>
+            <button
+              type="submit"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-indigo-600"
+            >
+              Sign in
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
