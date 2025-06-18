@@ -1,7 +1,6 @@
 import Fastify from "fastify";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import cors from "@fastify/cors";
-import Field from "./game/game.ts";
 import websocket from "@fastify/websocket";
 import wsGame from "./plugins/ws-game.ts";
 

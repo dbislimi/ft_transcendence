@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
+import Scoreboard from "../Components/Scoreboard";
 
 export interface Players {
 	p1: { size: number; y: number };
@@ -83,14 +84,15 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="h-screen w-screen flex items-center justify-center">
+			<div className="h-screen w-screen flex flex-col items-center justify-center">
 				<button
-					className="z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
+					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 					type="button"
 					onClick={handleClick}
 				>
 					{!state ? "start" : "stop"}
 				</button>
+				<Scoreboard />
 				<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
 			</div>
 		</>

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import Game from "../game/game.ts";
+import Game from "../game/Game.ts";
 import type WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 

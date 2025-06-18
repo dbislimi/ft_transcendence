@@ -58,7 +58,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [scale]);
-	return <canvas id="c1" ref={canvasRef} className="border absolute"></canvas>;
+	return <canvas ref={canvasRef} className="border-2"></canvas>;
 }
 
 export default memo(PongCanvas);
