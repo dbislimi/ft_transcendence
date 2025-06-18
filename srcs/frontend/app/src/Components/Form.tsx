@@ -1,64 +1,46 @@
-import React, { useState } from 'react';
-
-interface UserInfos {
-  name: string;
-  email: string;
-  password: string;
-}
+import React, { useRef, useEffect } from "react";
 
 interface Props {
   type: string;
 }
 
 export default function Form({ type }: Props) {
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const xPos = useRef(10);
+  const speed = useRef(2);
+  const direction = useRef(1);
 
-    const name = e.currentTarget.Name.value;
-    const email = e.currentTarget.email.value;
-    const password = e.currentTarget.password.value;
-    const confirmPassword = e.currentTarget.confirmPassword.value;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    let formErrors: { [key: string]: string } = {};
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    if (password !== confirmPassword) {
-      formErrors.password = 'Les mots de passe ne correspondent pas';
-      formErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
-    }
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{5,}$/;
+      // Dessiner le carré bleu statique
+      ctx.fillStyle = "blue";
+      ctx.fillRect(10, 10, 100, 100);
 
-    if (!passwordRegex.test(password)) {
-      formErrors.password =
-        'Le mot de passe doit contenir :\n- 1 majuscule\n- 1 minuscule\n- 1 chiffre\n- 1 caractère spécial\n- 5 caractères minimum';
-    }
+      // Dessiner le cercle rouge animé
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(xPos.current, 100, 30, 0, Math.PI * 2);
+      ctx.fill();
 
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
-    }
-
-    const info: UserInfos = { name, email, password };
-
-    try {
-      const response = await fetch("http://localhost:3000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(info),
-      });
-
-      if (response.ok) {
-        alert("Inscription réussie");
-      } else {
-        const data = await response.json();
-        alert(`Erreur : ${data.error || "Erreur serveur"}`);
+      // Mise à jour de la position
+      xPos.current += speed.current * direction.current;
+      if (xPos.current > canvas.width - 30 || xPos.current < 30) {
+        direction.current *= -1; // Inverser la direction
       }
-    } catch (error) {
-      alert("Erreur réseau");
-    }
-  };
+
+      requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }, []);
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -71,94 +53,14 @@ export default function Form({ type }: Props) {
         <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           {type}
         </h2>
-      </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name field */}
-          <div>
-            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
-              Name
-            </label>
-            <div className="mt-2">
-              <input
-                id="Name"
-                name="Name"
-                type="text"
-                placeholder="Enter your name"
-                required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-              />
-            </div>
-          </div>
-
-          {/* Email field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-              />
-            </div>
-          </div>
-
-          {/* Password field */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
-            </label>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Confirm Password field */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
-              Confirm Password
-            </label>
-            <div className="mt-2">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                required
-                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Submit button */}
-          <div>
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-indigo-600"
-            >
-              Sign in
-            </button>
-          </div>
-        </form>
+        {/* Canvas avec animation */}
+        <canvas
+          ref={canvasRef}
+          width={300}
+          height={200}
+          className="border-2 border-gray-800 mt-6 rounded-lg shadow-lg"
+        ></canvas>
       </div>
     </div>
   );
