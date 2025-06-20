@@ -27,8 +27,14 @@ export default class Field {
 		this.ball.x = x;
 		this.ball.y = y;
 	}
-	bounceBallX() {
-		this.ball.dx *= -1;
+	bounceBallX(reset?: boolean) {
+		if (reset) {
+			this.ball.dx = 30;
+			this.ball.dy = 30;
+		}
+		this.ball.dx *= -2;
+		if (this.ball.dx > 200)
+			this.ball.dx = 200;
 	}
 	bounceBallY(...arg: bounceParam) {
 		const [player, hitpoint] = arg;
@@ -41,7 +47,7 @@ export default class Field {
 	private addScore(player: number) {
 		this.score[player]++;
 		this.setBallPos();
-		this.bounceBallX();
+		this.bounceBallX(true);
 	}
 
 	getBallData(): { radius: number; x: number; y: number } {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
 import Scoreboard from "../Components/Scoreboard";
+import Chat from "../Components/Chat";
 
 export interface Players {
 	p1: { size: number; y: number };
@@ -84,7 +85,7 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="h-screen w-screen flex flex-col items-center justify-center">
+			<div className="h-screen w-screen flex flex-col lg:flex-row items-center justify-center">
 				<button
 					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 					type="button"
@@ -92,8 +93,13 @@ export default function Game() {
 				>
 					{!state ? "start" : "stop"}
 				</button>
-				<Scoreboard />
-				<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
+				<div className="flex flex-col items-center justify-center p-4">
+					<Scoreboard />
+					<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
+				</div>
+				<div className="relative w-full lg:w-1/4">
+					<Chat />
+				</div>
 			</div>
 		</>
 	);
