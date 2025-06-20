@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
 import type { Players, Ball } from "../pages/Game";
+import Scoreboard from "./Scoreboard";
 
 interface prop {
 	ball: React.RefObject<Ball>;
@@ -27,6 +28,13 @@ function PongCanvas({ ball, players, scale }: prop) {
 			const p1Size = players.current.p1.size * scale;
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
+			c.beginPath();
+			c.font = "300px monospace";
+			c.fillStyle = "black";
+			c.textAlign = "right";
+			c.textBaseline = "bottom";
+			c.fillText(players.current.p1.score.toString(), canvas.width / 4, canvas.height);
+			c.fillText(players.current.p2.score.toString(), canvas.width, canvas.height);
 			c.beginPath();
 			c.rect(
 				playerWidth,

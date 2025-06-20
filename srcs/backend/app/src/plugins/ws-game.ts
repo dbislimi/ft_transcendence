@@ -17,8 +17,6 @@ const wsGame = async (fastify: FastifyInstance) => {
 			//console.log(msg);
 			if (msg.event === "start") games[uid].start();
 			else if (msg.event === "stop") games[uid].stop();
-			else if (msg.event === "mouse")
-				games[uid].setBall((msg.x - 80) / 4, (msg.y - 124) / 4);
 			else if (msg.event === "up") games[uid].up(msg.type);
 			else if (msg.event === "down") games[uid].down(msg.type);
 		});

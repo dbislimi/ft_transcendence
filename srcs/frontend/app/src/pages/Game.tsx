@@ -3,9 +3,15 @@ import PongCanvas from "../Components/PongCanvas";
 import Scoreboard from "../Components/Scoreboard";
 import Chat from "../Components/Chat";
 
+interface Player {
+	size: number;
+	y: number;
+	score: number;
+}
+
 export interface Players {
-	p1: { size: number; y: number };
-	p2: { size: number; y: number };
+	p1: Player;
+	p2: Player;
 }
 
 export interface Ball {
@@ -34,8 +40,8 @@ export default function Game() {
 	const [scale, setScale] = useState(4);
 	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50 });
 	const playersRef = useRef<Players>({
-		p1: { size: 25, y: 37.5 },
-		p2: { size: 25, y: 37.5 },
+		p1: { size: 25, y: 37.5, score: 0},
+		p2: { size: 25, y: 37.5, score: 0},
 	});
 	const onMessage = useCallback((event: MessageEvent) => {
 		const message = JSON.parse(event.data);
@@ -65,16 +71,17 @@ export default function Game() {
 		const keyup = (e: KeyboardEvent) => handleKey(e, "release");
 		const click = (e: MouseEvent) => {
 			console.log(e);
-			wsRef.current?.send(JSON.stringify({event: "mouse", x: e.clientX, y: e.clientY}))
-		}
+			wsRef.current?.send(
+				JSON.stringify({ event: "mouse", x: e.clientX, y: e.clientY })
+			);
+		};
 		//document.addEventListener("mousemove",click);
 		document.addEventListener("keydown", keydown);
 		document.addEventListener("keyup", keyup);
 		return () => {
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
-			document.removeEventListener("mousedown",click);
-
+			document.removeEventListener("mousedown", click);
 		};
 	}, []);
 	const handleClick = () => {
@@ -94,8 +101,12 @@ export default function Game() {
 					{!state ? "start" : "stop"}
 				</button>
 				<div className="flex flex-col items-center justify-center p-4">
-					<Scoreboard />
-					<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
+					{/* <Scoreboard /> */}
+					<PongCanvas
+						ball={ballRef}
+						players={playersRef}
+						scale={scale}
+					/>
 				</div>
 				<Chat />
 			</div>

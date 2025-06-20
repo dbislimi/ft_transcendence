@@ -4,6 +4,7 @@ import Ball from "./Ball.ts";
 interface PlayerData {
 	size: number;
 	y: number;
+	score: number;
 }
 
 type bounceParam = [player: null] | [player: Player, hitpoint: number];
@@ -33,8 +34,7 @@ export default class Field {
 			this.ball.dy = 30;
 		}
 		this.ball.dx *= -2;
-		if (this.ball.dx > 200)
-			this.ball.dx = 200;
+		if (this.ball.dx > 200) this.ball.dx = 200;
 	}
 	bounceBallY(...arg: bounceParam) {
 		const [player, hitpoint] = arg;
@@ -54,7 +54,10 @@ export default class Field {
 		return { radius: this.ballRadius, ...this.ball.getXY() };
 	}
 	getPlayersData(): { p1: PlayerData; p2: PlayerData } {
-		return { p1: this.players[0].getData(), p2: this.players[1].getData() };
+		return {
+			p1: { ...this.players[0].getData(), score: this.score[0] },
+			p2: { ...this.players[1].getData(), score: this.score[1] },
+		};
 	}
 	updateBallPosition(dt: number): void {
 		const { x, y } = this.ball.getXY();
@@ -96,23 +99,18 @@ export default class Field {
 		this.ball.x = nextX;
 		this.ball.y = nextY;
 		if (nextX + radius >= this.width) {
-			console.log("score 0");
-			this.addScore(0);
+=			this.addScore(0);
 		} else if (nextX - radius <= 0) {
-			console.log("score 1");
-			this.addScore(1);
+=			this.addScore(1);
 		}
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p2.bot) {
-
-			if (this.ball.y < p2.y){
+			if (this.ball.y < p2.y) {
 				p2.moveUp(true);
 				p2.moveDown(false);
-			}
-				
-			else if (this.ball.y > p2.y + p2.size){
+			} else if (this.ball.y > p2.y + p2.size) {
 				p2.moveUp(false);
 				p2.moveDown(true);
 			}
