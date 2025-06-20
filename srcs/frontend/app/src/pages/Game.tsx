@@ -85,7 +85,7 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="h-screen w-screen flex flex-col lg:flex-row items-center justify-center">
+			<div className="h-full w-screen flex flex-col lg:flex-row items-center justify-center">
 				<button
 					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 					type="button"
@@ -97,9 +97,7 @@ export default function Game() {
 					<Scoreboard />
 					<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
 				</div>
-				<div className="relative w-full lg:w-1/4">
-					<Chat />
-				</div>
+				<Chat />
 			</div>
 		</>
 	);

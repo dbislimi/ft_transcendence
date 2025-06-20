@@ -1,11 +1,14 @@
-export default function Header (){
+import { Link } from "react-router";
+import Logo from "../assets/logo.png";
+
+export default function Header() {
 	return (
-		<header className="w-full bg-white shadow p-4 flex justify-between items-center">
-			<nav className="md:flex gap-6 text-gray-600">
-				<a href="#" className="hover:text-blue-600">Accueil</a>
-				<a href="#" className="hover:text-blue-600">À propos</a>
-				<a href="#" className="hover:text-blue-600">Contact</a>
-			</nav>
+		<header className="w-full bg-white px-4 shadow flex justify-between items-center">
+				<Link to="/Registration">Sign in</Link>
+				<Link to={"/"} className="size-20">
+					<img src={Logo} className="size-full hover:scale-125 object-contain transition-transform duration-300"/>
+				</Link>
+				<button type="button">reglages</button>
 		</header>
-	)
+	);
 }

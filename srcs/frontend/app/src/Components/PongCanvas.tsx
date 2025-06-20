@@ -17,7 +17,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 		const canvas = canvasRef.current;
 		const fieldHeight = 100 * scale;
 		const fieldWidth = 200 * scale;
-		const playerWidth = (fieldWidth / 100);
+		const playerWidth = fieldWidth / 100;
 		if (!canvas) return;
 		canvas.width = fieldWidth;
 		canvas.height = fieldHeight;
@@ -27,6 +27,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 			const p1Size = players.current.p1.size * scale;
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
+			c.beginPath();
 			c.rect(
 				playerWidth,
 				players.current.p1.y * scale,
@@ -58,7 +59,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [scale]);
-	return <canvas ref={canvasRef} className="border-2"></canvas>;
+	return <canvas ref={canvasRef} className="border-2 rounded-lg"></canvas>;
 }
 
 export default memo(PongCanvas);
