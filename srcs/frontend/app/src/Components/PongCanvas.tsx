@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
 import type { Players, Ball } from "../pages/Game";
-import Scoreboard from "./Scoreboard";
 
 interface prop {
 	ball: React.RefObject<Ball>;
@@ -14,7 +13,6 @@ function PongCanvas({ ball, players, scale }: prop) {
 	const frameIdRef = useRef<number>(0);
 	console.log("pong rendered");
 	useEffect(() => {
-		console.log("useeffect");
 		const canvas = canvasRef.current;
 		const fieldHeight = 100 * scale;
 		const fieldWidth = 200 * scale;
@@ -29,12 +27,20 @@ function PongCanvas({ ball, players, scale }: prop) {
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
-			c.font = "300px monospace";
-			c.fillStyle = "black";
-			c.textAlign = "right";
-			c.textBaseline = "bottom";
-			c.fillText(players.current.p1.score.toString(), canvas.width / 4, canvas.height);
-			c.fillText(players.current.p2.score.toString(), canvas.width, canvas.height);
+			c.font = "300px fantasy";
+			c.fillStyle = "white";
+			c.textAlign = "center";
+			c.textBaseline = "middle";
+			c.fillText(
+				players.current.p1.score.toString(),
+				canvas.width / 4,
+				canvas.height / 2 + 30
+			);
+			c.fillText(
+				players.current.p2.score.toString(),
+				canvas.width * 3 / 4,
+				canvas.height / 2 + 30
+			);
 			c.beginPath();
 			c.rect(
 				playerWidth,
@@ -67,7 +73,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [scale]);
-	return <canvas ref={canvasRef} className="border-2 rounded-lg"></canvas>;
+	return <canvas ref={canvasRef} className="z-5 border-4 border-white  rounded-lg" />;
 }
 
 export default memo(PongCanvas);

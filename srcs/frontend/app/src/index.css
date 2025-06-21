@@ -2,5 +2,8 @@
 
 .form {
   max-width: 400px;
+}
 
+html, body {
+  height: 100%;
 }

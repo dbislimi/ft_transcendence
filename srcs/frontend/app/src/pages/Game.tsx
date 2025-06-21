@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
-import Scoreboard from "../Components/Scoreboard";
 import Chat from "../Components/Chat";
+import SpaceBackground from "../Components/SpaceBackground";
 
 interface Player {
 	size: number;
@@ -75,13 +75,11 @@ export default function Game() {
 				JSON.stringify({ event: "mouse", x: e.clientX, y: e.clientY })
 			);
 		};
-		//document.addEventListener("mousemove",click);
 		document.addEventListener("keydown", keydown);
 		document.addEventListener("keyup", keyup);
 		return () => {
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
-			document.removeEventListener("mousedown", click);
 		};
 	}, []);
 	const handleClick = () => {
@@ -92,7 +90,8 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="h-full w-screen flex flex-col lg:flex-row items-center justify-center">
+			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
+				<SpaceBackground />
 				<button
 					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 					type="button"
@@ -100,14 +99,11 @@ export default function Game() {
 				>
 					{!state ? "start" : "stop"}
 				</button>
-				<div className="flex flex-col items-center justify-center p-4">
-					{/* <Scoreboard /> */}
 					<PongCanvas
 						ball={ballRef}
 						players={playersRef}
 						scale={scale}
 					/>
-				</div>
 				<Chat />
 			</div>
 		</>

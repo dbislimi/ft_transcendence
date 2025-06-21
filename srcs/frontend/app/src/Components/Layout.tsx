@@ -5,7 +5,7 @@ export default function Layout() {
 	return (
 		<>
 			<Header />
-			<main>
+			<main className="h-full">
 				<Outlet />
 			</main>
 		</>
