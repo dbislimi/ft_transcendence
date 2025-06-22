@@ -18,20 +18,20 @@ export default function Chat() {
 	return (
 		<div className="fixed bottom-4 right-4 w-full max-w-md"	>
 				{isOpen && 
-				(<div className="mb-2 max-h-64 overflow-y-auto rounded-xl border p-4 shadow-lg">
+				(<div className="mb-2 max-h-64 overflow-y-auto rounded-xl border border-gray-400 p-4 shadow-lg">
 
 					{messages.map((msg, i) => (
-						<div key={i} className="mb-1 text-sm text-gray-800">{msg}</div>
+						<div key={i} className="mb-1 text-sm text-white">{msg}</div>
 					))}
 				</div>)}
-			<div className="flex items-center gap-2 border rounded-xl px-3 py-2 shadow-md">
+			<div className="flex items-center gap-2 border border-gray-400 rounded-xl px-3 py-2 shadow-md">
 				<input
 					type="text"
 					placeholder="Type here ..."
 					value={input}
 					onChange={e => setInput(e.target.value)}
 					onKeyDown={e => {if (e.key === 'Enter') handleSend();}}
-					className="flex-1 outline-none"
+					className="flex-1 outline-none text-white"
 				></input>
 				<button
 					type="button"
