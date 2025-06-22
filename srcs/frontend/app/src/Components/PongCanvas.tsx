@@ -27,7 +27,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
-			c.font = "300px fantasy";
+			c.font = "300px Audiowide";
 			c.fillStyle = "white";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
@@ -41,6 +41,8 @@ function PongCanvas({ ball, players, scale }: prop) {
 				canvas.width * 3 / 4,
 				canvas.height / 2 + 30
 			);
+			c.fillStyle = 'rgba(0,0,0,0.8)'
+			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.rect(
 				playerWidth,
