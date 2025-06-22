@@ -20,9 +20,14 @@ class Star {
 		this.z = Math.random() * this.maxDepth;
 		this.color = colors[Math.floor(Math.random() * colors.length)];
 	}
+	getScreenCoords(z: number){
+		const offsetX = this.maxDepth / 2 * (this.x / z) + this.width / 2;
+		const offsetY = this.maxDepth / 2 * (this.y / z) + this.height / 2;
+		return {offsetX, offsetY};
+	}
 	update(){
 		this.z -= this.speed;
-		if (this.z <= 0)
+		if (this.z <= 10)
 			this.reset();
 	}
 	reset() {
@@ -32,6 +37,7 @@ class Star {
 		this.color = colors[Math.floor(Math.random() * colors.length)];
 	}
 	draw(c: CanvasRenderingContext2D){
+		const {offsetX:x1, offsetY:y1} = this.getScreenCoords(this.z);
 		const offsetX = this.maxDepth / 2 * (this.x / this.z) + this.width / 2;
 		const offsetY = this.maxDepth / 2 * (this.y / this.z) + this.height / 2;
 		const minRadius = 0.2;
@@ -41,8 +47,18 @@ class Star {
 		const blur = normZ * 10;
 		c.shadowBlur = blur;
 		c.shadowColor = this.color;
+		if (normZ > 0.7){
+			const {offsetX:x2, offsetY:y2} = this.getScreenCoords(this.z + normZ * 100);
+			c.beginPath();
+			c.moveTo(x2, y2);
+			c.lineTo(x1, y1);
+			c.strokeStyle = 'rgba(255,255,255,0.6)';
+			c.lineWidth = radius;
+			c.stroke();
+		}
 		c.beginPath();
-		c.arc(offsetX, offsetY, radius, 0, 2 * Math.PI, false);
+		c.arc(x1, y1, radius, 0, 2 * Math.PI, false);
+		c.fillStyle = this.z <= 100 ? 'red' : 'white';
 		c.fill();
 		c.shadowBlur = 0;
 	}
@@ -61,7 +77,7 @@ export default function SpaceBackground() {
 			canvas.width = window.innerWidth;
 			canvas.height = window.innerHeight - header.offsetHeight;
 			Stars = [];
-			for (let i = 0; i < 400; ++i) {
+			for (let i = 0; i < 500; ++i) {
 				Stars.push(new Star(canvas));
 			}
 		};
@@ -69,7 +85,7 @@ export default function SpaceBackground() {
 		if (!c) return;
 		
 		const loop = () => {
-			c.fillStyle = "rgba(0,0,0,0.1)";
+			c.fillStyle = "rgba(0,0,0,0.2)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			for (let i = 0; i < Stars.length; ++i) {
 				c.fillStyle = "white";
