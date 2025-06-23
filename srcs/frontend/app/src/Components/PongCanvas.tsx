@@ -67,8 +67,11 @@ function PongCanvas({ ball, players, scale }: prop) {
 				2 * Math.PI,
 				false
 			);
-			c.fillStyle = "red";
+			c.shadowBlur = 10;
+			c.shadowColor =  "rgba(102, 14, 237, 1)";
+			c.fillStyle = "rgba(189, 45, 237, 1)";
 			c.fill();
+			c.shadowBlur = 0;
 			frameIdRef.current = requestAnimationFrame(loop);
 		};
 		frameIdRef.current = requestAnimationFrame(loop);

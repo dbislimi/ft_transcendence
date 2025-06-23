@@ -30,8 +30,8 @@ export default class Field {
 	}
 	bounceBallX(reset?: boolean) {
 		if (reset) {
-			this.ball.dx = 30;
-			this.ball.dy = 30;
+			this.ball.dx = Math.random() - 0.5 < 0.5 ? -30 : 30;
+			this.ball.dy = Math.random() * 120 - 60;
 		}
 		this.ball.dx *= -2;
 		if (this.ball.dx > 200) this.ball.dx = 200;
@@ -98,11 +98,8 @@ export default class Field {
 		}
 		this.ball.x = nextX;
 		this.ball.y = nextY;
-		if (nextX + radius >= this.width)
-			this.addScore(0);
-		else if (nextX - radius <= 0)
-			this.addScore(1);
-
+		if (nextX + radius >= this.width) this.addScore(0);
+		else if (nextX - radius <= 0) this.addScore(1);
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };

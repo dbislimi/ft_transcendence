@@ -58,7 +58,7 @@ class Star {
 		}
 		c.beginPath();
 		c.arc(x1, y1, radius, 0, 2 * Math.PI, false);
-		c.fillStyle = this.z <= 100 ? 'red' : 'white';
+		c.fillStyle = 'white';
 		c.fill();
 		c.shadowBlur = 0;
 	}
