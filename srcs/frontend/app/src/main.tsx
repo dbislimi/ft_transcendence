@@ -8,6 +8,7 @@ const router = createBrowserRouter([
 	{ path: "/", element: <pages.Home /> },
 	{ path: "/Connection", element: <pages.Connection /> },
 	{ path: "/Registration", element: <pages.Registration /> },
+	{ path: "/auth", element: <pages.auth /> },
 	{ path: "*", element: <pages.NotFoundPage /> },
 ]);
 
