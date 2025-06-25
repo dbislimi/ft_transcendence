@@ -13,13 +13,15 @@ const router = createBrowserRouter([
 			{ path: "/Connection", element: <pages.Connection /> },
 			{ path: "/Registration", element: <pages.Registration /> },
 			{ path: "/game", element: <pages.Game /> },
-			{ path: "*", element: <pages.NotFoundPage /> },
+			{ path: "/auth", element: <pages.auth /> },
+      { path: "*", element: <pages.NotFoundPage /> },
 		],
 	},
 ]);
 
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<RouterProvider router={router} />
-	</StrictMode>
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
 );
+
