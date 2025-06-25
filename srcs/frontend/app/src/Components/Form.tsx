@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface UserInfos {
   name: string;
@@ -154,6 +154,73 @@ export default function Form({ type }: Props) {
               Sign in
             </button>
           </div>
+        </form>
+      </div>
+
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
+              Name
+            </label>
+            <input
+              id="Name"
+              name="Name"
+              type="text"
+              placeholder="Enter your name"
+              required
+              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              required
+              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              required
+              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
+              required
+              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
+          </div>
+
+          <button type="submit" className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md">
+            Sign in
+          </button>
         </form>
       </div>
     </div>
