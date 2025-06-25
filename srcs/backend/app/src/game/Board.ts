@@ -9,7 +9,7 @@ interface PlayerData {
 
 type bounceParam = [player: null] | [player: Player, hitpoint: number];
 
-export default class Field {
+export default class Board {
 	private readonly height: number;
 	private readonly width: number;
 	private playerSpeed: number = 100;
@@ -30,11 +30,11 @@ export default class Field {
 	}
 	bounceBallX(reset?: boolean) {
 		if (reset) {
-			this.ball.dx = Math.random() - 0.5 < 0.5 ? -30 : 30;
+			this.ball.dx = this.ball.dx < 0 ? -30 : 30;
 			this.ball.dy = Math.random() * 120 - 60;
 		}
-		this.ball.dx *= -2;
-		if (this.ball.dx > 200) this.ball.dx = 200;
+		this.ball.dx *= -1;
+		if (this.ball.dx <= 30) this.ball.dx *= 1.5;
 	}
 	bounceBallY(...arg: bounceParam) {
 		const [player, hitpoint] = arg;
@@ -49,7 +49,11 @@ export default class Field {
 		this.setBallPos();
 		this.bounceBallX(true);
 	}
-
+	getBallSpeed(): number {
+		const pxlSecond = Math.hypot(this.ball.dx, this.ball.dy);
+		const pxlMeter = 50;
+		return pxlSecond / pxlMeter;
+	}
 	getBallData(): { radius: number; x: number; y: number } {
 		return { radius: this.ballRadius, ...this.ball.getXY() };
 	}
@@ -104,10 +108,12 @@ export default class Field {
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p2.bot) {
-			if (this.ball.y < p2.y) {
+			// p2.moveUp(false);
+			// p2.moveDown(false);
+			if (this.ball.y + this.ball.radius < p2.y) {
 				p2.moveUp(true);
 				p2.moveDown(false);
-			} else if (this.ball.y > p2.y + p2.size) {
+			} else if (this.ball.y - this.ball.radius > p2.y + p2.size) {
 				p2.moveUp(false);
 				p2.moveDown(true);
 			}

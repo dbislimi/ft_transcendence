@@ -1,17 +1,17 @@
 import type WebSocket from "ws";
-import Field from "./Field.ts";
+import Board from "./Board.ts";
 
 export default class Game {
-	private readonly field: Field;
+	private readonly board: Board;
 	private prevTime!: number;
 	private readonly ws: WebSocket;
 	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(websocket: WebSocket) {
-		this.field = new Field();
+		this.board = new Board();
 		this.ws = websocket;
-		this.field.connect();
+		this.board.connect();
 	}
 
 	public start(): void {
@@ -25,30 +25,31 @@ export default class Game {
 		}
 	}
 	up(type: string) {
-		if (!this.field.players[0].up && type === "press")
-			this.field.players[0].moveUp(true);
-		else if (this.field.players[0].up && type === "release")
-			this.field.players[0].moveUp(false);
+		if (!this.board.players[0].up && type === "press")
+			this.board.players[0].moveUp(true);
+		else if (this.board.players[0].up && type === "release")
+			this.board.players[0].moveUp(false);
 	}
 	down(type: string) {
-		if (!this.field.players[0].down && type === "press")
-			this.field.players[0].moveDown(true);
-		else if (this.field.players[0].down && type === "release")
-			this.field.players[0].moveDown(false);
+		if (!this.board.players[0].down && type === "press")
+			this.board.players[0].moveDown(true);
+		else if (this.board.players[0].down && type === "release")
+			this.board.players[0].moveDown(false);
 	}
 	setBall(x: number, y: number) {
-		this.field.setBallPos(x, y);
+		this.board.setBallPos(x, y);
 	}
+
 
 	private gameLoop(): void {
 		const now = performance.now();
 		const deltaTime = (now - this.prevTime) / 1000;
 		this.prevTime = now;
 
-		this.field.update(deltaTime);
+		this.board.update(deltaTime);
 		const data = {
-			ball: this.field.getBallData(),
-			players: this.field.getPlayersData(),
+			ball: { ...this.board.getBallData(), speed: (this.board.getBallSpeed() * 3.6).toFixed(2) },
+			players: this.board.getPlayersData(),
 		};
 		this.ws.send(JSON.stringify(data));
 

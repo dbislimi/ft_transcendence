@@ -43,6 +43,15 @@ function PongCanvas({ ball, players, scale }: prop) {
 			);
 			c.fillStyle = 'rgba(0,0,0,0.8)'
 			c.fillRect(0, 0, canvas.width, canvas.height);
+			c.font = "15px Audiowide";
+			c.fillStyle = "white";
+			c.textAlign = "center";
+			c.textBaseline = "middle";
+			c.fillText(
+				ball.current.speed.toString() + " km/h",
+				canvas.width / 2,
+				20
+			);
 			c.beginPath();
 			c.rect(
 				playerWidth,
@@ -56,7 +65,9 @@ function PongCanvas({ ball, players, scale }: prop) {
 				playerWidth,
 				p2Size
 			);
-			c.fillStyle = "blue";
+			c.fillStyle = "rgba(42, 233, 255, 0.8)";
+			c.shadowBlur = 10;
+			c.shadowColor = "white";
 			c.fill();
 			c.beginPath();
 			c.arc(

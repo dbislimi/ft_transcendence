@@ -18,6 +18,7 @@ export interface Ball {
 	radius: number;
 	x: number;
 	y: number;
+	speed: number;
 }
 
 function useWebsocket(onMessage: (event: MessageEvent) => void) {
@@ -38,7 +39,7 @@ function useWebsocket(onMessage: (event: MessageEvent) => void) {
 export default function Game() {
 	const [state, setState] = useState(false);
 	const [scale, setScale] = useState(4);
-	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50 });
+	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50, speed:0 });
 	const playersRef = useRef<Players>({
 		p1: { size: 25, y: 37.5, score: 0},
 		p2: { size: 25, y: 37.5, score: 0},
@@ -69,12 +70,7 @@ export default function Game() {
 			handleKey(e, "press");
 		};
 		const keyup = (e: KeyboardEvent) => handleKey(e, "release");
-		const click = (e: MouseEvent) => {
-			console.log(e);
-			wsRef.current?.send(
-				JSON.stringify({ event: "mouse", x: e.clientX, y: e.clientY })
-			);
-		};
+
 		document.addEventListener("keydown", keydown);
 		document.addEventListener("keyup", keyup);
 		return () => {

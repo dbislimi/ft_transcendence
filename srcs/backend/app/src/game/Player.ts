@@ -1,4 +1,4 @@
-import Field from "./Field.ts";
+import Board from "./Board.ts";
 
 export default class Player {
 	private static playerWidth: number;
@@ -9,8 +9,8 @@ export default class Player {
 	private movingDown: boolean = false;
 	private isBot: boolean = true;
 
-	constructor(field: Field, id: 0 | 1) {
-		this.playerSize = field.H / 4;
+	constructor(field: Board, id: 0 | 1) {
+		this.playerSize = field.H / 6;
 		this.yPos = field.H / 2 - this.playerSize / 2;
 		Player.playerWidth = field.W / 100;
 		if (id == 0) this.xPos = Player.playerWidth;

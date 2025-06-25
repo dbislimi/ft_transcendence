@@ -47,7 +47,7 @@ class Star {
 		const blur = normZ * 10;
 		c.shadowBlur = blur;
 		c.shadowColor = this.color;
-		if (normZ > 0.7){
+		if (normZ > 0.4){
 			const {offsetX:x2, offsetY:y2} = this.getScreenCoords(this.z + normZ * 100);
 			c.beginPath();
 			c.moveTo(x2, y2);
@@ -85,7 +85,7 @@ export default function SpaceBackground() {
 		if (!c) return;
 		
 		const loop = () => {
-			c.fillStyle = "rgba(0,0,0,0.2)";
+			c.fillStyle = "rgba(0,0,0,0.3)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			for (let i = 0; i < Stars.length; ++i) {
 				c.fillStyle = "white";

@@ -7,6 +7,7 @@ services:
       - /usr/app/node_modules
     ports:
       - 3000:3000
+    restart: unless-stopped
   front:
     build: ./frontend
     container_name: front
@@ -17,3 +18,4 @@ services:
       - 5173:5173
     depends_on:
       - back
+    restart: unless-stopped
