@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Connection() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,7 +72,7 @@ export default function Connection() {
         // alert("Connexion réussie");
         // Tu peux stocker le token ici, si tu veux
         // localStorage.setItem("token", data.token);
-        navigate("/Dashboard");
+        navigate("/auth");
       } else {
         alert("Identifiants invalides");
       }
