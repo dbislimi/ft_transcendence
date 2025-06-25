@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 // Import des modules serveur et sécurité
 import bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
+import dotenv from 'dotenv';
 
 const fastify = Fastify({
 	logger: {
@@ -21,7 +22,8 @@ const fastify = Fastify({
 fastify.register(websocket);
 fastify.register(wsGame);
 
-const JWT_SECRET = 'super_secret_key'; // À stocker dans un fichier .env pour plus de sécurité
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET!; // À stocker dans un fichier .env pour plus de sécurité
 
 // Récupère le dossier courant (utile pour importer la DB)
 const __filename = fileURLToPath(import.meta.url);
