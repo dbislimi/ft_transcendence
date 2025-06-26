@@ -4,16 +4,24 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
+import { request } from 'http';
+
+const fastify = Fastify({
+    logger: {
+        transport: {
+            target: "pino-pretty",
+        },
+    },
+});
 
 const db = (await import(path.join(__dirname, '..', 'index.js'))).default;
 const crypto = require('crypto');
 
-function GenerateOtp(){
+export function GenerateOtp(){
     return crypto.randomInt(100000, 999999).toString();
 }
 
-async function Send2faMail() {
-    const otp = GenerateOtp();
+export async function Send2faMail(email: string, otp: string) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -24,7 +32,7 @@ async function Send2faMail() {
 
     const Message = {
         from: '"TEST" <Transcendance06000@gmail.com',
-        to: 'poymail',//le mail du poy arecup dans la db ?
+        to: email,
         subject: 'votre code a 6 chiffres:',
         text: 'code : ' + otp,
     };
@@ -37,3 +45,10 @@ async function Send2faMail() {
         return false;
     }
 }
+
+fastify.post('/verify-2fa', async (request, reply) => {
+    const {userId, code } = request.body as {
+        userId: number;
+        code: string;
+    }
+})

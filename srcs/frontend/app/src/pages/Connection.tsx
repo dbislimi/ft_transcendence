@@ -67,13 +67,18 @@ export default function Connection() {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
       if (response.ok) {
-        // const data = await response.json();
-        // alert("Connexion réussie");
-        // Tu peux stocker le token ici, si tu veux
-        // localStorage.setItem("token", data.token);
-        navigate("/auth");
-      } else {
+        if (data.requires2FA){
+          localStorage.setItem("for2FaUserId", data.userID.toString());
+          navigate("/auth");
+        }
+        else{
+          localStorage.setItem("TokenJwt", data.token);
+          navigate("/Dashboard");
+        }
+      } 
+      else {
         alert("Identifiants invalides");
       }
     } catch (error) {

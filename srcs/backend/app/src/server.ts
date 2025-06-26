@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
 import dotenv from 'dotenv';
+import { GenerateOtp, Send2faMail } from './2fa.ts';
 
 const fastify = Fastify({
 	logger: {
@@ -75,13 +76,14 @@ fastify.post('/register', async (request, reply) => {
   }
 });
 
-// Connexion utilisateur + génération du JWT
+// Connexion utilisateur + génération du JWT + envoi mail 2fa
 fastify.post('/login', async (request, reply) => {
   const { email, password } = request.body as {
     email: string;
     password: string;
   };
 
+  
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err: any, user: any) => {
     if (err) {
       return reply.code(500).send({ error: 'Erreur serveur' });
@@ -94,6 +96,15 @@ fastify.post('/login', async (request, reply) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return reply.code(401).send({ error: 'Mot de passe invalide' });
+    }
+
+    if (user.twoFAEnabled) {
+      const otp = GenerateOtp();
+
+      db.run('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
+      await Send2faMail(user.email, otp);
+      // Retourne le fait que 2FA requis
+      return reply.send({ success: true, requires2FA: true, userId: user.id });
     }
 
     const token = jwt.sign(
