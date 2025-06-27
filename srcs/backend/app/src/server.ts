@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 
 // Import des modules serveur et sécurité
 import bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
+import jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
 import dotenv from 'dotenv';
 import { GenerateOtp, Send2faMail } from './2fa.ts';
 
@@ -88,7 +88,6 @@ fastify.post('/login', async (request, reply) => {
     if (err) {
       return reply.code(500).send({ error: 'Erreur serveur' });
     }
-
     if (!user) {
       return reply.code(401).send({ error: 'Utilisateur non trouvé' });
     }

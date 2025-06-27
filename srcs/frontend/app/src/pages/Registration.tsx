@@ -85,7 +85,7 @@ export default function Registration() {
 
       if (response.ok) {
         alert("Inscription réussie");
-        navigate("/Confirmation");
+        navigate("/Connection");
       } else {
         alert("Erreur serveur");
       }

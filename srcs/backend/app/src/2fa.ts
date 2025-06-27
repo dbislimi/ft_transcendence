@@ -5,8 +5,10 @@ import cors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 import { request } from 'http';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv' 
+import crypto from 'crypto'
+
 
 const fastify = Fastify({
     logger: {
@@ -19,8 +21,10 @@ const fastify = Fastify({
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const db = (await import(path.join(__dirname, '..', 'index.js'))).default;
-const crypto = require('crypto');
+
 
 export function GenerateOtp(){
     return crypto.randomInt(100000, 999999).toString();
