@@ -5,6 +5,8 @@ import cors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 import { request } from 'http';
+import * as jwt from 'jsonwebtoken';
+import dotenv from 'dotenv' 
 
 const fastify = Fastify({
     logger: {
@@ -13,6 +15,9 @@ const fastify = Fastify({
         },
     },
 });
+
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 const db = (await import(path.join(__dirname, '..', 'index.js'))).default;
 const crypto = require('crypto');
@@ -46,9 +51,31 @@ export async function Send2faMail(email: string, otp: string) {
     }
 }
 
-fastify.post('/verify-2fa', async (request, reply) => {
+fastify.post('/check2fa', async (request, reply) => {
     const {userId, code } = request.body as {
         userId: number;
         code: string;
+    };
+
+    db.get('SELECT * FROM users WHERE id = ?', [userId], (err: any, user: any) => {
+    if (err) {
+      return reply.code(500).send({ error: 'Erreur serveur' });
     }
-})
+    if (!user) {
+      return reply.code(401).send({ error: 'Utilisateur non trouvé' });
+    }
+    if (user.twoFAOtp !== code){
+        return reply.code(401).send({error : 'code incorrect' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    db.run('UPDATE users SET twoFAOtp = NULL WHERE id = ?', [user.id]);
+
+    return reply.send({success: true, token});
+    });
+});
