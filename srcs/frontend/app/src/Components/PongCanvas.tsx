@@ -88,7 +88,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, [scale]);
+	}, [ball, players, scale]);
 	return <canvas ref={canvasRef} className="z-5 border-4 border-white  rounded-lg" />;
 }
 

@@ -3,18 +3,18 @@ import Board from "./Board.ts";
 export default class Player {
 	private static playerWidth: number;
 	private playerSize: number;
-	private xPos: number;
-	private yPos: number;
+	x: number;
+	y: number;
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
-	private isBot: boolean = true;
+	isBot: boolean = true;
 
 	constructor(field: Board, id: 0 | 1) {
 		this.playerSize = field.H / 6;
-		this.yPos = field.H / 2 - this.playerSize / 2;
+		this.y = field.H / 2 - this.playerSize / 2;
 		Player.playerWidth = field.W / 100;
-		if (id == 0) this.xPos = Player.playerWidth;
-		else this.xPos = field.W - 2 * Player.playerWidth;
+		if (id == 0) this.x = Player.playerWidth;
+		else this.x = field.W - 2 * Player.playerWidth;
 	}
 
 	public moveUp(state: boolean) {
@@ -25,15 +25,9 @@ export default class Player {
 	}
 
 	getData(): { size: number; y: number } {
-		return { size: this.playerSize, y: this.yPos };
+		return { size: this.playerSize, y: this.y };
 	}
 
-	get x() {
-		return this.xPos;
-	}
-	get y() {
-		return this.yPos;
-	}
 	get width() {
 		return Player.playerWidth;
 	}
@@ -45,17 +39,5 @@ export default class Player {
 	}
 	get down() {
 		return this.movingDown;
-	}
-	get bot() {
-		return this.isBot;
-	}
-	set bot(bool: boolean) {
-		this.isBot = bool;
-	}
-	set x(x: number) {
-		this.xPos = x;
-	}
-	set y(y: number) {
-		this.yPos = y;
 	}
 }

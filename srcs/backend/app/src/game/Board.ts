@@ -15,7 +15,7 @@ export default class Board {
 	private playerSpeed: number = 100;
 	players: Player[];
 	private ball: Ball;
-	private score: number[] = [0, 0];
+	private score: [number, number] = [0, 0];
 
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
@@ -107,7 +107,7 @@ export default class Board {
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p2.bot) {
+		if (p2.isBot) {
 			// p2.moveUp(false);
 			// p2.moveDown(false);
 			if (this.ball.y + this.ball.radius < p2.y) {
@@ -137,8 +137,14 @@ export default class Board {
 		}
 	}
 	update(dt: number) {
-		this.updatePlayersPosition(dt);
-		this.updateBallPosition(dt);
+		this.updatePlayersPosition(100);
+		this.updateBallPosition(100);
+	}
+	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
+		return { up: this.players[id].up, down: this.players[id].down };
+	}
+	connect(player: 0 | 1) {
+		this.players[player].isBot = false;
 	}
 	get H(): number {
 		return this.height;
@@ -149,10 +155,7 @@ export default class Board {
 	get ballRadius() {
 		return this.ball.radius;
 	}
-	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
-		return { up: this.players[id].up, down: this.players[id].down };
-	}
-	connect() {
-		this.players[0].bot = false;
+	get scores(): [p1: number, p2: number]{
+		return this.score;
 	}
 }

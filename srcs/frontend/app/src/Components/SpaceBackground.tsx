@@ -38,8 +38,6 @@ class Star {
 	}
 	draw(c: CanvasRenderingContext2D){
 		const {offsetX:x1, offsetY:y1} = this.getScreenCoords(this.z);
-		const offsetX = this.maxDepth / 2 * (this.x / this.z) + this.width / 2;
-		const offsetY = this.maxDepth / 2 * (this.y / this.z) + this.height / 2;
 		const minRadius = 0.2;
 		const maxRadius = 2;
 		const normZ = (this.maxDepth - this.z) / this.maxDepth;
