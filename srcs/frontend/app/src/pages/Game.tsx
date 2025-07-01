@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
+import GameMenu from "../Components/GameMenu";
 
 interface Player {
 	size: number;
@@ -21,11 +22,11 @@ export interface Ball {
 	speed: number;
 }
 
-function useWebsocket(onMessage: (event: MessageEvent) => void) {
+function useWebsocket(api: string, onMessage: (event: MessageEvent) => void) {
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const ws = new WebSocket("ws://localhost:3000/ws/game");
+		const ws = new WebSocket("ws://localhost:3000/" + api + "/ws");
 		wsRef.current = ws;
 		ws.onopen = () => console.log("ws opened");
 		ws.onclose = () => console.log("ws closed");
@@ -33,7 +34,7 @@ function useWebsocket(onMessage: (event: MessageEvent) => void) {
 		return () => {
 			ws.close();
 		};
-	}, [onMessage]);
+	}, [onMessage, api]);
 	return wsRef;
 }
 
@@ -56,7 +57,7 @@ export default function Game() {
 			playersRef.current = message.data.players;
 		}
 	}, []);
-	const wsRef = useWebsocket(onMessage);
+	const wsRef = useWebsocket("game", onMessage);
 
 	useEffect(() => {
 		if (winner !== null) return;
@@ -105,7 +106,7 @@ export default function Game() {
 			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
 				<SpaceBackground />
 
-				{winner === null ? (
+				{/* {winner === null ? (
 					<button
 						className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 						type="button"
@@ -126,8 +127,9 @@ export default function Game() {
 							Replay
 						</button>
 					</div>
-				)}
-				<PongCanvas ball={ballRef} players={playersRef} scale={scale} />
+				)} */}
+				<GameMenu />
+				{/* <PongCanvas ball={ballRef} players={playersRef} scale={scale} /> */}
 				<Chat />
 			</div>
 		</>
