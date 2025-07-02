@@ -8,7 +8,9 @@ export default function Header() {
 				<Link to={"/"} className="size-20">
 					<img src={Logo} className="size-full hover:scale-125 object-contain transition-transform duration-300"/>
 				</Link>
-				<button type="button">reglages</button>
+				<Link to="/reglages" className="text-black-500 hover:underline">
+				reglages
+				</Link>
 		</header>
 	);
 }

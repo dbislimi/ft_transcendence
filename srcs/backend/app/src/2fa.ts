@@ -83,3 +83,7 @@ fastify.post('/check2fa', async (request, reply) => {
     return reply.send({success: true, token});
     });
 });
+
+fastify.post('/reglages', async (request, reply) => {
+    
+})

@@ -6,7 +6,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("TokenJwt");
 
     if (!token) {
       navigate("/login");

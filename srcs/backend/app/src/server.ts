@@ -93,15 +93,20 @@ fastify.post('/login', async (request, reply) => {
     const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
 
     if (!user) {
+      console.log("je suis dans l'erreur 1");
       return reply.code(401).send({ error: 'Utilisateur non trouvé' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log("USER PASSWORD : " + user.password);
+    console.log("PASSWORD DE BASE ICI : " + password);
     if (!isPasswordValid) {
+      console.log("je suis dans l'erreur 2");
       return reply.code(401).send({ error: 'Mot de passe invalide' });
     }
 
     if (user.twoFAEnabled) {
+      console.log("JE SUIS RENTRER ICI ALORS QU'IL FAUT PAS");
       const otp = GenerateOtp();
       await dbRun('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
       await Send2faMail(user.email, otp);

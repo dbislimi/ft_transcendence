@@ -69,7 +69,6 @@ export default function Connection() {
       });
       console.log("le mail en gros PITIE " + email + " " + password);
       const data = await response.json();
-      console.log("TA GRAND MERE ");
       if (response.ok) {
           console.log("TA GRAND MERE LA FOLLE");
         if (data.requires2FA){
@@ -85,7 +84,6 @@ export default function Connection() {
         alert("Identifiants invalides");
       }
     } catch (error) {
-      console.log("EXPLIQUE TA TANTE EXPLIQUE");
       alert("Erreur réseau");
     }
   };
