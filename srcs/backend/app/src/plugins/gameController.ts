@@ -4,8 +4,7 @@ import Game from "../game/Game.ts";
 import type WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import type { FastifyPluginAsync } from "fastify";
-
-type games = Record<string, Game>;
+import { Games } from "../game/Games.ts";
 
 const responseSchema = {
 	204: { type: "null" },
@@ -21,54 +20,52 @@ const responseSchema = {
 const paramsSchema = {
 	type: "object",
 	properties: {
-		opt: { type: 'string', enum: ['online', 'friend', 'solo'] },
+		opt: { type: "string", enum: ["online", "offline"] },
 	},
 	required: ["opt"],
 };
 
+type HandlerKey = 'online' | 'offline';
+
 interface Params {
-	opt: string;
+	opt: HandlerKey;
 }
 
 const handlers = {
-	online: (socket: WebSocket, onlineGames: games) => {
-		socket.send(JSON.stringify({event: 'searching'}));
-		while (onlineGames.size == 0 ||)
-	}
-}
+	online: (socket: WebSocket, Games: Games) => {
+		return Games.startOnline(socket);
+	},
+	offline: () => { return {playerId: 1, gameId: 1}}
+};
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance,
 	options
 ) => {
-	let games: games = {};
-	let onlineGames: games = {};
-
+	const games: Games = new Games();
 	fastify.get(
 		"/:opt",
 		{ websocket: true, schema: { params: paramsSchema } },
 		(socket: WebSocket, req: FastifyRequest<{ Params: Params }>) => {
-			const opt = req.params.opt;
-
-			const uid = uuidv4().slice(0, 8);
-			console.log(uid);
-			games[uid] = new Game(socket);
+			const opt: HandlerKey = req.params.opt;
+			
+			const { playerId, gameId } = handlers[opt](socket, games);
+		
 			socket.on("message", (message) => {
 				const msg = JSON.parse(message.toString());
 				//console.log(msg);
-				if (msg.event === "start") games[uid].start();
-				else if (msg.event === "stop") games[uid].pause();
-				else if (msg.event === "up") games[uid].up(msg.type);
-				else if (msg.event === "down") games[uid].down(msg.type);
+				if (msg.event === "start") games.getRoom(gameId).start();
+				else if (msg.event === "stop") games.getRoom(gameId).pause();
+				else if (msg.event === "up") games.getRoom(gameId).up(msg.type, playerId);
+				else if (msg.event === "down") games.getRoom(gameId).down(msg.type, playerId);
 				else if (msg.event === "restart") {
-					delete games[uid];
-					games[uid] = new Game(socket);
+					games.removeRoom(gameId);
 				}
 			});
 			socket.on("close", () => {
-				console.log("close ", uid);
-				games[uid].pause();
-				delete games[uid];
+				console.log("close ", socket);
+				games.getRoom(gameId).pause();
+				games.removeRoom(gameId);
 			});
 		}
 	);

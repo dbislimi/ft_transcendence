@@ -144,10 +144,12 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
-	connect(player: 0 | 1) {
-		this.players[player].isBot = false;
-		if (!this.players[0].isBot && !this.players[1].isBot)
-			this.full = true;
+	connect(players: 1 | 2) {
+		this.players[0].isBot = false;
+		if (players === 2)
+			this.players[1].isBot = false;
+		//if (!this.players[0].isBot && !this.players[1].isBot)
+		//	this.full = true;
 	}
 	disconnect(player: 0 | 1) {
 		this.players[player].isBot = true;

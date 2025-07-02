@@ -1,21 +1,31 @@
-import { v4 as uuidv4 } from "uuid";
 import Game from "./Game";
+import WebSocket from "ws";
 
 export class Games {
-	private solo: Record<string, Game> = {};
-	private online: Record<string, Game | null> = {};
-	private isSearching: boolean = false;
+	//private solo: Record<string, Game> = {};
+	private rooms: Record<number, Game> = {};
 	private wsWaiting: WebSocket[] = [];
+	private nb: number = 0;
 
-	startOnline() {
-		if (this.isSearching === false) {
-			const uid = uuidv4();
-			this.online[uid] = null;
-			this.isSearching = true;
+	startOnline(ws: WebSocket): {playerId: 0 | 1, gameId: number} {
+		ws.send(JSON.stringify({event: 'searching'}));
+		const gameId: number = this.nb;
+		if (this.wsWaiting.length === 0) {
+			this.wsWaiting.push(ws);
+			return {playerId: 0, gameId: gameId};
 		}
-		else {
-			const room = Object.keys(this.online).find(key => this.online[key] === null);
-			if (room) this.online[room] = new Game();
+		else if (this.wsWaiting.length){
+			const player: WebSocket | undefined = this.wsWaiting.shift();
+			if (player)
+				this.rooms[this.nb++] = new Game(player, ws);
 		}
+		return {playerId: 1, gameId: gameId};
+	}
+
+	getRoom(id: number){
+		return this.rooms[id];
+	}
+	removeRoom(id: number){
+		delete this.rooms[id];
 	}
 }

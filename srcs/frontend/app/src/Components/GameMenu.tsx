@@ -10,7 +10,9 @@ export default function GameMenu() {
 		if (response === null) console.log("found");
 		else console.log("pas found");
 	}
-	const handleOnline = 
+	const handleOnline = () => {
+		
+	}
 	return (
 		<>
 			<div className="absolute flex flex-col space-y-2 items-center space-x-3 p-10 border border-white size-100 bg-black opacity-80">
