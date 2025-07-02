@@ -12,6 +12,8 @@ import jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
 import dotenv from 'dotenv';
 import { GenerateOtp, Send2faMail } from './2fa.ts';
 
+import util from 'util';
+
 const fastify = Fastify({
 	logger: {
 		transport: {
@@ -77,17 +79,19 @@ fastify.post('/register', async (request, reply) => {
 });
 
 // Connexion utilisateur + génération du JWT + envoi mail 2fa
+
 fastify.post('/login', async (request, reply) => {
   const { email, password } = request.body as {
     email: string;
     password: string;
   };
 
-  
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err: any, user: any) => {
-    if (err) {
-      return reply.code(500).send({ error: 'Erreur serveur' });
-    }
+  const dbGet = util.promisify(db.get.bind(db));
+  const dbRun = util.promisify(db.run.bind(db));
+
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+
     if (!user) {
       return reply.code(401).send({ error: 'Utilisateur non trouvé' });
     }
@@ -99,10 +103,8 @@ fastify.post('/login', async (request, reply) => {
 
     if (user.twoFAEnabled) {
       const otp = GenerateOtp();
-
-      db.run('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
+      await dbRun('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
       await Send2faMail(user.email, otp);
-      // Retourne le fait que 2FA requis
       return reply.send({ success: true, requires2FA: true, userId: user.id });
     }
 
@@ -113,7 +115,10 @@ fastify.post('/login', async (request, reply) => {
     );
 
     return reply.send({ success: true, token, name: user.name });
-  });
+  } catch (error) {
+    console.error("Erreur serveur dans /login :", error);
+    return reply.code(500).send({ error: 'Erreur serveur' });
+  }
 });
 
 // Route protégée de test
