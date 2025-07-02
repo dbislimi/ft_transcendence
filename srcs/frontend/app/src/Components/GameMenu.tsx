@@ -10,6 +10,7 @@ export default function GameMenu() {
 		if (response === null) console.log("found");
 		else console.log("pas found");
 	}
+	const handleOnline = 
 	return (
 		<>
 			<div className="absolute flex flex-col space-y-2 items-center space-x-3 p-10 border border-white size-100 bg-black opacity-80">
@@ -24,6 +25,9 @@ export default function GameMenu() {
 				<div className="flex items-center space-x-2">
 					<button type="button" onClick={handleClick} className="text-white">Join</button>
 					<input type="text" ref={inputRef} placeholder="Enter Game ID" className="border border-white text-white w-40 px-2"></input>
+				</div>
+				<div>
+					<button type="button" onClick={handleClick} className="text-white border border-white p-2">Play Online</button>
 				</div>
 			</div>
 		</>

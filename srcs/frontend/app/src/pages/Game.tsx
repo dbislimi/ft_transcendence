@@ -26,7 +26,7 @@ function useWebsocket(api: string, onMessage: (event: MessageEvent) => void) {
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const ws = new WebSocket("ws://localhost:3000/" + api + "/ws");
+		const ws = new WebSocket(`ws://localhost:3000/${api}/ws`);
 		wsRef.current = ws;
 		ws.onopen = () => console.log("ws opened");
 		ws.onclose = () => console.log("ws closed");

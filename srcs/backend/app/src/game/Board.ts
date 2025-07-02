@@ -16,6 +16,7 @@ export default class Board {
 	players: Player[];
 	private ball: Ball;
 	private score: [number, number] = [0, 0];
+	private full: boolean = false;
 
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
@@ -145,6 +146,11 @@ export default class Board {
 	}
 	connect(player: 0 | 1) {
 		this.players[player].isBot = false;
+		if (!this.players[0].isBot && !this.players[1].isBot)
+			this.full = true;
+	}
+	disconnect(player: 0 | 1) {
+		this.players[player].isBot = true;
 	}
 	get H(): number {
 		return this.height;
@@ -157,5 +163,8 @@ export default class Board {
 	}
 	get scores(): [p1: number, p2: number]{
 		return this.score;
+	}
+	get isFull() {
+		return this.full;
 	}
 }

@@ -9,9 +9,9 @@ export default class Game {
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private maxScore: number = 5;
 
-	constructor(websocket: WebSocket) {
+	constructor(ws1: WebSocket, ws2?: WebSocket) {
 		this.board = new Board();
-		this.ws = websocket;
+		this.ws = ws1;
 		this.board.connect(0);
 	}
 
