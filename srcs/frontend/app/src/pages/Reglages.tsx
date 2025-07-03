@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
-export default function reglages{
+/*export default function reglages{
     
     try{
         const response = await fetch('http://localhost:3000/reglages', {
@@ -10,4 +10,4 @@ export default function reglages{
         body: JSON.stringify({ userId}),
         });
     }   
-}
+}*/

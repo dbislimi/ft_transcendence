@@ -13,6 +13,7 @@ import dotenv from 'dotenv';
 import { GenerateOtp, Send2faMail } from './2fa.ts';
 
 import util from 'util';
+import fastifyCookie from '@fastify/cookie';
 
 const fastify = Fastify({
 	logger: {
@@ -28,6 +29,7 @@ fastify.register(wsGame);
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!; // À stocker dans un fichier .env pour plus de sécurité
 
+await fastify.register(fastifyCookie);
 // Récupère le dossier courant (utile pour importer la DB)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,6 +42,7 @@ const db = (await import(path.join(__dirname, '..', 'index.js'))).default;
 // Autorise les requêtes depuis le frontend (CORS)
 await fastify.register(cors, {
   origin: 'http://localhost:5173', // ton app React
+  credentials: true,
 });
 
 // Route de test
@@ -93,20 +96,15 @@ fastify.post('/login', async (request, reply) => {
     const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
 
     if (!user) {
-      console.log("je suis dans l'erreur 1");
       return reply.code(401).send({ error: 'Utilisateur non trouvé' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log("USER PASSWORD : " + user.password);
-    console.log("PASSWORD DE BASE ICI : " + password);
     if (!isPasswordValid) {
-      console.log("je suis dans l'erreur 2");
       return reply.code(401).send({ error: 'Mot de passe invalide' });
     }
 
     if (user.twoFAEnabled) {
-      console.log("JE SUIS RENTRER ICI ALORS QU'IL FAUT PAS");
       const otp = GenerateOtp();
       await dbRun('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
       await Send2faMail(user.email, otp);
@@ -118,6 +116,13 @@ fastify.post('/login', async (request, reply) => {
       JWT_SECRET,
       { expiresIn: '2h' }
     );
+  
+    reply.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxtime: 2 * 60 * 60,
+      path: '/'
+    });
 
     return reply.send({ success: true, token, name: user.name });
   } catch (error) {
