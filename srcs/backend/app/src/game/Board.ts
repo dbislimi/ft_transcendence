@@ -13,7 +13,7 @@ export default class Board {
 	private readonly height: number;
 	private readonly width: number;
 	private playerSpeed: number = 100;
-	players: Player[];
+	players: [Player, Player];
 	private ball: Ball;
 	private score: [number, number] = [0, 0];
 	private full: boolean = false;
@@ -119,27 +119,30 @@ export default class Board {
 				p2.moveDown(true);
 			}
 		}
-		if (p1.up && p1.down) return;
-		if (p1.up && p1.y > 0) {
-			if (p1.y - this.playerSpeed * dt < 0) p1.y = 0;
-			else p1.y -= this.playerSpeed * dt;
-		} else if (p1.down && p1.y + p1.size < this.height) {
-			if (p1.y + this.playerSpeed * dt > this.height - p1.size)
-				p1.y = this.height - p1.size;
-			else p1.y += this.playerSpeed * dt;
+		if (!(p1.up && p1.down)){
+			if (p1.up && p1.y > 0) {
+				if (p1.y - this.playerSpeed * dt < 0) p1.y = 0;
+				else p1.y -= this.playerSpeed * dt;
+			} else if (p1.down && p1.y + p1.size < this.height) {
+				if (p1.y + this.playerSpeed * dt > this.height - p1.size)
+					p1.y = this.height - p1.size;
+				else p1.y += this.playerSpeed * dt;
+			}
 		}
-		if (p2.up && p2.y > 0) {
-			if (p2.y - this.playerSpeed * dt < 0) p2.y = 0;
-			else p2.y -= this.playerSpeed * dt;
-		} else if (p2.down && p2.y + p1.size < this.height) {
-			if (p2.y + this.playerSpeed * dt > this.height - p2.size)
-				p2.y = this.height - p2.size;
-			else p2.y += this.playerSpeed * dt;
+		if (!(p2.up && p2.down)){
+			if (p2.up && p2.y > 0) {
+				if (p2.y - this.playerSpeed * dt < 0) p2.y = 0;
+				else p2.y -= this.playerSpeed * dt;
+			} else if (p2.down && p2.y + p1.size < this.height) {
+				if (p2.y + this.playerSpeed * dt > this.height - p2.size)
+					p2.y = this.height - p2.size;
+				else p2.y += this.playerSpeed * dt;
+			}
 		}
 	}
 	update(dt: number) {
-		this.updatePlayersPosition(100);
-		this.updateBallPosition(100);
+		this.updatePlayersPosition(dt);
+		this.updateBallPosition(dt);
 	}
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };

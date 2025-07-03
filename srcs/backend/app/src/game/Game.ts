@@ -1,23 +1,30 @@
 import type WebSocket from "ws";
 import Board from "./Board.ts";
 
+export type clientSocket = {
+	clientId: string;
+	ws: WebSocket;
+};
+
 export default class Game {
 	private readonly board: Board;
-	private prevTime!: number;
-	private readonly ws: [WebSocket, WebSocket | null];
+	private readonly clients: [clientSocket, clientSocket | null];
 	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
+	private prevTime!: number;
 	private maxScore: number = 5;
 
-	constructor(ws1: WebSocket, ws2?: WebSocket) {
+	constructor(p1: clientSocket, p2?: clientSocket) {
 		this.board = new Board();
-		this.ws = [ws1, ws2 ?? null];
-		this.board.connect(ws2 ? 2 : 1);
+		this.clients = [p1, p2 ?? null];
+		this.board.connect(p2 ? 2 : 1);
 	}
 
-	private send(data: string | Buffer | ArrayBuffer | Buffer[], cb?: ((err?: Error) => void)){
-		for (const ws of this.ws)
-			ws?.send(data, cb);
+	private send(
+		data: string | Buffer | ArrayBuffer | Buffer[],
+		cb?: (err?: Error) => void
+	) {
+		for (const client of this.clients) client?.ws.send(data, cb);
 	}
 	public start(): void {
 		this.prevTime = performance.now();
@@ -31,21 +38,28 @@ export default class Game {
 	}
 	private stop(winner: number): void {
 		this.pause();
-		const data = { event: "win", win: winner };
+		const data = { event: "win", body: winner };
 		this.send(JSON.stringify(data));
 	}
 
-	up(type: string, player: 0 | 1) {
-		if (!this.board.players[player].up && type === "press")
+	
+	private up(type: string, player: 0 | 1) {
+		console.log("up args:", type, player);
+		if (!this.board.players[player].up && type === "press"){
 			this.board.players[player].moveUp(true);
+		}
 		else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
 	}
-	down(type: string, player: 0 | 1) {
+	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")
 			this.board.players[player].moveDown(true);
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
+	}
+	move(type: string, dir: string, player: 0 | 1) {
+		if (dir === "up") this.up(type, player);
+		else this.down(type, player);
 	}
 	setBall(x: number, y: number) {
 		this.board.setBallPos(x, y);
@@ -64,7 +78,7 @@ export default class Game {
 		this.board.update(deltaTime);
 		const data = {
 			event: "data",
-			data: {
+			body: {
 				ball: {
 					...this.board.getBallData(),
 					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),

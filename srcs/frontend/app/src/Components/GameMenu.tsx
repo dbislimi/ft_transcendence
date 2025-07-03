@@ -1,18 +1,18 @@
 import fetchData from "../fetchData";
 import { useRef } from "react";
 
-export default function GameMenu() {
+interface Props {
+	start: (type: string) => void;
+}
+export default function GameMenu({start}: Props) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleClick = async () => {
-		if (!inputRef.current) return ;
+		if (!inputRef.current) return;
 		console.log("fetch " + inputRef.current.value);
 		const response = await fetchData<string | null>(inputRef.current.value);
 		if (response === null) console.log("found");
 		else console.log("pas found");
-	}
-	const handleOnline = () => {
-		
-	}
+	};
 	return (
 		<>
 			<div className="absolute flex flex-col space-y-2 items-center space-x-3 p-10 border border-white size-100 bg-black opacity-80">
@@ -25,11 +25,28 @@ export default function GameMenu() {
 					</label>
 				</div>
 				<div className="flex items-center space-x-2">
-					<button type="button" onClick={handleClick} className="text-white">Join</button>
-					<input type="text" ref={inputRef} placeholder="Enter Game ID" className="border border-white text-white w-40 px-2"></input>
+					<button
+						type="button"
+						onClick={handleClick}
+						className="text-white"
+					>
+						Join
+					</button>
+					<input
+						type="text"
+						ref={inputRef}
+						placeholder="Enter Game ID"
+						className="border border-white text-white w-40 px-2"
+					></input>
 				</div>
 				<div>
-					<button type="button" onClick={handleClick} className="text-white border border-white p-2">Play Online</button>
+					<button
+						type="button"
+						onClick={() => start('play_online')}
+						className="text-white border border-white p-2"
+					>
+						Play Online
+					</button>
 				</div>
 			</div>
 		</>

@@ -22,11 +22,14 @@ export interface Ball {
 	speed: number;
 }
 
-function useWebsocket(api: string, opt: string, onMessage: (event: MessageEvent) => void) {
+function useWebsocket(
+	api: string,
+	onMessage: (event: MessageEvent) => void
+) {
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const ws = new WebSocket(`ws://localhost:3000/${api}/ws/${opt}`);
+		const ws = new WebSocket(`ws://localhost:3000/${api}/ws`);
 		wsRef.current = ws;
 		ws.onopen = () => console.log("ws opened");
 		ws.onclose = () => console.log("ws closed");
@@ -40,6 +43,8 @@ function useWebsocket(api: string, opt: string, onMessage: (event: MessageEvent)
 
 export default function Game() {
 	const [state, setState] = useState(false);
+	const [play, setPlay] = useState(false);
+	const [search, setSearch] = useState(false);
 	const [scale] = useState(4);
 	const [winner, setWinner] = useState<number | null>(null);
 	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50, speed: 0 });
@@ -48,13 +53,22 @@ export default function Game() {
 		p2: { size: 25, y: 37.5, score: 0 },
 	});
 	const onMessage = useCallback((event: MessageEvent) => {
-		const message = JSON.parse(event.data);
-		console.log(message);
-		if (message.event === "win") {
-			setWinner(message.win);
-		} else {
-			ballRef.current = message.data.ball;
-			playersRef.current = message.data.players;
+		const data = JSON.parse(event.data);
+		console.log(data);
+		switch (data.event){
+			case 'searching':
+				setSearch(true);
+				break;
+			case 'found':
+				setSearch(false);
+				break;
+			case 'win':
+				setWinner(data.body);
+				break;
+			case 'data':
+				ballRef.current = data.body.ball;
+				playersRef.current = data.body.players;
+				break;
 		}
 	}, []);
 	const wsRef = useWebsocket("game", onMessage);
@@ -66,11 +80,10 @@ export default function Game() {
 			console.log("key");
 			if (["Shift", "s", "ArrowDown"].includes(key))
 				wsRef.current?.send(
-					JSON.stringify({ event: "down", type: type })
-				);
+					JSON.stringify({event: "play", body: {type: type, dir: 'down'}}))
 			else if ([" ", "w", "ArrowUp"].includes(key))
 				wsRef.current?.send(
-					JSON.stringify({ event: "up", type: type })
+					JSON.stringify({event: "play", body: {type: type, dir: 'up'}})
 				);
 		};
 		const keydown = (e: KeyboardEvent) => {
@@ -99,12 +112,16 @@ export default function Game() {
 	const handleReplay = () => {
 		setWinner(null);
 		setState(false);
-		wsRef.current?.send(JSON.stringify({event: "restart"}));
-	}
+		wsRef.current?.send(JSON.stringify({ event: "restart" }));
+	};
+	const handlePlay = (type: string) => {
+		wsRef.current?.send(JSON.stringify({event: 'start', body: type}));
+		setPlay(!play)
+	};
 	return (
 		<>
 			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
-				<SpaceBackground />
+				{/*<SpaceBackground />*/}
 
 				{/* {winner === null ? (
 					<button
@@ -128,8 +145,17 @@ export default function Game() {
 						</button>
 					</div>
 				)} */}
-				<GameMenu />
-				{/* <PongCanvas ball={ballRef} players={playersRef} scale={scale} /> */}
+				{play ? (
+					<PongCanvas
+						ball={ballRef}
+						players={playersRef}
+						scale={scale}
+					/>
+				) : (
+					<GameMenu start={handlePlay} />
+				)}
+				{search && <div className="z-20 text-5xl text-white">Searching ...</div>}
+
 				<Chat />
 			</div>
 		</>

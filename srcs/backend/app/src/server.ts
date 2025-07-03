@@ -19,7 +19,7 @@ const fastify = Fastify({
 });
 
 fastify.register(websocket);
-fastify.register(gameController, { prefix: "/game/ws" });
+fastify.register(gameController);
 
 const JWT_SECRET = "super_secret_key"; // À stocker dans un fichier .env pour plus de sécurité
 
