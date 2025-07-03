@@ -12,7 +12,7 @@ export default class Game {
 	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
-	private maxScore: number = 5;
+	private maxScore: number = 50;
 
 	constructor(p1: clientSocket, p2?: clientSocket) {
 		this.board = new Board();

@@ -16,7 +16,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		(socket: WebSocket, req) => {
 			const clientId = uuidv4();
 			let playerId: 0 | 1 | undefined;
-
 			socket.on("message", (message) => {
 				const data = JSON.parse(message.toString());
 				console.log(data);
@@ -38,7 +37,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				}
 			});
 			socket.on("close", () => {
-				console.log("close ", socket);
+				console.log("close ", clientId);
+				games.removeFromQueue(clientId);
 				games.getRoom(clientId)?.pause();
 				games.removeRoom(clientId);
 			});

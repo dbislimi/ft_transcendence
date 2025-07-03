@@ -34,4 +34,7 @@ export default class GamesManager {
 	removeRoom(id: string) {
 		if (id in this.rooms) delete this.rooms[id];
 	}
+	printQueue(){
+		this.queue.forEach((client, index) => console.log(`${index + 1}. ${client.clientId}`) )
+	}
 }
