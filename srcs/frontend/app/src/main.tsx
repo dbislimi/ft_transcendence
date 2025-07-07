@@ -11,10 +11,12 @@ const router = createBrowserRouter([
 		children: [
 			{ path: "/", element: <pages.Home /> },
 			{ path: "/Connection", element: <pages.Connection /> },
+			{ path: "/Confirmation", element: <pages.Confirmation /> },
 			{ path: "/Registration", element: <pages.Registration /> },
 			{ path: "/game", element: <pages.Game /> },
+			{ path: "/dashboard", element: <pages.Dashboard /> },
 			{ path: "/auth", element: <pages.auth /> },
-      { path: "*", element: <pages.NotFoundPage /> },
+      		{ path: "*", element: <pages.NotFoundPage /> },
 		],
 	},
 ]);

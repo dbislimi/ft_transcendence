@@ -2,13 +2,12 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import wsGame from "./plugins/ws-game.ts";
-//  Gestion des chemins de fichiers avec ES modules
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Import des modules serveur et sécurité
 import bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken'; // compatible avec ESM/TypeScript
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 const fastify = Fastify({
@@ -58,22 +57,44 @@ fastify.post('/register', async (request, reply) => {
   }
 
   try {
+    const existingUser = await new Promise<any>((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (existingUser) {
+      return reply.code(409).send({ error: "Email déjà utilisé" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.run(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, hashedPassword],
-      function (err: any) {
-        if (err) {
-          return reply.code(500).send({ error: 'Erreur enregistrement utilisateur' });
+    const lastID = await new Promise<number>((resolve, reject) => {
+      db.run(
+        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+        [name, email, hashedPassword],
+        function (err: any) {
+          if (err) 
+            reject(err);
+          else 
+            resolve(this.lastID);
         }
-        return reply.send({ success: true, id: this.lastID });
-      }
+      );
+    });
+    const token = jwt.sign(
+      { id: lastID, name, email},
+      JWT_SECRET,
+      { expiresIn: '2h' }
     );
-  } catch {
+    return reply.send({ success: true, token, name });    
+  } catch (err) {
+    console.error("Erreur lors de l'inscription :", err);
     return reply.code(500).send({ error: 'Erreur serveur' });
   }
 });
+
+
 
 // Connexion utilisateur + génération du JWT
 fastify.post('/login', async (request, reply) => {
@@ -82,10 +103,13 @@ fastify.post('/login', async (request, reply) => {
     password: string;
   };
 
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err: any, user: any) => {
-    if (err) {
-      return reply.code(500).send({ error: 'Erreur serveur' });
-    }
+  try {
+    const user = await new Promise<any>((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE email = ?', [email], (err: any, row: any) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
     if (!user) {
       return reply.code(401).send({ error: 'Utilisateur non trouvé' });
@@ -97,14 +121,19 @@ fastify.post('/login', async (request, reply) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, name: user.name },
+      { id: user.id, name: user.name , email},
       JWT_SECRET,
       { expiresIn: '2h' }
     );
 
     return reply.send({ success: true, token, name: user.name });
-  });
+
+  } catch (err) {
+    console.error(err);
+    return reply.code(500).send({ error: 'Erreur serveur' });
+  }
 });
+
 
 // Route protégée de test
 fastify.get('/profile', async (request, reply) => {
