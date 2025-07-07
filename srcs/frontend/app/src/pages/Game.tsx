@@ -3,7 +3,7 @@ import PongCanvas from "../Components/PongCanvas";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
 import GameMenu from "../Components/GameMenu";
-
+import type { difficulty } from "../Components/GameMenu";
 interface Player {
 	size: number;
 	y: number;
@@ -114,8 +114,11 @@ export default function Game() {
 		setState(false);
 		wsRef.current?.send(JSON.stringify({ event: "restart" }));
 	};
-	const handlePlay = (type: string) => {
-		wsRef.current?.send(JSON.stringify({event: 'start', body: type}));
+	const handlePlay = (online: boolean, diff?: difficulty) => {
+		if (online)
+			wsRef.current?.send(JSON.stringify({event: 'start', body: {action: "play_online"}}));
+		else
+			wsRef.current?.send(JSON.stringify({event: 'start', body: {action: "play_offline", diff: diff}}));
 		setPlay(!play)
 	};
 	return (

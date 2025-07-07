@@ -1,5 +1,6 @@
 import type WebSocket from "ws";
 import Board from "./Board.ts";
+import type { difficulty } from "./Player.ts";
 
 export type clientSocket = {
 	clientId: string;
@@ -8,23 +9,29 @@ export type clientSocket = {
 
 export default class Game {
 	private readonly board: Board;
-	private readonly clients: [clientSocket, clientSocket | null];
+	private readonly clients: [WebSocket, WebSocket | null];
 	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private maxScore: number = 50;
 
-	constructor(p1: clientSocket, p2?: clientSocket) {
+	constructor(p1: WebSocket, p2: WebSocket | difficulty) {
 		this.board = new Board();
-		this.clients = [p1, p2 ?? null];
-		this.board.connect(p2 ? 2 : 1);
+		if (typeof p2 === "object"){
+			this.clients = [p1, p2];
+			this.board.connect(2);
+		}
+		else {
+			this.clients = [p1, null];
+			this.board.connect(1, p2);
+		}
 	}
 
 	private send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {
-		for (const client of this.clients) client?.ws.send(data, cb);
+		for (const ws of this.clients) ws?.send(data, cb);
 	}
 	public start(): void {
 		this.prevTime = performance.now();
@@ -44,7 +51,6 @@ export default class Game {
 
 	
 	private up(type: string, player: 0 | 1) {
-		console.log("up args:", type, player);
 		if (!this.board.players[player].up && type === "press"){
 			this.board.players[player].moveUp(true);
 		}

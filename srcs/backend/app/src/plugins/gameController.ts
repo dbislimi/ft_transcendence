@@ -10,40 +10,40 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	options
 ) => {
 	const games: GamesManager = new GamesManager();
-	fastify.get(
-		"/game/ws",
-		{ websocket: true },
-		(socket: WebSocket, req) => {
-			const clientId = uuidv4();
-			let playerId: 0 | 1 | undefined;
-			socket.on("message", (message) => {
-				const data = JSON.parse(message.toString());
-				console.log(data);
-				if (data.event === "start") {
-					switch (data.body) {
-						case "play_online":
-							playerId = games.startOnline(clientId, socket);
-							break;
-						case "cancel":
-							games.removeFromQueue(clientId);
-							playerId = undefined;
-							break;
-						case "play_offline":
-							break;
-					}
-				} else if (data.event === "play") {
-					if (playerId !== undefined)
-						games.getRoom(clientId)?.move(data.body.type, data.body.dir, playerId);
+	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req) => {
+		const clientId = uuidv4();
+		let player: { playerId: 0 | 1; gameId: number } | undefined;
+		socket.on("message", (message) => {
+			const data = JSON.parse(message.toString());
+			console.log(data);
+			if (data.event === "start") {
+				switch (data.body.action) {
+					case "play_online":
+						player = games.startOnline(clientId, socket);
+						break;
+					case "cancel":
+						games.removeFromQueue(clientId);
+						player = undefined;
+						break;
+					case "play_offline":
+						player = games.startOffline(clientId, socket, data.body.diff)
+						break;
 				}
-			});
-			socket.on("close", () => {
-				console.log("close ", clientId);
-				games.removeFromQueue(clientId);
-				games.getRoom(clientId)?.pause();
-				games.removeRoom(clientId);
-			});
-		}
-	);
+			} else if (data.event === "play") {
+				if (player !== undefined)
+					games
+						.getRoom(player.gameId)
+						?.move(data.body.type, data.body.dir, player.playerId);
+			}
+		});
+		socket.on("close", () => {
+			console.log("close ", clientId);
+			games.removeFromQueue(clientId);
+			if (!player) return;
+			games.getRoom(player.gameId)?.pause();
+			games.removeRoom(player.gameId);
+		});
+	});
 };
 
 export default fp(gameController);

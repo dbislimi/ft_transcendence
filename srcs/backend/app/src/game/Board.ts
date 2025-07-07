@@ -1,4 +1,4 @@
-import Player from "./Player.ts";
+import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
 
 interface PlayerData {
@@ -108,7 +108,7 @@ export default class Board {
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p2.isBot) {
+		if (p2.bot) {
 			// p2.moveUp(false);
 			// p2.moveDown(false);
 			if (this.ball.y + this.ball.radius < p2.y) {
@@ -119,24 +119,18 @@ export default class Board {
 				p2.moveDown(true);
 			}
 		}
-		if (!(p1.up && p1.down)){
-			if (p1.up && p1.y > 0) {
-				if (p1.y - this.playerSpeed * dt < 0) p1.y = 0;
-				else p1.y -= this.playerSpeed * dt;
-			} else if (p1.down && p1.y + p1.size < this.height) {
-				if (p1.y + this.playerSpeed * dt > this.height - p1.size)
-					p1.y = this.height - p1.size;
-				else p1.y += this.playerSpeed * dt;
-			}
-		}
-		if (!(p2.up && p2.down)){
-			if (p2.up && p2.y > 0) {
-				if (p2.y - this.playerSpeed * dt < 0) p2.y = 0;
-				else p2.y -= this.playerSpeed * dt;
-			} else if (p2.down && p2.y + p1.size < this.height) {
-				if (p2.y + this.playerSpeed * dt > this.height - p2.size)
-					p2.y = this.height - p2.size;
-				else p2.y += this.playerSpeed * dt;
+		this.move(p1, dt);
+		this.move(p2, dt);
+	}
+	move(p: Player, dt: number){
+		if (!(p.up && p.down)){
+			if (p.up && p.y > 0) {
+				if (p.y - this.playerSpeed * dt < 0) p.y = 0;
+				else p.y -= this.playerSpeed * dt;
+			} else if (p.down && p.y + p.size < this.height) {
+				if (p.y + this.playerSpeed * dt > this.height - p.size)
+					p.y = this.height - p.size;
+				else p.y += this.playerSpeed * dt;
 			}
 		}
 	}
@@ -147,16 +141,11 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
-	connect(players: 1 | 2) {
-		this.players[0].isBot = false;
-		if (players === 2)
-			this.players[1].isBot = false;
-		//if (!this.players[0].isBot && !this.players[1].isBot)
-		//	this.full = true;
+	connect(players: 1 | 2, diff?: difficulty) {
+		if (players === 1)
+			this.players[1].bot = diff;
 	}
-	disconnect(player: 0 | 1) {
-		this.players[player].isBot = true;
-	}
+
 	get H(): number {
 		return this.height;
 	}

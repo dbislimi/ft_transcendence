@@ -1,5 +1,7 @@
 import Board from "./Board.ts";
 
+export type difficulty = "easy" | "medium" | "hard";
+
 export default class Player {
 	private static playerWidth: number;
 	private playerSize: number;
@@ -7,7 +9,7 @@ export default class Player {
 	y: number;
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
-	isBot: boolean = true;
+	bot: difficulty | undefined = undefined;
 
 	constructor(field: Board, id: 0 | 1) {
 		this.playerSize = field.H / 6;

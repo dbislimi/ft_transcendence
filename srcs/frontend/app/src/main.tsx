@@ -14,14 +14,13 @@ const router = createBrowserRouter([
 			{ path: "/Registration", element: <pages.Registration /> },
 			{ path: "/game", element: <pages.Game /> },
 			{ path: "/auth", element: <pages.auth /> },
-      { path: "*", element: <pages.NotFoundPage /> },
+			{ path: "*", element: <pages.NotFoundPage /> },
 		],
 	},
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+	<StrictMode>
+		<RouterProvider router={router} />
+	</StrictMode>
 );
-
