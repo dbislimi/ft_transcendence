@@ -13,7 +13,6 @@ import dotenv from 'dotenv';
 import { GenerateOtp, Send2faMail } from './2fa.ts';
 
 import util from 'util';
-import fastifyCookie from '@fastify/cookie';
 
 const fastify = Fastify({
 	logger: {
@@ -29,7 +28,6 @@ fastify.register(wsGame);
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!; // À stocker dans un fichier .env pour plus de sécurité
 
-await fastify.register(fastifyCookie);
 // Récupère le dossier courant (utile pour importer la DB)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -116,14 +114,6 @@ fastify.post('/login', async (request, reply) => {
       JWT_SECRET,
       { expiresIn: '2h' }
     );
-    console.log("LE JWT EN QUESTION SAH: " + token);
-    // le cookie s'envoie pas j'ai rien compris sah
-    reply.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 2 * 60 * 60,
-      path: '/',
-    });
 
     return reply.send({ success: true, token, name: user.name });
   } catch (error) {
@@ -173,23 +163,6 @@ fastify.get('/me', async (request, reply) => {
     );
   } catch {
     return reply.code(401).send({ error: 'Token invalide ou expiré' });
-  }
-});
-
-// pour recuperer de sah les infos utilisateur en sah
-fastify.addHook('onRequest', async (request, reply) => {
-  console.log("sA GRANDE TANTE SQUID GAME              FFFFFFFFF : ", request.cookies);
-  const token = request.cookies.token;
-
-  if (!token) {
-    request.user = null;
-    return;
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string };
-    request.user = decoded;
-  } catch {
-    request.user = null;
   }
 });
 
