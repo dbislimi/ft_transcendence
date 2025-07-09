@@ -15,6 +15,7 @@ const router = createBrowserRouter([
 			{ path: "/game", element: <pages.Game /> },
 			{ path: "/auth", element: <pages.auth /> },
 			{ path: "/Dashboard", element: <pages.Dashboard /> },
+			{ path: "/Reglages", element: <pages.Reglages /> },
       { path: "*", element: <pages.NotFoundPage /> },
 		],
 	},

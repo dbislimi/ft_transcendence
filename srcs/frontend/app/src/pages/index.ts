@@ -6,3 +6,4 @@ export { default as Game } from './Game';
 export { default as auth } from './auth';
 export { default as Confirmation } from './Confirmation';
 export { default as Dashboard } from './Dashboard';
+export { default as Reglages } from './Reglages';

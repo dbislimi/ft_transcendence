@@ -116,12 +116,13 @@ fastify.post('/login', async (request, reply) => {
       JWT_SECRET,
       { expiresIn: '2h' }
     );
-  
+    console.log("LE JWT EN QUESTION SAH: " + token);
+    // le cookie s'envoie pas j'ai rien compris sah
     reply.cookie('token', token, {
       httpOnly: true,
       sameSite: 'lax',
-      maxtime: 2 * 60 * 60,
-      path: '/'
+      maxAge: 2 * 60 * 60,
+      path: '/',
     });
 
     return reply.send({ success: true, token, name: user.name });
@@ -172,6 +173,44 @@ fastify.get('/me', async (request, reply) => {
     );
   } catch {
     return reply.code(401).send({ error: 'Token invalide ou expiré' });
+  }
+});
+
+// pour recuperer de sah les infos utilisateur en sah
+fastify.addHook('onRequest', async (request, reply) => {
+  console.log("sA GRANDE TANTE SQUID GAME              FFFFFFFFF : ", request.cookies);
+  const token = request.cookies.token;
+
+  if (!token) {
+    request.user = null;
+    return;
+  }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string };
+    request.user = decoded;
+  } catch {
+    request.user = null;
+  }
+});
+
+fastify.post('/reglages', async (request, reply) => {
+  if (!request.user) {
+    return reply.code(401).send({ error: 'Non autorisé' });
+  }
+
+  const { enable2fa } = request.body as { enable2fa: boolean };
+  const dbRun = util.promisify(db.run.bind(db));
+
+  try {
+    await dbRun(
+      'UPDATE users SET twoFAEnabled = ? WHERE id = ?',
+      [enable2fa ? 1 : 0, request.user.id]
+    );
+    console.log("TWO FA DE LA DB : " + enable2fa);
+    return reply.send({ success: true, twoFAEnabled: enable2fa });
+  } catch (err) {
+    console.error('Erreur /reglages :', err);
+    return reply.code(500).send({ error: 'Erreur serveur' });
   }
 });
 

@@ -6,8 +6,9 @@ import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 import { request } from 'http';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv' 
-import crypto from 'crypto'
+import dotenv from 'dotenv';
+import crypto from 'crypto';
+import util from 'util';
 
 
 const fastify = Fastify({
@@ -84,6 +85,3 @@ fastify.post('/check2fa', async (request, reply) => {
     });
 });
 
-fastify.post('/reglages', async (request, reply) => {
-    
-})
