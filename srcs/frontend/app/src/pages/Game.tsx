@@ -22,10 +22,7 @@ export interface Ball {
 	speed: number;
 }
 
-function useWebsocket(
-	api: string,
-	onMessage: (event: MessageEvent) => void
-) {
+function useWebsocket(api: string, onMessage: (event: MessageEvent) => void) {
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
@@ -55,17 +52,17 @@ export default function Game() {
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
 		console.log(data);
-		switch (data.event){
-			case 'searching':
+		switch (data.event) {
+			case "searching":
 				setSearch(true);
 				break;
-			case 'found':
+			case "found":
 				setSearch(false);
 				break;
-			case 'win':
+			case "win":
 				setWinner(data.body);
 				break;
-			case 'data':
+			case "data":
 				ballRef.current = data.body.ball;
 				playersRef.current = data.body.players;
 				break;
@@ -77,13 +74,33 @@ export default function Game() {
 		if (winner !== null) return;
 		const handleKey = (e: KeyboardEvent, type: string) => {
 			const key = e.key;
-			console.log("key");
-			if (["Shift", "s", "ArrowDown"].includes(key))
+			if (["Shift", "s"].includes(key))
 				wsRef.current?.send(
-					JSON.stringify({event: "play", body: {type: type, dir: 'down'}}))
-			else if ([" ", "w", "ArrowUp"].includes(key))
+					JSON.stringify({
+						event: "play",
+						body: { type: type, dir: "down", id: 0 },
+					})
+				);
+			else if (["ArrowDown"].includes(key))
 				wsRef.current?.send(
-					JSON.stringify({event: "play", body: {type: type, dir: 'up'}})
+					JSON.stringify({
+						event: "play",
+						body: { type: type, dir: "down", id: 1 },
+					})
+				);
+			else if ([" ", "w"].includes(key))
+				wsRef.current?.send(
+					JSON.stringify({
+						event: "play",
+						body: { type: type, dir: "up", id: 0 },
+					})
+				);
+			else if (["ArrowUp"].includes(key))
+				wsRef.current?.send(
+					JSON.stringify({
+						event: "play",
+						body: { type: type, dir: "up", id: 1},
+					})
 				);
 		};
 		const keydown = (e: KeyboardEvent) => {
@@ -116,10 +133,20 @@ export default function Game() {
 	};
 	const handlePlay = (online: boolean, diff?: difficulty) => {
 		if (online)
-			wsRef.current?.send(JSON.stringify({event: 'start', body: {action: "play_online"}}));
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: { action: "play_online" },
+				})
+			);
 		else
-			wsRef.current?.send(JSON.stringify({event: 'start', body: {action: "play_offline", diff: diff}}));
-		setPlay(!play)
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: { action: "play_offline", diff: diff },
+				})
+			);
+		setPlay(!play);
 	};
 	return (
 		<>
@@ -157,7 +184,11 @@ export default function Game() {
 				) : (
 					<GameMenu start={handlePlay} />
 				)}
-				{search && <div className="z-20 text-5xl text-white">Searching ...</div>}
+				{search && (
+					<div className="z-20 text-5xl text-white">
+						Searching ...
+					</div>
+				)}
 
 				<Chat />
 			</div>

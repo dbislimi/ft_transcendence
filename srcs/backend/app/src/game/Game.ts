@@ -9,21 +9,19 @@ export type clientSocket = {
 
 export default class Game {
 	private readonly board: Board;
-	private readonly clients: [WebSocket, WebSocket | null];
+	private readonly clients: [WebSocket, WebSocket | undefined];
 	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private maxScore: number = 50;
 
-	constructor(p1: WebSocket, p2: WebSocket | difficulty) {
+	constructor(p1: WebSocket, p2?: WebSocket | difficulty) {
 		this.board = new Board();
-		if (typeof p2 === "object"){
+		if (typeof p2 === "object")
 			this.clients = [p1, p2];
-			this.board.connect(2);
-		}
 		else {
-			this.clients = [p1, null];
-			this.board.connect(1, p2);
+			this.clients = [p1, undefined];
+			this.board.connectBot(p2);
 		}
 	}
 
@@ -49,12 +47,10 @@ export default class Game {
 		this.send(JSON.stringify(data));
 	}
 
-	
 	private up(type: string, player: 0 | 1) {
-		if (!this.board.players[player].up && type === "press"){
+		if (!this.board.players[player].up && type === "press") {
 			this.board.players[player].moveUp(true);
-		}
-		else if (this.board.players[player].up && type === "release")
+		} else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
 	}
 	private down(type: string, player: 0 | 1) {

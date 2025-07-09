@@ -122,8 +122,8 @@ export default class Board {
 		this.move(p1, dt);
 		this.move(p2, dt);
 	}
-	move(p: Player, dt: number){
-		if (!(p.up && p.down)){
+	move(p: Player, dt: number) {
+		if (!(p.up && p.down)) {
 			if (p.up && p.y > 0) {
 				if (p.y - this.playerSpeed * dt < 0) p.y = 0;
 				else p.y -= this.playerSpeed * dt;
@@ -141,9 +141,8 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
-	connect(players: 1 | 2, diff?: difficulty) {
-		if (players === 1)
-			this.players[1].bot = diff;
+	connectBot(diff?: difficulty) {
+		this.players[1].bot = diff;
 	}
 
 	get H(): number {
@@ -155,7 +154,7 @@ export default class Board {
 	get ballRadius() {
 		return this.ball.radius;
 	}
-	get scores(): [p1: number, p2: number]{
+	get scores(): [p1: number, p2: number] {
 		return this.score;
 	}
 	get isFull() {

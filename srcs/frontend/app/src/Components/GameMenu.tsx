@@ -4,12 +4,13 @@ interface Props {
 	start: (online: boolean, diff?: difficulty) => void;
 }
 
-export type difficulty = "easy" | "medium" | "hard";
+export type difficulty = undefined | "easy" | "medium" | "hard";
 
 export default function GameMenu({ start }: Props) {
 	const [online, setOnline] = useState(false);
 	const [difficulty, setDifficulty] = useState<difficulty>("medium");
 	const difficulties = [
+		{ value: undefined, label: "Local" },
 		{ value: "easy", label: "Easy" },
 		{ value: "medium", label: "Medium" },
 		{ value: "hard", label: "Hard" },

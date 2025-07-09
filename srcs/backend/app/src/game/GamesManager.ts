@@ -9,11 +9,13 @@ export default class GamesManager {
 	private waitingRoom: number = 0;
 	private nb: number = 0;
 
-	startOffline(clientId: string, ws: WebSocket, diff: difficulty): {playerId: 0, gameId: number}{
+	startOffline(ws: WebSocket, diff?: difficulty): {playerId: 0 | undefined, gameId: number}{
 		const game = new Game(ws, diff);
+		console.log(diff);
+
 		game.start();
 		this.rooms[this.nb] = game;
-		return {playerId: 0, gameId: this.nb++}
+		return {playerId: diff ? 0 : undefined, gameId: this.nb++}
 	}
 	startOnline(clientId: string, ws: WebSocket): {playerId: 0 | 1, gameId: number} {
 		ws.send(JSON.stringify({ event: "searching" }));
