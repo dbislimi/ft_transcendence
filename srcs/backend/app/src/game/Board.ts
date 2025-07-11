@@ -1,5 +1,7 @@
 import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
+import type BotController from "./Controller.ts";
+import { EasyController } from "./Controller.ts";
 
 interface PlayerData {
 	size: number;
@@ -14,6 +16,7 @@ export default class Board {
 	private readonly width: number;
 	private playerSpeed: number = 100;
 	players: [Player, Player];
+	private botController: BotController | undefined;
 	private ball: Ball;
 	private score: [number, number] = [0, 0];
 	private full: boolean = false;
@@ -23,6 +26,7 @@ export default class Board {
 		this.width = width;
 		this.ball = new Ball(this);
 		this.players = [new Player(this, 0), new Player(this, 1)];
+		this.botController = undefined
 	}
 
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
@@ -135,6 +139,7 @@ export default class Board {
 		}
 	}
 	update(dt: number) {
+		this.botController?.update(this.players[1], this);
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
 	}
@@ -143,6 +148,7 @@ export default class Board {
 	}
 	connectBot(diff?: difficulty) {
 		this.players[1].bot = diff;
+		this.botController = new EasyController();
 	}
 
 	get H(): number {

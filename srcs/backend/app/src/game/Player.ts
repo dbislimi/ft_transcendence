@@ -5,7 +5,7 @@ export type difficulty = "easy" | "medium" | "hard";
 export default class Player {
 	private static playerWidth: number;
 	private playerSize: number;
-	x: number;
+	readonly x: number;
 	y: number;
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
