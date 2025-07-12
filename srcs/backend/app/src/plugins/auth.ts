@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import util from "util";
 
 dotenv.config();
 
@@ -62,43 +63,44 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
     }
   });
 
-  fastify.post("/login", async (request, reply) => {
-    const { email, password } = request.body as {
-      email: string;
-      password: string;
-    };
 
-    try {
-      const user = await new Promise<any>((resolve, reject) => {
-        db.get(
-          "SELECT * FROM users WHERE email = ?",
-          [email],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
+fastify.post('/login', async (request, reply) => {
+  const { email, password } = request.body as {
+    email: string;
+    password: string;
+  };
 
-      if (!user) {
-        return reply.code(401).send({ error: "Utilisateur non trouvé" });
-      }
+  const dbGet = util.promisify(db.get.bind(db));
+  const dbRun = util.promisify(db.run.bind(db));
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return reply.code(401).send({ error: "Mot de passe invalide" });
-      }
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
 
-      const token = jwt.sign(
-        { id: user.id, name: user.name, email },
-        JWT_SECRET,
-        { expiresIn: "2h" }
-      );
-
-      return reply.send({ success: true, token, name: user.name });
-    } catch (err) {
-      console.error(err);
-      return reply.code(500).send({ error: "Erreur serveur" });
+    if (!user) {
+      return reply.code(401).send({ error: 'Utilisateur non trouvé' });
     }
-  });
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return reply.code(401).send({ error: 'Mot de passe invalide' });
+    }
+
+    if (user.twoFAEnabled) {
+      const otp = GenerateOtp();
+      await dbRun('UPDATE users SET twoFAOtp = ? WHERE id = ?', [otp, user.id]);
+      await Send2faMail(user.email, otp);
+      return reply.send({ success: true, requires2FA: true, userId: user.id });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    return reply.send({ success: true, token, name: user.name });
+  } catch (error) {
+    console.error("Erreur serveur dans /login :", error);
+    return reply.code(500).send({ error: 'Erreur serveur' });
+  }
 });
