@@ -24,7 +24,6 @@ export default function Registration() {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "blue";
       ctx.fillRect(10, 10, 100, 100);
 
@@ -52,6 +51,11 @@ export default function Registration() {
     const confirmPassword = form.querySelector<HTMLInputElement>("#confirmPassword")?.value || "";
 
     let formErrors: Record<string, string> = {};
+
+    const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ-]+$/;
+    if (!nameRegex.test(name)) {
+      formErrors.name = "Le nom ne doit contenir que des lettres.";
+    }
 
     if (password !== confirmPassword) {
       formErrors.password = "Les mots de passe ne correspondent pas";
@@ -83,14 +87,18 @@ export default function Registration() {
         body: JSON.stringify(info),
       });
 
-      if (response.ok) {
-        alert("Inscription réussie");
-        navigate("/Connection");
+      const data = await response.json();
+
+      if (response.status === 409) {
+        setErrors({ email: "Adresse e-mail déjà utilisée." });
+      } else if (!response.ok) {
+        setErrors({ general: "Une erreur serveur est survenue. Réessayez plus tard." });
       } else {
-        alert("Erreur serveur");
+        localStorage.setItem("token", data.token);
+        navigate("/Connection");
       }
     } catch (error) {
-      alert("Erreur réseau");
+      setErrors({ general: "Erreur réseau. Veuillez vérifier votre connexion." });
     }
   };
 
@@ -102,7 +110,7 @@ export default function Registration() {
           src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
           className="mx-auto h-10 w-auto"
         />
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+        <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
           Register
         </h2>
         <canvas
@@ -114,6 +122,8 @@ export default function Registration() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        {errors.general && (<p className="text-sm text-red-500 mt-2 text-center">{errors.general}</p>)}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
@@ -127,6 +137,7 @@ export default function Registration() {
               placeholder="Enter your name"
               className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
             />
+            {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -176,7 +187,10 @@ export default function Registration() {
             )}
           </div>
 
-          <button type="submit" className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md">
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md"
+          >
             Sign in
           </button>
         </form>

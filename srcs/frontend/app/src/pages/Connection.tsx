@@ -68,8 +68,9 @@ export default function Connection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      console.log("le mail en gros PITIE " + email + " " + password);
+    
       const data = await response.json();
+    
       if (response.ok) {
           console.log("TA GRAND MERE LA FOLLE");
         if (data.requires2FA){
@@ -85,8 +86,8 @@ export default function Connection() {
         alert("Identifiants invalides");
       }
     } catch (error) {
-      alert("Erreur réseau");
-    }
+      setErrors({ general: "Erreur réseau. Veuillez réessayer." });
+    }    
   };
 
   return (
@@ -109,6 +110,7 @@ export default function Connection() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      {errors.general && (<p className="text-sm text-red-500 mt-2 text-center">{errors.general}</p>)}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-900">
