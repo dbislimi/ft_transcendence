@@ -6,14 +6,15 @@ export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
+const GAMESPEED: number = 5;
 
 export default class Game {
 	private readonly board: Board;
 	private readonly clients: [WebSocket, WebSocket | undefined];
-	private static readonly TICK_RATE = 1000 / 60;
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private maxScore: number = 50;
+	private static readonly TICK_RATE = 1000 / 60;
 
 	constructor(p1: WebSocket, p2?: WebSocket | difficulty) {
 		this.board = new Board();
@@ -69,7 +70,7 @@ export default class Game {
 
 	private gameLoop(): void {
 		const now = performance.now();
-		const deltaTime = (now - this.prevTime) / 1000;
+		const deltaTime = (now - this.prevTime) / 1000 * GAMESPEED;
 		this.prevTime = now;
 
 		const winner = this.board.scores.findIndex((n) => n === this.maxScore);

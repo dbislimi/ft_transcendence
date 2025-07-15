@@ -115,10 +115,10 @@ export default class Board {
 		if (p2.bot) {
 			// p2.moveUp(false);
 			// p2.moveDown(false);
-			if (this.ball.y + this.ball.radius < p2.y) {
+			if (this.ball.y < p2.y + p2.size / 2) {
 				p2.moveUp(true);
 				p2.moveDown(false);
-			} else if (this.ball.y - this.ball.radius > p2.y + p2.size) {
+			} else if (this.ball.y > p2.y + p2.size / 2) {
 				p2.moveUp(false);
 				p2.moveDown(true);
 			}
