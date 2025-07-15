@@ -6,9 +6,10 @@ import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 
 import dbPlugin from '../index.js';
-import authPlugin from './plugins/auth.ts';
 import userPlugin from './plugins/user.ts';
 import wsGame from './plugins/ws-game.ts';
+import RegisterLogin from './plugins/auth.ts';
+import Settings from './plugins/settings.ts';
 
 const fastify = Fastify({
   logger: {
@@ -26,9 +27,10 @@ async function main() {
   await fastify.register(websocket);
 
   await fastify.register(dbPlugin);
-  await fastify.register(authPlugin);
+  await fastify.register(RegisterLogin);
   await fastify.register(userPlugin);
   await fastify.register(wsGame);
+  await fastify.register(Settings);
 
   fastify.get('/', async () => {
     return { hello: 'from docker' };
