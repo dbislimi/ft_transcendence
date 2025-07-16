@@ -12,7 +12,6 @@ export default function Reglages() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // important pour envoyer les cookies
         body: JSON.stringify({ enable2fa: !enable2fa }),
       });
 

@@ -68,7 +68,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       email: string;
       password: string;
     };
-
     try {
       const user = await new Promise<any>((resolve, reject) => {
         db.get(

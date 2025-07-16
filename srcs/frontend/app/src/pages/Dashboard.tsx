@@ -25,7 +25,7 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-
+    //ma connection bug parcequ'on a pas le token
     const headers = { Authorization: `Bearer ${token}` };
 
     Promise.all([

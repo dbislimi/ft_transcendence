@@ -64,7 +64,6 @@ export default function Connection() {
 
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
-        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
@@ -78,6 +77,7 @@ export default function Connection() {
           navigate("/auth");
         }
         else{
+          console.log("CA RENTRE ICI OU CA DORT ZE3MA ???");
           //localStorage.setItem("TokenJwt", data.token);
           navigate("/Dashboard");
         }
