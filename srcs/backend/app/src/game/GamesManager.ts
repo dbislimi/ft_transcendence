@@ -9,6 +9,9 @@ export default class GamesManager {
 	private waitingRoom: number = 0;
 	private nb: number = 0;
 
+	trainBot(ws: WebSocket){
+		
+	}
 	startOffline(ws: WebSocket, diff?: difficulty): {playerId: 0 | undefined, gameId: number}{
 		const game = new Game(ws, diff);
 		console.log(diff);

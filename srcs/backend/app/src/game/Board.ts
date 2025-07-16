@@ -2,6 +2,7 @@ import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
 import type BotController from "./Controller.ts";
 import { EasyController } from "./Controller.ts";
+import type { privateDecrypt } from "crypto";
 
 interface PlayerData {
 	size: number;
@@ -16,8 +17,9 @@ export default class Board {
 	private readonly width: number;
 	private playerSpeed: number = 100;
 	players: [Player, Player];
-	private botController: BotController | undefined;
 	private ball: Ball;
+	private botController: BotController | undefined;
+	private aiLag: number = 0;
 	private score: [number, number] = [0, 0];
 	private full: boolean = false;
 
@@ -139,7 +141,11 @@ export default class Board {
 		}
 	}
 	update(dt: number) {
-		this.botController?.update(this.players[1], this);
+		this.aiLag += dt;
+		if (this.aiLag >= 1){
+			this.botController?.update(this.players[1], this);
+			this.aiLag = 0;
+		}
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
 	}
@@ -151,6 +157,22 @@ export default class Board {
 		this.botController = new EasyController();
 	}
 
+	getReward(player: 0 | 1) {
+		//const maxReward = 1;
+		//const minReward = -maxReward;
+
+		const yDistance = Math.abs(this.players[player].y - this.ball.y) / this.height;
+		let reward = Math.exp(-5 * yDistance);
+
+		return (reward);
+	}
+	getState(player: 0 | 1) {
+		if (this.ball.y < this.players[player].y)
+			return (0);
+		if (this.ball.y > this.players[player].y + this.players[player].size)
+			return (2);
+		return (1);
+	}
 	get H(): number {
 		return this.height;
 	}

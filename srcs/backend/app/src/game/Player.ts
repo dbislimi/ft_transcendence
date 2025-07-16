@@ -10,11 +10,13 @@ export default class Player {
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
 	bot: difficulty | undefined = undefined;
+	readonly id: 0 | 1;
 
 	constructor(field: Board, id: 0 | 1) {
 		this.playerSize = field.H / 6;
 		this.y = field.H / 2 - this.playerSize / 2;
 		Player.playerWidth = field.W / 100;
+		this.id = id;
 		if (id == 0) this.x = Player.playerWidth;
 		else this.x = field.W - 2 * Player.playerWidth;
 	}
