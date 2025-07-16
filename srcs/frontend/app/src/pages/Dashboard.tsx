@@ -25,7 +25,7 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-    //ma connection bug parcequ'on a pas le token
+
     const headers = { Authorization: `Bearer ${token}` };
 
     Promise.all([
@@ -34,8 +34,9 @@ export default function Dashboard() {
       fetch("http://localhost:3000/leaderboard", { headers }),
     ])
       .then(async ([profileRes, matchesRes, leaderboardRes]) => {
+        console.log("VSY FRERE CA RENTRE ICI AU MOINS ?");
         if (!profileRes.ok) throw new Error("Unauthorized");
-
+        console.log("VSY FRERE CA RENTRE ICI AU MOINS belek l'ancien ?");
         const profileData = await profileRes.json();
         const nameMatch = profileData.message.match(/Bonjour (.+)/);
         setUsername(nameMatch ? nameMatch[1] : "Utilisateur");
@@ -44,6 +45,7 @@ export default function Dashboard() {
         if (leaderboardRes.ok) setLeaderboard(await leaderboardRes.json());
       })
       .catch(() => {
+        console.log("c bizarre de malade en vrai nn ?");
         localStorage.removeItem("token");
         navigate("/login");
       });
@@ -90,7 +92,7 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* 🕹️ Mes parties */}
+      {/*  Mes parties */}
       <div className="bg-white rounded shadow-md w-full max-w-2xl p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">🕹️ Mes parties</h2>
         {matches.length === 0 ? (

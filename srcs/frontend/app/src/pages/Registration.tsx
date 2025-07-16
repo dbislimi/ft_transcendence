@@ -94,7 +94,7 @@ export default function Registration() {
       } else if (!response.ok) {
         setErrors({ general: "Une erreur serveur est survenue. Réessayez plus tard." });
       } else {
-        localStorage.setItem("token", data.token);
+        //localStorage.setItem("token", data.token);
         navigate("/Connection");
       }
     } catch (error) {

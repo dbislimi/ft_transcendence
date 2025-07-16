@@ -69,7 +69,7 @@ export default function Connection() {
       });
     
       const data = await response.json();
-    
+      console.log("le token existe il ??   " + data.token);
       if (response.ok) {
           console.log("TA GRAND MERE LA FOLLE");
         if (data.requires2FA){
@@ -78,7 +78,7 @@ export default function Connection() {
         }
         else{
           console.log("CA RENTRE ICI OU CA DORT ZE3MA ???");
-          //localStorage.setItem("TokenJwt", data.token);
+          localStorage.setItem("token", data.token);
           navigate("/Dashboard");
         }
       } 

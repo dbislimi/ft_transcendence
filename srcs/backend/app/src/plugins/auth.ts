@@ -52,11 +52,8 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         );
       });
 
-      const token = jwt.sign({ id: lastID, name, email }, JWT_SECRET, {
-        expiresIn: "2h",
-      });
 
-      return reply.send({ success: true, token, name });
+      return reply.send({ success: true, name });
     } catch (err) {
       console.error("Erreur lors de l'inscription :", err);
       return reply.code(500).send({ error: "Erreur serveur" });

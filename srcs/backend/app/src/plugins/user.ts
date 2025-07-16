@@ -15,9 +15,9 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
     try {
       const token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string };
-
       return reply.send({ message: `Bonjour ${decoded.name}` });
     } catch (err) {
+      console.log("MAIS ME DIS MEME PAS CA VIENT DE LA ");
       return reply.code(401).send({ error: 'Token invalide ou expiré' });
     }
   });
