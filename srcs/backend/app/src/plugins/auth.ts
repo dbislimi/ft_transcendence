@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcrypt, { compare } from "bcrypt";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -51,7 +51,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
           }
         );
       });
-
+      console.log("le lastid de  dylan : " + lastID);
 
       return reply.send({ success: true, name });
     } catch (err) {
@@ -76,7 +76,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
           }
         );
       });
-
+      console.log("le user id que j'utilise moi " + user.id);
       if (!user) {
         return reply.code(401).send({ error: "Utilisateur non trouvé" });
       }

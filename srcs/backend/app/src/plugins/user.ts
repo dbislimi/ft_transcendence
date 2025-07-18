@@ -14,7 +14,9 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 
     try {
       const token = authHeader.split(' ')[1];
+      console.log("azy l'ancien il est vite fait ton token " + token);
       const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string };
+      console.log("azy l'ancien il est vite fait ton code de con ");
       return reply.send({ message: `Bonjour ${decoded.name}` });
     } catch (err) {
       console.log("MAIS ME DIS MEME PAS CA VIENT DE LA ");
