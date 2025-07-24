@@ -38,17 +38,16 @@ export default fp(async function Send2faMail(fastify) {
       pass: 'rwyw lblj tslg ueyy',
     },
   });
-
-  fastify.decorate('send2faMail', async (email: string, otp: string) => {
-    const message = {
+    console.log("azy il est vite fait ton couscous");
+    const Message = {
       from: '"TEST" <Transcendance06000@gmail.com>',
       to: email,
       subject: 'Votre code à 6 chiffres :',
       text: 'Code : ' + otp,
     };
-
+    console.log("azy il est vite fait ton couscous");
     try {
-      let info = await transporter.sendMail(message);
+      let info = await transporter.sendMail(Message);
       console.log('Email envoyé : %s', info.messageId);
       return true;
     } catch (error) {
@@ -94,4 +93,3 @@ export default fp(async function Send2faMail(fastify) {
       }
     );
   });
-});
