@@ -34,9 +34,7 @@ export default function Dashboard() {
       fetch("http://localhost:3000/leaderboard", { headers }),
     ])
       .then(async ([profileRes, matchesRes, leaderboardRes]) => {
-        console.log("VSY FRERE CA RENTRE ICI AU MOINS ?");
         if (!profileRes.ok) throw new Error("Unauthorized");
-        console.log("VSY FRERE CA RENTRE ICI AU MOINS belek l'ancien ?");
         const profileData = await profileRes.json();
         const nameMatch = profileData.message.match(/Bonjour (.+)/);
         setUsername(nameMatch ? nameMatch[1] : "Utilisateur");
@@ -45,7 +43,6 @@ export default function Dashboard() {
         if (leaderboardRes.ok) setLeaderboard(await leaderboardRes.json());
       })
       .catch(() => {
-        console.log("c bizarre de malade en vrai nn ?");
         localStorage.removeItem("token");
         navigate("/login");
       });

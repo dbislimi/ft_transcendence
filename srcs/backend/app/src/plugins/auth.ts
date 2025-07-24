@@ -92,7 +92,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         { expiresIn: "2h" }
       );
 
-      return reply.send({ success: true, token, name: user.name });
+      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1 });
     } catch (err) {
       console.error(err);
       return reply.code(500).send({ error: "Erreur serveur" });

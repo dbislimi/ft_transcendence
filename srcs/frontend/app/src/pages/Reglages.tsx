@@ -5,11 +5,13 @@ export default function Reglages() {
   const [enable2fa, setEnable2fa] = useState(false);
   const [message, setMessage] = useState('');
 
+  const token = localStorage.getItem("token");
   const update2fa = async () => {
     try {
       const response = await fetch('http://localhost:3000/reglages', {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ enable2fa: !enable2fa }),

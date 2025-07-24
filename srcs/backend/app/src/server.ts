@@ -6,10 +6,12 @@ import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 
 import dbPlugin from '../index.js';
+import authPlugin from './plugins/auth.ts';
 import userPlugin from './plugins/user.ts';
 import wsGame from './plugins/ws-game.ts';
-import authPlugin from './plugins/auth.ts';
 import Settings from './plugins/settings.ts';
+import authHook from './plugins/authHook.ts';
+import Send2faMail from './plugins/2fa.ts';
 
 const fastify = Fastify({
   logger: {
@@ -26,8 +28,10 @@ async function main() {
 
   await fastify.register(websocket);
 
+  await fastify.register(authHook);
   await fastify.register(dbPlugin);
   await fastify.register(authPlugin);
+  await fastify.register(Send2faMail);
   await fastify.register(userPlugin);
   await fastify.register(wsGame);
   await fastify.register(Settings);

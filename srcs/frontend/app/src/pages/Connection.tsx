@@ -60,7 +60,6 @@ export default function Connection() {
       return;
     }
     try {
-      console.log("AAAAAAAAAAAAAAAAAAAAAAAA Sending request to login:", email, password);
 
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
@@ -69,15 +68,13 @@ export default function Connection() {
       });
     
       const data = await response.json();
-      console.log("le token existe il ??   " + data.token);
+      console.log("la var en question " + data.enable2fa);
       if (response.ok) {
-          console.log("TA GRAND MERE LA FOLLE");
-        if (data.requires2FA){
+        if (data.enable2fa){
           //localStorage.setItem("for2FaUserId", data.userID.toString());
           navigate("/auth");
         }
         else{
-          console.log("CA RENTRE ICI OU CA DORT ZE3MA ???");
           localStorage.setItem("token", data.token);
           navigate("/Dashboard");
         }
