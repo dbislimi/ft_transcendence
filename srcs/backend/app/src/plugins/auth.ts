@@ -86,6 +86,28 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         return reply.code(401).send({ error: "Mot de passe invalide" });
       }
 
+      /*if (user.twoFAEnabled === 1) {
+      const otp = fastify.generateOtp();
+
+      await new Promise<void>((resolve, reject) => {
+        db.run(
+          'UPDATE users SET twoFAOtp = ? WHERE id = ?',
+          [otp, user.id],
+          (err: any) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+
+      const emailSent = await fastify.send2faEmail(user.email, otp);
+      if (!emailSent) {
+        return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
+      }
+
+      return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
+    }*/ // si je genere jwt avant et le reply send je vais cash au dashboard ??
+
       const token = jwt.sign(
         { id: user.id, name: user.name, email },
         JWT_SECRET,

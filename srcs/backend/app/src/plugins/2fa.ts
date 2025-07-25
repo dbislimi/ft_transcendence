@@ -30,37 +30,36 @@ export function GenerateOtp(){
     return crypto.randomInt(100000, 999999).toString();
 }
 
-export default fp(async function Send2faMail(fastify) {
-    const transporter = nodemailer.createTransport({
+export default fp(async function Send2faPlugin(fastify) {
+  const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: 'Transcendance06000@gmail.com',
       pass: 'rwyw lblj tslg ueyy',
     },
   });
-    console.log("azy il est vite fait ton couscous");
-    const Message = {
-      from: '"TEST" <Transcendance06000@gmail.com>',
+
+  // Ajoute une méthode réutilisable dans fastify
+  fastify.decorate('send2faEmail', async (email: string, otp: string) => {
+    const message = {
+      from: '"2FA Service" <Transcendance06000@gmail.com>',
       to: email,
-      subject: 'Votre code à 6 chiffres :',
-      text: 'Code : ' + otp,
+      subject: 'Votre code de vérification',
+      text: `Votre code est : ${otp}`,
     };
-    console.log("azy il est vite fait ton couscous");
+
     try {
-      let info = await transporter.sendMail(Message);
-      console.log('Email envoyé : %s', info.messageId);
+      await transporter.sendMail(message);
       return true;
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du mail:', error);
+      fastify.log.error('Erreur lors de l\'envoi du mail:', error);
       return false;
     }
   });
 
+  // Route pour vérifier le code OTP
   fastify.post('/check2fa', async (request, reply) => {
-    const { userId, code } = request.body as {
-      userId: number;
-      code: string;
-    };
+    const { userId, code } = request.body as { userId: number; code: string };
 
     fastify.db.get(
       'SELECT * FROM users WHERE id = ?',
@@ -80,7 +79,7 @@ export default fp(async function Send2faMail(fastify) {
 
         const token = jwt.sign(
           { id: user.id, name: user.name },
-          JWT_SECRET,
+          process.env.JWT_SECRET!,
           { expiresIn: '2h' }
         );
 
@@ -93,3 +92,7 @@ export default fp(async function Send2faMail(fastify) {
       }
     );
   });
+
+  // Ajoute la méthode de génération d'OTP
+  fastify.decorate('generateOtp', GenerateOtp);
+});
