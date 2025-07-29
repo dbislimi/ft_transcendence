@@ -68,13 +68,15 @@ export default function Connection() {
       });
     
       const data = await response.json();
-      console.log("la var en question " + data.enable2fa);
+      //console.log("la var en question " + data.enable2fa);
+      console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
-        if (data.enable2fa){
-          //localStorage.setItem("for2FaUserId", data.userID.toString());
+        if (data.require2fa){
+          localStorage.setItem("for2FaUserId", data.userId.toString());
           navigate("/auth");
         }
         else{
+          console.log("BAAAAAAAAAAAAAAAAAAAAAA");
           localStorage.setItem("token", data.token);
           navigate("/Dashboard");
         }

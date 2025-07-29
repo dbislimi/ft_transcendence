@@ -60,38 +60,34 @@ export default fp(async function Send2faPlugin(fastify) {
   // Route pour vérifier le code OTP
   fastify.post('/check2fa', async (request, reply) => {
     const { userId, code } = request.body as { userId: number; code: string };
+  
+  try {
+    const dbGet = util.promisify(fastify.db.get.bind(fastify.db));
+    const dbRun = util.promisify(fastify.db.run.bind(fastify.db));
+    const user = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
 
-    fastify.db.get(
-      'SELECT * FROM users WHERE id = ?',
-      [userId],
-      (err: any, user: any) => {
-        if (err) {
-          return reply.code(500).send({ error: 'Erreur serveur' });
-        }
+    if (!user) {
+      return reply.code(401).send({ error: 'Utilisateur non trouvé' });
+    }
 
-        if (!user) {
-          return reply.code(401).send({ error: 'Utilisateur non trouvé' });
-        }
+    if (user.twoFAOtp !== code) {
+      return reply.code(401).send({ error: 'Code incorrect' });
+    }
 
-        if (user.twoFAOtp !== code) {
-          return reply.code(401).send({ error: 'Code incorrect' });
-        }
-
-        const token = jwt.sign(
-          { id: user.id, name: user.name },
-          process.env.JWT_SECRET!,
-          { expiresIn: '2h' }
-        );
-
-        fastify.db.run(
-          'UPDATE users SET twoFAOtp = NULL WHERE id = ?',
-          [user.id]
-        );
-
-        return reply.send({ success: true, token });
-      }
+    const token = jwt.sign(
+      { id: user.id, name: user.name, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "2h" }
     );
-  });
+
+    await dbRun('UPDATE users SET twoFAOtp = NULL WHERE id = ?', [user.id]);
+
+    return reply.send({ success: true, token });
+  } catch (err) {
+    fastify.log.error(err);
+    return reply.code(500).send({ error: 'Erreur serveur' });
+  }
+});
 
   // Ajoute la méthode de génération d'OTP
   fastify.decorate('generateOtp', GenerateOtp);

@@ -6,6 +6,34 @@ export default function Reglages() {
   const [message, setMessage] = useState('');
 
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/reglages', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setEnable2fa(data.twoFAEnabled);
+        } else {
+          setMessage(data.error || 'Erreur lors du chargement des réglages');
+        }
+      } catch (error) {
+        setMessage('Erreur de connexion au serveur');
+      }
+    };
+
+    if (token) {
+      fetchSettings();
+    }
+  }, [token]);
+
   const update2fa = async () => {
     try {
       const response = await fetch('http://localhost:3000/reglages', {

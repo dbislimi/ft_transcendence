@@ -6,7 +6,13 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export default fp(async function authHook(fastify: FastifyInstance) {
   fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
+    const excludedRoutes = ["/login", "/register", "/check2fa"];
+    if (excludedRoutes.includes(request.url))
+      return;
+
     const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer "))
+      return reply.code(401).send({ error: "token manquant" });
 
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];

@@ -43,6 +43,7 @@ export default function Dashboard() {
         if (leaderboardRes.ok) setLeaderboard(await leaderboardRes.json());
       })
       .catch(() => {
+        console.log("ici ????");
         localStorage.removeItem("token");
         navigate("/login");
       });

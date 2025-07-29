@@ -7,6 +7,26 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const Settings = async (fastify: FastifyInstance) => {
+  fastify.get('/reglages', async (request, reply) => {
+  if (!request.user) {
+    return reply.code(401).send({ error: 'Non autorisé' });
+  }
+
+  try {
+    const dbGet = util.promisify(fastify.db.get.bind(fastify.db));
+    const user = await dbGet('SELECT twoFAEnabled FROM users WHERE id = ?', [request.user.id]);
+
+    if (!user) {
+      return reply.code(404).send({ error: 'Utilisateur introuvable' });
+    }
+
+    return reply.send({ twoFAEnabled: !!user.twoFAEnabled });
+  } catch (err) {
+    console.error('Erreur GET /reglages :', err);
+    return reply.code(500).send({ error: 'Erreur serveur' });
+  }
+});
+
   fastify.post('/reglages', async (request, reply) => {
     if (!request.user) {
       return reply.code(401).send({ error: 'Non autorisé' });

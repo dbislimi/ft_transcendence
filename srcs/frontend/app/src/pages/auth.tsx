@@ -26,12 +26,12 @@ export default function EnterCode() {
     const data = await response.json();
 
     if (response.ok && data.success){
-      localStorage.setItem('TokenJwt', data.token);
+      localStorage.setItem('token', data.token);
       navigate('/Dashboard');
     }
     else {
       setError(data.error || 'code incorrect');
-    }
+    } 
   } catch (error){
     setError('erreur reseau, veuillez reessayer.');
   }
