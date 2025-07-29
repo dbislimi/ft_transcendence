@@ -12,7 +12,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	const games: GamesManager = new GamesManager();
 	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req) => {
 		const clientId = uuidv4();
-		let player: { playerId: 0 | 1 | undefined; gameId: number } | undefined;
+		let player: { playerId: 0 | 1 | "train" | undefined; gameId: number } | undefined;
 		socket.on("message", (message) => {
 			const data = JSON.parse(message.toString());
 			console.log(data);
@@ -28,6 +28,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					case "play_offline":
 						player = games.startOffline(socket, data.body.diff);
 						break;
+					case "trainbot":
+						games.trainBot(socket, "easy", 100);
 				}
 			} else if (data.event === "play" && player !== undefined) {
 				if (player.playerId === undefined)
@@ -44,6 +46,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			console.log("close ", clientId);
 			games.removeFromQueue(clientId);
 			if (!player) return;
+			if (player.playerId === "train")
+				games.close = true;
 			games.getRoom(player.gameId)?.pause();
 			games.removeRoom(player.gameId);
 		});

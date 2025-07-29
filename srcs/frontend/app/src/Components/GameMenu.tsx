@@ -53,6 +53,14 @@ export default function GameMenu({ start }: Props) {
 				>
 				Play
 			</button>
+			
+			<button
+				type="button"
+				onClick={!online ? () => start(true, difficulty) : undefined}
+				className="text-white border border-white p-2 bg-red-500"
+				>
+				Train
+			</button>
 		</div>
 	);
 }

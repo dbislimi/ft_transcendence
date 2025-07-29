@@ -2,16 +2,6 @@ import Board from "./Board.ts";
 import Player from "./Player.ts";
 import np from "./MyNumpy/MyNumpy.ts";
 import * as fs from "fs";
-import {CategoryScale, Chart, LinearScale, LineController, LineElement, PointElement} from 'chart.js';
-import {Canvas} from '@napi-rs/canvas';
-import { brotliCompress } from "zlib";
-Chart.register([
-		CategoryScale,
-		LineController,
-		LineElement,
-		LinearScale,
-		PointElement
-		]);
 
 export default interface BotController {
 	update(player: Player, board: Board): void;
@@ -30,15 +20,25 @@ export class EasyController implements BotController {
 	private rewards: number[] = [];
 	private lastState: number | null = null;
 	private lastAction: number | null = null;
+	private start: number;
 
-	constructor(
-		learning_rate = 0.1,
-		discount_factor = 0.9,
-		epsilon = 1,
-		epsilon_decay = 0.00001,
-		epsilon_min = 0.01,
-		training = false
-	) {
+	constructor( options: {
+		learning_rate?: number,
+		discount_factor?: number,
+		epsilon?: number,
+		epsilon_decay?: number,
+		epsilon_min?: number,
+		training?: boolean
+	} = {} ) {
+		const {
+			learning_rate = 0.1,
+			discount_factor = 0.9,
+			epsilon = 1,
+			epsilon_decay = 0.00001,
+			epsilon_min = 0.01,
+			training = false
+			} = options;
+		this.start = Date.now();
 		this.training = training;
 		this.learning_rate = learning_rate;
 		this.discount_factor = discount_factor;
@@ -79,15 +79,17 @@ export class EasyController implements BotController {
 	public save(episode: number){
 		fs.writeFileSync(`qtable_easy_episode_${episode}.json`, JSON.stringify(this.qTable, null, 2));
 	}
+
 	private load() {
 		const raw = fs.readFileSync("qtable_easy.json", "utf-8");
 		this.qTable = JSON.parse(raw);
 	}
 
-	
 	update(player: Player, board: Board): void {
+		const timestamp = Date.now();
+		console.log("time: ", timestamp - this.start);
 		const state = board.getState(player.id);
-		if (this.lastState !== null && this.lastAction !== null){
+		if (this.training && this.lastState !== null && this.lastAction !== null){
 			const reward = board.getReward(player.id);
 			this.rewards.push(reward);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
@@ -100,11 +102,13 @@ export class EasyController implements BotController {
 				player.moveUp(true);
 				player.moveDown(false);
 				break;
+			case 1:
+				player.moveUp(false);
+				player.moveDown(false);
+				break;
 			case 2:
 				player.moveUp(false);
 				player.moveDown(true);
-				break;
-			default:
 				break;
 		}
 

@@ -132,11 +132,18 @@ export default function Game() {
 		wsRef.current?.send(JSON.stringify({ event: "restart" }));
 	};
 	const handlePlay = (online: boolean, diff?: difficulty) => {
-		if (online)
+		if (online && diff === undefined)
 			wsRef.current?.send(
 				JSON.stringify({
 					event: "start",
 					body: { action: "play_online" },
+				})
+			);
+		else if (online && diff)
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: { action: "trainbot", diff: diff },
 				})
 			);
 		else

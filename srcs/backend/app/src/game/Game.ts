@@ -2,27 +2,37 @@ import type WebSocket from "ws";
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
 
+type trainDifficulty = `train${difficulty}`;
 export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 5;
+const GAMESPEED: number = 1;
 
 export default class Game {
 	private readonly board: Board;
 	private readonly clients: [WebSocket, WebSocket | undefined];
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
-	private maxScore: number = 50;
+	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
+	private onEnd: (() => void) | undefined;
+	private onAbort!: () => void;
+	private signal: AbortSignal | undefined = undefined;
 
-	constructor(p1: WebSocket, p2?: WebSocket | difficulty) {
+	constructor(p1: WebSocket, p2?: WebSocket | difficulty | trainDifficulty, onEnd?: () => void) {
+		this.onEnd = onEnd;
 		this.board = new Board();
-		if (typeof p2 === "object")
+		if (typeof p2 === "object"){
 			this.clients = [p1, p2];
-		else {
-			this.clients = [p1, undefined];
-			this.board.connectBot(p2);
+			return ;
+		}
+		this.clients = [p1, undefined];
+		if (p2[0] !== 't')
+			this.board.connectBot(1 ,p2);
+		else{
+			this.board.connectBot(1, "hard");
+			this.board.connectBot(0, p2.slice(5));
 		}
 	}
 
@@ -31,6 +41,19 @@ export default class Game {
 		cb?: (err?: Error) => void
 	) {
 		for (const ws of this.clients) ws?.send(data, cb);
+	}
+	public startAsync(signal: AbortSignal){
+		this.signal = signal;
+		return new Promise<void>((resolve, reject) => {
+			this.onAbort = () => {
+				this.pause();
+				signal.removeEventListener("abort", this.onAbort);
+				reject(new Error("Training aborted."));
+			}
+			signal.addEventListener("abort", this.onAbort);
+			this.onEnd = resolve;
+			this.start();
+		})
 	}
 	public start(): void {
 		this.prevTime = performance.now();
@@ -44,8 +67,10 @@ export default class Game {
 	}
 	private stop(winner: number): void {
 		this.pause();
+		this.signal?.removeEventListener("abort", this.onAbort);
 		const data = { event: "win", body: winner };
 		this.send(JSON.stringify(data));
+		this.onEnd?.();
 	}
 
 	private up(type: string, player: 0 | 1) {

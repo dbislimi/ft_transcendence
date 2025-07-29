@@ -28,7 +28,7 @@ function PongCanvas({ ball, players, scale }: prop) {
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.font = "300px Audiowide";
-			c.fillStyle = "white";
+			c.fillStyle = "black";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(

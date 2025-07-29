@@ -2,7 +2,6 @@ import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
 import type BotController from "./Controller.ts";
 import { EasyController } from "./Controller.ts";
-import type { privateDecrypt } from "crypto";
 
 interface PlayerData {
 	size: number;
@@ -18,7 +17,7 @@ export default class Board {
 	private playerSpeed: number = 100;
 	players: [Player, Player];
 	private ball: Ball;
-	private botController: BotController | undefined;
+	private botController: BotController[];
 	private aiLag: number = 0;
 	private score: [number, number] = [0, 0];
 	private full: boolean = false;
@@ -28,7 +27,7 @@ export default class Board {
 		this.width = width;
 		this.ball = new Ball(this);
 		this.players = [new Player(this, 0), new Player(this, 1)];
-		this.botController = undefined
+		this.botController = [];
 	}
 
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
@@ -114,7 +113,7 @@ export default class Board {
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p2.bot) {
+		if (p2.bot === "hard") {
 			// p2.moveUp(false);
 			// p2.moveDown(false);
 			if (this.ball.y < p2.y + p2.size / 2) {
@@ -143,8 +142,9 @@ export default class Board {
 	update(dt: number) {
 		this.aiLag += dt;
 		if (this.aiLag >= 1){
-			this.botController?.update(this.players[1], this);
-			this.aiLag = 0;
+			for (let i = 0; i < this.botController.length; ++i)
+				this.botController[i]?.update(this.players[i], this);
+			this.aiLag -= 1;
 		}
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
@@ -152,26 +152,36 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
-	connectBot(diff?: difficulty) {
-		this.players[1].bot = diff;
-		this.botController = new EasyController();
+	connectBot(id : 0 | 1, diff: difficulty) {
+		this.players[id].bot = diff;
+		switch (diff){
+			case "easy":
+				this.botController[id] = new EasyController({training: true});
+				break;
+			case "medium":
+				this.botController[id] = new EasyController({training: true});
+				break ;
+			// case "hard":
+			// 	this.botController[id] = new EasyController({training: true});
+			// 	break ;
+		}
 	}
 
 	getReward(player: 0 | 1) {
 		//const maxReward = 1;
 		//const minReward = -maxReward;
 
-		const yDistance = Math.abs(this.players[player].y - this.ball.y) / this.height;
+		const yDistance =
+			Math.abs(this.players[player].y - this.ball.y) / this.height;
 		let reward = Math.exp(-5 * yDistance);
 
-		return (reward);
+		return reward;
 	}
 	getState(player: 0 | 1) {
-		if (this.ball.y < this.players[player].y)
-			return (0);
+		if (this.ball.y < this.players[player].y) return 0;
 		if (this.ball.y > this.players[player].y + this.players[player].size)
-			return (2);
-		return (1);
+			return 2;
+		return 1;
 	}
 	get H(): number {
 		return this.height;
