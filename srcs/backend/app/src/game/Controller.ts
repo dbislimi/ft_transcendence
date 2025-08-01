@@ -3,13 +3,13 @@ import Player from "./Player.ts";
 import np from "./MyNumpy/MyNumpy.ts";
 import * as fs from "fs";
 
-export default interface BotController {
-	update(player: Player, board: Board): void;
-}
-// alpha = learning_rate
+//export default interface BotController {
+//	update(player: Player, board: Board): void;
+//}
+//// alpha = learning_rate
 // gamma = discount_factor
 // epsilon = explo
-export class EasyController implements BotController {
+export default class BotController {
 	private training: boolean;
 	private learning_rate: number;
 	private discount_factor: number;
@@ -17,7 +17,7 @@ export class EasyController implements BotController {
 	private epsilon_decay: number;
 	private epsilon_min: number;
 	private qTable: number[][] = [[]];
-	private rewards: number[] = [];
+	rewards: number[] = [];
 	private lastState: number | null = null;
 	private lastAction: number | null = null;
 	private start: number;
@@ -77,7 +77,7 @@ export class EasyController implements BotController {
 	}
 
 	public save(episode: number){
-		fs.writeFileSync(`qtable_easy_episode_${episode}.json`, JSON.stringify(this.qTable, null, 2));
+		fs.writeFileSync(`../qtable_saves/qtable_easy_episode_${episode}.json`, JSON.stringify(this.qTable, null, 2), 'utf-8');
 	}
 
 	private load() {
@@ -85,13 +85,13 @@ export class EasyController implements BotController {
 		this.qTable = JSON.parse(raw);
 	}
 
-	update(player: Player, board: Board): void {
+	update(player: Player, board: Board): number {
+		let reward = 0;
 		const timestamp = Date.now();
-		console.log("time: ", timestamp - this.start);
+		//console.log("time: ", timestamp - this.start);
 		const state = board.getState(player.id);
 		if (this.training && this.lastState !== null && this.lastAction !== null){
-			const reward = board.getReward(player.id);
-			this.rewards.push(reward);
+			reward = board.getReward(player.id);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
 		const action = this.chooseAction(state);
@@ -111,7 +111,7 @@ export class EasyController implements BotController {
 				player.moveDown(true);
 				break;
 		}
-
+		return (reward);
 	}
 }
 

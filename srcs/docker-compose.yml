@@ -3,6 +3,7 @@ services:
     build: ./backend
     container_name: api
     volumes:
+      - ../qtable_saves:/usr/qtable_saves
       - ./backend/app:/usr/app
       - /usr/app/node_modules
     ports:

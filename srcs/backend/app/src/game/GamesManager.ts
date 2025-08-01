@@ -2,7 +2,7 @@ import Game from "./Game.ts";
 import type { clientSocket } from "./Game.ts";
 import WebSocket from "ws";
 import type { difficulty } from "./Player.ts";
-import Player from "./Player.ts";
+import type { trainDifficulty } from "./Game.ts"
 
 export default class GamesManager {
 	private rooms: Record<number, Game> = {};
@@ -15,9 +15,10 @@ export default class GamesManager {
 		const { signal } = controller;
 
 		ws.on('close', () => controller.abort());
+		const game = new Game(ws, "train" + bot as trainDifficulty);
 		for (let i = 0; i < games; ++i){
 			if (signal.aborted) break;
-			const game = new Game(ws, "train" + bot);
+			console.log(`game ${i + 1}`);
 			try {
 				await game.startAsync(signal);
 			} catch (e) {
@@ -37,7 +38,7 @@ export default class GamesManager {
 		ws: WebSocket,
 		diff?: difficulty
 	): { playerId: 0 | undefined; gameId: number } {
-		const game = new Game(ws, diff, () => this.removeRoom(this.nb));
+		const game = new Game(ws, diff as difficulty, () => this.removeRoom(this.nb));
 		console.log(diff);
 
 		game.start();

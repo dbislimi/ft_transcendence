@@ -2,12 +2,12 @@ import type WebSocket from "ws";
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
 
-type trainDifficulty = `train${difficulty}`;
+export type trainDifficulty = `train${difficulty}`;
 export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 1;
+const GAMESPEED: number = 100;
 
 export default class Game {
 	private readonly board: Board;
@@ -20,7 +20,7 @@ export default class Game {
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
 
-	constructor(p1: WebSocket, p2?: WebSocket | difficulty | trainDifficulty, onEnd?: () => void) {
+	constructor(p1: WebSocket, p2: WebSocket | difficulty | trainDifficulty | undefined, onEnd?: () => void) {
 		this.onEnd = onEnd;
 		this.board = new Board();
 		if (typeof p2 === "object"){
@@ -28,11 +28,14 @@ export default class Game {
 			return ;
 		}
 		this.clients = [p1, undefined];
+		if (p2 === undefined)
+			return;
 		if (p2[0] !== 't')
-			this.board.connectBot(1 ,p2);
+			this.board.connectBot(1 ,p2 as difficulty);
 		else{
+			this.board.Training = true;
 			this.board.connectBot(1, "hard");
-			this.board.connectBot(0, p2.slice(5));
+			this.board.connectBot(0, p2.slice(5) as difficulty);
 		}
 	}
 
@@ -52,7 +55,7 @@ export default class Game {
 			}
 			signal.addEventListener("abort", this.onAbort);
 			this.onEnd = resolve;
-			this.start();
+			this.restart();
 		})
 	}
 	public start(): void {
@@ -72,7 +75,11 @@ export default class Game {
 		this.send(JSON.stringify(data));
 		this.onEnd?.();
 	}
-
+	private restart(){
+		this.board.restart();
+		console.log(this.board.Rewards);
+		this.start();
+	}
 	private up(type: string, player: 0 | 1) {
 		if (!this.board.players[player].up && type === "press") {
 			this.board.players[player].moveUp(true);

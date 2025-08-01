@@ -1,7 +1,7 @@
 import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
-import type BotController from "./Controller.ts";
-import { EasyController } from "./Controller.ts";
+import BotController from "./Controller.ts";
+//import { EasyController } from "./Controller.ts";
 
 interface PlayerData {
 	size: number;
@@ -17,10 +17,12 @@ export default class Board {
 	private playerSpeed: number = 100;
 	players: [Player, Player];
 	private ball: Ball;
+	private training: boolean = false;
 	private botController: BotController[];
 	private aiLag: number = 0;
+	private botReward: number = 0;
 	private score: [number, number] = [0, 0];
-	private full: boolean = false;
+	private gamesNb: number = 0;
 
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
@@ -143,7 +145,7 @@ export default class Board {
 		this.aiLag += dt;
 		if (this.aiLag >= 1){
 			for (let i = 0; i < this.botController.length; ++i)
-				this.botController[i]?.update(this.players[i], this);
+				this.botReward += this.botController[i]?.update(this.players[i], this);
 			this.aiLag -= 1;
 		}
 		this.updatePlayersPosition(dt);
@@ -156,10 +158,10 @@ export default class Board {
 		this.players[id].bot = diff;
 		switch (diff){
 			case "easy":
-				this.botController[id] = new EasyController({training: true});
+				this.botController[id] = new BotController({training: this.training});
 				break;
 			case "medium":
-				this.botController[id] = new EasyController({training: true});
+				this.botController[id] = new BotController({training: this.training});
 				break ;
 			// case "hard":
 			// 	this.botController[id] = new EasyController({training: true});
@@ -183,6 +185,19 @@ export default class Board {
 			return 2;
 		return 1;
 	}
+	restart(){
+		this.score = [0, 0];
+		this.ball.reset(this);
+		this.players[0].y = this.height / 2;
+		this.players[1].y = this.height / 2;
+		if (this.training){
+			if (this.gamesNb % 10 == 0)
+				this.botController[0].save(this.gamesNb);
+			this.botController[0].rewards.push(this.botReward);
+			this.botReward = 0;
+		}
+		++this.gamesNb;
+	}
 	get H(): number {
 		return this.height;
 	}
@@ -195,7 +210,10 @@ export default class Board {
 	get scores(): [p1: number, p2: number] {
 		return this.score;
 	}
-	get isFull() {
-		return this.full;
+	set Training(flag: boolean){
+		this.training = flag;
+	}
+	get Rewards(){
+		return (this.botController[0].rewards);
 	}
 }
