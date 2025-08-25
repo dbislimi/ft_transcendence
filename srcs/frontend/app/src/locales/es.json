@@ -1,0 +1,5 @@
+{
+    "nav": { "signin": "Registro", "settings": "Ajustes" },
+    "home": { "connectBtn": "Conexión", "registrationBtn": "Registro", "gameBtn": "Juego", "subtitle": "Desafía tus límites en el universo de Pong" },
+    "game": { "start": "iniciar", "stop": "detener", "speedUnit": "km/h" }
+  }

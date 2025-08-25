@@ -1,0 +1,5 @@
+{
+    "nav": { "signin": "Sign in", "settings": "Settings" },
+    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "subtitle": "Challenge your limits in the Pong universe" },
+    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" }
+  }

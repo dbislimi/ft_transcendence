@@ -1,0 +1,17 @@
+{
+  "nav": { 
+    "signin": "تسجيل", 
+    "settings": "الإعدادات" 
+  },
+  "home": { 
+    "connectBtn": "اتصال", 
+    "registrationBtn": "تسجيل", 
+    "gameBtn": "لعبة",
+    "subtitle": "تحدى حدودك في عالم بونغ"
+  },
+  "game": { 
+    "start": "ابدأ", 
+    "stop": "توقف", 
+    "speedUnit": "كم/ساعة" 
+  }
+}

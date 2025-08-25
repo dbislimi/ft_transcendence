@@ -71,7 +71,8 @@ export default function SpaceBackground() {
 	useEffect(() => {
 		const header = document.querySelector("header");
 		const canvas = canvasRef.current;
-		if (!canvas || !header) return;
+		if (!canvas || !header)
+			return;
 		let Stars: Star[] = [];
 		const resize = () => {
 			canvas.width = window.innerWidth;
@@ -82,8 +83,8 @@ export default function SpaceBackground() {
 			}
 		};
 		const c = canvas.getContext("2d");
-		if (!c) return;
-		
+		if (!c)
+			return;
 		const loop = () => {
 			c.fillStyle = "rgba(0,0,0,0.3)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
