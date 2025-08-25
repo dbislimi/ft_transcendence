@@ -121,7 +121,7 @@ export default function Home() {
                 <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                 <button className="relative px-8 py-4 bg-black/50 backdrop-blur-sm rounded-lg leading-none flex items-center justify-center w-full border border-orange-500/30">
                   <span className="text-orange-400 group-hover:text-orange-300 transition-colors duration-200 text-lg font-semibold">
-                    À propos de nous
+                    {t('home.aboutBtn') || 'À propos de nous'}
                   </span>
                 </button>
               </div>

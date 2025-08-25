@@ -1,5 +1,20 @@
 {
     "nav": { "signin": "Sign in", "settings": "Settings" },
-    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "subtitle": "Challenge your limits in the Pong universe" },
-    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" }
+    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "aboutBtn": "About Us", "subtitle": "Challenge your limits in the Pong universe" },
+    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" },
+  "about": {
+    "title": "Our Team",
+    "subtitle": "Discover the talents behind Transcendence",
+    "role": "Full-Stack Developer",
+    "pathway": "Pathway",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "portfolio": "Portfolio",
+    "descriptions": {
+      "thomas": "Developer passionate about modern web technologies and innovation. Specialized in full-stack development with a creative and methodical approach.",
+      "bilal": "Expert in backend development and software architecture. Passionate about performance and application scalability.",
+      "dylan": "Creative frontend developer with an eye for design and user experience. Specialized in modern and reactive interfaces.",
+      "dren": "Versatile developer with expertise in DevOps and robust application development. Passionate about automation and efficiency."
+    }
+  }
   }

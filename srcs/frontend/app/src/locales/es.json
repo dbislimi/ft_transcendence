@@ -1,5 +1,20 @@
 {
     "nav": { "signin": "Registro", "settings": "Ajustes" },
-    "home": { "connectBtn": "Conexión", "registrationBtn": "Registro", "gameBtn": "Juego", "subtitle": "Desafía tus límites en el universo de Pong" },
-    "game": { "start": "iniciar", "stop": "detener", "speedUnit": "km/h" }
+    "home": { "connectBtn": "Conexión", "registrationBtn": "Registro", "gameBtn": "Juego", "aboutBtn": "Sobre Nosotros", "subtitle": "Desafía tus límites en el universo de Pong" },
+    "game": { "start": "iniciar", "stop": "detener", "speedUnit": "km/h" },
+  "about": {
+    "title": "Nuestro Equipo",
+    "subtitle": "Descubre los talentos detrás de Transcendence",
+    "role": "Desarrollador Full-Stack",
+    "pathway": "Trayectoria",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "portfolio": "Portfolio",
+    "descriptions": {
+      "thomas": "Desarrollador apasionado por las tecnologías web modernas e innovación. Especializado en desarrollo full-stack con un enfoque creativo y metódico.",
+      "bilal": "Experto en desarrollo backend y arquitectura de software. Apasionado por el rendimiento y la escalabilidad de las aplicaciones.",
+      "dylan": "Desarrollador frontend creativo con ojo para el diseño y la experiencia del usuario. Especializado en interfaces modernas y reactivas.",
+      "dren": "Desarrollador versátil con experiencia en DevOps y desarrollo de aplicaciones robustas. Apasionado por la automatización y eficiencia."
+    }
+  }
   }
