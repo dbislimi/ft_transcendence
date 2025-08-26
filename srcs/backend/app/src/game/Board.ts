@@ -2,6 +2,7 @@ import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
 import BotController from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
+import Bonus from "./Bonus.ts";
 
 interface PlayerData {
 	size: number;
@@ -17,6 +18,9 @@ export default class Board {
 	private playerSpeed: number = 100;
 	players: [Player, Player];
 	private ball: Ball;
+	private bonus: Bonus[] = [];
+	private bonusNb: number = 1;
+	private bonusTime: number;
 	private training: boolean = false;
 	private botController: BotController[];
 	private aiLag: number = 0;
@@ -30,6 +34,7 @@ export default class Board {
 		this.ball = new Ball(this);
 		this.players = [new Player(this, 0), new Player(this, 1)];
 		this.botController = [];
+		this.bonusNb = Math.random() * 10;
 	}
 
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
@@ -71,6 +76,22 @@ export default class Board {
 			p2: { ...this.players[1].getData(), score: this.score[1] },
 		};
 	}
+	checkBonusCollision(x: number, nextX: number) {
+		const player: number = this.ball.dx > 0 ? 0 : 1;
+		if (x >= this.width / 2 - 10 && x <= this.width / 2 + 10)
+			this.bonus = this.bonus.filter(bonus => {
+				if (Math.pow(this.ball.x - this.width / 2, 2) + Math.pow(this.ball.y - bonus.y, 2) <= Math.pow(this.ball.radius + bonus.radius, 2)){
+					bonus.apply(this, this.players[player]);
+					return (false);
+				}
+				return (true);
+			})
+
+		else if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) ||
+				(x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
+		{
+		}
+	}
 	updateBallPosition(dt: number): void {
 		const { x, y } = this.ball.getXY();
 		let { nextX, nextY } = this.ball.getNextXY(dt);
@@ -85,6 +106,8 @@ export default class Board {
 		const nextLeftEdge = nextX - radius;
 		const prevRightEdge = x + radius;
 		const nextRightEdge = nextX + radius;
+		// if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) || (x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
+		this.checkBonusCollision();
 		if (nextY - radius <= 0 || nextY + radius >= this.height) {
 			this.bounceBallY(null);
 			nextY = Math.max(radius, Math.min(nextY, this.height - radius));
@@ -143,9 +166,12 @@ export default class Board {
 	}
 	update(dt: number) {
 		this.aiLag += dt;
-		if (this.aiLag >= 1){
+		if (this.aiLag >= 1) {
 			for (let i = 0; i < this.botController.length; ++i)
-				this.botReward += this.botController[i]?.update(this.players[i], this);
+				this.botReward += this.botController[i]?.update(
+					this.players[i],
+					this
+				);
 			this.aiLag -= 1;
 		}
 		this.updatePlayersPosition(dt);
@@ -154,15 +180,19 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
-	connectBot(id : 0 | 1, diff: difficulty) {
+	connectBot(id: 0 | 1, diff: difficulty) {
 		this.players[id].bot = diff;
-		switch (diff){
+		switch (diff) {
 			case "easy":
-				this.botController[id] = new BotController({training: this.training});
+				this.botController[id] = new BotController({
+					training: this.training,
+				});
 				break;
 			case "medium":
-				this.botController[id] = new BotController({training: this.training});
-				break ;
+				this.botController[id] = new BotController({
+					training: this.training,
+				});
+				break;
 			// case "hard":
 			// 	this.botController[id] = new EasyController({training: true});
 			// 	break ;
@@ -185,12 +215,12 @@ export default class Board {
 			return 2;
 		return 1;
 	}
-	restart(){
+	restart() {
 		this.score = [0, 0];
 		this.ball.reset(this);
 		this.players[0].y = this.height / 2;
 		this.players[1].y = this.height / 2;
-		if (this.training){
+		if (this.training) {
 			if (this.gamesNb % 10 == 0)
 				this.botController[0].save(this.gamesNb);
 			this.botController[0].rewards.push(this.botReward);
@@ -210,10 +240,10 @@ export default class Board {
 	get scores(): [p1: number, p2: number] {
 		return this.score;
 	}
-	set Training(flag: boolean){
+	set Training(flag: boolean) {
 		this.training = flag;
 	}
-	get Rewards(){
-		return (this.botController[0].rewards);
+	get Rewards() {
+		return this.botController[0].rewards;
 	}
 }

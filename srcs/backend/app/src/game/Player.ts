@@ -4,7 +4,7 @@ export type difficulty = "easy" | "medium" | "hard";
 
 export default class Player {
 	private static playerWidth: number;
-	private playerSize: number;
+	size: number;
 	readonly x: number;
 	y: number;
 	private movingUp: boolean = false;
@@ -13,8 +13,8 @@ export default class Player {
 	readonly id: 0 | 1;
 
 	constructor(field: Board, id: 0 | 1) {
-		this.playerSize = field.H / 6;
-		this.y = field.H / 2 - this.playerSize / 2;
+		this.size = field.H / 6;
+		this.y = field.H / 2 - this.size / 2;
 		Player.playerWidth = field.W / 100;
 		this.id = id;
 		if (id == 0) this.x = Player.playerWidth;
@@ -29,14 +29,11 @@ export default class Player {
 	}
 
 	getData(): { size: number; y: number } {
-		return { size: this.playerSize, y: this.y };
+		return { size: this.size, y: this.y };
 	}
 
 	get width() {
 		return Player.playerWidth;
-	}
-	get size() {
-		return this.playerSize;
 	}
 	get up() {
 		return this.movingUp;
