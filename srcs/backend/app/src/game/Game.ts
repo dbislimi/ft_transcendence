@@ -7,7 +7,7 @@ export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 100;
+const GAMESPEED: number = 1;
 
 export default class Game {
 	private readonly board: Board;

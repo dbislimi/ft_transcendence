@@ -81,8 +81,12 @@ export default class BotController {
 	}
 
 	private load() {
-		const raw = fs.readFileSync("qtable_easy.json", "utf-8");
-		this.qTable = JSON.parse(raw);
+		try {
+			const raw = fs.readFileSync("qtable_easy.json", "utf-8");
+			this.qTable = JSON.parse(raw);
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	update(player: Player, board: Board): number {
