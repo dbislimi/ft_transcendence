@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeToggle from "./ThemeToggle";
+import ContrastToggle from "./ContrastToggle";
 import { useTranslation } from "react-i18next";
 
 export default function Header() {
@@ -46,7 +48,7 @@ export default function Header() {
             </div>
           </Link>
           
-          {/* Section droite - Langue et Réglages */}
+          {/* Section droite - Contrôles et Réglages */}
           <div className="flex items-center gap-4">
             {/* Sélecteur de langue amélioré */}
             <div className="relative group">
@@ -55,6 +57,12 @@ export default function Header() {
                 <LanguageSwitcher />
               </div>
             </div>
+            
+            {/* Toggle de contraste */}
+            <ContrastToggle />
+            
+            {/* Toggle de thème */}
+            <ThemeToggle />
             
             {/* Bouton Réglages */}
             <button 

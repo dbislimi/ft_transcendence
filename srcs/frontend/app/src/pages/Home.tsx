@@ -1,13 +1,21 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import InteractiveParticles from "../Components/InteractiveParticles";
+import ParallaxScroll from "../Components/ParallaxScroll";
 
 export default function Home() {
   const { t } = useTranslation();
   
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Particules interactives en arrière-plan */}
+      <InteractiveParticles />
+      
+      {/* Effets de parallaxe */}
+      <ParallaxScroll />
+      
       {/* Fond spatial avec gradient et étoiles */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 via-indigo-900 to-slate-900">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 via-indigo-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
         {/* Couche de nébuleuse */}
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 via-transparent to-transparent"></div>
         
@@ -138,4 +146,4 @@ export default function Home() {
       </div>
     </div>
   );
-}   
+}
