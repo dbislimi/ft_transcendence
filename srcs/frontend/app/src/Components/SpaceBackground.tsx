@@ -45,8 +45,8 @@ class Star {
 		const normZ = (this.maxDepth - this.z) / this.maxDepth;
 		const radius =  minRadius + normZ * (maxRadius - minRadius);
 		const blur = normZ * 10;
-		c.shadowBlur = blur;
-		c.shadowColor = this.color;
+		//c.shadowBlur = blur;
+		//c.shadowColor = this.color;
 		if (normZ > 0.4){
 			const {offsetX:x2, offsetY:y2} = this.getScreenCoords(this.z + normZ * 100);
 			c.beginPath();
