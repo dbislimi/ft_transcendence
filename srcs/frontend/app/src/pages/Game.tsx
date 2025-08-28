@@ -10,6 +10,16 @@ interface Player {
 	score: number;
 }
 
+export interface Bonuses {
+	y: number;
+	name: string;
+}
+
+export interface Bonus {
+	count: number;
+	bonuses: Bonuses[];
+}
+
 export interface Players {
 	p1: Player;
 	p2: Player;
@@ -49,6 +59,7 @@ export default function Game() {
 		p1: { size: 25, y: 37.5, score: 0 },
 		p2: { size: 25, y: 37.5, score: 0 },
 	});
+	const bonusRef = useRef<Bonus>({count: 0, bonuses: []});
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
 		console.log(data);
@@ -65,6 +76,7 @@ export default function Game() {
 			case "data":
 				ballRef.current = data.body.ball;
 				playersRef.current = data.body.players;
+				bonusRef.current = data.body.bonus;
 				break;
 		}
 	}, []);
@@ -186,8 +198,9 @@ export default function Game() {
 					<PongCanvas
 						ball={ballRef}
 						players={playersRef}
+						bonus={bonusRef}
 						scale={scale}
-					/>
+					/>		
 				) : (
 					<GameMenu start={handlePlay} />
 				)}

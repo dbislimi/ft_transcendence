@@ -119,6 +119,7 @@ export default class Game {
 					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),
 				},
 				players: this.board.getPlayersData(),
+				bonus: {count: this.board.bonus.length ,bonuses: this.board.getBonusData()}
 			},
 		};
 		this.send(JSON.stringify(data));

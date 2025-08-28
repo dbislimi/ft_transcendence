@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
-import type { Players, Ball } from "../pages/Game";
+import type { Players, Ball, Bonus, Bonuses } from "../pages/Game";
 
 interface prop {
 	ball: React.RefObject<Ball>;
 	players: React.RefObject<Players>;
+	bonus: React.RefObject<Bonus>;
 	scale: number;
 }
 
-function PongCanvas({ ball, players, scale }: prop) {
+function PongCanvas({ ball, players, bonus, scale }: prop) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 	console.log("pong rendered");
@@ -41,6 +42,18 @@ function PongCanvas({ ball, players, scale }: prop) {
 				canvas.width * 3 / 4,
 				canvas.height / 2 + 30
 			);
+			for (const bonuses of bonus.current.bonuses){
+				c.arc(
+					100 * 4,
+					bonuses.y * 4,
+					10 * scale,
+					0,
+					2 * Math.PI,
+					false
+				);
+				c.fillStyle = "rgba(119, 45, 237, 1)";
+				c.fill();
+			}
 			c.fillStyle = 'rgba(0,0,0,0.8)'
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.font = "15px Audiowide";

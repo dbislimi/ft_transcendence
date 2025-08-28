@@ -3,6 +3,7 @@ import Ball from "./Ball.ts";
 import BotController from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
 import Bonus from "./Bonus.ts";
+import {Bigger} from "./Bonus.ts";
 
 interface PlayerData {
 	size: number;
@@ -18,9 +19,10 @@ export default class Board {
 	private playerSpeed: number = 100;
 	players: [Player, Player];
 	private ball: Ball;
-	private bonus: Bonus[] = [];
+	private elapsedTime: number = 0;
+	bonus: Bonus[] = [];
 	private bonusNb: number = 1;
-	private bonusTime: number;
+	private bonusTime: number = 1;
 	private training: boolean = false;
 	private botController: BotController[];
 	private aiLag: number = 0;
@@ -34,7 +36,6 @@ export default class Board {
 		this.ball = new Ball(this);
 		this.players = [new Player(this, 0), new Player(this, 1)];
 		this.botController = [];
-		this.bonusNb = Math.random() * 10;
 	}
 
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
@@ -76,21 +77,34 @@ export default class Board {
 			p2: { ...this.players[1].getData(), score: this.score[1] },
 		};
 	}
-	checkBonusCollision(x: number, nextX: number) {
+	getBonusData() {
+		return this.bonus.map(b => ({
+			name: b.name,
+			y: b.y,
+		}))
+	}
+	checkBonusCollision() {
 		const player: number = this.ball.dx > 0 ? 0 : 1;
-		if (x >= this.width / 2 - 10 && x <= this.width / 2 + 10)
+		if (this.ball.x >= this.width / 2 - 10 && this.ball.x <= this.width / 2 + 10)
 			this.bonus = this.bonus.filter(bonus => {
 				if (Math.pow(this.ball.x - this.width / 2, 2) + Math.pow(this.ball.y - bonus.y, 2) <= Math.pow(this.ball.radius + bonus.radius, 2)){
-					bonus.apply(this, this.players[player]);
+					if (bonus.is === "bonus"){
+						if (bonus.apply(this, this.players[player]))
+							this.players[player].ActiveBonus.push(bonus);
+					}
+					else {
+						bonus.apply(this, this.players[(player + 1) % 2]);
+						this.players[(player + 1) % 2].ActiveBonus.push(bonus);
+					}
 					return (false);
 				}
 				return (true);
 			})
 
-		else if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) ||
-				(x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
-		{
-		}
+		// else if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) ||
+		// 		(x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
+		// {
+		// }
 	}
 	updateBallPosition(dt: number): void {
 		const { x, y } = this.ball.getXY();
@@ -155,16 +169,39 @@ export default class Board {
 	move(p: Player, dt: number) {
 		if (!(p.up && p.down)) {
 			if (p.up && p.y > 0) {
-				if (p.y - this.playerSpeed * dt < 0) p.y = 0;
-				else p.y -= this.playerSpeed * dt;
+				if (p.y - p.speed * dt < 0) p.y = 0;
+				else p.y -= p.speed * dt;
 			} else if (p.down && p.y + p.size < this.height) {
-				if (p.y + this.playerSpeed * dt > this.height - p.size)
+				if (p.y + p.speed * dt > this.height - p.size)
 					p.y = this.height - p.size;
-				else p.y += this.playerSpeed * dt;
+				else p.y += p.speed * dt;
 			}
 		}
 	}
+	updateBonus(dt: number){
+		if (this.bonus.length < this.bonusNb){
+			this.bonusTime -= dt;
+			if (this.bonusTime <= 0){
+				this.bonus.push(new Bigger(this.height));
+				this.bonusTime = 1;
+			}
+		}
+		for (const player of this.players){
+			if (player.ActiveBonus.length === 0)
+				continue ;
+			player.ActiveBonus = player.ActiveBonus.filter(bonus => {
+				bonus.duration -= dt;
+				if (bonus.duration <= 0){
+					bonus.remove(this, player);
+					return (false);
+				}
+				return (true);
+			})
+		}
+	}
 	update(dt: number) {
+		this.elapsedTime += dt;
+		// console.log(`elapsed time: ${this.elapsedTime}`);
 		this.aiLag += dt;
 		if (this.aiLag >= 1) {
 			for (let i = 0; i < this.botController.length; ++i)
@@ -174,6 +211,7 @@ export default class Board {
 				);
 			this.aiLag -= 1;
 		}
+		this.updateBonus(dt);
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
 	}

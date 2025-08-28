@@ -1,4 +1,5 @@
 import Board from "./Board.ts";
+import Bonus from "./Bonus.ts"
 
 export type difficulty = "easy" | "medium" | "hard";
 
@@ -7,10 +8,12 @@ export default class Player {
 	size: number;
 	readonly x: number;
 	y: number;
+	speed: number = 100;
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
 	bot: difficulty | undefined = undefined;
 	readonly id: 0 | 1;
+	ActiveBonus: Bonus[] = [];
 
 	constructor(field: Board, id: 0 | 1) {
 		this.size = field.H / 6;
