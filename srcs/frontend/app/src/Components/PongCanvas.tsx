@@ -46,7 +46,7 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 				c.arc(
 					100 * 4,
 					bonuses.y * 4,
-					10 * scale,
+					bonuses.radius * scale,
 					0,
 					2 * Math.PI,
 					false

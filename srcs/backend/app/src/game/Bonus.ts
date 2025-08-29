@@ -4,12 +4,13 @@ import Player from "./Player.ts";
 export default abstract class BonusBase {
 	y: number;
 	duration: number = 10;
+	radius: number;
 	abstract name: string;
-	abstract radius: number;
 	abstract is: "bonus" | "penalty";
 
-	constructor(height: number){
-		this.y = Math.floor(Math.random() * (height - 20) + 10);
+	constructor(y: number, radius: number){
+		this.y = y;
+		this.radius = radius;
 	}
 	abstract apply(board: Board, player: Player): boolean;
 	abstract remove(board: Board, player: Player): void;
@@ -18,10 +19,9 @@ export default abstract class BonusBase {
 export class Bigger extends BonusBase {
 	grow: number = 20;
 	name = "Bigger";
-	radius = 10;
 	is = "bonus" as "bonus";
 	apply(board: Board, player: Player){
-		const bonus = player.ActiveBonus.find((b) => b.name === "Bigger");
+		const bonus = player.ActiveBonus.find(b => b.name === "Bigger");
 		if (bonus !== undefined){
 			bonus.duration += 10;
 			return (false);
@@ -44,7 +44,6 @@ export class Bigger extends BonusBase {
 export class Faster extends BonusBase {
 	speed: number = 20;
 	name = "Faster";
-	radius = 10;
 	is = "bonus" as "bonus";
 	apply(board: Board, player: Player){
 		const bonus = player.ActiveBonus.find((b) => b.name === "Faster");

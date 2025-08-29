@@ -21,8 +21,9 @@ export default class Board {
 	private ball: Ball;
 	private elapsedTime: number = 0;
 	bonus: Bonus[] = [];
-	private bonusNb: number = 1;
+	private bonusNb: number = 10;
 	private bonusTime: number = 1;
+	private bonusRadius: number = 5;
 	private training: boolean = false;
 	private botController: BotController[];
 	private aiLag: number = 0;
@@ -81,6 +82,7 @@ export default class Board {
 		return this.bonus.map(b => ({
 			name: b.name,
 			y: b.y,
+			radius: b.radius
 		}))
 	}
 	checkBonusCollision() {
@@ -182,7 +184,19 @@ export default class Board {
 		if (this.bonus.length < this.bonusNb){
 			this.bonusTime -= dt;
 			if (this.bonusTime <= 0){
-				this.bonus.push(new Bigger(this.height));
+				let retries = 2;
+				let y = Math.floor(Math.random() * (this.height - 20) + 10);
+				for (let i = 0; i < this.bonus.length && retries;){
+					if (Math.abs(this.bonus[i].y - y) < this.bonusRadius * 2){
+						y = Math.floor(Math.random() * (this.height - 2 * this.bonusRadius) + this.bonusRadius);
+						i = 0;
+						--retries;
+						continue;
+					}
+					++i;
+				}
+				if (retries)
+					this.bonus.push(new Bigger(y, this.bonusRadius));
 				this.bonusTime = 1;
 			}
 		}

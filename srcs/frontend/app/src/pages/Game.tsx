@@ -13,6 +13,7 @@ interface Player {
 export interface Bonuses {
 	y: number;
 	name: string;
+	radius: number;
 }
 
 export interface Bonus {
