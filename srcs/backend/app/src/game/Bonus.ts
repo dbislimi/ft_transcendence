@@ -42,18 +42,13 @@ export class Faster extends BonusBase {
 	name = "Faster";
 	is = "bonus" as "bonus";
 	apply(board: Board, player: Player){
-		const bonus = player.ActiveBonus.find((b) => b.name === "Faster");
+		const bonus = player.ActiveBonus.find(b => b.name === "Faster");
 		if (bonus !== undefined){
 			bonus.duration += 10;
 			return (false);
 		}
-		else{
+		else
 			player.speed += this.speed;
-			if (player.speed < this.speed)
-				player.speed = 0;
-			else
-				player.speed -= this.speed;
-		}
 		return (true);
 	}
 	remove(board: Board, player: Player){
