@@ -35,7 +35,6 @@ export class Bigger extends BonusBase {
 	remove(board: Board, player: Player){
 		player.size -= this.grow;
 	}
-
 }
 
 export class Faster extends BonusBase {
