@@ -47,17 +47,25 @@ export default class Board {
 		if (reset) {
 			this.ball.dx = this.ball.dx < 0 ? -30 : 30;
 			this.ball.dy = Math.random() * 120 - 60;
+			this.ball.speed = Math.sqrt(this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy);
 		}
 		this.ball.dx *= -1;
-		if (this.ball.dx <= 30) this.ball.dx *= 1.5;
+		this.ball.speed *= 1.1;
+		const angle = Math.atan2(this.ball.dy, this.ball.dx);
+		this.ball.dx = Math.cos(angle) * this.ball.speed;
+		this.ball.dy = Math.sin(angle) * this.ball.speed;
 	}
 	bounceBallY(...arg: bounceParam) {
 		const [player, hitpoint] = arg;
 
 		if (player === null) this.ball.dy *= -1;
-		else
-			this.ball.dy =
-				((2 * hitpoint) / player.size - 1) * Math.abs(this.ball.dx);
+		else{
+			const normHitpoint = (2 * hitpoint) / player.size - 1;
+			const angle = normHitpoint * (Math.PI / 3);
+			const dir = this.ball.dx < 0 ? -1 : 1;
+			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
+			this.ball.dy = Math.sin(angle) * this.ball.speed
+		}
 	}
 	private addScore(player: number) {
 		this.score[player]++;
@@ -96,7 +104,7 @@ export default class Board {
 		const player: number = this.ball.dx > 0 ? 0 : 1;
 		if (this.ball.x >= this.width / 2 - this.bonusRadius && this.ball.x <= this.width / 2 + this.bonusRadius)
 			this.bonus = this.bonus.filter(bonus => {
-				if (Math.pow(this.ball.x - this.width / 2, 2) + Math.pow(this.ball.y - bonus.y, 2) <= Math.pow(this.ball.radius + bonus.radius, 2)){
+				if ((this.ball.x - this.width / 2) * (this.ball.x - this.width / 2) + (this.ball.y - bonus.y) * (this.ball.y - bonus.y) <= (this.ball.radius + bonus.radius) * (this.ball.radius + bonus.radius)){
 					if (bonus.is === "bonus"){
 						if (bonus.apply(this, this.players[player]))
 							this.players[player].ActiveBonus.push(bonus);
@@ -156,8 +164,8 @@ export default class Board {
 		}
 		this.ball.x = nextX;
 		this.ball.y = nextY;
-		if (nextX + radius >= this.width) this.addScore(0);
-		else if (nextX - radius <= 0) this.addScore(1);
+		if (nextX + radius > this.width - this.players[0].width) this.addScore(0);
+		else if (nextX - radius < this.players[0].width) this.addScore(1);
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
