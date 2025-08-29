@@ -23,7 +23,7 @@ export default class Board {
 	bonus: Bonus[] = [];
 	private bonusNb: number = 10;
 	private bonusTime: number = 1;
-	private bonusRadius: number = 5;
+	private bonusRadius: number = 20;
 	private training: boolean = false;
 	private botController: BotController[];
 	private aiLag: number = 0;
@@ -61,6 +61,13 @@ export default class Board {
 	}
 	private addScore(player: number) {
 		this.score[player]++;
+		this.bonus = [];
+		for (const player of this.players){
+			for (const bonus of player.ActiveBonus)
+				bonus.remove(this, player);
+			player.ActiveBonus = [];
+			player.y = this.height / 2 - player.size / 2;
+		}
 		this.setBallPos();
 		this.bounceBallX(true);
 	}
@@ -87,7 +94,7 @@ export default class Board {
 	}
 	checkBonusCollision() {
 		const player: number = this.ball.dx > 0 ? 0 : 1;
-		if (this.ball.x >= this.width / 2 - 10 && this.ball.x <= this.width / 2 + 10)
+		if (this.ball.x >= this.width / 2 - this.bonusRadius && this.ball.x <= this.width / 2 + this.bonusRadius)
 			this.bonus = this.bonus.filter(bonus => {
 				if (Math.pow(this.ball.x - this.width / 2, 2) + Math.pow(this.ball.y - bonus.y, 2) <= Math.pow(this.ball.radius + bonus.radius, 2)){
 					if (bonus.is === "bonus"){
@@ -185,7 +192,7 @@ export default class Board {
 			this.bonusTime -= dt;
 			if (this.bonusTime <= 0){
 				let retries = 2;
-				let y = Math.floor(Math.random() * (this.height - 20) + 10);
+				let y = Math.floor(Math.random() * (this.height - this.bonusRadius * 2) + this.bonusRadius);
 				for (let i = 0; i < this.bonus.length && retries;){
 					if (Math.abs(this.bonus[i].y - y) < this.bonusRadius * 2){
 						y = Math.floor(Math.random() * (this.height - 2 * this.bonusRadius) + this.bonusRadius);

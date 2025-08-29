@@ -28,10 +28,7 @@ export class Bigger extends BonusBase {
 		}
 		else{
 			player.size += this.grow;
-			if (player.y < this.grow)
-				player.y = 0;
-			else
-				player.y -= this.grow;
+			player.y = Math.max(0, Math.min(player.y - this.grow / 2, board.H - player.size));
 		}
 		return (true);
 	}
