@@ -85,9 +85,8 @@ export default function Game() {
 			: wsRef.current?.send(JSON.stringify({ event: "start" }));
 	};
 	return (
-		<>
+		<SpaceBackground>
 			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
-				<SpaceBackground />
 				<button
 					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
 					type="button"
@@ -102,6 +101,6 @@ export default function Game() {
 					/>
 				<Chat />
 			</div>
-		</>
+		</SpaceBackground>
 	);
 }

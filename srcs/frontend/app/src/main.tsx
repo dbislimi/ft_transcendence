@@ -5,6 +5,7 @@ import "./index.css";
 import Layout from "./Components/Layout";
 import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const router = createBrowserRouter([
   {
@@ -14,8 +15,10 @@ const router = createBrowserRouter([
       { path: "/Connection", element: <pages.Connection /> },
       { path: "/Registration", element: <pages.Registration /> },
       { path: "/game", element: <pages.Game /> },
+      { path: "/bomb-party", element: <pages.BombParty /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
+      { path: "/settings", element: <pages.Settings /> },
       { path: "*", element: <pages.NotFoundPage /> },
     ],
   },
@@ -23,6 +26,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>
 );

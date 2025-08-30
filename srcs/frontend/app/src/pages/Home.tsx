@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const { t } = useTranslation();
+  const { isAuthenticated, user } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -102,6 +104,18 @@ export default function Home() {
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent rounded-full opacity-50"></div>
           </div>
           
+          {/* Message de bienvenue si connecté */}
+          {isAuthenticated && user && (
+            <div className="mb-8">
+              <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
+                <span className="text-2xl">👋</span>
+                <p className="text-green-300 text-lg font-medium">
+                  Bienvenue, {user.name} !
+                </p>
+              </div>
+            </div>
+          )}
+          
           {/* Sous-titre avec animation */}
           <div className="mb-20">
             <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto">
@@ -119,47 +133,54 @@ export default function Home() {
           </div>
           
           {/* Grille des boutons améliorée */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className={`grid gap-8 max-w-6xl mx-auto ${
+            isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+          }`}>
             
-            {/* Bouton Connexion */}
-            <Link to={"/Connection"} className="group">
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
-                    <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
+            {/* Boutons de connexion et inscription seulement si non connecté */}
+            {!isAuthenticated && (
+              <>
+                {/* Bouton Connexion */}
+                <Link to={"/Connection"} className="group">
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative p-6 text-center">
+                      <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300">
+                        <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
+                        {t('home.connectBtn') || 'Connexion'}
+                      </h3>
+                      <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                        Accéder à ton compte
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
-                    {t('home.connectBtn') || 'Connexion'}
-                  </h3>
-                  <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                    Accéder à ton compte
-                  </p>
-                </div>
-              </div>
-            </Link>
-            
-            {/* Bouton Inscription */}
-            <Link to={"/Registration"} className="group">
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors duration-300">
-                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
+                </Link>
+                
+                {/* Bouton Inscription */}
+                <Link to={"/Registration"} className="group">
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative p-6 text-center">
+                      <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors duration-300">
+                        <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
+                        {t('home.registrationBtn') || 'Inscription'}
+                      </h3>
+                      <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                        Rejoindre l'aventure
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
-                    {t('home.registrationBtn') || 'Inscription'}
-                  </h3>
-                  <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                    Rejoindre l'aventure
-                  </p>
-                </div>
-              </div>
-            </Link>
+                </Link>
+              </>
+            )}
             
             {/* Bouton Jeu */}
             <Link to={"/game"} className="group">

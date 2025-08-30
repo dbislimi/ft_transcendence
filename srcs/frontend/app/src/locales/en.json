@@ -16,5 +16,38 @@
       "dylan": "Creative frontend developer with an eye for design and user experience. Specialized in modern and reactive interfaces.",
       "dren": "Versatile developer with expertise in DevOps and robust application development. Passionate about automation and efficiency."
     }
+  },
+  "bombParty": {
+    "menu": {
+      "subtitle": "Find words containing the given trigram before time runs out!",
+      "playersCount": "Number of players",
+      "players": "players",
+      "startGame": "Start Game",
+      "rules": {
+        "title": "Game Rules",
+        "rule1": "Find words containing the trigram",
+        "rule2": "Each player has 3 lives",
+        "rule3": "15 seconds per turn",
+        "rule4": "Last survivor wins!"
+      }
+    },
+    "input": {
+      "instruction": "Find a word containing:",
+      "placeholder": "Enter your word...",
+      "submit": "Submit",
+      "recentWords": "Recent words:",
+      "errors": {
+        "tooShort": "Word must be at least 3 letters long",
+        "noTrigram": "Word must contain the trigram",
+        "duplicate": "Word already used",
+        "notInDictionary": "This word is not in the French dictionary"
+      }
+    },
+    "gameOver": {
+      "title": "Game Over!",
+      "winner": "Winner: {{name}}",
+      "backToMenu": "Back to Menu"
+    },
+    "backToMenu": "Back to Menu"
   }
-  }
+}

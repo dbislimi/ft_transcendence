@@ -1,0 +1,2242 @@
+{
+  "aba": [
+    "abandon",
+    "abaisser",
+    "abattre",
+    "abandonner",
+    "abat-jour"
+  ],
+  "acc": [
+    "accueil",
+    "accepter",
+    "accident",
+    "accompagner",
+    "accéder"
+  ],
+  "ach": [
+    "acheter",
+    "achat",
+    "acheteur",
+    "achever",
+    "acharné"
+  ],
+  "act": [
+    "action",
+    "actif",
+    "acteur",
+    "actualiser",
+    "activité"
+  ],
+  "adr": [
+    "adresse",
+    "adresser",
+    "adroit",
+    "adressant",
+    "adressage"
+  ],
+  "aff": [
+    "affaire",
+    "afficher",
+    "affirmer",
+    "affichage",
+    "affecter"
+  ],
+  "agi": [
+    "agir",
+    "agile",
+    "agilité",
+    "agissant",
+    "agitation"
+  ],
+  "aid": [
+    "aide",
+    "aider",
+    "aidant",
+    "aidé",
+    "aide-soignant"
+  ],
+  "aim": [
+    "aimer",
+    "aimable",
+    "aimant",
+    "aimée",
+    "aimanter"
+  ],
+  "air": [
+    "air",
+    "airbag",
+    "airplay",
+    "airsoft",
+    "airbus"
+  ],
+  "ajo": [
+    "ajouter",
+    "ajout",
+    "ajustement",
+    "ajuster",
+    "ajouté"
+  ],
+  "all": [
+    "aller",
+    "allée",
+    "allumer",
+    "alliage",
+    "alliance"
+  ],
+  "ame": [
+    "amende",
+    "amener",
+    "améliorer",
+    "amertume",
+    "amenerai"
+  ],
+  "ami": [
+    "ami",
+    "amical",
+    "amitié",
+    "amie",
+    "amigurumi"
+  ],
+  "amo": [
+    "amour",
+    "amovible",
+    "amorti",
+    "amortir",
+    "amorce"
+  ],
+  "amu": [
+    "amuser",
+    "amusant",
+    "amusement",
+    "amulette",
+    "amuse-bouche"
+  ],
+  "ann": [
+    "anneau",
+    "annonce",
+    "annuel",
+    "annuler",
+    "annuaire"
+  ],
+  "ape": [
+    "aperçu",
+    "appliquer",
+    "apéro",
+    "apéritif",
+    "apercevoir"
+  ],
+  "app": [
+    "application",
+    "appareil",
+    "appli",
+    "appoint",
+    "apporter"
+  ],
+  "arb": [
+    "arbre",
+    "arborer",
+    "arbitre",
+    "arborescence",
+    "arbuste"
+  ],
+  "arg": [
+    "argent",
+    "argument",
+    "argile",
+    "argon",
+    "argot"
+  ],
+  "arr": [
+    "arriver",
+    "arrêt",
+    "arranger",
+    "arrosage",
+    "arrimer"
+  ],
+  "art": [
+    "article",
+    "artiste",
+    "artisanal",
+    "art",
+    "articuler"
+  ],
+  "ass": [
+    "assurance",
+    "assister",
+    "association",
+    "assaisonner",
+    "assistant"
+  ],
+  "att": [
+    "attendre",
+    "attentif",
+    "attacher",
+    "attestation",
+    "attaque"
+  ],
+  "ava": [
+    "avancer",
+    "avantage",
+    "avatar",
+    "aval",
+    "avaler"
+  ],
+  "ave": [
+    "avenir",
+    "avec",
+    "averse",
+    "avéré",
+    "aversion"
+  ],
+  "avo": [
+    "avoir",
+    "avocat",
+    "avouer",
+    "avorton",
+    "avion"
+  ],
+  "bai": [
+    "baignade",
+    "baigner",
+    "baie",
+    "bail",
+    "baiser"
+  ],
+  "bat": [
+    "battre",
+    "bâtir",
+    "batterie",
+    "batte",
+    "bâtiment"
+  ],
+  "bea": [
+    "beauté",
+    "beau",
+    "béat",
+    "beagle",
+    "béarnais"
+  ],
+  "bes": [
+    "besoin",
+    "besace",
+    "besogne",
+    "bessel",
+    "besogneux"
+  ],
+  "boi": [
+    "boire",
+    "bois",
+    "boisson",
+    "boîtier",
+    "boîte"
+  ],
+  "bon": [
+    "bonheur",
+    "bonbon",
+    "bonsoir",
+    "bonjour",
+    "bonnet"
+  ],
+  "bor": [
+    "bord",
+    "borne",
+    "borner",
+    "boréal",
+    "borgne"
+  ],
+  "bou": [
+    "bouger",
+    "boulot",
+    "boucle",
+    "bouche",
+    "bougie"
+  ],
+  "bra": [
+    "bras",
+    "bravo",
+    "braderie",
+    "braderie",
+    "brasser"
+  ],
+  "bri": [
+    "briller",
+    "brique",
+    "briser",
+    "bricole",
+    "brindille"
+  ],
+  "bru": [
+    "bruit",
+    "brunch",
+    "brune",
+    "bruler",
+    "brusher"
+  ],
+  "brû": [
+    "brûler",
+    "brûlure",
+    "brûlant",
+    "brûlé",
+    "brûlot"
+  ],
+  "cac": [
+    "cacao",
+    "cacher",
+    "cactus",
+    "cachalot",
+    "cacheron"
+  ],
+  "cas": [
+    "casser",
+    "casque",
+    "cascade",
+    "casier",
+    "casino"
+  ],
+  "cau": [
+    "cause",
+    "causer",
+    "caution",
+    "causalité",
+    "caustique"
+  ],
+  "cen": [
+    "centre",
+    "central",
+    "centraliser",
+    "centime",
+    "centaine"
+  ],
+  "ces": [
+    "cesser",
+    "cession",
+    "césarienne",
+    "cesium",
+    "césure"
+  ],
+  "cha": [
+    "chaud",
+    "chance",
+    "chanson",
+    "chaise",
+    "charger"
+  ],
+  "che": [
+    "chercher",
+    "chemin",
+    "cheveux",
+    "cheveux",
+    "chef"
+  ],
+  "chi": [
+    "chien",
+    "chimie",
+    "chiffre",
+    "chic",
+    "chine"
+  ],
+  "cho": [
+    "choisir",
+    "chose",
+    "chocolat",
+    "chorale",
+    "chorégraphie"
+  ],
+  "cie": [
+    "ciel",
+    "cierge",
+    "ciment",
+    "ciel-bleu",
+    "cielomètre"
+  ],
+  "cla": [
+    "classe",
+    "clavier",
+    "clair",
+    "clarté",
+    "clasher"
+  ],
+  "coi": [
+    "coin",
+    "coiffure",
+    "coiffer",
+    "coincé",
+    "coiffant"
+  ],
+  "com": [
+    "commentaire",
+    "commande",
+    "commerce",
+    "commerçant",
+    "communication"
+  ],
+  "con": [
+    "conseil",
+    "contrat",
+    "confort",
+    "contenu",
+    "connexion"
+  ],
+  "cor": [
+    "corps",
+    "correct",
+    "corriger",
+    "corail",
+    "corbeille"
+  ],
+  "cou": [
+    "couper",
+    "coupure",
+    "coucher",
+    "couverture",
+    "courant"
+  ],
+  "cra": [
+    "craindre",
+    "cravate",
+    "crabe",
+    "cramer",
+    "crayon"
+  ],
+  "cri": [
+    "crier",
+    "crime",
+    "crise",
+    "cristal",
+    "critique"
+  ],
+  "cro": [
+    "croire",
+    "croissant",
+    "croquer",
+    "croquette",
+    "croiser"
+  ],
+  "cré": [
+    "créer",
+    "créatif",
+    "création",
+    "crédit",
+    "créneau"
+  ],
+  "côt": [
+    "côté",
+    "côtier",
+    "côturer",
+    "côtoyé",
+    "côtoyer"
+  ],
+  "dam": [
+    "dame",
+    "damage",
+    "damier",
+    "damming",
+    "dameuse"
+  ],
+  "dan": [
+    "danser",
+    "dangereux",
+    "donnée",
+    "dancing",
+    "danseur"
+  ],
+  "dem": [
+    "demain",
+    "demander",
+    "démarrer",
+    "déménager",
+    "démocratie"
+  ],
+  "des": [
+    "dessiner",
+    "desserte",
+    "dessert",
+    "design",
+    "destination"
+  ],
+  "dev": [
+    "devenir",
+    "developpeur",
+    "développer",
+    "device",
+    "devise"
+  ],
+  "die": [
+    "dieu",
+    "diététique",
+    "dièse",
+    "diesel",
+    "diététicien"
+  ],
+  "dir": [
+    "dire",
+    "direct",
+    "diriger",
+    "direction",
+    "directive"
+  ],
+  "dis": [
+    "discuter",
+    "distance",
+    "disposer",
+    "disque",
+    "digital"
+  ],
+  "doc": [
+    "docteur",
+    "document",
+    "docile",
+    "doctrine",
+    "docker"
+  ],
+  "doi": [
+    "doigt",
+    "doigté",
+    "doigtier",
+    "doigté",
+    "doigt-robot"
+  ],
+  "don": [
+    "donner",
+    "don",
+    "donateur",
+    "donation",
+    "dongle"
+  ],
+  "dor": [
+    "dormir",
+    "dortoir",
+    "dormant",
+    "dormeur",
+    "dormance"
+  ],
+  "dos": [
+    "dos",
+    "dossier",
+    "dose",
+    "doser",
+    "dosage"
+  ],
+  "dou": [
+    "douleur",
+    "douche",
+    "doubler",
+    "double",
+    "doute"
+  ],
+  "dre": [
+    "dresseur",
+    "dressement",
+    "dresser",
+    "dreadlock",
+    "dread"
+  ],
+  "dro": [
+    "droit",
+    "droguerie",
+    "droner",
+    "drone",
+    "droïde"
+  ],
+  "dur": [
+    "durable",
+    "durcir",
+    "durée",
+    "durer",
+    "durillon"
+  ],
+  "déc": [
+    "décider",
+    "décollage",
+    "décryptage",
+    "déconfinement",
+    "déclaration"
+  ],
+  "déf": [
+    "défendre",
+    "défi",
+    "défaite",
+    "défiler",
+    "défaut"
+  ],
+  "dés": [
+    "désirer",
+    "désigner",
+    "désactiver",
+    "désaccord",
+    "désabonner"
+  ],
+  "eau": [
+    "eau",
+    "eau-de-source",
+    "eau-de-mer",
+    "eau-plate",
+    "eau-minérale"
+  ],
+  "eff": [
+    "effort",
+    "effet",
+    "effectuer",
+    "efficace",
+    "efficience"
+  ],
+  "emb": [
+    "embarquer",
+    "embauche",
+    "emballer",
+    "embargo",
+    "embarras"
+  ],
+  "emm": [
+    "emmener",
+    "emmailloter",
+    "emmagasiner",
+    "emménager",
+    "emmêler"
+  ],
+  "emp": [
+    "empêcher",
+    "emploi",
+    "employer",
+    "empreinte",
+    "emprunter"
+  ],
+  "end": [
+    "endroit",
+    "endormir",
+    "enduire",
+    "endosser",
+    "endurer"
+  ],
+  "enf": [
+    "enfant",
+    "enfermer",
+    "enfiler",
+    "enflammer",
+    "enfin"
+  ],
+  "eng": [
+    "engager",
+    "engin",
+    "engrais",
+    "engouement",
+    "engouffrer"
+  ],
+  "enl": [
+    "enlever",
+    "enlacer",
+    "enlèvement",
+    "enluminer",
+    "enlisage"
+  ],
+  "ent": [
+    "entrer",
+    "entier",
+    "entente",
+    "entraînement",
+    "entreprise"
+  ],
+  "env": [
+    "envoyer",
+    "environnement",
+    "enveloppe",
+    "envoûtant",
+    "enviable"
+  ],
+  "esp": [
+    "espoir",
+    "espèce",
+    "espace",
+    "espérer",
+    "espion"
+  ],
+  "ess": [
+    "essayer",
+    "essence",
+    "essentiel",
+    "essor",
+    "essieu"
+  ],
+  "exa": [
+    "examen",
+    "exaucer",
+    "exact",
+    "exaction",
+    "exagérer"
+  ],
+  "exe": [
+    "exemple",
+    "exercer",
+    "exécution",
+    "exécrer",
+    "exécuter"
+  ],
+  "exi": [
+    "exister",
+    "exigence",
+    "exiger",
+    "exil",
+    "existera"
+  ],
+  "exp": [
+    "expérience",
+    "expédier",
+    "explication",
+    "expliquer",
+    "exposer"
+  ],
+  "fac": [
+    "facile",
+    "facette",
+    "faculté",
+    "facetime",
+    "facture"
+  ],
+  "fai": [
+    "faire",
+    "faim",
+    "fait",
+    "faiseur",
+    "faïencerie"
+  ],
+  "fal": [
+    "falloir",
+    "falafel",
+    "falsifier",
+    "fallow",
+    "falzar"
+  ],
+  "fam": [
+    "famille",
+    "fameux",
+    "familial",
+    "fanbase",
+    "fandom"
+  ],
+  "faç": [
+    "façade",
+    "façon",
+    "façonnage",
+    "façonner",
+    "façadier"
+  ],
+  "fem": [
+    "femme",
+    "féminin",
+    "femelle",
+    "féministe",
+    "féminiser"
+  ],
+  "fen": [
+    "fenêtre",
+    "fenouil",
+    "fendre",
+    "fente",
+    "fendeur"
+  ],
+  "fer": [
+    "fermer",
+    "fer",
+    "fermeture",
+    "ferraille",
+    "ferronnerie"
+  ],
+  "feu": [
+    "feu",
+    "feuille",
+    "feutre",
+    "feuillage",
+    "feuillu"
+  ],
+  "fig": [
+    "figure",
+    "figer",
+    "figurine",
+    "figue",
+    "figuratif"
+  ],
+  "fil": [
+    "fille",
+    "filer",
+    "film",
+    "filtres",
+    "filet"
+  ],
+  "fin": [
+    "finir",
+    "final",
+    "financement",
+    "finalité",
+    "financier"
+  ],
+  "fix": [
+    "fixer",
+    "fixation",
+    "fixatif",
+    "fixture",
+    "fixe"
+  ],
+  "fle": [
+    "fleur",
+    "flemme",
+    "fleuve",
+    "flexible",
+    "flexion"
+  ],
+  "foi": [
+    "foire",
+    "foie",
+    "foison",
+    "foisonner",
+    "foisonnant"
+  ],
+  "fon": [
+    "fond",
+    "fonction",
+    "fonder",
+    "fondant",
+    "fondateur"
+  ],
+  "for": [
+    "forêt",
+    "force",
+    "former",
+    "formation",
+    "format"
+  ],
+  "fou": [
+    "foule",
+    "fourchette",
+    "four",
+    "foulard",
+    "fourmi"
+  ],
+  "fra": [
+    "français",
+    "framboise",
+    "fraternel",
+    "fragile",
+    "fraude"
+  ],
+  "fro": [
+    "froid",
+    "fromage",
+    "front",
+    "frotter",
+    "froment"
+  ],
+  "frè": [
+    "frère",
+    "frêne",
+    "fréquenter",
+    "frérot",
+    "frénésie"
+  ],
+  "fui": [
+    "fuir",
+    "fuite",
+    "futur",
+    "fugitif",
+    "fumigène"
+  ],
+  "gag": [
+    "gagner",
+    "gag",
+    "gadget",
+    "gagman",
+    "gagnant"
+  ],
+  "gar": [
+    "garçon",
+    "garage",
+    "garer",
+    "garantie",
+    "gardien"
+  ],
+  "gen": [
+    "gens",
+    "général",
+    "générer",
+    "génétique",
+    "génial"
+  ],
+  "ges": [
+    "geste",
+    "gestion",
+    "gestuel",
+    "gestation",
+    "gestuelle"
+  ],
+  "gli": [
+    "glisser",
+    "glitch",
+    "glissade",
+    "glissant",
+    "glisse"
+  ],
+  "gro": [
+    "groupe",
+    "gros",
+    "grossir",
+    "grosser",
+    "grommeler"
+  ],
+  "gue": [
+    "guérir",
+    "gueule",
+    "guêpe",
+    "guetter",
+    "guerre"
+  ],
+  "hab": [
+    "habiter",
+    "habitude",
+    "habillage",
+    "habile",
+    "habilité"
+  ],
+  "has": [
+    "hasard",
+    "hashtag",
+    "hastag",
+    "hash",
+    "hasardeux"
+  ],
+  "heu": [
+    "heure",
+    "heureux",
+    "heurter",
+    "heuristique",
+    "heurt"
+  ],
+  "his": [
+    "histoire",
+    "historien",
+    "historique",
+    "hisser",
+    "hispanique"
+  ],
+  "hom": [
+    "homme",
+    "hommage",
+    "homologuer",
+    "homogène",
+    "homonyme"
+  ],
+  "hon": [
+    "honneur",
+    "honorer",
+    "honnête",
+    "honte",
+    "honorifique"
+  ],
+  "hés": [
+    "hésiter",
+    "hésitation",
+    "hésitant",
+    "hésitons",
+    "hésité"
+  ],
+  "hôt": [
+    "hôtel",
+    "hôte",
+    "hôtellerie",
+    "hôtesses",
+    "hôtier"
+  ],
+  "idé": [
+    "idée",
+    "identité",
+    "idéologie",
+    "identifier",
+    "idéation"
+  ],
+  "ign": [
+    "ignorer",
+    "ignifugé",
+    "ignifuger",
+    "ignoble",
+    "ignition"
+  ],
+  "ima": [
+    "image",
+    "imaginer",
+    "imagerie",
+    "imaginatif",
+    "imagerie"
+  ],
+  "imp": [
+    "imposer",
+    "impact",
+    "important",
+    "imprimer",
+    "impôt"
+  ],
+  "ind": [
+    "indice",
+    "indiquer",
+    "indépendant",
+    "industrie",
+    "industriel"
+  ],
+  "ins": [
+    "installer",
+    "inspirer",
+    "inscrire",
+    "insérer",
+    "insomnie"
+  ],
+  "int": [
+    "internet",
+    "interne",
+    "intégrer",
+    "intense",
+    "intention"
+  ],
+  "jam": [
+    "jamais",
+    "jambe",
+    "jam",
+    "jambon",
+    "jam-session"
+  ],
+  "jar": [
+    "jardin",
+    "jardinage",
+    "jardiner",
+    "jarret",
+    "jargon"
+  ],
+  "jet": [
+    "jeter",
+    "jetable",
+    "jeton",
+    "jetée",
+    "jetstream"
+  ],
+  "jeu": [
+    "jeu",
+    "jeune",
+    "jeux",
+    "jeudi",
+    "jeunesse"
+  ],
+  "joi": [
+    "joie",
+    "joindre",
+    "joint",
+    "jointe",
+    "joystick"
+  ],
+  "jou": [
+    "jour",
+    "jouer",
+    "joueur",
+    "jouet",
+    "journal"
+  ],
+  "jug": [
+    "juger",
+    "jugement",
+    "juggler",
+    "jugulaire",
+    "jugé"
+  ],
+  "lar": [
+    "larme",
+    "large",
+    "largeur",
+    "larder",
+    "larmoyant"
+  ],
+  "len": [
+    "lenteur",
+    "lentement",
+    "lentille",
+    "lent",
+    "lender"
+  ],
+  "let": [
+    "lettre",
+    "létal",
+    "lettrage",
+    "letton",
+    "lettrine"
+  ],
+  "lev": [
+    "lever",
+    "levier",
+    "levure",
+    "levée",
+    "levure"
+  ],
+  "lib": [
+    "liberté",
+    "libérer",
+    "librairie",
+    "libre",
+    "libellule"
+  ],
+  "lie": [
+    "lieu",
+    "lier",
+    "liens",
+    "lièvre",
+    "lierres"
+  ],
+  "lig": [
+    "ligne",
+    "ligue",
+    "ligament",
+    "ligaturer",
+    "light"
+  ],
+  "lir": [
+    "lire",
+    "lirette",
+    "lireur",
+    "lirette",
+    "lirebox"
+  ],
+  "lit": [
+    "lit",
+    "litre",
+    "lithium",
+    "literie",
+    "litteral"
+  ],
+  "liv": [
+    "livre",
+    "livrer",
+    "livraison",
+    "livrable",
+    "livret"
+  ],
+  "loi": [
+    "loi",
+    "loisir",
+    "loisiriel",
+    "loin",
+    "lointain"
+  ],
+  "lum": [
+    "lumière",
+    "lumineux",
+    "luminaire",
+    "luminosité",
+    "lumen"
+  ],
+  "lèv": [
+    "lève-tôt",
+    "lèvement",
+    "lève-personne",
+    "lève",
+    "lève-glace"
+  ],
+  "mad": [
+    "madame",
+    "madeleine",
+    "madériser",
+    "mad skills",
+    "madrague"
+  ],
+  "mai": [
+    "main",
+    "maison",
+    "maintien",
+    "maintenant",
+    "maillot"
+  ],
+  "mal": [
+    "mal",
+    "malin",
+    "maladie",
+    "malware",
+    "malchance"
+  ],
+  "man": [
+    "manger",
+    "manuel",
+    "management",
+    "manager",
+    "manga"
+  ],
+  "mar": [
+    "marcher",
+    "mariage",
+    "marché",
+    "marier",
+    "marque"
+  ],
+  "mat": [
+    "matin",
+    "matière",
+    "matériel",
+    "matériau",
+    "matrice"
+  ],
+  "maî": [
+    "maître",
+    "maîtrise",
+    "maîtriser",
+    "maître-nageur",
+    "maîtresse"
+  ],
+  "men": [
+    "mentir",
+    "mental",
+    "mener",
+    "mention",
+    "menuiserie"
+  ],
+  "mer": [
+    "mer",
+    "merci",
+    "mercredi",
+    "merlan",
+    "merveille"
+  ],
+  "mes": [
+    "mesure",
+    "message",
+    "messagerie",
+    "messager",
+    "mess"
+  ],
+  "met": [
+    "mettre",
+    "métier",
+    "métal",
+    "métro",
+    "météo"
+  ],
+  "mil": [
+    "milieu",
+    "militant",
+    "militaire",
+    "millénial",
+    "milligramme"
+  ],
+  "min": [
+    "ministre",
+    "minute",
+    "mineur",
+    "minimiser",
+    "minibus"
+  ],
+  "moi": [
+    "mois",
+    "moineau",
+    "moignon",
+    "moisson",
+    "moiteur"
+  ],
+  "mom": [
+    "moment",
+    "moments",
+    "momentum",
+    "momie",
+    "mompreneur"
+  ],
+  "mon": [
+    "monde",
+    "montagne",
+    "montant",
+    "mono",
+    "monitoring"
+  ],
+  "mor": [
+    "mort",
+    "morceau",
+    "mordre",
+    "morale",
+    "morphème"
+  ],
+  "mot": [
+    "mot",
+    "moteur",
+    "motif",
+    "motion",
+    "motivation"
+  ],
+  "mou": [
+    "mouvement",
+    "moulin",
+    "mousse",
+    "moudre",
+    "moud"
+  ],
+  "moy": [
+    "moyen",
+    "moyenne",
+    "moyenner",
+    "moyeu",
+    "moyennage"
+  ],
+  "mur": [
+    "mur",
+    "murale",
+    "murir",
+    "muret",
+    "muraille"
+  ],
+  "méd": [
+    "médecin",
+    "média",
+    "médiatique",
+    "médaille",
+    "médiateur"
+  ],
+  "mêl": [
+    "mêler",
+    "mélange",
+    "mêlée",
+    "mêlant",
+    "mélodie"
+  ],
+  "nat": [
+    "nature",
+    "nation",
+    "national",
+    "natation",
+    "natif"
+  ],
+  "naî": [
+    "naître",
+    "naïf",
+    "naissante",
+    "naissance",
+    "naïveté"
+  ],
+  "nom": [
+    "nom",
+    "nombre",
+    "nommer",
+    "nomade",
+    "nomenclature"
+  ],
+  "nua": [
+    "nuage",
+    "nuageux",
+    "nuageuse",
+    "nuageage",
+    "nuancier"
+  ],
+  "nui": [
+    "nuit",
+    "nuire",
+    "nuancier",
+    "nuire",
+    "nuisible"
+  ],
+  "obj": [
+    "objet",
+    "objectif",
+    "objecter",
+    "objets",
+    "objectivité"
+  ],
+  "obl": [
+    "obliger",
+    "obligation",
+    "obligatoire",
+    "oblature",
+    "oblong"
+  ],
+  "obs": [
+    "observer",
+    "obsolète",
+    "obscur",
+    "observation",
+    "obstacle"
+  ],
+  "obt": [
+    "obtenir",
+    "obtention",
+    "obturateur",
+    "obtempérer",
+    "obturage"
+  ],
+  "occ": [
+    "occuper",
+    "occasion",
+    "occurrence",
+    "occitan",
+    "occupant"
+  ],
+  "off": [
+    "offrir",
+    "officiel",
+    "officine",
+    "offensive",
+    "offshore"
+  ],
+  "ois": [
+    "oiseau",
+    "oisillon",
+    "oisiveté",
+    "oison",
+    "oiseleur"
+  ],
+  "omb": [
+    "ombre",
+    "ombrelle",
+    "ombrage",
+    "ombrer",
+    "ombrelle"
+  ],
+  "ord": [
+    "ordre",
+    "ordinaire",
+    "ordinatueur",
+    "ordinateur",
+    "ordonner"
+  ],
+  "ore": [
+    "oreille",
+    "oreiller",
+    "oreillette",
+    "oreillons",
+    "oreillage"
+  ],
+  "ose": [
+    "oser",
+    "oseille",
+    "osciller",
+    "osmose",
+    "osier"
+  ],
+  "oub": [
+    "oublier",
+    "oubli",
+    "oubliable",
+    "oubliette",
+    "oublieux"
+  ],
+  "ouv": [
+    "ouvrir",
+    "ouvreur",
+    "ouverture",
+    "ouvrage",
+    "ouvrier"
+  ],
+  "pai": [
+    "payer",
+    "paiement",
+    "paie",
+    "pain",
+    "paillasse"
+  ],
+  "pap": [
+    "papa",
+    "papier",
+    "papeterie",
+    "papillon",
+    "papoter"
+  ],
+  "par": [
+    "parler",
+    "partage",
+    "parcours",
+    "parfait",
+    "parking"
+  ],
+  "pas": [
+    "passer",
+    "passage",
+    "passion",
+    "passeport",
+    "passation"
+  ],
+  "pay": [
+    "payer",
+    "pays",
+    "paysage",
+    "payeur",
+    "payant"
+  ],
+  "pea": [
+    "peau",
+    "peaufiner",
+    "peanut",
+    "peanut-butter",
+    "pearl"
+  ],
+  "pei": [
+    "peine",
+    "peindre",
+    "peinture",
+    "peignoir",
+    "peigne"
+  ],
+  "pen": [
+    "penser",
+    "pénible",
+    "pension",
+    "pendant",
+    "pendre"
+  ],
+  "per": [
+    "perdre",
+    "permis",
+    "percer",
+    "performance",
+    "perfection"
+  ],
+  "peu": [
+    "peur",
+    "peuple",
+    "peuplier",
+    "peut-être",
+    "peuplement"
+  ],
+  "pie": [
+    "pied",
+    "pierre",
+    "pièce",
+    "piercing",
+    "piédestal"
+  ],
+  "piè": [
+    "pièce",
+    "piège",
+    "piéta",
+    "piétafier",
+    "pièger"
+  ],
+  "pla": [
+    "place",
+    "plaisir",
+    "plaque",
+    "plan",
+    "planète"
+  ],
+  "ple": [
+    "plein",
+    "pleurer",
+    "pleine",
+    "pleur",
+    "pleuvoir"
+  ],
+  "poi": [
+    "poids",
+    "poire",
+    "poisson",
+    "poignet",
+    "poivron"
+  ],
+  "pol": [
+    "politique",
+    "policier",
+    "police",
+    "polir",
+    "polygone"
+  ],
+  "por": [
+    "porte",
+    "portail",
+    "portable",
+    "portefeuille",
+    "portique"
+  ],
+  "pos": [
+    "poser",
+    "position",
+    "positive",
+    "possible",
+    "poste"
+  ],
+  "pou": [
+    "pouvoir",
+    "poule",
+    "pousser",
+    "poudre",
+    "poutre"
+  ],
+  "pre": [
+    "prendre",
+    "premier",
+    "preciser",
+    "prelude",
+    "prenom"
+  ],
+  "pri": [
+    "prix",
+    "prince",
+    "prier",
+    "priorité",
+    "primaire"
+  ],
+  "pro": [
+    "problème",
+    "projet",
+    "produit",
+    "programme",
+    "protéger"
+  ],
+  "pré": [
+    "présent",
+    "prévoir",
+    "préparer",
+    "préciser",
+    "précieux"
+  ],
+  "prê": [
+    "prêtre",
+    "prêt",
+    "prêt-à-porter",
+    "prêter",
+    "prérequis"
+  ],
+  "pèr": [
+    "père",
+    "périmètre",
+    "période",
+    "périnatal",
+    "périlleux"
+  ],
+  "pén": [
+    "pénible",
+    "pénurie",
+    "péninsule",
+    "pénaliser",
+    "pénalité"
+  ],
+  "qua": [
+    "quatre",
+    "quadrillage",
+    "qualité",
+    "quantité",
+    "quartier"
+  ],
+  "que": [
+    "quelque",
+    "question",
+    "querelle",
+    "quereller",
+    "quemander"
+  ],
+  "qui": [
+    "quitter",
+    "quiche",
+    "quinoa",
+    "quinze",
+    "quizz"
+  ],
+  "rac": [
+    "raconter",
+    "racine",
+    "raccourci",
+    "racket",
+    "racoler"
+  ],
+  "rai": [
+    "raison",
+    "raisin",
+    "rainure",
+    "rail",
+    "railler"
+  ],
+  "rap": [
+    "rapport",
+    "rapide",
+    "rap",
+    "rappeur",
+    "rapporter"
+  ],
+  "rec": [
+    "recevoir",
+    "recherche",
+    "recruter",
+    "réception",
+    "recycler"
+  ],
+  "ref": [
+    "refuser",
+    "réformer",
+    "référent",
+    "référence",
+    "référer"
+  ],
+  "reg": [
+    "regarder",
+    "registre",
+    "régler",
+    "régime",
+    "région"
+  ],
+  "rel": [
+    "relever",
+    "relier",
+    "relation",
+    "relancer",
+    "relatif"
+  ],
+  "rem": [
+    "remettre",
+    "remplacer",
+    "remonter",
+    "rembourser",
+    "remixer"
+  ],
+  "ren": [
+    "rencontrer",
+    "rendre",
+    "renouveler",
+    "rentrer",
+    "rêner"
+  ],
+  "rep": [
+    "répondre",
+    "reporter",
+    "replay",
+    "reprise",
+    "repasser"
+  ],
+  "res": [
+    "reste",
+    "ressource",
+    "résoudre",
+    "respect",
+    "résine"
+  ],
+  "ret": [
+    "retour",
+    "retenir",
+    "retarder",
+    "retaper",
+    "retoucher"
+  ],
+  "rev": [
+    "revenir",
+    "réviser",
+    "révolter",
+    "révéler",
+    "réveiller"
+  ],
+  "rir": [
+    "rire",
+    "rigoler",
+    "rirette",
+    "rire-jaune",
+    "rirette"
+  ],
+  "roi": [
+    "roi",
+    "rois",
+    "roitelet",
+    "royaume",
+    "roitelette"
+  ],
+  "rou": [
+    "route",
+    "roue",
+    "rouler",
+    "rouille",
+    "rougir"
+  ],
+  "rue": [
+    "rue",
+    "ruelle",
+    "ruer",
+    "rugbyman",
+    "ruée"
+  ],
+  "rép": [
+    "répéter",
+    "réponse",
+    "réparer",
+    "répertoire",
+    "répartir"
+  ],
+  "rés": [
+    "résultat",
+    "résoudre",
+    "résistance",
+    "résident",
+    "résilier"
+  ],
+  "réu": [
+    "réunir",
+    "réunion",
+    "réussir",
+    "réutiliser",
+    "réussite"
+  ],
+  "rév": [
+    "révéler",
+    "révision",
+    "révolte",
+    "rêver",
+    "révérence"
+  ],
+  "rêv": [
+    "rêver",
+    "rêve",
+    "rêverie",
+    "rêveur",
+    "rêvasser"
+  ],
+  "sai": [
+    "saisir",
+    "saison",
+    "saint",
+    "sain",
+    "saine"
+  ],
+  "sal": [
+    "salle",
+    "salon",
+    "salade",
+    "salir",
+    "saluer"
+  ],
+  "san": [
+    "sang",
+    "santé",
+    "sanction",
+    "sanitaire",
+    "sanctuaire"
+  ],
+  "sau": [
+    "sauver",
+    "sauce",
+    "sauter",
+    "saucisse",
+    "saurien"
+  ],
+  "sav": [
+    "savoir",
+    "savon",
+    "saveur",
+    "savoureux",
+    "savante"
+  ],
+  "sec": [
+    "secret",
+    "seconde",
+    "section",
+    "secrétaire",
+    "secouer"
+  ],
+  "sei": [
+    "sein",
+    "seine",
+    "seigneur",
+    "seigle",
+    "seisme"
+  ],
+  "sem": [
+    "semaine",
+    "semble",
+    "sembler",
+    "semence",
+    "semer"
+  ],
+  "sen": [
+    "sens",
+    "sentir",
+    "sensible",
+    "senior",
+    "sentence"
+  ],
+  "ser": [
+    "service",
+    "servir",
+    "serrer",
+    "serpent",
+    "seringue"
+  ],
+  "sig": [
+    "signal",
+    "signature",
+    "sigle",
+    "sigmoid",
+    "signe"
+  ],
+  "sil": [
+    "silence",
+    "sillage",
+    "silicone",
+    "silice",
+    "silo"
+  ],
+  "sit": [
+    "situation",
+    "site",
+    "situer",
+    "sitter",
+    "sitting"
+  ],
+  "siè": [
+    "siècle",
+    "siège",
+    "siéger",
+    "siégerai",
+    "siégeront"
+  ],
+  "soc": [
+    "social",
+    "société",
+    "sociable",
+    "sociologie",
+    "socialiser"
+  ],
+  "soi": [
+    "soin",
+    "soigner",
+    "soir",
+    "soif",
+    "soie"
+  ],
+  "sol": [
+    "sol",
+    "solidité",
+    "solennel",
+    "solde",
+    "solaire"
+  ],
+  "son": [
+    "son",
+    "sonner",
+    "sonore",
+    "sondage",
+    "sonar"
+  ],
+  "sor": [
+    "sortir",
+    "sorcier",
+    "sorbet",
+    "sorte",
+    "sororité"
+  ],
+  "sou": [
+    "souvenir",
+    "sourire",
+    "soupçon",
+    "soutenir",
+    "soulever"
+  ],
+  "suf": [
+    "suffire",
+    "suffisant",
+    "suffixe",
+    "suffisance",
+    "suffoquer"
+  ],
+  "sui": [
+    "suivre",
+    "suite",
+    "suivant",
+    "suiveur",
+    "suivra"
+  ],
+  "sur": [
+    "sur",
+    "survol",
+    "survie",
+    "surprise",
+    "surcouche"
+  ],
+  "sys": [
+    "système",
+    "sysadmin",
+    "syslog",
+    "systémique",
+    "syspath"
+  ],
+  "sép": [
+    "séparer",
+    "séparateur",
+    "séparatif",
+    "séparation",
+    "séparatisme"
+  ],
+  "tab": [
+    "table",
+    "tablette",
+    "tablier",
+    "tabac",
+    "tabulation"
+  ],
+  "tai": [
+    "taire",
+    "taille",
+    "tailler",
+    "tailleur",
+    "taillade"
+  ],
+  "tem": [
+    "temps",
+    "temporaire",
+    "tempête",
+    "tempérer",
+    "temporel"
+  ],
+  "ten": [
+    "tenir",
+    "tendre",
+    "tension",
+    "tentative",
+    "tendance"
+  ],
+  "ter": [
+    "terre",
+    "terminer",
+    "terminal",
+    "terrasse",
+    "terrible"
+  ],
+  "tir": [
+    "tirer",
+    "tiret",
+    "tiroir",
+    "tirade",
+    "tirage"
+  ],
+  "tom": [
+    "tomber",
+    "tombe",
+    "tomette",
+    "tomate",
+    "tombola"
+  ],
+  "tou": [
+    "toujours",
+    "tout",
+    "tourner",
+    "toucher",
+    "tourisme"
+  ],
+  "tra": [
+    "travail",
+    "traverser",
+    "traduire",
+    "tracer",
+    "transmettre"
+  ],
+  "tre": [
+    "trembler",
+    "tresse",
+    "treillis",
+    "trekking",
+    "trend"
+  ],
+  "tro": [
+    "trop",
+    "tropique",
+    "tromper",
+    "trophée",
+    "trolley"
+  ],
+  "tue": [
+    "tuer",
+    "tuile",
+    "tuteur",
+    "tueuse",
+    "tuerie"
+  ],
+  "têt": [
+    "tête",
+    "têtu",
+    "têtard",
+    "têtière",
+    "tête-à-tête"
+  ],
+  "val": [
+    "valeur",
+    "valider",
+    "valise",
+    "valable",
+    "validera"
+  ],
+  "ven": [
+    "venir",
+    "vendredi",
+    "vendeur",
+    "vent",
+    "ventiler"
+  ],
+  "vie": [
+    "vie",
+    "vieux",
+    "vieillir",
+    "vieil",
+    "vieillot"
+  ],
+  "vil": [
+    "ville",
+    "village",
+    "vilain",
+    "vilipender",
+    "villar"
+  ],
+  "vis": [
+    "visage",
+    "viser",
+    "vision",
+    "visite",
+    "visible"
+  ],
+  "viv": [
+    "vivre",
+    "vivant",
+    "vivifiant",
+    "vivier",
+    "vivace"
+  ],
+  "voi": [
+    "voir",
+    "voiture",
+    "voisin",
+    "voile",
+    "voilà"
+  ],
+  "vol": [
+    "volonté",
+    "voler",
+    "volant",
+    "volaille",
+    "voltage"
+  ],
+  "vou": [
+    "vouloir",
+    "vous",
+    "voué",
+    "vouera",
+    "vouvoiement"
+  ],
+  "voy": [
+    "voyage",
+    "voyager",
+    "voyageur",
+    "voyant",
+    "voyageuse"
+  ],
+  "vue": [
+    "vue",
+    "vuelo",
+    "vuetify",
+    "vueling",
+    "vuejs"
+  ],
+  "vér": [
+    "vérifier",
+    "vérité",
+    "véridique",
+    "vérin",
+    "véranda"
+  ],
+  "yeu": [
+    "yeux",
+    "yeuse",
+    "yeuse-bois",
+    "yeuseur",
+    "yeuseraie"
+  ],
+  "âge": [
+    "âge",
+    "âgé",
+    "âge-licence",
+    "âgement",
+    "âge-légal"
+  ],
+  "âme": [
+    "âme",
+    "âme-sœur",
+    "âme-sœur",
+    "âmener",
+    "âmette"
+  ],
+  "éch": [
+    "écho",
+    "échelle",
+    "écharpe",
+    "échec",
+    "échanger"
+  ],
+  "écl": [
+    "éclair",
+    "éclater",
+    "éclipse",
+    "éclairage",
+    "éclat"
+  ],
+  "éco": [
+    "économie",
+    "écologie",
+    "écolo",
+    "écosystème",
+    "éco-responsable"
+  ],
+  "écr": [
+    "écrire",
+    "écran",
+    "écrireai",
+    "écriture",
+    "écriteau"
+  ],
+  "éle": [
+    "élever",
+    "élément",
+    "élection",
+    "électrique",
+    "éléphant"
+  ],
+  "épa": [
+    "épaule",
+    "épater",
+    "épanouir",
+    "épargne",
+    "épatant"
+  ],
+  "épr": [
+    "éprouver",
+    "épreuve",
+    "éprouvant",
+    "éprouvette",
+    "éprouvable"
+  ],
+  "éta": [
+    "état",
+    "étaler",
+    "étatique",
+    "état-civil",
+    "étagère"
+  ],
+  "éte": [
+    "été",
+    "éternel",
+    "éteindre",
+    "étendre",
+    "été-indien"
+  ],
+  "éto": [
+    "étoile",
+    "étonner",
+    "étonnant",
+    "étonnement",
+    "étoffer"
+  ],
+  "étu": [
+    "étude",
+    "étudiant",
+    "étudier",
+    "étui",
+    "étuve"
+  ],
+  "évi": [
+    "évident",
+    "évitement",
+    "éviter",
+    "évidencer",
+    "évidence"
+  ],
+  "êtr": [
+    "être",
+    "êtres",
+    "être-suprême",
+    "être-humain",
+    "être-collectif"
+  ]
+}

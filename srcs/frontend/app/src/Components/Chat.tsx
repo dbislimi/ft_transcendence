@@ -4,7 +4,7 @@ export default function Chat() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [messages, setMessages] = useState<string[]>([]);
 	const [input, setInput] = useState("");
-	const showRef = useRef<ReturnType<typeof setTimeout>>(null);
+	const showRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const handleSend = () => {
 		if (input === "") return;

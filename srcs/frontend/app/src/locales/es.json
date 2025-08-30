@@ -16,5 +16,29 @@
       "dylan": "Desarrollador frontend creativo con ojo para el diseño y la experiencia del usuario. Especializado en interfaces modernas y reactivas.",
       "dren": "Desarrollador versátil con experiencia en DevOps y desarrollo de aplicaciones robustas. Apasionado por la automatización y eficiencia."
     }
+  },
+  "bombParty": {
+    "menu": {
+      "subtitle": "¡Encuentra palabras que contengan el trigrama antes de que se agote el tiempo!",
+      "playersCount": "Número de jugadores",
+      "players": "jugadores",
+      "startGame": "Comenzar Juego",
+      "rules": {
+        "title": "Reglas del Juego",
+        "rule1": "Encuentra palabras que contengan el trigrama mostrado",
+        "rule2": "Cada jugador comienza con 3 vidas",
+        "rule3": "15 segundos por turno para responder",
+        "rule4": "¡El último sobreviviente gana el juego!",
+        "rule5": "Las palabras deben estar en francés y ser válidas"
+      }
+    },
+    "game": {
+      "countdown": "Comenzando en",
+      "turnIndicator": "Turno de",
+      "timeRemaining": "Tiempo restante",
+      "wordSuggestions": "Sugerencias",
+      "suggestionsEnabled": "Sugerencias habilitadas",
+      "suggestionsDisabled": "Sugerencias deshabilitadas"
+    }
   }
-  }
+}

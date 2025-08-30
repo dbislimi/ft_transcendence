@@ -4,5 +4,7 @@ export { default as Connection } from './Connection';
 export { default as NotFoundPage } from './NotFoundPage';
 export { default as Game } from './Game';
 export { default as About } from './About';
+export { default as BombParty } from './BombParty';
 export {default as auth } from './auth';
 export { default as Confirmation } from './Confirmation';
+export { default as Settings } from './Settings';
