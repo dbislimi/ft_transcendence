@@ -101,6 +101,7 @@ export default abstract class BotController {
 	}
 
 	abstract takeDecision(player: Player, board: Board): number;
+	abstract update(player: Player, dt: number): void;
 }
 
 export class EasyBot extends BotController {
@@ -157,7 +158,7 @@ export class EasyBot extends BotController {
 			reward = board.getReward(player.id);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
-		this.readAction(this.chooseAction(state, state));
+		this.readAction(this.chooseAction(state, 5));
 		this.lastAction = this.action;
 		this.lastState = state;
 		

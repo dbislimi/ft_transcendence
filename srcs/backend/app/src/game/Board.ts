@@ -243,26 +243,19 @@ export default class Board {
 		}
 	}
 	updateBot(dt: number){
-		this.aiLag += dt;
-		for (const [bot, index] of this.botController.entries()){
+		for (const [index, bot] of this.botController.entries()){
+			bot.aiLag += dt;
 			if (bot.aiLag >= 1){
-				this.botReward = bot.takeDecision()
+				this.botReward += bot.takeDecision(this.players[index], this);
 				bot.aiLag -= 1;
 			}
+			bot.update(this.players[index], dt);
 		}
 	}
 	update(dt: number) {
 		this.elapsedTime += dt;
 		// console.log(`elapsed time: ${this.elapsedTime}`);
-		this.aiLag += dt;
-		if (this.aiLag >= 1) {
-			for (let i = 0; i < this.botController.length; ++i)
-				this.botReward += this.botController[i]?.takeDecision(
-					this.players[i],
-					this
-				);
-			this.aiLag -= 1;
-		}
+		this.updateBot(dt);
 		this.updateBonus(dt);
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
@@ -275,6 +268,11 @@ export default class Board {
 		switch (diff) {
 			case "easy":
 				this.botController[id] = new EasyBot({
+					learning_rate: 0.1,
+					discount_factor: 0.97,
+					epsilon: 1,
+					epsilon_decay: 0.00001,
+					epsilon_min: 0.01,
 					training: this.training,
 				});
 				break;
