@@ -17,17 +17,15 @@ type bounceParam = [player: null] | [player: Player, hitpoint: number];
 export default class Board {
 	private readonly height: number;
 	private readonly width: number;
-	private playerSpeed: number = 100;
 	players: [Player, Player];
 	private ball: Ball;
 	private elapsedTime: number = 0;
 	bonus: Bonus[] = [];
-	private bonusNb: number = 10;
+	private bonusNb: number = 0;
 	private bonusTime: number = 1;
 	private bonusRadius: number = 20;
 	private training: boolean = false;
-	private botController: BotController[];
-	private botReward: number = 0;
+	botController: BotController[];
 	private score: [number, number] = [0, 0];
 	private gamesNb: number = 0;
 
@@ -246,7 +244,7 @@ export default class Board {
 		for (const [index, bot] of this.botController.entries()){
 			bot.aiLag += dt;
 			if (bot.aiLag >= 1){
-				this.botReward += bot.takeDecision(this.players[index], this);
+				bot.takeDecision(this.players[index], this);
 				bot.aiLag -= 1;
 			}
 			bot.update(this.players[index], dt);
@@ -275,12 +273,12 @@ export default class Board {
 					epsilon_min: 0.01,
 					training: this.training,
 				});
+				console.log("debug");
 				break;
 			case "medium":
 				this.botController[id] = new EasyBot({
 					training: this.training,
 				});
-				console.log("debug");
 				break;
 			// case "hard":
 			// 	this.botController[id] = new EasyController({training: true});
@@ -321,12 +319,11 @@ export default class Board {
 		this.ball.reset(this);
 		this.players[0].y = this.height / 2;
 		this.players[1].y = this.height / 2;
-		if (this.training) {
-			if (this.gamesNb % 10 == 0)
+		this.botController.length;
+		if (this.training && this.botController.length !== 0) {
+			if (this.gamesNb % 10 === 0)
 				this.botController[0].save(this.gamesNb);
-			console.log("debug");
-			this.botController[0].rewards.push(this.botReward);
-			this.botReward = 0;
+			this.botController[0].pushRewards();
 		}
 		++this.gamesNb;
 	}

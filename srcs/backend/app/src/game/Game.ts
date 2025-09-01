@@ -7,10 +7,10 @@ export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 1;
+const GAMESPEED: number = 100;
 
 export default class Game {
-	private readonly board: Board;
+	readonly board: Board;
 	private readonly clients: [WebSocket, WebSocket | undefined];
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
@@ -78,7 +78,6 @@ export default class Game {
 	}
 	private restart(){
 		this.board.restart();
-		console.log(this.board.Rewards);
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {

@@ -17,6 +17,7 @@ export default abstract class BotController {
 	protected epsilon_decay: number;
 	protected epsilon_min: number;
 	protected qTable: number[][] = [[]];
+	reward: number = 0;
 	rewards: number[] = [];
 	protected lastState: number | null = null;
 	protected lastAction: number | null = null;
@@ -85,7 +86,7 @@ export default abstract class BotController {
 
 	public save(episode: number) {
 		fs.writeFileSync(
-			`../qtable_saves/qtable_easy_episode_${episode}.json`,
+			`../AI/qtable_saves/qtable_easy_episode_${episode}.json`,
 			JSON.stringify(this.qTable, null, 2),
 			"utf-8"
 		);
@@ -99,8 +100,11 @@ export default abstract class BotController {
 			console.log(error);
 		}
 	}
-
-	abstract takeDecision(player: Player, board: Board): number;
+	pushRewards(){
+		this.rewards.push(this.reward);
+		this.reward = 0;
+	}
+	abstract takeDecision(player: Player, board: Board): void;
 	abstract update(player: Player, dt: number): void;
 }
 
@@ -145,7 +149,7 @@ export class EasyBot extends BotController {
 				break;
 		}
 	}
-	takeDecision(player: Player, board: Board): number {
+	takeDecision(player: Player, board: Board) {
 		let reward = 0;
 		const timestamp = Date.now();
 		//console.log("time: ", timestamp - this.start);
@@ -161,7 +165,6 @@ export class EasyBot extends BotController {
 		this.readAction(this.chooseAction(state, 5));
 		this.lastAction = this.action;
 		this.lastState = state;
-		
-		return reward;
+		this.reward += reward;
 	}
 }

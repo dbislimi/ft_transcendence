@@ -3,6 +3,7 @@ import type { clientSocket } from "./Game.ts";
 import WebSocket from "ws";
 import type { difficulty } from "./Player.ts";
 import type { trainDifficulty } from "./Game.ts"
+import plotRewards from "./chart.ts";
 
 export default class GamesManager {
 	private rooms: Record<number, Game> = {};
@@ -28,6 +29,8 @@ export default class GamesManager {
 				break ;
 			}
 		}
+		if (game.board.botController.length !== 0)
+			plotRewards(game.board.botController[0].rewards);
 		console.log("Training loop ended.");
 	}
 	startTraining(ws: WebSocket, bot: difficulty){
