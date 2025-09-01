@@ -61,7 +61,7 @@ export default class Board {
 		if (player === null) this.ball.dy *= -1;
 		else{
 			const normHitpoint = (2 * hitpoint) / player.size - 1;
-			const angle = normHitpoint * (Math.PI / 3);
+			const angle = normHitpoint * (Math.PI / 4);
 			const dir = this.ball.dx < 0 ? -1 : 1;
 			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
 			this.ball.dy = Math.sin(angle) * this.ball.speed
@@ -137,7 +137,6 @@ export default class Board {
 		const nextLeftEdge = nextX - radius;
 		const prevRightEdge = x + radius;
 		const nextRightEdge = nextX + radius;
-		// if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) || (x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
 		this.checkBonusCollision();
 		if (nextY - radius <= 0 || nextY + radius >= this.height) {
 			this.bounceBallY(null);

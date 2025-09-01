@@ -9,18 +9,18 @@ import * as fs from "fs";
 //// alpha = learning_rate
 // gamma = discount_factor
 // epsilon = explo
-export default class BotController {
-	private training: boolean;
-	private learning_rate: number;
-	private discount_factor: number;
-	private epsilon: number;
-	private epsilon_decay: number;
-	private epsilon_min: number;
-	private qTable: number[][] = [[]];
+export default abstract class BotController {
+	protected training: boolean;
+	protected learning_rate: number;
+	protected discount_factor: number;
+	protected epsilon: number;
+	protected epsilon_decay: number;
+	protected epsilon_min: number;
+	protected qTable: number[][] = [[]];
 	rewards: number[] = [];
-	private lastState: number | null = null;
-	private lastAction: number | null = null;
-	private start: number;
+	protected lastState: number | null = null;
+	protected lastAction: number | null = null;
+	protected start: number;
 
 	constructor( options: {
 		learning_rate?: number,
@@ -55,17 +55,17 @@ export default class BotController {
 			this.epsilon * (1 - this.epsilon_decay)
 		);
 	}
-	private chooseAction(state: number) {
+	protected chooseAction(state: number, nbActions: number) {
 		if (!(state in this.qTable))
-			this.qTable[state] = np.zeros(3) as number[];
+			this.qTable[state] = np.zeros(nbActions) as number[];
 		if (this.training && Math.random() < this.epsilon){
 			this.epsilonGreedy();
-			return Math.floor(Math.random() * 3);
+			return Math.floor(Math.random() * nbActions);
 		}
 		return np.argmax(this.qTable[state]);
 	}
 
-	private updateQtable(state: number, action: number, reward: number, nextState: number) {
+	protected updateQtable(state: number, action: number, reward: number, nextState: number) {
 		if (!(nextState in this.qTable))
 			this.qTable[nextState] = np.zeros(3) as number[];
 		const maxFuturQ = np.max(this.qTable[nextState]);
@@ -89,6 +89,10 @@ export default class BotController {
 		}
 	}
 
+	abstract update(player: Player, board: Board): number;
+}
+
+class EasyBot extends BotController {
 	update(player: Player, board: Board): number {
 		let reward = 0;
 		const timestamp = Date.now();
@@ -98,7 +102,7 @@ export default class BotController {
 			reward = board.getReward(player.id);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
-		const action = this.chooseAction(state);
+		const action = this.chooseAction(state, 3);
 		this.lastAction = action;
 		this.lastState = state;
 		switch (action){
@@ -118,4 +122,3 @@ export default class BotController {
 		return (reward);
 	}
 }
-
