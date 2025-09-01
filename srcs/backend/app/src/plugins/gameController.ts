@@ -29,7 +29,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						player = games.startOffline(socket, data.body.diff);
 						break;
 					case "trainbot":
-						games.trainBot(socket, "easy", 100);
+						games.trainBot(socket, data.body.diff, 100);
 				}
 			} else if (data.event === "play" && player !== undefined) {
 				if (player.playerId === undefined)

@@ -22,6 +22,7 @@ export default class GamesManager {
 			try {
 				await game.startAsync(signal);
 			} catch (e) {
+				console.log('test');
 				if (signal.aborted)
 					console.log("Training aborted during game ", i);
 				break ;

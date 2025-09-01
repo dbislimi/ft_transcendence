@@ -3,7 +3,8 @@ import Ball from "./Ball.ts";
 import BotController from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
 import Bonus from "./Bonus.ts";
-import {Bigger} from "./Bonus.ts";
+import { Bigger } from "./Bonus.ts";
+import { EasyBot } from "./Controller.ts";
 
 interface PlayerData {
 	size: number;
@@ -26,7 +27,6 @@ export default class Board {
 	private bonusRadius: number = 20;
 	private training: boolean = false;
 	private botController: BotController[];
-	private aiLag: number = 0;
 	private botReward: number = 0;
 	private score: [number, number] = [0, 0];
 	private gamesNb: number = 0;
@@ -47,7 +47,9 @@ export default class Board {
 		if (reset) {
 			this.ball.dx = this.ball.dx < 0 ? -30 : 30;
 			this.ball.dy = Math.random() * 120 - 60;
-			this.ball.speed = Math.sqrt(this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy);
+			this.ball.speed = Math.sqrt(
+				this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy
+			);
 		}
 		this.ball.dx *= -1;
 		this.ball.speed *= 1.1;
@@ -59,20 +61,19 @@ export default class Board {
 		const [player, hitpoint] = arg;
 
 		if (player === null) this.ball.dy *= -1;
-		else{
+		else {
 			const normHitpoint = (2 * hitpoint) / player.size - 1;
 			const angle = normHitpoint * (Math.PI / 4);
 			const dir = this.ball.dx < 0 ? -1 : 1;
 			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
-			this.ball.dy = Math.sin(angle) * this.ball.speed
+			this.ball.dy = Math.sin(angle) * this.ball.speed;
 		}
 	}
 	private addScore(player: number) {
 		this.score[player]++;
 		this.bonus = [];
-		for (const player of this.players){
-			for (const bonus of player.ActiveBonus)
-				bonus.remove(this, player);
+		for (const player of this.players) {
+			for (const bonus of player.ActiveBonus) bonus.remove(this, player);
 			player.ActiveBonus = [];
 			player.y = this.height / 2 - player.size / 2;
 		}
@@ -94,29 +95,37 @@ export default class Board {
 		};
 	}
 	getBonusData() {
-		return this.bonus.map(b => ({
+		return this.bonus.map((b) => ({
 			name: b.name,
 			y: b.y,
-			radius: b.radius
-		}))
+			radius: b.radius,
+		}));
 	}
 	checkBonusCollision() {
 		const player: number = this.ball.dx > 0 ? 0 : 1;
-		if (this.ball.x >= this.width / 2 - this.bonusRadius && this.ball.x <= this.width / 2 + this.bonusRadius)
-			this.bonus = this.bonus.filter(bonus => {
-				if ((this.ball.x - this.width / 2) * (this.ball.x - this.width / 2) + (this.ball.y - bonus.y) * (this.ball.y - bonus.y) <= (this.ball.radius + bonus.radius) * (this.ball.radius + bonus.radius)){
-					if (bonus.is === "bonus"){
+		if (
+			this.ball.x >= this.width / 2 - this.bonusRadius &&
+			this.ball.x <= this.width / 2 + this.bonusRadius
+		)
+			this.bonus = this.bonus.filter((bonus) => {
+				if (
+					(this.ball.x - this.width / 2) *
+						(this.ball.x - this.width / 2) +
+						(this.ball.y - bonus.y) * (this.ball.y - bonus.y) <=
+					(this.ball.radius + bonus.radius) *
+						(this.ball.radius + bonus.radius)
+				) {
+					if (bonus.is === "bonus") {
 						if (bonus.apply(this, this.players[player]))
 							this.players[player].ActiveBonus.push(bonus);
-					}
-					else {
+					} else {
 						bonus.apply(this, this.players[(player + 1) % 2]);
 						this.players[(player + 1) % 2].ActiveBonus.push(bonus);
 					}
-					return (false);
+					return false;
 				}
-				return (true);
-			})
+				return true;
+			});
 
 		// else if ((x <= this.width / 2 - 10 && nextX > this.width / 2 - 10) ||
 		// 		(x >= this.width / 2 + 10 && nextX < this.width / 2 + 10))
@@ -163,7 +172,8 @@ export default class Board {
 		}
 		this.ball.x = nextX;
 		this.ball.y = nextY;
-		if (nextX + radius > this.width - this.players[0].width) this.addScore(0);
+		if (nextX + radius > this.width - this.players[0].width)
+			this.addScore(0);
 		else if (nextX - radius < this.players[0].width) this.addScore(1);
 	}
 	updatePlayersPosition(dt: number) {
@@ -194,37 +204,51 @@ export default class Board {
 			}
 		}
 	}
-	updateBonus(dt: number){
-		if (this.bonus.length < this.bonusNb){
+	updateBonus(dt: number) {
+		if (this.bonus.length < this.bonusNb) {
 			this.bonusTime -= dt;
-			if (this.bonusTime <= 0){
+			if (this.bonusTime <= 0) {
 				let retries = 2;
-				let y = Math.floor(Math.random() * (this.height - this.bonusRadius * 2) + this.bonusRadius);
-				for (let i = 0; i < this.bonus.length && retries;){
-					if (Math.abs(this.bonus[i].y - y) < this.bonusRadius * 2){
-						y = Math.floor(Math.random() * (this.height - 2 * this.bonusRadius) + this.bonusRadius);
+				let y = Math.floor(
+					Math.random() * (this.height - this.bonusRadius * 2) +
+						this.bonusRadius
+				);
+				for (let i = 0; i < this.bonus.length && retries; ) {
+					if (Math.abs(this.bonus[i].y - y) < this.bonusRadius * 2) {
+						y = Math.floor(
+							Math.random() *
+								(this.height - 2 * this.bonusRadius) +
+								this.bonusRadius
+						);
 						i = 0;
 						--retries;
 						continue;
 					}
 					++i;
 				}
-				if (retries)
-					this.bonus.push(new Bigger(y, this.bonusRadius));
+				if (retries) this.bonus.push(new Bigger(y, this.bonusRadius));
 				this.bonusTime = 1;
 			}
 		}
-		for (const player of this.players){
-			if (player.ActiveBonus.length === 0)
-				continue ;
-			player.ActiveBonus = player.ActiveBonus.filter(bonus => {
+		for (const player of this.players) {
+			if (player.ActiveBonus.length === 0) continue;
+			player.ActiveBonus = player.ActiveBonus.filter((bonus) => {
 				bonus.duration -= dt;
-				if (bonus.duration <= 0){
+				if (bonus.duration <= 0) {
 					bonus.remove(this, player);
-					return (false);
+					return false;
 				}
-				return (true);
-			})
+				return true;
+			});
+		}
+	}
+	updateBot(dt: number){
+		this.aiLag += dt;
+		for (const [bot, index] of this.botController.entries()){
+			if (bot.aiLag >= 1){
+				this.botReward = bot.takeDecision()
+				bot.aiLag -= 1;
+			}
 		}
 	}
 	update(dt: number) {
@@ -233,7 +257,7 @@ export default class Board {
 		this.aiLag += dt;
 		if (this.aiLag >= 1) {
 			for (let i = 0; i < this.botController.length; ++i)
-				this.botReward += this.botController[i]?.update(
+				this.botReward += this.botController[i]?.takeDecision(
 					this.players[i],
 					this
 				);
@@ -250,14 +274,15 @@ export default class Board {
 		this.players[id].bot = diff;
 		switch (diff) {
 			case "easy":
-				this.botController[id] = new BotController({
+				this.botController[id] = new EasyBot({
 					training: this.training,
 				});
 				break;
 			case "medium":
-				this.botController[id] = new BotController({
+				this.botController[id] = new EasyBot({
 					training: this.training,
 				});
+				console.log("debug");
 				break;
 			// case "hard":
 			// 	this.botController[id] = new EasyController({training: true});
@@ -275,11 +300,23 @@ export default class Board {
 
 		return reward;
 	}
-	getState(player: 0 | 1) {
-		if (this.ball.y < this.players[player].y) return 0;
-		if (this.ball.y > this.players[player].y + this.players[player].size)
-			return 2;
-		return 1;
+	cut(y: number, nb: number) {
+		const cut = this.height / nb;
+		return Math.floor(y / cut) + 1;
+	}
+	getState(id: 0 | 1) {
+		let state: number;
+		const nbOfCut = 4;
+		const player = this.players[id];
+		const { nextY: y } = this.ball.getNextXY(1);
+		state = nbOfCut * 100;
+		state += this.cut(player.y, nbOfCut) * 10;
+		state += this.cut(y, nbOfCut);
+		if (y < player.y - player.size) return -2;
+		if (y < player.y) return -1;
+		if (y <= player.y + player.size) return 0;
+		if (y <= player.y + 2 * player.size) return 1;
+		return 2;
 	}
 	restart() {
 		this.score = [0, 0];
@@ -289,6 +326,7 @@ export default class Board {
 		if (this.training) {
 			if (this.gamesNb % 10 == 0)
 				this.botController[0].save(this.gamesNb);
+			console.log("debug");
 			this.botController[0].rewards.push(this.botReward);
 			this.botReward = 0;
 		}

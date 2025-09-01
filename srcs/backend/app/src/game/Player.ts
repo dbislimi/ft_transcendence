@@ -16,7 +16,7 @@ export default class Player {
 	ActiveBonus: Bonus[] = [];
 
 	constructor(field: Board, id: 0 | 1) {
-		this.size = field.H / 6;
+		this.size = field.H / 4;
 		this.y = field.H / 2 - this.size / 2;
 		Player.playerWidth = field.W / 100;
 		this.id = id;

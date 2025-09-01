@@ -33,6 +33,7 @@ export default class Game {
 		if (p2[0] !== 't')
 			this.board.connectBot(1 ,p2 as difficulty);
 		else{
+			console.log("connectbot");
 			this.board.Training = true;
 			this.board.connectBot(1, "hard");
 			this.board.connectBot(0, p2.slice(5) as difficulty);

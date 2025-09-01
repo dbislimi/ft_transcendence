@@ -21,23 +21,26 @@ export default abstract class BotController {
 	protected lastState: number | null = null;
 	protected lastAction: number | null = null;
 	protected start: number;
+	aiLag: number = 0;
 
-	constructor( options: {
-		learning_rate?: number,
-		discount_factor?: number,
-		epsilon?: number,
-		epsilon_decay?: number,
-		epsilon_min?: number,
-		training?: boolean
-	} = {} ) {
+	constructor(
+		options: {
+			learning_rate?: number;
+			discount_factor?: number;
+			epsilon?: number;
+			epsilon_decay?: number;
+			epsilon_min?: number;
+			training?: boolean;
+		} = {}
+	) {
 		const {
 			learning_rate = 0.1,
 			discount_factor = 0.9,
 			epsilon = 1,
 			epsilon_decay = 0.00001,
 			epsilon_min = 0.01,
-			training = false
-			} = options;
+			training = false,
+		} = options;
 		this.start = Date.now();
 		this.training = training;
 		this.learning_rate = learning_rate;
@@ -45,8 +48,7 @@ export default abstract class BotController {
 		this.epsilon = epsilon;
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
-		if (training === false)
-			this.load();
+		if (training === false) this.load();
 	}
 
 	private epsilonGreedy() {
@@ -58,14 +60,19 @@ export default abstract class BotController {
 	protected chooseAction(state: number, nbActions: number) {
 		if (!(state in this.qTable))
 			this.qTable[state] = np.zeros(nbActions) as number[];
-		if (this.training && Math.random() < this.epsilon){
+		if (this.training && Math.random() < this.epsilon) {
 			this.epsilonGreedy();
 			return Math.floor(Math.random() * nbActions);
 		}
 		return np.argmax(this.qTable[state]);
 	}
 
-	protected updateQtable(state: number, action: number, reward: number, nextState: number) {
+	protected updateQtable(
+		state: number,
+		action: number,
+		reward: number,
+		nextState: number
+	) {
 		if (!(nextState in this.qTable))
 			this.qTable[nextState] = np.zeros(3) as number[];
 		const maxFuturQ = np.max(this.qTable[nextState]);
@@ -76,8 +83,12 @@ export default abstract class BotController {
 				(reward + this.discount_factor * maxFuturQ - currentQ);
 	}
 
-	public save(episode: number){
-		fs.writeFileSync(`../qtable_saves/qtable_easy_episode_${episode}.json`, JSON.stringify(this.qTable, null, 2), 'utf-8');
+	public save(episode: number) {
+		fs.writeFileSync(
+			`../qtable_saves/qtable_easy_episode_${episode}.json`,
+			JSON.stringify(this.qTable, null, 2),
+			"utf-8"
+		);
 	}
 
 	private load() {
@@ -89,23 +100,36 @@ export default abstract class BotController {
 		}
 	}
 
-	abstract update(player: Player, board: Board): number;
+	abstract takeDecision(player: Player, board: Board): number;
 }
 
-class EasyBot extends BotController {
-	update(player: Player, board: Board): number {
-		let reward = 0;
-		const timestamp = Date.now();
-		//console.log("time: ", timestamp - this.start);
-		const state = board.getState(player.id);
-		if (this.training && this.lastState !== null && this.lastAction !== null){
-			reward = board.getReward(player.id);
-			this.updateQtable(this.lastState, this.lastAction, reward, state);
+export class EasyBot extends BotController {
+	action!: number;
+	timeAction: number = 0;
+	readAction(n: number) {
+		if (n === 0) {
+			this.action = 0;
+			this.timeAction = 0.5;
+		} else if (n === 1) {
+			this.action = 0;
+			this.timeAction = 0.1;
+		} else if (n === 2) {
+			this.action = 1;
+			this.timeAction = 0;
+		} else if (n === 3) {
+			this.action = 2;
+			this.timeAction = 0.1;
+		} else if (n === 4) {
+			this.action = 2;
+			this.timeAction = 0.5;
 		}
-		const action = this.chooseAction(state, 3);
-		this.lastAction = action;
-		this.lastState = state;
-		switch (action){
+	}
+	update(player: Player, dt: number){
+		if (this.timeAction >= 0)
+			this.timeAction -= dt;
+		if (this.timeAction <= 0 && this.action != 1)
+			this.action = 1;
+		switch (this.action){
 			case 0:
 				player.moveUp(true);
 				player.moveDown(false);
@@ -119,6 +143,24 @@ class EasyBot extends BotController {
 				player.moveDown(true);
 				break;
 		}
-		return (reward);
+	}
+	takeDecision(player: Player, board: Board): number {
+		let reward = 0;
+		const timestamp = Date.now();
+		//console.log("time: ", timestamp - this.start);
+		const state = board.getState(player.id);
+		if (
+			this.training &&
+			this.lastState !== null &&
+			this.lastAction !== null
+		) {
+			reward = board.getReward(player.id);
+			this.updateQtable(this.lastState, this.lastAction, reward, state);
+		}
+		this.readAction(this.chooseAction(state, state));
+		this.lastAction = this.action;
+		this.lastState = state;
+		
+		return reward;
 	}
 }
