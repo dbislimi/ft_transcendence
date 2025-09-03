@@ -20,19 +20,21 @@ export default class Game {
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
 
-	constructor(p1: WebSocket, p2: WebSocket | difficulty | trainDifficulty | undefined, onEnd?: () => void) {
+	constructor(
+		p1: WebSocket,
+		p2: WebSocket | difficulty | trainDifficulty | undefined,
+		onEnd?: () => void
+	) {
 		this.onEnd = onEnd;
 		this.board = new Board();
-		if (typeof p2 === "object"){
+		if (typeof p2 === "object") {
 			this.clients = [p1, p2];
-			return ;
+			return;
 		}
 		this.clients = [p1, undefined];
-		if (p2 === undefined)
-			return;
-		if (p2[0] !== 't')
-			this.board.connectBot(1 ,p2 as difficulty);
-		else{
+		if (p2 === undefined) return;
+		if (p2[0] !== "t") this.board.connectBot(1, p2 as difficulty);
+		else {
 			console.log("connectbot");
 			this.board.Training = true;
 			this.board.connectBot(1, "hard");
@@ -46,18 +48,18 @@ export default class Game {
 	) {
 		for (const ws of this.clients) ws?.send(data, cb);
 	}
-	public startAsync(signal: AbortSignal){
+	public startAsync(signal: AbortSignal) {
 		this.signal = signal;
 		return new Promise<void>((resolve, reject) => {
 			this.onAbort = () => {
 				this.pause();
 				signal.removeEventListener("abort", this.onAbort);
 				reject(new Error("Training aborted."));
-			}
+			};
 			signal.addEventListener("abort", this.onAbort);
 			this.onEnd = resolve;
 			this.restart();
-		})
+		});
 	}
 	public start(): void {
 		this.prevTime = performance.now();
@@ -76,7 +78,7 @@ export default class Game {
 		this.send(JSON.stringify(data));
 		this.onEnd?.();
 	}
-	private restart(){
+	private restart() {
 		this.board.restart();
 		this.start();
 	}
@@ -102,10 +104,12 @@ export default class Game {
 
 	private gameLoop(): void {
 		const now = performance.now();
-		const deltaTime = (now - this.prevTime) / 1000 * GAMESPEED;
+		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
+		const MAX_DELTA = 0.1;
+		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 
-		const winner = this.board.scores.findIndex((n) => n === this.maxScore);
+		const winner = this.board.checkWinner(this.maxScore);
 		if (winner !== -1) {
 			this.stop(winner);
 			return;
@@ -119,7 +123,10 @@ export default class Game {
 					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),
 				},
 				players: this.board.getPlayersData(),
-				bonus: {count: this.board.bonus.length ,bonuses: this.board.getBonusData()}
+				bonus: {
+					count: this.board.bonus.length,
+					bonuses: this.board.getBonusData(),
+				},
 			},
 		};
 		this.send(JSON.stringify(data));

@@ -16,13 +16,15 @@ export default abstract class BotController {
 	protected epsilon: number;
 	protected epsilon_decay: number;
 	protected epsilon_min: number;
-	protected qTable: number[][] = [[]];
+	protected qTable: { [state: number]: number[] } = {};
 	reward: number = 0;
 	rewards: number[] = [];
 	protected lastState: number | null = null;
 	protected lastAction: number | null = null;
 	protected start: number;
 	aiLag: number = 0;
+	protected scores: [number, number] = [0, 0];
+	abstract nbOfActions: number;
 
 	constructor(
 		options: {
@@ -58,12 +60,12 @@ export default abstract class BotController {
 			this.epsilon * (1 - this.epsilon_decay)
 		);
 	}
-	protected chooseAction(state: number, nbActions: number) {
+	protected chooseAction(state: number) {
 		if (!(state in this.qTable))
-			this.qTable[state] = np.zeros(nbActions) as number[];
+			this.qTable[state] = Array(this.nbOfActions).fill(0);
 		if (this.training && Math.random() < this.epsilon) {
 			this.epsilonGreedy();
-			return Math.floor(Math.random() * nbActions);
+			return Math.floor(Math.random() * this.nbOfActions);
 		}
 		return np.argmax(this.qTable[state]);
 	}
@@ -75,7 +77,7 @@ export default abstract class BotController {
 		nextState: number
 	) {
 		if (!(nextState in this.qTable))
-			this.qTable[nextState] = np.zeros(3) as number[];
+			this.qTable[nextState] = Array(this.nbOfActions).fill(0);
 		const maxFuturQ = np.max(this.qTable[nextState]);
 		const currentQ = this.qTable[state][action];
 		this.qTable[state][action] =
@@ -100,41 +102,42 @@ export default abstract class BotController {
 			console.log(error);
 		}
 	}
-	pushRewards(){
+	newEpisode() {
 		this.rewards.push(this.reward);
 		this.reward = 0;
+		this.scores = [0, 0];
 	}
 	abstract takeDecision(player: Player, board: Board): void;
 	abstract update(player: Player, dt: number): void;
+	abstract rewardsPolicy(board: Board, id: number): number;
 }
 
 export class EasyBot extends BotController {
 	action!: number;
 	timeAction: number = 0;
+	nbOfActions: number = 5;
 	readAction(n: number) {
 		if (n === 0) {
 			this.action = 0;
 			this.timeAction = 0.5;
 		} else if (n === 1) {
 			this.action = 0;
-			this.timeAction = 0.1;
+			this.timeAction = 0.2;
 		} else if (n === 2) {
 			this.action = 1;
 			this.timeAction = 0;
 		} else if (n === 3) {
 			this.action = 2;
-			this.timeAction = 0.1;
+			this.timeAction = 0.2;
 		} else if (n === 4) {
 			this.action = 2;
 			this.timeAction = 0.5;
 		}
 	}
-	update(player: Player, dt: number){
-		if (this.timeAction >= 0)
-			this.timeAction -= dt;
-		if (this.timeAction <= 0 && this.action != 1)
-			this.action = 1;
-		switch (this.action){
+	update(player: Player, dt: number) {
+		if (this.timeAction >= 0) this.timeAction -= dt;
+		if (this.timeAction <= 0 && this.action != 1) this.action = 1;
+		switch (this.action) {
 			case 0:
 				player.moveUp(true);
 				player.moveDown(false);
@@ -149,6 +152,18 @@ export class EasyBot extends BotController {
 				break;
 		}
 	}
+	rewardsPolicy(board: Board, id: number): number {
+		const ops = (id + 1) % 2;
+		const diffOps = this.scores[ops] < board.scores[ops] ? -1 : 0;
+		const diffMe = this.scores[id] < board.scores[id] ? 1 : 0;
+		let reward = diffMe + diffOps;
+		const ball = board.ball;
+		const player = board.players[id];
+		if (ball.y >= player.y && ball.y <= player.y + player.size)
+			reward += 0.5;
+		else reward -= 0.1;
+		return reward;
+	}
 	takeDecision(player: Player, board: Board) {
 		let reward = 0;
 		const timestamp = Date.now();
@@ -159,12 +174,16 @@ export class EasyBot extends BotController {
 			this.lastState !== null &&
 			this.lastAction !== null
 		) {
-			reward = board.getReward(player.id);
+			reward = this.rewardsPolicy(board, player.id);
+			//console.log(`reward: ${reward}`);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
-		this.readAction(this.chooseAction(state, 5));
+		const chosen = this.chooseAction(state);
+		console.log(`[BOT] state: ${state}, action: ${chosen}, reward: ${reward}`); // Ajout du log
+		this.readAction(chosen);
 		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;
+		this.scores = [...board.scores];
 	}
 }
