@@ -25,6 +25,8 @@ export default abstract class BotController {
 	aiLag: number = 0;
 	protected scores: [number, number] = [0, 0];
 	abstract nbOfActions: number;
+	abstract type: string;
+	abstract qtable_nb: number;
 
 	constructor(
 		options: {
@@ -51,7 +53,6 @@ export default abstract class BotController {
 		this.epsilon = epsilon;
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
-		if (training === false) this.load();
 	}
 
 	private epsilonGreedy() {
@@ -86,17 +87,17 @@ export default abstract class BotController {
 				(reward + this.discount_factor * maxFuturQ - currentQ);
 	}
 
-	public save(episode: number) {
+	public save(episode: number): void {
 		fs.writeFileSync(
-			`../AI/qtable_saves/qtable_easy_episode_${episode}.json`,
+			`../AI/qtable_saves/qtable_${this.type}_episode_${episode}.json`,
 			JSON.stringify(this.qTable, null, 2),
 			"utf-8"
 		);
 	}
 
-	private load() {
+	protected load() {
 		try {
-			const raw = fs.readFileSync("qtable_easy.json", "utf-8");
+			const raw = fs.readFileSync(`../AI/qtable_saves/qtable_${this.type}_episode_${this.qtable_nb}.json`, "utf-8");
 			this.qTable = JSON.parse(raw);
 		} catch (error) {
 			console.log(error);
@@ -116,6 +117,12 @@ export class EasyBot extends BotController {
 	action!: number;
 	timeAction: number = 0;
 	nbOfActions: number = 5;
+	type = "easy";
+	qtable_nb = 190;
+	constructor(options = {}){
+		super({...options})
+		if (this.training === false) this.load();
+	}
 	readAction(n: number) {
 		if (n === 0) {
 			this.action = 0;
@@ -179,9 +186,9 @@ export class EasyBot extends BotController {
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
 		const chosen = this.chooseAction(state);
-		console.log(`[BOT] state: ${state}, action: ${chosen}, reward: ${reward}`); // Ajout du log
+		//console.log(`[BOT] state: ${state}, action: ${chosen}, reward: ${reward}`); // Ajout du log
 		this.readAction(chosen);
-		this.lastAction = this.action;
+		this.lastAction = chosen;
 		this.lastState = state;
 		this.reward += reward;
 		this.scores = [...board.scores];

@@ -37,17 +37,6 @@ export default class Board {
 		this.botController = [];
 	}
 
-	checkWinner(maxScore: number) {
-		const winner = this.scores.findIndex((n) => n === maxScore);
-		if (winner !== -1) {
-			for (const [index, bot] of this.botController.entries()) {
-				if (!bot) continue;
-				if (index === winner) bot.reward += 1;
-				else bot.reward -= 1;
-			}
-		}
-		return winner;
-	}
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
 		this.ball.x = x;
 		this.ball.y = y;
@@ -85,7 +74,7 @@ export default class Board {
 		for (const player of this.players) {
 			for (const bonus of player.ActiveBonus) bonus.remove(this, player);
 			player.ActiveBonus = [];
-			player.y = Math.random() * (this.height - player.size);
+			player.y = this.height / 2 - player.size / 2;
 		}
 		this.setBallPos();
 		this.bounceBallX(true);
@@ -198,16 +187,16 @@ export default class Board {
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p2.bot === "hard") {
-			p2.y = this.ball.y - p2.size / 2;
+			//p2.y = this.ball.y - p2.size / 2;
 			// p2.moveUp(false);
 			// p2.moveDown(false);
-			//if (this.ball.y < p2.y + p2.size / 2) {
-			//	p2.moveUp(true);
-			//	p2.moveDown(false);
-			//} else if (this.ball.y > p2.y + p2.size / 2) {
-			//	p2.moveUp(false);
-			//	p2.moveDown(true);
-			//}
+			if (this.ball.y < p2.y + p2.size / 2) {
+				p2.moveUp(true);
+				p2.moveDown(false);
+			} else if (this.ball.y > p2.y + p2.size / 2) {
+				p2.moveUp(false);
+				p2.moveDown(true);
+			}
 		}
 		this.move(p1, dt);
 		this.move(p2, dt);

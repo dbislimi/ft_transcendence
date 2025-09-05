@@ -7,7 +7,7 @@ export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 100;
+const GAMESPEED: number = 1;
 
 export default class Game {
 	readonly board: Board;
@@ -109,7 +109,7 @@ export default class Game {
 		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 
-		const winner = this.board.checkWinner(this.maxScore);
+		const winner = this.board.scores.findIndex((n) => n === this.maxScore);
 		if (winner !== -1) {
 			this.stop(winner);
 			return;
