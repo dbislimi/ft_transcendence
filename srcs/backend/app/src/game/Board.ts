@@ -280,7 +280,7 @@ export default class Board {
 			case "easy":
 				this.botController[id] = new EasyBot({
 					learning_rate: 0.1,
-					discount_factor: 0.97,
+					discount_factor: 0.1,
 					epsilon: 1,
 					epsilon_decay: 0.00023,
 					epsilon_min: 0.01,
@@ -313,7 +313,7 @@ export default class Board {
 		const cut = this.height / nb;
 		return Math.floor(y / cut) + 1;
 	}
-	
+
 	restart() {
 		this.score = [0, 0];
 		this.ball.reset(this);
@@ -323,8 +323,10 @@ export default class Board {
 		if (this.training && this.botController.length !== 0) {
 			if (this.gamesNb % 10 === 0)
 				this.botController[0].save(this.gamesNb);
-			if (this.gamesNb % 100 === 0)
-				plotRewards(this.botController[0].rewards, this.gamesNb);
+			if (this.gamesNb % 100 === 0){
+				plotRewards("rewards", this.botController[0].rewards, this.botController[0].type, this.gamesNb);
+				plotRewards("epsilons", this.botController[0].epislons, this.botController[0].type, this.gamesNb);
+			}
 			this.botController[0].newEpisode();
 		}
 		++this.gamesNb;

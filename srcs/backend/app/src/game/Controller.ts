@@ -16,9 +16,11 @@ export default abstract class BotController {
 	protected epsilon: number;
 	protected epsilon_decay: number;
 	protected epsilon_min: number;
+	epislons: number[] = [];
 	protected qTable: { [state: string]: number[] } = {};
 	reward: number = 0;
 	rewards: number[] = [];
+	protected action: number | null = null
 	protected lastState: string | null = null;
 	protected lastAction: number | null = null;
 	protected start: number;
@@ -107,6 +109,7 @@ export default abstract class BotController {
 		}
 	}
 	newEpisode() {
+		this.epislons.push(this.epsilon);
 		this.rewards.push(this.reward);
 		this.reward = 0;
 		this.scores = [0, 0];
@@ -125,10 +128,9 @@ export default abstract class BotController {
 			//console.log(`reward: ${reward}`);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
-		const chosen = this.chooseAction(state);
+		this.action = this.chooseAction(state);
 		//console.log(`[BOT] state: ${state}, action: ${chosen}, reward: ${reward}`); // Ajout du log
-		this.readAction(chosen);
-		this.lastAction = chosen;
+		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;
 		this.scores = [...board.scores];
@@ -136,111 +138,8 @@ export default abstract class BotController {
 	abstract getState(board: Board, player: Player): string;
 	abstract update(player: Player, board: Board, dt: number): void;
 	abstract rewardsPolicy(board: Board, id: number): number;
-	abstract readAction(n: number): void;
 }
 
-export class EasyBot extends BotController {
-	action!: number;
-	timeAction: number = 0;
-	nbOfActions: number = 9;
-	type = "easy";
-	qtable_nb = 240;
-	constructor(options = {}) {
-		super({ ...options });
-		if (this.training === false) this.load();
-	}
-	readAction(n: number) {
-		switch (n) {
-			case 0:
-				this.action = 0;
-				this.timeAction = 0.85;
-				break;
-			case 1:
-				this.action = 0;
-				this.timeAction = 0.425;
-				break;
-			case 2:
-				this.action = 0;
-				this.timeAction = 0.2125;
-				break;
-			case 3:
-				this.action = 0;
-				this.timeAction = 0.10625;
-				break;
-			case 4:
-				this.action = 1;
-				this.timeAction = 0;
-				break;
-			case 5:
-				this.action = 2;
-				this.timeAction = 0.10625;
-				break;
-			case 6:
-				this.action = 2;
-				this.timeAction = 0.2125;
-				break;
-			case 7:
-				this.action = 2;
-				this.timeAction = 0.425;
-				break;
-			case 8:
-				this.action = 2;
-				this.timeAction = 0.85;
-				break;
-		}
-	}
-	update(player: Player, board: Board, dt: number) {
-		if (this.timeAction >= 0) this.timeAction -= dt;
-		if (this.timeAction <= 0 && this.action != 1) this.action = 1;
-		switch (this.action) {
-			case 0:
-				player.moveUp(true);
-				player.moveDown(false);
-				break;
-			case 1:
-				player.moveUp(false);
-				player.moveDown(false);
-				break;
-			case 2:
-				player.moveUp(false);
-				player.moveDown(true);
-				break;
-		}
-	}
-	rewardsPolicy(board: Board, id: number): number {
-		let reward = 0;
-		const ball = board.ball;
-		const player = board.players[id];
-		if (ball.y >= player.y && ball.y <= player.y + player.size)
-			reward += 0.5;
-		else reward -= 0.1;
-		const prevMyScore = this.scores[id];
-		const prevOppScore = this.scores[(id + 1) % 2];
-		const myScore = board.scores[id];
-		const oppScore = board.scores[(id + 1) % 2];
-		if (myScore > prevMyScore) reward += 1.0;
-		if (oppScore > prevOppScore) reward -= 1.0;
-		return reward;
-	}
-	getState(board: Board, player: Player): string {
-
-		const playerSize = player.size;
-		const playerY = player.y - playerSize / 2;
-		let { nextY: y } = board.ball.getNextXY(1);
-		const rel_y = board.ball.y - playerY;
-		if (y < 2 * (board.W / 100) || y > board.W - 2 * (board.W / 100))
-			y = board.ball.getXY().y;
-		if (y < player.y - 2 * player.size) return "0";
-		if (y < player.y - player.size) return "1";
-		if (y < player.y - player.size / 2) return "2";
-		if (y < player.y) return "3";
-		if (y <= player.y + player.size) return "4";
-		if (y <= player.y + 1.5 * player.size ) return "5";
-		if (y <= player.y + 2 * player.size ) return "6";
-		if (y <= player.y + 3 * player.size ) return "7";
-		return "8";
-	}
-}
 
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
@@ -253,9 +152,7 @@ export class MediumBot extends BotController {
 		super({ ...options });
 		if (this.training === false) this.load();
 	}
-	readAction(n: number) {
-		this.targetZone = n; // n = 0 à 4
-	}
+
 	update(player: Player, board: Board, dt: number) {
 		if (this.targetZone === null) return;
 		const nbZones = 5;
@@ -292,7 +189,9 @@ export class MediumBot extends BotController {
 	}
 	getState(board: Board, player: Player): string {
 		const nbZones = 5;
-		const playerZone = Math.floor((player.y / (board.H - player.size)) * nbZones);
+		const playerZone = Math.floor(
+			(player.y / (board.H - player.size)) * nbZones
+		);
 		let { nextY: predictedY, nextX: predictedX } = board.ball.getNextXY(1);
 		const isBehind =
 			(player.id === 0 && predictedX < player.x + player.width) ||
@@ -310,5 +209,65 @@ export class MediumBot extends BotController {
 		else if (vy < 80) vyZone = 5;
 		else vyZone = 6;
 		return `${playerZone}_${ballZone}_${vyZone}`;
+	}
+}
+
+export class EasyBot extends BotController {
+	nbOfActions: number = 10; // nombre de zones verticales
+	type = "easy";
+	qtable_nb = 300;
+	timeAction: number = 0;
+
+	constructor(options = {}) {
+		super({ ...options });
+		if (this.training === false) this.load();
+	}
+
+	update(player: Player, board: Board, dt: number) {
+		if (this.action === null) return;
+		const nbZones = this.nbOfActions;
+		const zoneHeight = board.H / nbZones;
+		const targetY =
+		this.action * zoneHeight + zoneHeight / 2;
+		const playerCenter = player.y + player.size / 2;
+		//console.log(`action: ${this.action}, target: ${targetY}, player: ${playerCenter}`);
+		if (playerCenter > targetY + 2) {
+			player.moveUp(true);
+			player.moveDown(false);
+		} else if (playerCenter < targetY - 2) {
+			player.moveUp(false);
+			player.moveDown(true);
+		} else {
+			player.moveUp(false);
+			player.moveDown(false);
+		}
+	}
+
+	rewardsPolicy(board: Board, id: number): number {
+		const ball = board.ball;
+		const player = board.players[id];
+		const playerCenter = player.y + player.size / 2;
+		const dist = Math.abs(ball.y - playerCenter);
+		const maxDist = player.size / 2;
+		if (dist <= maxDist) {
+			return 1 - dist / maxDist;
+		} else {
+			return -(dist - maxDist) / maxDist;
+		}
+	}
+
+	getState(board: Board, player: Player): string {
+		const nbZones = this.nbOfActions;
+		let { nextY: predictedY, nextX: predictedX } = board.ball.getNextXY(1);
+		const isBehind =
+			(player.id === 0 && predictedX < player.x + player.width) ||
+			(player.id === 1 && predictedX > player.x);
+		if (isBehind) predictedY = board.ball.getNextXY(0.4).nextY;
+		while (predictedY < 0 || predictedY > board.H){
+			if (predictedY < 0) predictedY = -predictedY;
+			if (predictedY > board.H) predictedY = board.H - (predictedY - board.H)
+		}
+		const ballZone = Math.floor((predictedY / board.H) * nbZones);
+		return `${ballZone}`;
 	}
 }

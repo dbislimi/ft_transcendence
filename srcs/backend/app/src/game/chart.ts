@@ -1,15 +1,15 @@
 import fetch from "node-fetch";
 import { writeFileSync } from "fs";
 
-export default async function plotRewards(rewards: number[], episode?: number) {
+export default async function plotRewards(name: string,tab: number[], diff: string, episode?: number) {
 	const chartConfig = {
 		type: "line",
 		data: {
-			labels: rewards.map((_, i) => `Episode ${i + 1}`),
+			labels: tab.map((_, i) => `Episode ${i + 1}`),
 			datasets: [
 				{
-					label: "Reward",
-					data: rewards,
+					label: name,
+					data: tab,
 					borderColor: "blue",
 					fill: false,
 				},
@@ -19,12 +19,12 @@ export default async function plotRewards(rewards: number[], episode?: number) {
 			plugins: {
 				title: {
 					display: true,
-					text: "Récompenses par épisode",
+					text: `${name} per episode`,
 				},
 			},
 			scales: {
 				x: { title: { display: true, text: "Episodes" } },
-				y: { title: { display: true, text: "Reward" } },
+				y: { title: { display: true, text: name } },
 			},
 		},
 	};
@@ -38,6 +38,6 @@ export default async function plotRewards(rewards: number[], episode?: number) {
 
 	const buffer = Buffer.from(await res.arrayBuffer());
 	const suffix = episode && episode !== 0 ? `_${episode}` : "";
-	writeFileSync(`../AI/rewards${suffix}.png`, buffer);
-	console.log("✅ Graphique généré : rewards.png");
+	writeFileSync(`../AI/qtable_saves/${diff}/graph/${name}${suffix}.png`, buffer);
+	console.log(`✅ Graphique généré : ${name}.png`);
 }
