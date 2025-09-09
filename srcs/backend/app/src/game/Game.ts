@@ -7,7 +7,7 @@ export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
 };
-const GAMESPEED: number = 1;
+let GAMESPEED: number = 1;
 
 export default class Game {
 	readonly board: Board;
@@ -19,6 +19,8 @@ export default class Game {
 	private onEnd: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
+
+	private timestamp: number;
 
 	constructor(
 		p1: WebSocket,
@@ -37,6 +39,7 @@ export default class Game {
 		else {
 			console.log("connectbot");
 			this.board.Training = true;
+			GAMESPEED = 100;
 			this.board.connectBot(1, "hard");
 			this.board.connectBot(0, p2.slice(5) as difficulty);
 		}
@@ -85,8 +88,12 @@ export default class Game {
 	private up(type: string, player: 0 | 1) {
 		if (!this.board.players[player].up && type === "press") {
 			this.board.players[player].moveUp(true);
-		} else if (this.board.players[player].up && type === "release")
+			this.timestamp = Date.now();
+		} else if (this.board.players[player].up && type === "release"){
 			this.board.players[player].moveUp(false);
+			console.log("timestamp:", Date.now() - this.timestamp )
+			this.timestamp =0;
+		}
 	}
 	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")

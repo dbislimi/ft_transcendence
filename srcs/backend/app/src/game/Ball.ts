@@ -7,7 +7,7 @@ export default class Ball {
 	x: number;
 	y: number;
 	speed: number;
-	dx: number = 30;
+	dx: number = 0;
 	dy: number = 0;
 
 	constructor(field: Board, size: number = 4) {

@@ -8,7 +8,7 @@ export default class Player {
 	size: number;
 	readonly x: number;
 	y: number;
-	speed: number = 100;
+	speed: number = 90;
 	private movingUp: boolean = false;
 	private movingDown: boolean = false;
 	bot: difficulty | undefined = undefined;

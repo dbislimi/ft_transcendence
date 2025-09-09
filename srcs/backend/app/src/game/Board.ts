@@ -1,6 +1,6 @@
 import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
-import BotController from "./Controller.ts";
+import BotController, { MediumBot } from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
 import Bonus from "./Bonus.ts";
 import { Bigger } from "./Bonus.ts";
@@ -256,15 +256,16 @@ export default class Board {
 			if (!bot) continue;
 			bot.aiLag += dt;
 			if (bot.aiLag >= 1) {
-				bot.takeDecision(this.players[index], this);
+				bot.takeDecision(this, this.players[index]);
 				bot.aiLag -= 1;
 			}
-			bot.update(this.players[index], dt);
+			bot.update(this.players[index], this, dt);
 		}
 	}
 	update(dt: number) {
 		this.elapsedTime += dt;
 		// console.log(`elapsed time: ${this.elapsedTime}`);
+		//console.log(`ball dy: ${this.ball.dy}`);
 		this.updateBot(dt);
 		this.updateBonus(dt);
 		this.updatePlayersPosition(dt);
@@ -288,7 +289,7 @@ export default class Board {
 				console.log("debug");
 				break;
 			case "medium":
-				this.botController[id] = new EasyBot({
+				this.botController[id] = new MediumBot({
 					training: this.training,
 				});
 				break;
@@ -312,20 +313,7 @@ export default class Board {
 		const cut = this.height / nb;
 		return Math.floor(y / cut) + 1;
 	}
-	getState(id: 0 | 1) {
-		let state: number;
-		const nbOfCut = 4;
-		const player = this.players[id];
-		const { nextY: y } = this.ball.getNextXY(1);
-		state = nbOfCut * 100;
-		state += this.cut(player.y, nbOfCut) * 10;
-		state += this.cut(y, nbOfCut);
-		if (y < player.y - player.size) return 0;
-		if (y < player.y) return 1;
-		if (y <= player.y + player.size) return 2;
-		if (y <= player.y + 2 * player.size) return 3;
-		return 4;
-	}
+	
 	restart() {
 		this.score = [0, 0];
 		this.ball.reset(this);
