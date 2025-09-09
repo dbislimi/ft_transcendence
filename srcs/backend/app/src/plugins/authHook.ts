@@ -6,8 +6,8 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export default fp(async function authHook(fastify: FastifyInstance) {
   fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
-    const excludedRoutes = ["/login", "/register", "/check2fa"];
-    if (excludedRoutes.includes(request.url))
+    const excludedRoutes = ["/login", "/register", "/check2fa", "/auth/google", "/auth/google/callback"];
+    if (excludedRoutes.some(path => request.url.startsWith(path)))
       return;
 
     const authHeader = request.headers.authorization;

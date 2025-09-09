@@ -11,13 +11,6 @@ import crypto from 'crypto';
 import util from 'util';
 import fp from 'fastify-plugin';
 
-const fastify = Fastify({
-    logger: {
-        transport: {
-            target: "pino-pretty",
-        },
-    },
-});
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -30,7 +23,7 @@ export function GenerateOtp(){
     return crypto.randomInt(100000, 999999).toString();
 }
 
-export default fp(async function Send2faPlugin(fastify) {
+export default fp(async function Send2faPlugin(fastify: Fastify) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

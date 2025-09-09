@@ -106,7 +106,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       }
 
       return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
-      } // si je genere jwt avant et le reply send je vais cash au dashboard ??
+      }
 
     //console.log("EREN YEAGER");
     const token = jwt.sign(

@@ -72,7 +72,7 @@ export default function Dashboard() {
         alert("✅ Invitation envoyée !");
         e.currentTarget.reset();
       })
-      .catch(() => alert("❌ Erreur lors de l’envoi de l’invitation"));
+      .catch(() => alert("❌ Erreur lors de l'envoi de l'invitation"));
   };
 
   return (

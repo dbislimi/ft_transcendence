@@ -27,6 +27,18 @@ async function dbPlugin(fastify, opts) {
 	    twoFAEnabled INTEGER DEFAULT 0,
     	twoFAOtp TEXT
     );`);
+    db.run(`CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fromId INTEGER,
+      toId INTEGER,
+      text TEXT NOT null,
+      date TEXT NOT null
+    );`);
+    db.run(`CREATE TABLE IF NOT EXISTS blocks (
+      blockerId INTEGER,
+      blockedId INTEGER,
+      PRIMARY KEY (blockerId, blockedId)
+    );`);
   });
 
   fastify.decorate('db', db);
