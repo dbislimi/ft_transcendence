@@ -28,6 +28,7 @@ export default class Board {
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
 	private gamesNb: number = 1;
+	normHitpoint: number = 0;
 
 	constructor(height: number = 100, width: number = 200) {
 		this.height = height;
@@ -51,7 +52,7 @@ export default class Board {
 		}
 		this.ball.dx *= -1;
 		this.ball.speed *= 1.1;
-		this.ball.clampSpeed(); // Limite la vitesse après rebond
+		this.ball.clampSpeed();
 		const angle = Math.atan2(this.ball.dy, this.ball.dx);
 		this.ball.dx = Math.cos(angle) * this.ball.speed;
 		this.ball.dy = Math.sin(angle) * this.ball.speed;
@@ -61,8 +62,8 @@ export default class Board {
 
 		if (player === null) this.ball.dy *= -1;
 		else {
-			const normHitpoint = (2 * hitpoint) / player.size - 1;
-			const angle = normHitpoint * (Math.PI / 4);
+			this.normHitpoint = (2 * hitpoint) / player.size - 1;
+			const angle = this.normHitpoint * (Math.PI / 4);
 			const dir = this.ball.dx < 0 ? -1 : 1;
 			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
 			this.ball.dy = Math.sin(angle) * this.ball.speed;
@@ -266,8 +267,8 @@ export default class Board {
 		this.elapsedTime += dt;
 		// console.log(`elapsed time: ${this.elapsedTime}`);
 		//console.log(`ball dy: ${this.ball.dy}`);
-		this.updateBot(dt);
 		this.updateBonus(dt);
+		this.updateBot(dt);
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
 	}
@@ -284,12 +285,17 @@ export default class Board {
 					epsilon: 1,
 					epsilon_decay: 0.00023,
 					epsilon_min: 0.01,
-					training: this.training,
+					training: false,
 				});
 				console.log("debug");
 				break;
 			case "medium":
 				this.botController[id] = new MediumBot({
+					learning_rate: 0.1,
+					discount_factor: 0.9,
+					epsilon: 1,
+					epsilon_decay: 0.0001,
+					epsilon_min: 0.01,
 					training: this.training,
 				});
 				break;
