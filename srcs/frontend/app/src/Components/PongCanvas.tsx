@@ -45,17 +45,19 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 				canvas.width * 3 / 4,
 				canvas.height / 2 + 30
 			);
-			for (const bonuses of bonus.current.bonuses){
-				c.arc(
-					100 * 4,
-					bonuses.y * 4,
-					bonuses.radius * scale,
-					0,
-					2 * Math.PI,
-					false
-				);
-				c.fillStyle = "rgba(119, 45, 237, 1)";
-				c.fill();
+			if (bonus.current){
+				for (const bonuses of bonus.current.bonuses){
+					c.arc(
+						100 * 4,
+						bonuses.y * 4,
+						bonuses.radius * scale,
+						0,
+						2 * Math.PI,
+						false
+					);
+					c.fillStyle = "rgba(119, 45, 237, 1)";
+					c.fill();
+				}
 			}
 			c.fillStyle = 'rgba(0,0,0,0.8)'
 			c.fillRect(0, 0, canvas.width, canvas.height);

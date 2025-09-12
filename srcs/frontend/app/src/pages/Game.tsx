@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PongCanvas from "../Components/PongCanvas";
+import GameMenu from "../Components/GameMenu";
+import type { difficulty } from "../Components/GameMenu";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
@@ -144,7 +146,7 @@ export default function Game() {
 		setState(false);
 		wsRef.current?.send(JSON.stringify({ event: "restart" }));
 	};
-	const handlePlay = (online: boolean, diff?: difficulty) => {
+	const handlePlay = (online: boolean, diff?: string) => {
 		if (online && diff === undefined)
 			wsRef.current?.send(
 				JSON.stringify({
@@ -169,16 +171,33 @@ export default function Game() {
 		setPlay(!play);
 	};
 	return (
-		<BackgroundSurface game="pong">
-		<SpaceBackground />
-			<div className="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-center">
-				<button
-					className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-					type="button"
-					onClick={handleClick}
-				>
-					{!state ? "start" : "stop"}
-				</button>
+		<>
+			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
+				{/*<SpaceBackground />*/}
+
+				{/* {winner === null ? (
+					<button
+						className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
+						type="button"
+						onClick={handleClick}
+					>
+						{!state ? "start" : "stop"}
+					</button>
+				) : (
+					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
+						<div className="text-white text-6xl font-extrabold uppercase tracking-wide">
+							Winner: Player {winner}
+						</div>
+						<button
+							onClick={handleReplay}
+							type="button"
+							className=" bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
+						>
+							Replay
+						</button>
+					</div>
+				)} */}
+				{play ? (
 					<PongCanvas
 						ball={ballRef}
 						players={playersRef}
@@ -196,6 +215,6 @@ export default function Game() {
 
 				<Chat />
 			</div>
-		</BackgroundSurface>
+		</>
 	);
 }
