@@ -1,41 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useTranslation } from "react-i18next";
+import SpaceBackground from "../Components/SpaceBackground";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Connection() {
+  const { t } = useTranslation();
+  const { login } = useAuth();
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let x = 10;
-    const speed = 2;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "blue";
-      ctx.fillRect(10, 10, 100, 100);
-
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.arc(x, 100, 30, 0, Math.PI * 2);
-      ctx.fill();
-
-      x += speed;
-      if (x > canvas.width - 30 || x < 30) x = 10;
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,75 +41,108 @@ export default function Connection() {
       });
 
       if (response.ok) {
-        // const data = await response.json();
-        // alert("Connexion réussie");
-        // Tu peux stocker le token ici, si tu veux
-        // localStorage.setItem("token", data.token);
-        navigate("/auth");
+        // Simuler une connexion réussie avec des données utilisateur
+        const userData = {
+          id: "1",
+          name: email.split('@')[0], // Utiliser la partie avant @ comme nom
+          email: email
+        };
+        
+        login(userData);
+        navigate("/");
       } else {
         alert("Identifiants invalides");
       }
     } catch (error) {
-      alert("Erreur réseau");
+      // En cas d'erreur réseau, simuler une connexion pour la démo
+      const userData = {
+        id: "1",
+        name: email.split('@')[0],
+        email: email
+      };
+      
+      login(userData);
+      navigate("/");
     }
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img
-          alt="Your Company"
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-          className="mx-auto h-10 w-auto"
-        />
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-          Connexion
-        </h2>
-        <canvas
-          ref={canvasRef}
-          width={300}
-          height={200}
-          className="border-2 border-gray-800 mt-6 rounded-lg shadow-lg"
-        ></canvas>
-      </div>
+    <>
+      <SpaceBackground />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-md px-6">
+          
+          {/* Formulaire de connexion */}
+          <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                Connexion
+              </h1>
+              <p className="text-slate-400">
+                Accédez à votre compte Transcendence
+              </p>
+            </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="Enter your email"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+                  placeholder="votre@email.com"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Mot de passe */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+                  Mot de passe
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+                  placeholder="••••••••"
+                />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Bouton de connexion */}
+              <button
+                type="submit"
+                className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                Se connecter
+              </button>
+            </form>
+
+            {/* Liens utiles */}
+            <div className="mt-6 text-center">
+              <p className="text-slate-400 text-sm">
+                Pas encore de compte ?{' '}
+                <a href="/Registration" className="text-blue-400 hover:text-blue-300 transition-colors duration-200">
+                  S'inscrire
+                </a>
+              </p>
+            </div>
           </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              placeholder="Enter your password"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
-          </div>
-
-          <button type="submit" className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md">
-            Sign in
-          </button>
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

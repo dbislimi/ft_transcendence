@@ -1,0 +1,142 @@
+{
+    "nav": { "signin": "Sign in", "settings": "Settings" },
+    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "aboutBtn": "About Us", "subtitle": "Challenge your limits in the Pong universe" },
+    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" },
+  "about": {
+    "title": "Our Team",
+    "subtitle": "Discover the talents behind Transcendence",
+    "role": "Full-Stack Developer",
+    "pathway": "Pathway",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "portfolio": "Portfolio",
+    "descriptions": {
+      "thomas": "Developer passionate about modern web technologies and innovation. Specialized in full-stack development with a creative and methodical approach.",
+      "bilal": "Expert in backend development and software architecture. Passionate about performance and application scalability.",
+      "dylan": "Creative frontend developer with an eye for design and user experience. Specialized in modern and reactive interfaces.",
+      "dren": "Versatile developer with expertise in DevOps and robust application development. Passionate about automation and efficiency."
+    }
+  },
+  "bombParty": {
+    "info": {
+      "title": "Info",
+      "openAria": "Open game information",
+      "closeAria": "Close information sidebar",
+      "howToGetTitle": "How to earn bonuses",
+      "streakRule": "Earn a random bonus every {{n}} valid words in a row.",
+      "bonusesTitle": "Bonuses"
+    },
+    "lobby": {
+      "title": "Lobby",
+      "createTab": "Create",
+      "joinTab": "Join",
+      "name": "Name",
+      "private": "Private",
+      "password": "Password",
+      "passwordOpt": "Optional password",
+      "create": "Create",
+      "join": "Join"
+    },
+    "debug": { "show": "Show debug", "hide": "Hide debug" },
+    "chat": {
+      "placeholder": "Type here...",
+      "send": "Send",
+      "inputAria": "Chat input",
+      "sendAria": "Send message",
+      "system": { "joined": "{{name}} joined", "left": "{{name}} left", "you": "You" }
+    },
+    "bonus": {
+      "title": "Bonus",
+      "inversion": { "name": "Inversion", "desc": "Reverse the turn order." },
+      "plus5sec": { "name": "+5 seconds", "desc": "Add 5s to the current timer." },
+      "vitesseEclair": { "name": "Lightning speed", "desc": "Next player has only 3s." },
+      "doubleChance": { "name": "Double chance", "desc": "Two tries on your next turn." }
+      ,
+      "extraLife": { "name": "Extra life", "desc": "Gain one extra life (max 9)." }
+    },
+    "menu": {
+      "title": "Bomb Party",
+      "subtitle": "Find words containing the given trigram before time runs out!",
+      "playersCount": "Number of players",
+      "players": "players",
+      "startGame": "Start Game",
+      "rules": {
+        "title": "Game Rules",
+        "rule1": "Find words containing the trigram",
+        "rule2": "Each player has 3 lives",
+        "rule3": "15 seconds per turn",
+        "rule4": "Last survivor wins!"
+      }
+    },
+    "rules": {
+      "title": "Game Rules",
+      "languageNotice": "This game is played only in French. Only valid French words are accepted.",
+      "rule1": "Type a valid word that contains the displayed trigram.",
+      "rule2": "Each turn is timed. If time runs out, you lose a life.",
+      "rule3": "No duplicate words.",
+      "rule4": "Last player standing wins.",
+      "continue": "I understand, continue",
+      "continueAria": "Continue to lobby"
+    },
+    "input": {
+      "instruction": "Find a word containing:",
+      "placeholder": "Enter your word...",
+      "submit": "Submit",
+      "recentWords": "Recent words:",
+      "errors": {
+        "tooShort": "Word must be at least 3 letters long",
+        "noTrigram": "Word must contain the trigram",
+        "duplicate": "Word already used",
+        "notInDictionary": "This word is not in the French dictionary"
+      }
+    },
+    "gameOver": {
+      "title": "Game Over!",
+      "winner": "Winner: {{name}}",
+      "backToMenu": "Back to Menu"
+    },
+    "hud": {
+      "yourTurn": "Your turn",
+      "waiting": "Waiting",
+      "eliminated": "Eliminated",
+      "fastTurn": "Fast turn",
+      "wordSuggestions": "Word suggestions"
+    },
+    "backToMenu": "Back to Menu"
+  }
+  ,
+  "profile": {
+    "title": "Profile",
+    "memberSince": "Member since {{date}}",
+    "stats": {
+      "games": "Games",
+      "wins": "Wins",
+      "winrate": "Win rate",
+      "playtime": "Play time"
+    },
+    "badges": { "title": "Badges" },
+    "loading": "Loading profile...",
+    "error": "Failed to load profile",
+    "retry": "Retry",
+    "closeAria": "Close profile modal"
+  },
+  "common": { "back": "Back", "backAria": "Go back" },
+  "accessibility": { "languageSwitcher": "Language selector" },
+  "ui": {
+    "background": {
+      "title": "Backgrounds",
+      "open": "Backgrounds",
+      "openAria": "Open background picker",
+      "selectAria": "Select background {{name}}",
+      "default": "Default",
+      "space": "Space (animated)",
+      "defaultPreview": "Keep game's default",
+      "42": "42",
+      "halloween": "Halloween",
+      "matrix42": "Matrix 42",
+      "snow": "Snow",
+      "active": "Active",
+      "applyAll": "Use for all games"
+    }
+  }
+}

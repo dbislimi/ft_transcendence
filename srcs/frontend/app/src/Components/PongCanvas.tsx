@@ -24,6 +24,9 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 		const c = canvas.getContext("2d");
 		if (!c) return;
 		const loop = () => {
+			// Vérifier que les refs ne sont pas null
+			if (!players.current || !ball.current) return;
+			
 			const p1Size = players.current.p1.size * scale;
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);

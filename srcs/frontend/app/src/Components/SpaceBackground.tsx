@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { useBackground } from "../contexts/BackgroundContext";
 
 const colors = ["#F23041", "#F241E6", "#8C2A86", "#162059", "#41F2F2"];
 
@@ -65,15 +67,25 @@ class Star {
 export default function SpaceBackground() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
+	const location = useLocation();
+	const { getBackgroundFor, getGlobalBackgroundKey } = useBackground();
+
+	const shouldRender = useMemo(() => {
+		const path = location.pathname || '';
+		let key: string = getGlobalBackgroundKey();
+		if (path.startsWith('/game')) key = getBackgroundFor('pong');
+		else if (path.startsWith('/bomb-party')) key = getBackgroundFor('bombparty');
+		return key === 'default' || key === 'space';
+	}, [location.pathname, getBackgroundFor, getGlobalBackgroundKey]);
 	
 	useEffect(() => {
-		const header = document.querySelector("header");
+		if (!shouldRender) return;
 		const canvas = canvasRef.current;
-		if (!canvas || !header) return;
+		if (!canvas) return;
 		let Stars: Star[] = [];
 		const resize = () => {
 			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight - header.offsetHeight;
+			canvas.height = window.innerHeight;
 			Stars = [];
 			for (let i = 0; i < 500; ++i) {
 				Stars.push(new Star(canvas));
@@ -99,6 +111,7 @@ export default function SpaceBackground() {
 			window.removeEventListener("resize", resize);
 			cancelAnimationFrame(frameIdRef.current);
 		};
-	}, []);
-	return <canvas className="z-0 absolute" ref={canvasRef} />;
+	}, [shouldRender]);
+	if (!shouldRender) return null;
+	return <canvas className="fixed inset-0 w-full h-full pointer-events-none z-0" ref={canvasRef} />;
 }
