@@ -103,7 +103,7 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, [ball, players, scale]);
+	}, [ball, players, scale, bonus]);
 	return <canvas ref={canvasRef} className="z-5 border-4 border-gray border-t-gray-300 border-b-gray-300 rounded-lg" />;
 }
 
