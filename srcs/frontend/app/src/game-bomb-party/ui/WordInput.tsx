@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getWordSuggestions } from '../data/validator';
+import type { PlayerBonuses, BonusKey } from '../core/types';
 
 interface WordInputProps {
   trigram: string;
@@ -8,15 +9,20 @@ interface WordInputProps {
   onSubmit: (word: string) => void;
   isActive: boolean;
   engine?: any; // Ajout de l'engine pour accéder aux nouvelles méthodes
+  bonuses?: PlayerBonuses;
+  onActivateBonus?: (bonus: BonusKey) => boolean;
+  hasDoubleChance?: boolean;
 }
 
-export default function WordInput({ trigram, usedWords, onSubmit, isActive, engine }: WordInputProps) {
+export default function WordInput({ trigram, usedWords, onSubmit, isActive, engine, bonuses, onActivateBonus, hasDoubleChance }: WordInputProps) {
   const { t } = useTranslation();
   const [word, setWord] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [trigramInfo, setTrigramInfo] = useState<{ availableWords: number; totalWords: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [cooldown, setCooldown] = useState(false);
+  const [processingKey, setProcessingKey] = useState<BonusKey | null>(null);
 
   useEffect(() => {
     if (isActive && inputRef.current) {
@@ -75,12 +81,55 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
     }
   };
 
+  const tryActivate = (key: BonusKey) => {
+    if (!onActivateBonus || cooldown) return;
+    if (!bonuses || (bonuses as any)[key] <= 0) return;
+    setProcessingKey(key);
+    const ok = onActivateBonus(key);
+    setCooldown(true);
+    setTimeout(() => setCooldown(false), 500);
+    setTimeout(() => setProcessingKey(null), 200);
+  };
+
+  const BonusBar = () => {
+    const items: Array<{ key: BonusKey; icon: string; nameKey: string; descKey: string }> = [
+      { key: 'inversion', icon: '🔁', nameKey: 'bombParty.bonus.inversion.name', descKey: 'bombParty.bonus.inversion.desc' },
+      { key: 'plus5sec', icon: '➕', nameKey: 'bombParty.bonus.plus5sec.name', descKey: 'bombParty.bonus.plus5sec.desc' },
+      { key: 'vitesseEclair', icon: '⚡', nameKey: 'bombParty.bonus.vitesseEclair.name', descKey: 'bombParty.bonus.vitesseEclair.desc' },
+      { key: 'doubleChance', icon: '♢', nameKey: 'bombParty.bonus.doubleChance.name', descKey: 'bombParty.bonus.doubleChance.desc' },
+      { key: 'extraLife', icon: '❤️', nameKey: 'bombParty.bonus.extraLife.name', descKey: 'bombParty.bonus.extraLife.desc' },
+    ];
+    return (
+      <div className="flex gap-2 items-center justify-end">
+        {items.map((it) => {
+          const count = (bonuses as any)?.[it.key] ?? 0;
+          const disabled = cooldown || count <= 0 || !isActive;
+          return (
+            <button
+              key={it.key}
+              type="button"
+              onClick={() => tryActivate(it.key)}
+              disabled={disabled}
+              title={`${t(it.nameKey)} — ${t(it.descKey)}`}
+              className={`relative w-10 h-10 rounded-lg border text-xl flex items-center justify-center transition disabled:opacity-40 ${processingKey === it.key ? 'animate-pulse' : ''} ${disabled ? 'border-slate-600 text-slate-400' : 'border-cyan-500/50 hover:border-cyan-400'}`}
+            >
+              <span>{it.icon}</span>
+              <span className="absolute -top-1 -right-1 text-[10px] bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center">
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (!isActive) {
     return null;
   }
 
   return (
-    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-md px-6">
+    <div className="w-full max-w-md px-6">
       <div className="bg-slate-800/90 backdrop-blur-md rounded-xl border border-cyan-500/30 p-6 shadow-2xl">
         {/* Instructions */}
         <div className="text-center mb-4">
@@ -116,6 +165,14 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
             />
           </div>
 
+          {/* Bonus bar */}
+          <div className="flex justify-between items-center">
+            <div className="text-slate-400 text-xs">
+              {hasDoubleChance ? '♢ ' + t('bombParty.bonus.doubleChance.name') : null}
+            </div>
+            <BonusBar />
+          </div>
+
           {/* Bouton de soumission */}
           <button
             type="submit"
@@ -133,30 +190,7 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
           </div>
         )}
 
-        {/* Suggestions de mots améliorées */}
-        {suggestions.length > 0 && (
-          <div className="mt-4 p-3 bg-slate-700/30 rounded-lg">
-            <h4 className="text-slate-300 text-sm font-medium mb-2 flex items-center gap-2">
-              💡 Suggestions pour "{trigram.toUpperCase()}"
-              <span className="text-xs text-slate-400">({suggestions.length})</span>
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setWord(suggestion);
-                    setError(null);
-                  }}
-                  className="px-2 py-1 bg-cyan-600/50 hover:bg-cyan-500/70 text-cyan-200 text-xs rounded transition-colors cursor-pointer hover:scale-105 transform"
-                  title={`Cliquer pour utiliser "${suggestion}"`}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Suggestions retirées de l'input central pour éviter le double affichage */}
 
         {/* Mots récents */}
         {usedWords.length > 0 && (

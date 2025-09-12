@@ -84,7 +84,8 @@ export default function Registration() {
   };
 
   return (
-    <SpaceBackground>
+    <>
+      <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md px-6">
           
@@ -194,6 +195,6 @@ export default function Registration() {
           </div>
         </div>
       </div>
-    </SpaceBackground>
+    </>
   );
 }

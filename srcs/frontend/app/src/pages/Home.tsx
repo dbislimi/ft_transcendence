@@ -1,99 +1,36 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
+import SpaceBackground from "../Components/SpaceBackground";
+import BackgroundPicker from "../Components/BackgroundPicker";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [openPicker, setOpenPicker] = useState(false);
   
   useEffect(() => {
     setIsLoaded(true);
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+  const handleMouseMove = (_e: React.MouseEvent) => {};
 
   return (
+    <>
+    <SpaceBackground />
     <div 
-      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+      className="relative min-h-screen overflow-hidden"
       onMouseMove={handleMouseMove}
     >
-      {/* Fond spatial dynamique */}
-      <div className="absolute inset-0">
-        {/* Nébuleuse animée */}
-        <div 
-          className="absolute inset-0 bg-gradient-radial from-blue-500/5 via-purple-500/3 to-transparent transition-all duration-1000"
-          style={{
-            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
-          }}
-        />
-        
-        {/* Grille spatiale subtile */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }} />
-        </div>
-        
-        {/* Étoiles statiques avec différentes tailles */}
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute rounded-full bg-gray-400 transition-all duration-1000 ${
-              i % 3 === 0 ? 'w-1 h-1' : i % 3 === 1 ? 'w-0.5 h-0.5' : 'w-px h-px'
-            }`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.1 + Math.random() * 0.3,
-              animationDelay: `${Math.random() * 4}s`,
-              animationDuration: `${4 + Math.random() * 3}s`,
-              transform: `translate(${mousePosition.x * 0.001}px, ${mousePosition.y * 0.001}px)`
-            }}
-          />
-        ))}
-        
-        {/* Étoiles filantes rares */}
-        {[...Array(2)].map((_, i) => (
-          <div
-            key={`shooting-${i}`}
-            className="absolute w-0.5 h-0.5 bg-gray-300 rounded-full animate-shooting-star"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`
-            }}
-          />
-        ))}
-        
-        {/* Particules flottantes */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-gray-400 to-gray-300 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.1 + Math.random() * 0.2,
-              animationDelay: `${Math.random() * 6}s`
-            }}
-          />
-        ))}
-      </div>
+      {/* Ancien fond interactif désactivé pour éviter le double fond */}
       
       {/* Contenu principal avec animation d'entrée */}
-      <div className={`relative z-10 flex items-center justify-center min-h-screen transition-all duration-1000 ${
+      <div className={`relative z-10 min-h-screen transition-all duration-1000 ${
         isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
-        <div className="text-center max-w-6xl mx-auto px-6">
+        <div className="text-center max-w-6xl mx-auto px-6 flex flex-col items-center justify-center min-h-screen">
           
           {/* Logo/Titre principal avec effet de profondeur */}
           <div className="relative mb-12">
@@ -117,7 +54,7 @@ export default function Home() {
           )}
           
           {/* Sous-titre avec animation */}
-          <div className="mb-20">
+          <div className="mb-16">
             <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto">
               {t('home.subtitle') || 'Défie tes limites dans l\'univers du Pong'}
             </p>
@@ -133,7 +70,7 @@ export default function Home() {
           </div>
           
           {/* Grille des boutons améliorée */}
-          <div className={`grid gap-8 max-w-6xl mx-auto ${
+          <div className={`grid gap-8 max-w-5xl mx-auto ${
             isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
           }`}>
             
@@ -182,7 +119,7 @@ export default function Home() {
               </>
             )}
             
-            {/* Bouton Jeu */}
+            {/* Bouton Pong */}
             <Link to={"/game"} className="group">
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -193,10 +130,46 @@ export default function Home() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
-                    {t('home.gameBtn') || 'Jouer'}
+                    Pong
                   </h3>
                   <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                    Lancer une partie
+                    Lancer Pong
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Bouton Boutique / Backgrounds */}
+            <button className="group" onClick={() => setOpenPicker(true)}>
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors duration-300">
+                    <span className="text-cyan-400 text-xl">🖼️</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
+                    Boutique
+                  </h3>
+                  <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                    Choisir un arrière-plan
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            {/* Bouton Bomb Party */}
+            <Link to={"/bomb-party"} className="group">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/60 to-gray-700/40 backdrop-blur-md border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-gray-900/50">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/5 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-pink-500/20 flex items-center justify-center group-hover:bg-pink-500/30 transition-colors duration-300">
+                    <span className="text-pink-400 text-xl">💣</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white transition-colors duration-300 mb-2">
+                    Bomb Party
+                  </h3>
+                  <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                    Lancer Bomb Party
                   </p>
                 </div>
               </div>
@@ -243,6 +216,21 @@ export default function Home() {
           
         </div>
       </div>
+      {openPicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-2xl p-6 max-w-3xl w-full mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">Arrière-plans</h3>
+            <BackgroundPicker />
+            <button
+              onClick={() => setOpenPicker(false)}
+              className="mt-6 w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 }

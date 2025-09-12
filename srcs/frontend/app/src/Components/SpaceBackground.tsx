@@ -1,100 +1,119 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { useBackground } from "../contexts/BackgroundContext";
 
-interface SpaceBackgroundProps {
-  children: React.ReactNode;
-  className?: string;
+const colors = ["#F23041", "#F241E6", "#8C2A86", "#162059", "#41F2F2"];
+
+class Star {
+	x: number;
+	y: number;
+	z: number;
+	private color: string;
+	private height: number;
+	private width: number;
+	private maxDepth: number = 10000;
+	private speed: number = 10;
+
+	constructor(canvas: HTMLCanvasElement) {
+		this.height = canvas.height;
+		this.width = canvas.width;
+		this.x = Math.random() * this.width - this.width / 2;
+		this.y = Math.random() * this.height - this.height / 2;
+		this.z = Math.random() * this.maxDepth;
+		this.color = colors[Math.floor(Math.random() * colors.length)];
+	}
+	getScreenCoords(z: number){
+		const offsetX = this.maxDepth / 2 * (this.x / z) + this.width / 2;
+		const offsetY = this.maxDepth / 2 * (this.y / z) + this.height / 2;
+		return {offsetX, offsetY};
+	}
+	update(){
+		this.z -= this.speed;
+		if (this.z <= 10)
+			this.reset();
+	}
+	reset() {
+		this.x = Math.random() * this.width - this.width / 2;
+		this.y = Math.random() * this.height - this.height / 2;
+		this.z = Math.random() * this.maxDepth;
+		this.color = colors[Math.floor(Math.random() * colors.length)];
+	}
+	draw(c: CanvasRenderingContext2D){
+		const {offsetX:x1, offsetY:y1} = this.getScreenCoords(this.z);
+		const offsetX = this.maxDepth / 2 * (this.x / this.z) + this.width / 2;
+		const offsetY = this.maxDepth / 2 * (this.y / this.z) + this.height / 2;
+		const minRadius = 0.2;
+		const maxRadius = 2;
+		const normZ = (this.maxDepth - this.z) / this.maxDepth;
+		const radius =  minRadius + normZ * (maxRadius - minRadius);
+		const blur = normZ * 10;
+		c.shadowBlur = blur;
+		c.shadowColor = this.color;
+		if (normZ > 0.4){
+			const {offsetX:x2, offsetY:y2} = this.getScreenCoords(this.z + normZ * 100);
+			c.beginPath();
+			c.moveTo(x2, y2);
+			c.lineTo(x1, y1);
+			c.strokeStyle = 'rgba(255,255,255,0.6)';
+			c.lineWidth = radius;
+			c.stroke();
+		}
+		c.beginPath();
+		c.arc(x1, y1, radius, 0, 2 * Math.PI, false);
+		c.fillStyle = 'white';
+		c.fill();
+		c.shadowBlur = 0;
+	}
 }
 
-export default function SpaceBackground({ children, className = "" }: SpaceBackgroundProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+export default function SpaceBackground() {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const frameIdRef = useRef<number>(0);
+	const location = useLocation();
+	const { getBackgroundFor, getGlobalBackgroundKey } = useBackground();
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
-
-  return (
-    <div 
-      className={`relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${className}`}
-      onMouseMove={handleMouseMove}
-    >
-      {/* Fond spatial dynamique */}
-      <div className="absolute inset-0">
-        {/* Nébuleuse animée */}
-        <div 
-          className="absolute inset-0 bg-gradient-radial from-blue-500/5 via-purple-500/3 to-transparent transition-all duration-1000"
-          style={{
-            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
-          }}
-        />
-        
-        {/* Grille spatiale subtile */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }} />
-        </div>
-        
-        {/* Étoiles statiques avec différentes tailles */}
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute rounded-full bg-gray-400 transition-all duration-1000 ${
-              i % 3 === 0 ? 'w-1 h-1' : i % 3 === 1 ? 'w-0.5 h-0.5' : 'w-px h-px'
-            }`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.1 + Math.random() * 0.3,
-              animationDelay: `${Math.random() * 4}s`,
-              animationDuration: `${4 + Math.random() * 3}s`,
-              transform: `translate(${mousePosition.x * 0.001}px, ${mousePosition.y * 0.001}px)`
-            }}
-          />
-        ))}
-        
-        {/* Étoiles filantes rares */}
-        {[...Array(2)].map((_, i) => (
-          <div
-            key={`shooting-${i}`}
-            className="absolute w-0.5 h-0.5 bg-gray-300 rounded-full animate-shooting-star"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`
-            }}
-          />
-        ))}
-        
-        {/* Particules flottantes */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-gray-400 to-gray-300 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.1 + Math.random() * 0.2,
-              animationDelay: `${Math.random() * 6}s`
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Contenu principal avec animation d'entrée */}
-      <div className={`relative z-10 transition-all duration-1000 ${
-        isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-      }`}>
-        {children}
-      </div>
-    </div>
-  );
+	const shouldRender = useMemo(() => {
+		const path = location.pathname || '';
+		let key: string = getGlobalBackgroundKey();
+		if (path.startsWith('/game')) key = getBackgroundFor('pong');
+		else if (path.startsWith('/bomb-party')) key = getBackgroundFor('bombparty');
+		return key === 'default' || key === 'space';
+	}, [location.pathname, getBackgroundFor, getGlobalBackgroundKey]);
+	
+	useEffect(() => {
+		if (!shouldRender) return;
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		let Stars: Star[] = [];
+		const resize = () => {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			Stars = [];
+			for (let i = 0; i < 500; ++i) {
+				Stars.push(new Star(canvas));
+			}
+		};
+		const c = canvas.getContext("2d");
+		if (!c) return;
+		
+		const loop = () => {
+			c.fillStyle = "rgba(0,0,0,0.3)";
+			c.fillRect(0, 0, canvas.width, canvas.height);
+			for (let i = 0; i < Stars.length; ++i) {
+				c.fillStyle = "white";
+				Stars[i].update();
+				Stars[i].draw(c);
+			}
+			frameIdRef.current = requestAnimationFrame(loop);
+		};
+		window.addEventListener("resize", resize);
+		resize();
+		frameIdRef.current = requestAnimationFrame(loop);
+		return () => {
+			window.removeEventListener("resize", resize);
+			cancelAnimationFrame(frameIdRef.current);
+		};
+	}, [shouldRender]);
+	if (!shouldRender) return null;
+	return <canvas className="fixed inset-0 w-full h-full pointer-events-none z-0" ref={canvasRef} />;
 }

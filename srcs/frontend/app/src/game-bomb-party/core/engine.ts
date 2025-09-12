@@ -1,4 +1,5 @@
-import type { GameState, GamePhase, Player, GameConfig } from './types';
+import type { GameState, GamePhase, Player, GameConfig, BonusKey } from './types';
+import { STREAK_FOR_BONUS } from './types';
 import { validateWithDictionary, validateLocal } from '../data/validator';
 import trigramWordsData from '../data/trigram_words.json';
 
@@ -7,6 +8,7 @@ export class BombPartyEngine {
   private lastTrigram: string = '';
   private currentTrigramUsageCount: number = 0; // Nombre de fois que le trigramme actuel a été utilisé
   private totalPlayersInRound: number = 0; // Nombre total de joueurs dans le tour complet
+  private doubleChanceConsumedThisTurn: boolean = false;
 
   constructor() {
     this.state = this.getInitialState();
@@ -20,6 +22,10 @@ export class BombPartyEngine {
       currentTrigram: '',
       usedWords: [],
       turnEndsAt: 0,
+      turnOrder: [],
+      turnDirection: 1,
+      baseTurnSeconds: 15,
+      activeTurnEndsAt: undefined,
       history: []
     };
   }
@@ -31,7 +37,10 @@ export class BombPartyEngine {
         id: `player-${i + 1}`,
         name: `Joueur ${i + 1}`,
         lives: config.livesPerPlayer,
-        isEliminated: false
+        isEliminated: false,
+        streak: 0,
+        bonuses: { inversion: 0, plus5sec: 0, vitesseEclair: 0, doubleChance: 0, extraLife: 0 },
+        pendingEffects: {}
       });
     }
 
@@ -42,13 +51,17 @@ export class BombPartyEngine {
       currentTrigram: '',
       usedWords: [],
       turnEndsAt: 0,
+      turnOrder: players.map(p => p.id),
+      turnDirection: 1,
+      baseTurnSeconds: Math.max(3, Math.floor(config.turnDurationMs / 1000)),
+      activeTurnEndsAt: undefined,
       history: []
     };
 
-    // Initialiser le nouveau système de trigrammes
+    // Initialiser
     this.currentTrigramUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
-    console.log('🎯 Nouveau système de trigrammes: 1 trigramme pour', this.totalPlayersInRound, 'joueurs');
+    console.log('🎯 Nouveau système de trigrammes: nouveau trigramme à chaque tour');
   }
 
   startCountdown(): void {
@@ -66,52 +79,51 @@ export class BombPartyEngine {
         return;
       }
     }
-    
+
+    // Nouveau: un nouveau trigramme à chaque tour
+    this.state.currentTrigram = this.getNewTrigram();
+    this.currentTrigramUsageCount = 1;
+    this.totalPlayersInRound = this.state.players.length;
     this.state.phase = 'TURN_ACTIVE';
-    
-    // Nouveau système : un trigramme par tour complet
-    if (this.currentTrigramUsageCount === 0) {
-      // Premier joueur du tour complet, choisir un nouveau trigramme
-      this.state.currentTrigram = this.getNewTrigram();
-      console.log('🎯 Nouveau trigramme choisi:', this.state.currentTrigram, 'pour', this.totalPlayersInRound, 'joueurs');
-    } else if (this.currentTrigramUsageCount >= this.totalPlayersInRound) {
-      // Tour complet terminé, réinitialiser le compteur
-      this.currentTrigramUsageCount = 0;
-      this.state.currentTrigram = this.getNewTrigram();
-      console.log('🎯 Tour complet terminé, nouveau trigramme:', this.state.currentTrigram);
-    } else {
-      // Garder le même trigramme pour les joueurs suivants
-      console.log('🔄 Même trigramme:', this.state.currentTrigram, '(', this.currentTrigramUsageCount + 1, '/', this.totalPlayersInRound, ')');
+
+    // Reset turn-scoped flags
+    this.doubleChanceConsumedThisTurn = false;
+
+    const duration = this.getTurnDurationForCurrentPlayer();
+    const now = performance.now();
+    this.state.turnEndsAt = now + duration;
+    this.state.activeTurnEndsAt = this.state.turnEndsAt;
+    // If fast turn applied to this player, clear the flag now
+    const curId = this.state.players[this.state.currentPlayerIndex]?.id;
+    if (curId && this.state.pendingFastForNextPlayerId === curId) {
+      this.state.pendingFastForNextPlayerId = undefined;
     }
-    
-    this.state.turnEndsAt = performance.now() + 15000; // 15 secondes par défaut
-    
+
     console.log('🔄 Tour démarré pour:', this.state.players[this.state.currentPlayerIndex]?.name, 'Trigramme:', this.state.currentTrigram);
   }
 
   private getNewTrigram(): string {
-    // Extraire les clés (trigrammes) du fichier trigram_words.json
-    const availableTrigrams = Object.keys(trigramWordsData).filter(t => t !== this.lastTrigram);
-    if (availableTrigrams.length === 0) {
-      // Si tous les trigrammes ont été utilisés, réinitialiser
-      availableTrigrams.push(...Object.keys(trigramWordsData));
-    }
-    
-    const randomIndex = Math.floor(Math.random() * availableTrigrams.length);
-    const newTrigram = availableTrigrams[randomIndex];
+    const newTrigram = this.selectRandomTrigram();
     this.lastTrigram = newTrigram;
     return newTrigram;
   }
 
-  submitWord(word: string, msTaken: number): boolean {
+  // Sélectionne un trigramme depuis la ressource JSON (mapping trigram -> mots[])
+  private selectRandomTrigram(): string {
+    const map = trigramWordsData as unknown as Record<string, string[]>;
+    const candidates = Object.keys(map);
+    const filtered = candidates.filter(t => t !== this.lastTrigram);
+    const pool = filtered.length > 0 ? filtered : candidates;
+    if (pool.length === 0) return '';
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
     console.log('🔍 Validation du mot:', word, 'pour le trigramme:', this.state.currentTrigram);
-    
-    // Validation avec dictionnaire français
     const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
     console.log('📋 Résultat de validation:', validation);
-    
+
     if (validation.ok) {
-      // Mot valide
       console.log('✅ Mot valide accepté:', word);
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
@@ -120,11 +132,20 @@ export class BombPartyEngine {
         ok: true,
         msTaken
       });
-      
+
+      // Streak & bonus gain
+      const p = this.state.players[this.state.currentPlayerIndex];
+      p.streak = (p.streak || 0) + 1;
+      if (p.streak > 0 && p.streak % STREAK_FOR_BONUS === 0) {
+        this.giveRandomBonus(p.id);
+      }
+
+      // Clear doubleChance if any pending (it should apply next turn only)
+      // no-op here
+
       this.state.phase = 'RESOLVE';
-      return true;
+      return { ok: true };
     } else {
-      // Mot invalide
       console.log('❌ Mot invalide rejeté:', word, 'Raison:', validation.reason);
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
@@ -132,82 +153,81 @@ export class BombPartyEngine {
         ok: false,
         msTaken
       });
-      
+      // Check double chance
+      const p = this.state.players[this.state.currentPlayerIndex];
+      if (p?.pendingEffects?.doubleChance && !this.doubleChanceConsumedThisTurn) {
+        this.doubleChanceConsumedThisTurn = true;
+        // consume the flag but keep the turn active (no resolve here)
+        if (p.pendingEffects) p.pendingEffects.doubleChance = false;
+        return { ok: false, reason: validation.reason, consumedDoubleChance: true };
+      }
+
       this.state.phase = 'RESOLVE';
-      return false;
+      return { ok: false, reason: validation.reason };
     }
   }
 
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
     console.log('🔄 Résolution du tour - Mot valide:', wordValid, 'Temps expiré:', timeExpired);
-    
+
     // Vérification de sécurité
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
       console.error('❌ Erreur: Aucun joueur ou index invalide');
       return;
     }
-    
+
     const currentPlayer = this.state.players[this.state.currentPlayerIndex];
-    
     if (!currentPlayer) {
       console.error('❌ Erreur: Joueur actuel non trouvé');
       return;
     }
-    
+
     console.log('👤 Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
-    
+
     if (!wordValid || timeExpired) {
-      // Perte d'une vie
-      console.log('💔 Perte d\'une vie pour:', currentPlayer.name);
+      // Reset streak on failure
+      currentPlayer.streak = 0;
+
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
-      
       if (currentPlayer.lives === 0) {
         console.log('💀 Joueur éliminé:', currentPlayer.name);
         currentPlayer.isEliminated = true;
       }
-    } else {
-      console.log('✅ Aucune vie perdue pour:', currentPlayer.name);
     }
 
     // Vérifier s'il reste un seul joueur vivant
     const alivePlayers = this.state.players.filter(p => !p.isEliminated);
-    console.log('👥 Joueurs vivants restants:', alivePlayers.length);
-    
     if (alivePlayers.length <= 1) {
-      console.log('🏁 Fin de partie - Vainqueur:', alivePlayers[0]?.name);
       this.state.phase = 'GAME_OVER';
       return;
     }
 
-    // Incrémenter le compteur d'utilisation du trigramme
+    // Incrémenter (non significatif désormais, conservé pour compat UI)
     this.currentTrigramUsageCount++;
-    console.log('📊 Trigramme utilisé:', this.currentTrigramUsageCount, '/', this.totalPlayersInRound);
-    
+
     // Passer au joueur suivant
     this.nextPlayer();
-    
-    // Démarrer le prochain tour
+
+    // Démarrer le prochain tour (un nouveau trigramme sera tiré)
     this.startTurn();
   }
 
   private nextPlayer(): void {
     if (this.state.players.length === 0) return;
-    
     let attempts = 0;
-    const maxAttempts = this.state.players.length * 2; // Éviter les boucles infinies
-    
+    const maxAttempts = this.state.players.length * 2;
     do {
-      this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.state.players.length;
+      // advance index according to direction
+      const step = this.state.turnDirection === 1 ? 1 : -1;
+      const len = this.state.players.length;
+      this.state.currentPlayerIndex = (this.state.currentPlayerIndex + step + len) % len;
       attempts++;
-      
-      // Vérification de sécurité
       if (attempts > maxAttempts) {
         console.error('❌ Erreur: Impossible de trouver le prochain joueur');
         break;
       }
     } while (this.state.players[this.state.currentPlayerIndex]?.isEliminated);
-    
-    // Vérification finale
+
     if (!this.state.players[this.state.currentPlayerIndex]) {
       console.error('❌ Erreur: Aucun joueur valide trouvé');
       this.state.phase = 'GAME_OVER';
@@ -250,32 +270,97 @@ export class BombPartyEngine {
     this.lastTrigram = '';
   }
 
-  // Nouvelle méthode pour obtenir des suggestions de mots
+  // Suggestions basées sur le mapping trigram -> mots[] de trigram_words.json
   getWordSuggestions(maxSuggestions: number = 5): string[] {
     if (!this.state.currentTrigram) return [];
-    
-    const trigramWords = trigramWordsData[this.state.currentTrigram as keyof typeof trigramWordsData];
-    if (!trigramWords) return [];
-    
-    // Filtrer les mots déjà utilisés et retourner des suggestions
-    return trigramWords
-      .filter(word => !this.state.usedWords.includes(word.toLowerCase()))
+    const map = trigramWordsData as unknown as Record<string, string[]>;
+    const list = map[this.state.currentTrigram] || [];
+    return list
+      .filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase()))
       .slice(0, maxSuggestions);
   }
 
-  // Méthode pour obtenir des informations sur le trigramme actuel
+  // Informations sur le trigramme actuel (totaux basés sur le mapping)
   getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
     if (!this.state.currentTrigram) {
       return { trigram: '', availableWords: 0, totalWords: 0 };
     }
-    
-    const trigramWords = trigramWordsData[this.state.currentTrigram as keyof typeof trigramWordsData] || [];
-    const availableWords = trigramWords.filter(word => !this.state.usedWords.includes(word.toLowerCase())).length;
-    
-    return {
-      trigram: this.state.currentTrigram,
-      availableWords,
-      totalWords: trigramWords.length
-    };
+    const map = trigramWordsData as unknown as Record<string, string[]>;
+    const list = map[this.state.currentTrigram] || [];
+    const availableWords = list.filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase())).length;
+    return { trigram: this.state.currentTrigram, availableWords, totalWords: list.length };
+  }
+
+  // --- Bonuses mechanics ---
+  private giveRandomBonus(playerId: string): void {
+    const p = this.state.players.find(pl => pl.id === playerId);
+    if (!p) return;
+    const keys: BonusKey[] = ['inversion', 'plus5sec', 'vitesseEclair', 'doubleChance', 'extraLife'];
+    const key = keys[Math.floor(Math.random() * keys.length)];
+    p.bonuses[key] = (p.bonuses[key] || 0) + 1;
+  }
+
+  activateBonus(playerId: string, bonusKey: BonusKey): { ok: boolean; meta?: any } {
+    const p = this.state.players.find(pl => pl.id === playerId);
+    if (!p) return { ok: false };
+    if (!p.bonuses[bonusKey] || p.bonuses[bonusKey] <= 0) return { ok: false };
+
+    switch (bonusKey) {
+      case 'inversion':
+        this.state.turnDirection = this.state.turnDirection === 1 ? -1 : 1;
+        p.bonuses.inversion -= 1;
+        return { ok: true };
+      case 'plus5sec':
+        if (this.state.phase === 'TURN_ACTIVE' && this.state.activeTurnEndsAt) {
+          this.state.activeTurnEndsAt += 5000;
+          this.state.turnEndsAt = this.state.activeTurnEndsAt;
+          p.bonuses.plus5sec -= 1;
+          return { ok: true, meta: { extendMs: 5000 } };
+        }
+        return { ok: false };
+      case 'vitesseEclair':
+        // target next player alive
+        const targetIdx = this.peekNextAliveIndex();
+        const targetId = targetIdx >= 0 ? this.state.players[targetIdx].id : undefined;
+        if (targetId) {
+          this.state.pendingFastForNextPlayerId = targetId;
+          p.bonuses.vitesseEclair -= 1;
+          return { ok: true, meta: { targetId } };
+        }
+        return { ok: false };
+      case 'doubleChance':
+        p.pendingEffects = p.pendingEffects || {};
+        p.pendingEffects.doubleChance = true;
+        p.bonuses.doubleChance -= 1;
+        return { ok: true };
+      case 'extraLife':
+        if (p.isEliminated) return { ok: false };
+        p.lives = Math.min(p.lives + 1, 9);
+        p.bonuses.extraLife -= 1;
+        return { ok: true };
+      default:
+        return { ok: false };
+    }
+  }
+
+  private peekNextAliveIndex(): number {
+    if (this.state.players.length === 0) return -1;
+    let idx = this.state.currentPlayerIndex;
+    const len = this.state.players.length;
+    for (let i = 0; i < len; i++) {
+      const step = this.state.turnDirection === 1 ? 1 : -1;
+      idx = (idx + step + len) % len;
+      if (!this.state.players[idx].isEliminated) return idx;
+    }
+    return -1;
+  }
+
+  getTurnDurationForCurrentPlayer(): number {
+    const base = this.state.baseTurnSeconds * 1000;
+    const currentId = this.state.players[this.state.currentPlayerIndex]?.id;
+    if (currentId && this.state.pendingFastForNextPlayerId === currentId) {
+      return 3000;
+    }
+    return base;
   }
 }

@@ -11,7 +11,7 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   
   return (
-    <header className="w-full bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 backdrop-blur-md border-b border-purple-500/20 shadow-2xl">
+    <header className="relative z-20 w-full bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 backdrop-blur-md border-b border-purple-500/20 shadow-2xl">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           
@@ -41,15 +41,7 @@ export default function Header() {
               </Link>
             )}
             
-            <Link 
-              to="/bomb-party" 
-              className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:scale-105"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/20 group-hover:to-pink-600/20 transition-all duration-300"></div>
-              <span className="relative text-purple-300 group-hover:text-purple-200 font-semibold transition-colors duration-300">
-                💣 Bomb Party
-              </span>
-            </Link>
+            {/* Lien Bomb Party retiré du header selon demande */}
           </div>
           
           {/* Section centre - Logo */}

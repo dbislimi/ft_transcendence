@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
+import BackgroundPicker from "../Components/BackgroundPicker";
 
 // Composants modaux
 const DisplaySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -12,25 +13,15 @@ const DisplaySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-slate-800 rounded-2xl p-6 max-w-md w-full mx-4">
-        <h3 className="text-xl font-bold text-white mb-4">Paramètres d'affichage</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-slate-300 text-sm mb-2">Contraste</label>
-            <input type="range" min="0" max="100" defaultValue="50" className="w-full" />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-slate-300 text-sm">Mode daltonien</span>
-            <input type="checkbox" className="w-4 h-4" />
-          </div>
-        </div>
+        <h3 className="text-xl font-bold text-white mb-4">{t('ui.background.title') || 'Arrière-plans'}</h3>
+
+        <BackgroundPicker game="bombparty" />
         
         <button
           onClick={onClose}
           className="mt-6 w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Fermer
+          {t('common.close') || 'Fermer'}
         </button>
       </div>
     </div>
@@ -108,7 +99,8 @@ export default function Settings() {
   const closeModal = () => setActiveModal(null);
 
   return (
-    <SpaceBackground>
+    <>
+      <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center max-w-4xl mx-auto px-6">
           
@@ -309,6 +301,6 @@ export default function Settings() {
         title="Paramètres avancés"
         description="Les paramètres avancés seront disponibles dans une prochaine version."
       />
-    </SpaceBackground>
+    </>
   );
 }

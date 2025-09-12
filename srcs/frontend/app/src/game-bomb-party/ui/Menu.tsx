@@ -9,7 +9,7 @@ interface MenuProps {
 
 export default function Menu({ onStart }: MenuProps) {
   const { t } = useTranslation();
-  const [playersCount, setPlayersCount] = useState<2 | 3 | 4 | 5 | 6 | 7 | 8>(2);
+  const [playersCount, setPlayersCount] = useState<number>(2);
 
   const handleStart = () => {
     const config: GameConfig = {
@@ -21,13 +21,16 @@ export default function Menu({ onStart }: MenuProps) {
   };
 
   return (
-    <SpaceBackground>
+    <>
+      <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen p-6">
         <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-4">
-              💣 Bomb Party
-            </h1>
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-4">
+                {t('bombParty.menu.title')}
+              </h1>
+            </div>
             <p className="text-slate-300 text-lg">
               {t('bombParty.menu.subtitle')}
             </p>
@@ -39,11 +42,11 @@ export default function Menu({ onStart }: MenuProps) {
               <label className="block text-slate-300 text-sm font-medium">
                 {t('bombParty.menu.playersCount')}
               </label>
-              <div className="grid grid-cols-4 gap-2">
-                {[2, 3, 4, 5, 6, 7, 8].map((count) => (
+              <div className="grid grid-cols-6 gap-2">
+                {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((count) => (
                   <button
                     key={count}
-                    onClick={() => setPlayersCount(count as 2 | 3 | 4 | 5 | 6 | 7 | 8)}
+                    onClick={() => setPlayersCount(count)}
                     className={`py-3 px-2 rounded-lg border transition-all duration-200 text-sm ${
                       playersCount === count
                         ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300'
@@ -79,6 +82,6 @@ export default function Menu({ onStart }: MenuProps) {
           </div>
         </div>
       </div>
-    </SpaceBackground>
+    </>
   );
 }

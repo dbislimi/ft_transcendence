@@ -6,6 +6,7 @@ import Layout from "./Components/Layout";
 import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { BackgroundProvider } from "./contexts/BackgroundContext";
 
 const router = createBrowserRouter([
   {
@@ -27,7 +28,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <BackgroundProvider>
+        <RouterProvider router={router} />
+      </BackgroundProvider>
     </AuthProvider>
   </StrictMode>
 );

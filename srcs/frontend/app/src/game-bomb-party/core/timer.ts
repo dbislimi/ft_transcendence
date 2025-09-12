@@ -9,6 +9,11 @@ export class TurnTimer {
     this.isActive = true;
   }
 
+  extend(ms: number): void {
+    if (!this.isActive) return;
+    this.turnEndsAt += ms;
+  }
+
   getRemainingMs(): number {
     if (!this.isActive) return 0;
     return Math.max(0, this.turnEndsAt - performance.now());

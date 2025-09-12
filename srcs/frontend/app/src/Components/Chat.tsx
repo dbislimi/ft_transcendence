@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Chat() {
+	const { t } = useTranslation();
 	const [isOpen, setIsOpen] = useState(false);
 	const [messages, setMessages] = useState<string[]>([]);
 	const [input, setInput] = useState("");
@@ -27,7 +29,8 @@ export default function Chat() {
 			<div className="flex items-center gap-2 border border-gray-400 rounded-xl px-3 py-2 shadow-md">
 				<input
 					type="text"
-					placeholder="Type here ..."
+					placeholder={t('bombParty.chat.placeholder')}
+					aria-label={t('bombParty.chat.inputAria')}
 					value={input}
 					onChange={e => setInput(e.target.value)}
 					onKeyDown={e => {if (e.key === 'Enter') handleSend();}}
@@ -37,7 +40,8 @@ export default function Chat() {
 					type="button"
 					onClick={handleSend}
 					className="rounded-md bg-blue-500 px-6 py-1 text-white hover:bg-blue-600"
-				>Enter</button>
+					aria-label={t('bombParty.chat.sendAria')}
+				>{t('bombParty.chat.send')}</button>
 		</div>
 		</div>
 	);
