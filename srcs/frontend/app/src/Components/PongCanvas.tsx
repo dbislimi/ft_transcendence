@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
-import type { Players, Ball, Bonus, Bonuses } from "../pages/Game";
+import type { Players, Ball, Bonus, Bonuses } from "../pages/Pong";
 
 interface prop {
 	ball: React.RefObject<Ball>;
@@ -25,7 +25,7 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 		if (!c) return;
 		const loop = () => {
 			if (!players.current || !ball.current || !bonus.current) return;
-			
+
 			const p1Size = players.current.p1.size * scale;
 			const p2Size = players.current.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
@@ -41,10 +41,10 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 			);
 			c.fillText(
 				players.current.p2.score.toString(),
-				canvas.width * 3 / 4,
+				(canvas.width * 3) / 4,
 				canvas.height / 2 + 30
 			);
-			for (const bonuses of bonus.current.bonuses){
+			for (const bonuses of bonus.current.bonuses) {
 				c.arc(
 					100 * 4,
 					bonuses.y * 4,
@@ -56,7 +56,7 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 				c.fillStyle = "rgba(119, 45, 237, 1)";
 				c.fill();
 			}
-			c.fillStyle = 'rgba(0,0,0,0.8)'
+			c.fillStyle = "rgba(0,0,0,0.8)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.font = "15px Audiowide";
 			c.fillStyle = "white";
@@ -94,7 +94,7 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 				false
 			);
 			c.shadowBlur = 10;
-			c.shadowColor =  "rgba(102, 14, 237, 1)";
+			c.shadowColor = "rgba(102, 14, 237, 1)";
 			c.fillStyle = "rgba(189, 45, 237, 1)";
 			c.fill();
 			c.shadowBlur = 0;
@@ -104,7 +104,12 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [ball, players, scale, bonus]);
-	return <canvas ref={canvasRef} className="z-5 border-4 border-gray border-t-gray-300 border-b-gray-300 rounded-lg" />;
+	return (
+		<canvas
+			ref={canvasRef}
+			className="z-5 border-4 border-gray border-t-gray-300 border-b-gray-300 rounded-lg"
+		/>
+	);
 }
 
 export default memo(PongCanvas);

@@ -5,6 +5,7 @@ import type { difficulty } from "../Components/GameMenu";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
+import ActionButton from "../Components/ActionButton";
 
 interface Player {
 	size: number;
@@ -62,7 +63,7 @@ export default function Game() {
 		p1: { size: 25, y: 37.5, score: 0 },
 		p2: { size: 25, y: 37.5, score: 0 },
 	});
-	const bonusRef = useRef<Bonus>({count: 0, bonuses: []});
+	const bonusRef = useRef<Bonus>({ count: 0, bonuses: [] });
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
 		console.log(data);
@@ -114,7 +115,7 @@ export default function Game() {
 				wsRef.current?.send(
 					JSON.stringify({
 						event: "play",
-						body: { type: type, dir: "up", id: 1},
+						body: { type: type, dir: "up", id: 1 },
 					})
 				);
 		};
@@ -172,47 +173,53 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
+			<div className="relative h-full w-screen flex items-center justify-center">
 				<SpaceBackground />
-
-				{/* {winner === null ? (
-					<button
-						className="absolute z-10 bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-						type="button"
-						onClick={handleClick}
-					>
-						{!state ? "start" : "stop"}
-					</button>
-				) : (
-					<div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-						<div className="text-white text-6xl font-extrabold uppercase tracking-wide">
-							Winner: Player {winner}
-						</div>
-						<button
-							onClick={handleReplay}
-							type="button"
-							className=" bg-purple-900 text-white hover:bg-blue-400 font-bold py-2 px-4 mt-3 rounded"
-						>
-							Replay
-						</button>
-					</div>
-				)} */}
-				{play ? (
-					<PongCanvas
-						ball={ballRef}
-						players={playersRef}
-						bonus={bonusRef}
-						scale={scale}
-					/>		
-				) : (
-					<GameMenu start={handlePlay} />
-				)}
-				{search && (
-					<div className="z-20 text-5xl text-white">
-						Searching ...
-					</div>
-				)}
-
+				<div className="grid gap-8 max-w-5xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+					<ActionButton
+						color="gray"
+						icon={
+							<span
+								className="text-cyan-400 text-2xl"
+								role="img"
+								aria-label="offline"
+							>
+								🎮
+							</span>
+						}
+						title="Offline"
+						subtitle="Play offline"
+					/>
+					<ActionButton
+						color="cyan"
+						icon={
+							<span
+								className="text-cyan-400 text-2xl"
+								role="img"
+								aria-label="online"
+							>
+								🌐
+							</span>
+						}
+						title="Online"
+						subtitle="Play online"
+					/>
+				</div>
+				{/*{play ? (
+                    <PongCanvas
+                        ball={ballRef}
+                        players={playersRef}
+                        bonus={bonusRef}
+                        scale={scale}
+                    />
+                ) : (
+                    <GameMenu start={handlePlay} />
+                )}
+                {search && (
+                    <div className="z-20 text-5xl text-white">
+                        Searching ...
+                    </div>
+                )}*/}
 				<Chat />
 			</div>
 		</>
