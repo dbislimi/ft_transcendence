@@ -32,7 +32,6 @@ export default fp(async function Send2faPlugin(fastify: Fastify) {
     },
   });
 
-  // Ajoute une méthode réutilisable dans fastify
   fastify.decorate('send2faEmail', async (email: string, otp: string) => {
     const message = {
       from: '"2FA Service" <Transcendance06000@gmail.com>',
@@ -50,7 +49,6 @@ export default fp(async function Send2faPlugin(fastify: Fastify) {
     }
   });
 
-  // Route pour vérifier le code OTP
   fastify.post('/check2fa', async (request, reply) => {
     const { userId, code } = request.body as { userId: number; code: string };
   
@@ -82,6 +80,5 @@ export default fp(async function Send2faPlugin(fastify: Fastify) {
   }
 });
 
-  // Ajoute la méthode de génération d'OTP
   fastify.decorate('generateOtp', GenerateOtp);
 });

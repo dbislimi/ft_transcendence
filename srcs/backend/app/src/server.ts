@@ -14,6 +14,7 @@ import Settings from './plugins/settings.ts';
 import authHook from './plugins/authHook.ts';
 import Send2faMail from './plugins/2fa.ts';
 import GoogleAuth from './plugins/google.ts';
+import Chat from './plugins/chat.ts';
 
 const fastify = Fastify({
   logger: {
@@ -38,6 +39,7 @@ async function main() {
   await fastify.register(userPlugin);
   await fastify.register(wsGame);
   await fastify.register(Settings);
+  await fastify.register(Chat);
 
   fastify.get('/', async () => {
     return { hello: 'from docker' };
