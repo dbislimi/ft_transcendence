@@ -6,7 +6,6 @@ export interface CountdownProps {
 	onComplete?: () => void;
 }
 
-// Version minimale : gère uniquement la logique et rend juste le nombre.
 export default function Countdown({
 	seconds,
 	running,
