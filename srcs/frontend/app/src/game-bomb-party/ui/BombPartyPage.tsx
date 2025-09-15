@@ -182,7 +182,7 @@ export default function BombPartyPage() {
     return (
       <BackgroundSurface game="bombparty">
         <SpaceBackground />
-        <Menu onStart={startGame} />
+        <Menu onStart={startGame} onCancel={() => setGamePhase('LOBBY')} />
       </BackgroundSurface>
     );
   }

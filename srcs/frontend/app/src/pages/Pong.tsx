@@ -1,34 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import PongCanvas from "../Components/PongCanvas";
-import GameMenu from "../Components/GameMenu";
-import type { difficulty } from "../Components/GameMenu";
+import { useCallback, useRef, useState } from "react";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
-import BackgroundSurface from "../Components/BackgroundSurface";
 import ActionButton from "../Components/ActionButton";
+import Countdown from "../Components/Countdown";
+import { useGameWebsocket } from "../hooks/useGameWebsocket";
+import { usePongControls } from "../hooks/usePongControls";
+import { OfflineCard } from "../Components/OfflineCard";
+import PongCanvas from "../Components/PongCanvas";
 
 interface Player {
 	size: number;
 	y: number;
 	score: number;
 }
-
 export interface Bonuses {
 	y: number;
 	name: string;
 	radius: number;
 }
-
 export interface Bonus {
 	count: number;
 	bonuses: Bonuses[];
 }
-
 export interface Players {
 	p1: Player;
 	p2: Player;
 }
-
 export interface Ball {
 	radius: number;
 	x: number;
@@ -36,37 +33,27 @@ export interface Ball {
 	speed: number;
 }
 
-function useWebsocket(api: string, onMessage: (event: MessageEvent) => void) {
-	const wsRef = useRef<WebSocket | null>(null);
-
-	useEffect(() => {
-		const ws = new WebSocket(`ws://localhost:3000/${api}/ws`);
-		wsRef.current = ws;
-		ws.onopen = () => console.log("ws opened");
-		ws.onclose = () => console.log("ws closed");
-		ws.onmessage = onMessage;
-		return () => {
-			ws.close();
-		};
-	}, [onMessage, api]);
-	return wsRef;
-}
-
 export default function Game() {
-	const [state, setState] = useState(false);
 	const [play, setPlay] = useState(false);
+	const [showMode, setShowMode] = useState(false);
 	const [search, setSearch] = useState(false);
 	const [scale] = useState(4);
 	const [winner, setWinner] = useState<number | null>(null);
+	const [offlineCountdownRunning, setOfflineCountdownRunning] =
+		useState(false);
+	const pendingPlayRef = useRef<{ online: boolean; diff?: string } | null>(
+		null
+	);
+
 	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50, speed: 0 });
 	const playersRef = useRef<Players>({
 		p1: { size: 25, y: 37.5, score: 0 },
 		p2: { size: 25, y: 37.5, score: 0 },
 	});
 	const bonusRef = useRef<Bonus>({ count: 0, bonuses: [] });
+
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
-		console.log(data);
 		switch (data.event) {
 			case "searching":
 				setSearch(true);
@@ -84,69 +71,13 @@ export default function Game() {
 				break;
 		}
 	}, []);
-	const wsRef = useWebsocket("game", onMessage);
+	const wsRef = useGameWebsocket("game", onMessage);
 
-	useEffect(() => {
-		if (winner !== null) return;
-		const handleKey = (e: KeyboardEvent, type: string) => {
-			const key = e.key;
-			if (["Shift", "s"].includes(key))
-				wsRef.current?.send(
-					JSON.stringify({
-						event: "play",
-						body: { type: type, dir: "down", id: 0 },
-					})
-				);
-			else if (["ArrowDown"].includes(key))
-				wsRef.current?.send(
-					JSON.stringify({
-						event: "play",
-						body: { type: type, dir: "down", id: 1 },
-					})
-				);
-			else if ([" ", "w"].includes(key))
-				wsRef.current?.send(
-					JSON.stringify({
-						event: "play",
-						body: { type: type, dir: "up", id: 0 },
-					})
-				);
-			else if (["ArrowUp"].includes(key))
-				wsRef.current?.send(
-					JSON.stringify({
-						event: "play",
-						body: { type: type, dir: "up", id: 1 },
-					})
-				);
-		};
-		const keydown = (e: KeyboardEvent) => {
-			if (e.repeat) return;
-			handleKey(e, "press");
-		};
-		const keyup = (e: KeyboardEvent) => handleKey(e, "release");
+	usePongControls({
+		enabled: winner === null && play,
+		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
+	});
 
-		document.addEventListener("keydown", keydown);
-		document.addEventListener("keyup", keyup);
-		return () => {
-			document.removeEventListener("keydown", keydown);
-			document.removeEventListener("keyup", keyup);
-		};
-	}, [winner, wsRef]);
-	const handleClick = () => {
-		if (winner !== null) return;
-		const newState = !state;
-		setState(newState);
-		if (newState) {
-			wsRef.current?.send(JSON.stringify({ event: "start" }));
-		} else {
-			wsRef.current?.send(JSON.stringify({ event: "stop" }));
-		}
-	};
-	const handleReplay = () => {
-		setWinner(null);
-		setState(false);
-		wsRef.current?.send(JSON.stringify({ event: "restart" }));
-	};
 	const handlePlay = (online: boolean, diff?: string) => {
 		if (online && diff === undefined)
 			wsRef.current?.send(
@@ -159,67 +90,97 @@ export default function Game() {
 			wsRef.current?.send(
 				JSON.stringify({
 					event: "start",
-					body: { action: "trainbot", diff: diff },
+					body: { action: "trainbot", diff },
 				})
 			);
 		else
 			wsRef.current?.send(
 				JSON.stringify({
 					event: "start",
-					body: { action: "play_offline", diff: diff },
+					body: { action: "play_offline", diff },
 				})
 			);
-		setPlay(!play);
+		setPlay(true);
 	};
+
+	const startOfflineWithCountdown = (diff?: string) => {
+		pendingPlayRef.current = { online: false, diff };
+		setOfflineCountdownRunning(true);
+	};
+
 	return (
 		<>
 			<div className="relative h-full w-screen flex items-center justify-center">
-				<SpaceBackground />
-				<div className="grid gap-8 max-w-5xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-					<ActionButton
-						color="gray"
-						icon={
-							<span
-								className="text-cyan-400 text-2xl"
-								role="img"
-								aria-label="offline"
-							>
-								🎮
-							</span>
-						}
-						title="Offline"
-						subtitle="Play offline"
+				{/*<SpaceBackground />*/}
+				{offlineCountdownRunning && (
+					<Countdown
+						seconds={3}
+						running={offlineCountdownRunning}
+						onComplete={() => {
+							setOfflineCountdownRunning(false);
+							const cfg = pendingPlayRef.current;
+							if (cfg) {
+								handlePlay(cfg.online, cfg.diff);
+								pendingPlayRef.current = null;
+							}
+						}}
 					/>
-					<ActionButton
-						color="cyan"
-						icon={
-							<span
-								className="text-cyan-400 text-2xl"
-								role="img"
-								aria-label="online"
-							>
-								🌐
-							</span>
-						}
-						title="Online"
-						subtitle="Play online"
+				)}
+				{!showMode && !play && !offlineCountdownRunning && (
+					<div className="grid gap-8 max-w-5xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+						<ActionButton
+							color="gray"
+							icon={
+								<span
+									className="text-cyan-400 text-2xl"
+									role="img"
+									aria-label="offline"
+								>
+									🎮
+								</span>
+							}
+							title="Offline"
+							subtitle="Play offline"
+							onClick={() => setShowMode(true)}
+						/>
+						<ActionButton
+							color="cyan"
+							icon={
+								<span
+									className="text-cyan-400 text-2xl"
+									role="img"
+									aria-label="online"
+								>
+									🌐
+								</span>
+							}
+							title="Online"
+							subtitle="Play online"
+							onClick={() => handlePlay(true)}
+						/>
+					</div>
+				)}
+				{showMode && !play && !offlineCountdownRunning && (
+					<OfflineCard
+						onCancel={() => setShowMode(false)}
+						onConfirm={(cfg: {
+							players: number;
+							botDifficulty?: string;
+						}) => {
+							if (cfg.players === 1)
+								startOfflineWithCountdown(cfg.botDifficulty);
+							else startOfflineWithCountdown();
+						}}
 					/>
-				</div>
-				{/*{play ? (
-                    <PongCanvas
-                        ball={ballRef}
-                        players={playersRef}
-                        bonus={bonusRef}
-                        scale={scale}
-                    />
-                ) : (
-                    <GameMenu start={handlePlay} />
-                )}
-                {search && (
-                    <div className="z-20 text-5xl text-white">
-                        Searching ...
-                    </div>
-                )}*/}
+				)}
+				{play && (
+					<PongCanvas
+						players={playersRef}
+						ball={ballRef}
+						bonus={bonusRef}
+						scale={scale}
+					/>
+				)}
 				<Chat />
 			</div>
 		</>
