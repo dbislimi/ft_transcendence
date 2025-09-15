@@ -172,7 +172,7 @@ export default function Game() {
 	};
 	return (
 		<>
-			<div className="relative h-full w-screen flex flex-col lg:flex-row items-center justify-center">
+			<div className="relative min-h-screen w-full flex items-center justify-center">
 				<SpaceBackground />
 
 				{/* {winner === null ? (

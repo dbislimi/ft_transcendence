@@ -11,7 +11,7 @@ export default function Layout() {
 		<>
 			<Header />
 			<BackgroundSurface>
-				<main className="h-full">
+				<main className="min-h-screen">
 					<Outlet />
 				</main>
 			</BackgroundSurface>

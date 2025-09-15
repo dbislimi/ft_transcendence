@@ -17,7 +17,7 @@ export default function GameMenu({ start }: Props) {
 	];
 	
 	return (
-		<div className="absolute flex flex-col space-y-2 items-center space-x-3 p-10 border border-white size-100 bg-black opacity-80">
+		<div className="flex flex-col space-y-2 items-center p-10 border border-white bg-black/80 rounded">
 			<div className="flex items-center space-x-2">
 				<span className="text-white">Online</span>
 				<label className="relative inline-flex items-center">

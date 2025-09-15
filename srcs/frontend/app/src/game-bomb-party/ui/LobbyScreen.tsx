@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../../Components/SpaceBackground";
 import BackgroundSurface from "../../Components/BackgroundSurface";
-import BackgroundPicker from "../../Components/BackgroundPicker";
+// BackgroundPicker removed
 
 interface LobbyMeta {
 	name: string;
@@ -19,7 +19,6 @@ interface LobbyScreenProps {
 export default function LobbyScreen({ onCreate, onJoin, onBack }: LobbyScreenProps) {
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<"create" | "join">("create");
-  const [openPicker, setOpenPicker] = useState(false);
 
 	// Create state
 	const [name, setName] = useState("");
@@ -41,14 +40,6 @@ export default function LobbyScreen({ onCreate, onJoin, onBack }: LobbyScreenPro
 							{t("bombParty.lobby.title")}
 						</h1>
 						<div className="flex items-center gap-2">
-							<button
-								type="button"
-								onClick={() => setOpenPicker(true)}
-								className="px-3 py-1 rounded border border-slate-600 text-slate-300 hover:text-white"
-								aria-label={t('ui.background.openAria')}
-							>
-								{t('ui.background.open')}
-							</button>
 						{onBack && (
 							<button
 								type="button"
@@ -59,7 +50,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack }: LobbyScreenPro
 								{t("common.back")}
 							</button>
 						)}
-					</div>
+						</div>
 					</div>
 
 					<div className="flex gap-2 mb-4">
@@ -148,20 +139,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack }: LobbyScreenPro
 				</div>
 			</div>
 
-      {openPicker && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-2xl p-6 max-w-3xl w-full mx-4">
-            <h3 className="text-xl font-bold text-white mb-4">{t('ui.background.title')}</h3>
-            <BackgroundPicker game="bombparty" />
-            <button
-              onClick={() => setOpenPicker(false)}
-              className="mt-6 w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {t('common.close')}
-            </button>
-          </div>
-        </div>
-      )}
+			{/* Background picker modal removed */}
 		</BackgroundSurface>
 	);
 }
