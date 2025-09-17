@@ -2,19 +2,19 @@ import GameCard from "./GameCard";
 import ChoiceGroup from "./ChoiceGroup";
 import { useEffect, useState } from "react";
 import type { Difficulty } from "../hooks/usePongParams";
-interface OfflineCardProps {
+interface OnlineCardProps {
 	onCancel: () => void;
 	onConfirm: (cfg: { gamemode: string; botDifficulty?: Difficulty }) => void;
 }
 
-export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
+export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	const [gamemode, setGamemode] = useState<string>('solo');
 	const [botDifficulty, setBotDifficulty] = useState<string | null>('medium');
 
 	return (
 		<div className="absolute inset-0 flex items-center justify-center p-4">
 			<GameCard
-				title="Offline Mode"
+				title="Online Mode"
 				onCancel={onCancel}
 				onConfirm={() => onConfirm({gamemode: gamemode, botDifficulty: botDifficulty as Difficulty})}
 			>

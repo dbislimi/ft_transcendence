@@ -1,48 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface CountdownProps {
 	seconds: number;
-	running: boolean;
 	onComplete?: () => void;
 }
 
-export default function Countdown({
-	seconds,
-	running,
-	onComplete,
-}: CountdownProps) {
+export default function Countdown({ seconds, onComplete }: CountdownProps) {
 	const [value, setValue] = useState(seconds);
-	const [active, setActive] = useState(running);
 
 	useEffect(() => {
-		if (running) {
-			setValue(seconds);
-			setActive(true);
-		} else {
-			setActive(false);
-		}
-	}, [running, seconds]);
-
-	useEffect(() => {
-		if (!active) return;
 		if (value <= 0) return;
 		const id = setInterval(() => {
-			setValue((prev) => {
-				if (prev <= 1) {
-					clearInterval(id);
-					onComplete?.();
-					return 0;
-				}
-				return prev - 1;
-			});
+			setValue((prev) => (prev > 0 ? prev - 1 : 0));
 		}, 1000);
 		return () => clearInterval(id);
-	}, [active, value, onComplete]);
+	}, [value]);
 
-	if (!active || value <= 0) return null;
+	useEffect(() => {
+		if (value === 0) onComplete?.();
+	}, [value, onComplete]);
+
+	if (value <= 0) return null;
 	return (
 		<div
-			className="absolute inset-0 flex items-center justify-center bg-black/80 z-50"
+			className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 pointer-events-none"
 			aria-label="countdown"
 		>
 			<div className="text-center select-none">

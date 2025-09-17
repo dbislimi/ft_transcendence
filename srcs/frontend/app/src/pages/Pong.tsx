@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
 import ActionButton from "../Components/ActionButton";
@@ -7,7 +13,11 @@ import { useGameWebsocket } from "../hooks/useGameWebsocket";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
 import PongCanvas from "../Components/PongCanvas";
-
+import { useSearchParams } from "react-router-dom";
+import usePongParams from "../hooks/usePongParams";
+import type { Difficulty } from "../hooks/usePongParams";
+import BackToMenuButton from "../Components/BackToMenuButton";
+import { OnlineCard } from "../Components/OnlineCard";
 interface Player {
 	size: number;
 	y: number;
@@ -33,25 +43,39 @@ export interface Ball {
 	speed: number;
 }
 
-export default function Game() {
+export default function Pong() {
 	const [play, setPlay] = useState(false);
 	const [showMode, setShowMode] = useState(false);
 	const [search, setSearch] = useState(false);
 	const [scale] = useState(4);
 	const [winner, setWinner] = useState<number | null>(null);
-	const [offlineCountdownRunning, setOfflineCountdownRunning] =
-		useState(false);
-	const pendingPlayRef = useRef<{ online: boolean; diff?: string } | null>(
-		null
-	);
+	const [showCountdown, setShowCountdown] = useState(false);
+	const startedRef = useRef(false);
 
-	const ballRef = useRef<Ball>({ radius: 3, x: 100, y: 50, speed: 0 });
-	const playersRef = useRef<Players>({
-		p1: { size: 25, y: 37.5, score: 0 },
-		p2: { size: 25, y: 37.5, score: 0 },
+	const gameRef = useRef<{
+		ball: Ball;
+		players: Players;
+		bonus: Bonus;
+	}>({
+		ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
+		players: {
+			p1: { size: 25, y: 37.5, score: 0 },
+			p2: { size: 25, y: 37.5, score: 0 },
+		},
+		bonus: { count: 0, bonuses: [] },
 	});
-	const bonusRef = useRef<Bonus>({ count: 0, bonuses: [] });
 
+	const { mode, diff, setParams, gamemode } = usePongParams();
+
+	const handleBackToMenu = () => {
+		stop();
+		setPlay(false);
+		setWinner(null);
+		setSearch(false);
+		setShowCountdown(false);
+		startedRef.current = false;
+		setParams({ gamemode: null, diff: null });
+	};
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
 		switch (data.event) {
@@ -65,9 +89,9 @@ export default function Game() {
 				setWinner(data.body);
 				break;
 			case "data":
-				ballRef.current = data.body.ball;
-				playersRef.current = data.body.players;
-				bonusRef.current = data.body.bonus;
+				gameRef.current.ball = data.body.ball;
+				gameRef.current.players = data.body.players;
+				gameRef.current.bonus = data.body.bonus;
 				break;
 		}
 	}, []);
@@ -78,109 +102,138 @@ export default function Game() {
 		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
 	});
 
-	const handlePlay = (online: boolean, diff?: string) => {
-		if (online && diff === undefined)
-			wsRef.current?.send(
-				JSON.stringify({
-					event: "start",
-					body: { action: "play_online" },
-				})
-			);
-		else if (online && diff)
-			wsRef.current?.send(
-				JSON.stringify({
-					event: "start",
-					body: { action: "trainbot", diff },
-				})
-			);
-		else
-			wsRef.current?.send(
-				JSON.stringify({
-					event: "start",
-					body: { action: "play_offline", diff },
-				})
-			);
-		setPlay(true);
+	const showScreen = (flag: boolean) => {
+		setPlay(flag);
+		setShowCountdown(flag);
 	};
 
-	const startOfflineWithCountdown = (diff?: string) => {
-		pendingPlayRef.current = { online: false, diff };
-		setOfflineCountdownRunning(true);
+	const start = () => {
+		startedRef.current = true;
+		wsRef.current?.send(
+			JSON.stringify({
+				event: "start",
+				body: { action: `play_${mode}`, diff: diff },
+			})
+		);
 	};
+	const stop = () => {
+		startedRef.current = false;
+		wsRef.current?.send(
+			JSON.stringify({
+				event: "stop",
+			})
+		);
+	};
+
+	useLayoutEffect(() => {
+		if (!mode || !gamemode) return;
+		if (mode === "offline" && gamemode === "solo") {
+			const validDiff = diff && ["easy", "medium", "hard"].includes(diff);
+			if (!validDiff) setParams({ diff: "medium" });
+		}
+
+		if (startedRef.current) return;
+
+		showScreen(true);
+		if (mode === "offline") {
+			setShowCountdown(true);
+		} else if (mode === "online") {
+			setPlay(true);
+		}
+
+		startedRef.current = true;
+	}, [mode, gamemode, diff, setParams]);
+
+	useEffect(() => {
+		if (!gamemode) {
+			showScreen(false);
+			startedRef.current = false;
+		}
+	}, [mode, gamemode, play]);
 
 	return (
 		<>
-			<div className="relative h-full w-screen flex items-center justify-center">
-				{/*<SpaceBackground />*/}
-				{offlineCountdownRunning && (
-					<Countdown
-						seconds={3}
-						running={offlineCountdownRunning}
-						onComplete={() => {
-							setOfflineCountdownRunning(false);
-							const cfg = pendingPlayRef.current;
-							if (cfg) {
-								handlePlay(cfg.online, cfg.diff);
-								pendingPlayRef.current = null;
-							}
-						}}
-					/>
+			<div className="relative w-screen h-screen flex items-center justify-center">
+				{play && (
+					<div className="absolute top-4 left-4 z-50">
+						<BackToMenuButton onClick={handleBackToMenu} />
+					</div>
 				)}
-				{!showMode && !play && !offlineCountdownRunning && (
-					<div className="grid gap-8 max-w-5xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+				{/*<SpaceBackground />*/}
+				{!play && mode === null && (
+					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
 						<ActionButton
 							color="gray"
 							icon={
-								<span
-									className="text-cyan-400 text-2xl"
-									role="img"
-									aria-label="offline"
-								>
+								<span role="img" aria-label="offline">
 									🎮
 								</span>
 							}
 							title="Offline"
 							subtitle="Play offline"
-							onClick={() => setShowMode(true)}
+							onClick={() => setParams({ mode: "offline" })}
 						/>
 						<ActionButton
 							color="cyan"
 							icon={
-								<span
-									className="text-cyan-400 text-2xl"
-									role="img"
-									aria-label="online"
-								>
+								<span role="img" aria-label="online">
 									🌐
 								</span>
 							}
 							title="Online"
 							subtitle="Play online"
-							onClick={() => handlePlay(true)}
+							onClick={() => setParams({ mode: "online" })}
 						/>
 					</div>
 				)}
-				{showMode && !play && !offlineCountdownRunning && (
+				{mode === "offline" && !play && (
 					<OfflineCard
-						onCancel={() => setShowMode(false)}
+						onCancel={() => setParams({ mode: null })}
 						onConfirm={(cfg: {
-							players: number;
-							botDifficulty?: string;
+							gamemode: string;
+							botDifficulty?: Difficulty;
 						}) => {
-							if (cfg.players === 1)
-								startOfflineWithCountdown(cfg.botDifficulty);
-							else startOfflineWithCountdown();
+							const diff =
+								cfg.gamemode === "solo"
+									? cfg.botDifficulty
+									: undefined;
+							setParams({
+								gamemode: cfg.gamemode,
+								diff: diff,
+							});
+							showScreen(true);
 						}}
 					/>
 				)}
-				{play && (
-					<PongCanvas
-						players={playersRef}
-						ball={ballRef}
-						bonus={bonusRef}
-						scale={scale}
+				{mode === "online" && !play && (
+					<OnlineCard
+						onCancel={() => setParams({ mode: null })}
+						onConfirm={(cfg: {
+							gamemode: string;
+							botDifficulty?: Difficulty;
+						}) => {
+							const diff =
+								cfg.gamemode === "solo"
+									? cfg.botDifficulty
+									: undefined;
+							setParams({
+								gamemode: cfg.gamemode,
+								diff: diff,
+							});
+							showScreen(true);
+						}}
 					/>
 				)}
+				{showCountdown && (
+					<Countdown
+						seconds={3}
+						onComplete={() => {
+							setShowCountdown(false);
+							start();
+						}}
+					/>
+				)}
+				{play && <PongCanvas gameRef={gameRef} scale={scale} />}
 				<Chat />
 			</div>
 		</>

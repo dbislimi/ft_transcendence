@@ -12,18 +12,20 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	const games: GamesManager = new GamesManager();
 	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req) => {
 		const clientId = uuidv4();
-		let player: { playerId: 0 | 1 | undefined; gameId: number } | undefined;
+		let player: { playerId: 0 | 1 | undefined; gameId: number } | undefined = undefined;
 		socket.on("message", (message) => {
 			const data = JSON.parse(message.toString());
 			console.log(data);
-			if (data.event === "start") {
+			if (data.event === "stop") {
+				games.removeFromQueue(clientId);
+				if (!player) return;
+				games.getRoom(player.gameId)?.pause();
+				games.removeRoom(player.gameId);
+				player = undefined;
+			} else if (data.event === "start" && player === undefined) {
 				switch (data.body.action) {
 					case "play_online":
 						player = games.startOnline(clientId, socket);
-						break;
-					case "cancel":
-						games.removeFromQueue(clientId);
-						player = undefined;
 						break;
 					case "play_offline":
 						player = games.startOffline(socket, data.body.diff);
