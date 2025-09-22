@@ -3,7 +3,7 @@ import fp from "fastify-plugin";
 import type WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import type { FastifyPluginAsync } from "fastify";
-import GamesManager from "../game/GamesManager.ts";
+import GamesManager from "../pong/GamesManager.ts";
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance,

@@ -159,7 +159,7 @@ export default function Pong() {
 						<BackToMenuButton onClick={handleBackToMenu} />
 					</div>
 				)}
-				{/*<SpaceBackground />*/}
+				<SpaceBackground />
 				{!play && mode === null && (
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
 						<ActionButton
