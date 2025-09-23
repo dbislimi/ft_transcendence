@@ -73,8 +73,9 @@ export default function Pong() {
 		setWinner(null);
 		setSearch(false);
 		setShowCountdown(false);
+
 		startedRef.current = false;
-		setParams({ gamemode: null, diff: null });
+		setParams({ mode: mode });
 	};
 	const onMessage = useCallback((event: MessageEvent) => {
 		const data = JSON.parse(event.data);
@@ -108,7 +109,6 @@ export default function Pong() {
 	};
 
 	const start = () => {
-		startedRef.current = true;
 		wsRef.current?.send(
 			JSON.stringify({
 				event: "start",
@@ -117,37 +117,43 @@ export default function Pong() {
 		);
 	};
 	const stop = () => {
-		startedRef.current = false;
 		wsRef.current?.send(
 			JSON.stringify({
 				event: "stop",
 			})
 		);
+		gameRef.current = {
+			ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
+			players: {
+				p1: { size: 25, y: 37.5, score: 0 },
+				p2: { size: 25, y: 37.5, score: 0 },
+			},
+			bonus: { count: 0, bonuses: [] },
+		};
 	};
 
 	useLayoutEffect(() => {
+		console.log("useeefw");
 		if (!mode || !gamemode) return;
-		if (mode === "offline" && gamemode === "solo") {
-			const validDiff = diff && ["easy", "medium", "hard"].includes(diff);
-			if (!validDiff) setParams({ diff: "medium" });
-		}
-
-		if (startedRef.current) return;
-
-		showScreen(true);
 		if (mode === "offline") {
-			setShowCountdown(true);
-		} else if (mode === "online") {
-			setPlay(true);
+			if (gamemode === "solo") {
+				const validDiff =
+					diff && ["easy", "medium", "hard"].includes(diff);
+				if (!validDiff) {
+					setParams({
+						mode: "offline",
+						gamemode: "solo",
+						diff: "medium",
+					});
+				}
+			}
+			showScreen(true);
 		}
-
-		startedRef.current = true;
 	}, [mode, gamemode, diff, setParams]);
 
 	useEffect(() => {
 		if (!gamemode) {
 			showScreen(false);
-			startedRef.current = false;
 		}
 	}, [mode, gamemode, play]);
 
@@ -188,7 +194,7 @@ export default function Pong() {
 				)}
 				{mode === "offline" && !play && (
 					<OfflineCard
-						onCancel={() => setParams({ mode: null })}
+						onCancel={() => setParams(null)}
 						onConfirm={(cfg: {
 							gamemode: string;
 							botDifficulty?: Difficulty;
@@ -198,29 +204,26 @@ export default function Pong() {
 									? cfg.botDifficulty
 									: undefined;
 							setParams({
+								mode: "offline",
 								gamemode: cfg.gamemode,
 								diff: diff,
 							});
-							showScreen(true);
 						}}
 					/>
 				)}
 				{mode === "online" && !play && (
 					<OnlineCard
-						onCancel={() => setParams({ mode: null })}
+						onCancel={() => setParams(null)}
 						onConfirm={(cfg: {
 							gamemode: string;
-							botDifficulty?: Difficulty;
+							type?: string;
 						}) => {
-							const diff =
-								cfg.gamemode === "solo"
-									? cfg.botDifficulty
-									: undefined;
-							setParams({
-								gamemode: cfg.gamemode,
-								diff: diff,
-							});
-							showScreen(true);
+							wsRef.current?.send(
+			JSON.stringify({
+				event: "start",
+				body: { action: `create_tournament`, size:4},
+			})
+		);
 						}}
 					/>
 				)}

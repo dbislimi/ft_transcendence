@@ -7,39 +7,38 @@ export type Difficulty = "easy" | "medium" | "hard";
 export default function usePongParams() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const mode = searchParams.get("mode") as Mode | null;
+	const mode = searchParams.get("mode") as Mode | undefined;
 	const gamemode = searchParams.get("gamemode");
-	const diff = searchParams.get("difficulty") as Difficulty | null;
+	const diff = searchParams.get("difficulty") as Difficulty | undefined;
+	const queue = searchParams.get("queue");
 
 	const setParams = useCallback(
-		(next: {
-			mode?: Mode | null | undefined;
-			gamemode?: string | null | undefined;
-			diff?: Difficulty | null | undefined;
-		}) => {
-			setSearchParams((prev) => {
-				if (next.mode !== undefined) {
-					if (next.mode === null) prev.delete("mode");
-					else prev.set("mode", next.mode);
-				}
-				if (next.gamemode !== undefined) {
-					if (next.gamemode === null) prev.delete("gamemode");
-					else prev.set("gamemode", next.gamemode);
-				}
-				if (next.diff !== undefined) {
-					if (next.diff === null) prev.delete("difficulty");
-					else prev.set("difficulty", next.diff);
-				}
-				return prev;
+		(
+			next: {
+				mode?: Mode | undefined;
+				gamemode?: string | undefined;
+				diff?: Difficulty | undefined;
+				queue?: string | undefined;
+			} | null
+		) => {
+			setSearchParams(() => {
+				const p = new URLSearchParams();
+				if (!next) return p;
+				if (next.mode) p.set("mode", next.mode);
+				if (next.gamemode) p.set("gamemode", next.gamemode);
+				if (next.diff) p.set("difficulty", next.diff);
+				if (next.queue) p.set("queue", next.queue);
+				return p;
 			});
 		},
-		[]
+		[setSearchParams]
 	);
 
 	return {
 		mode,
 		gamemode,
 		diff,
+		queue,
 		setParams,
 	};
 }

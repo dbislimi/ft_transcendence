@@ -2,7 +2,6 @@ import type WebSocket from "ws";
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
 
-export type trainDifficulty = `train${difficulty}`;
 export type clientSocket = {
 	clientId: string;
 	ws: WebSocket;
@@ -16,35 +15,50 @@ export default class Game {
 	private prevTime!: number;
 	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
-	private onEnd: (() => void) | undefined;
+	private onEnd: ((ws: WebSocket) => void) | null;
+	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
 
 	private timestamp: number;
 
-	constructor(
-		p1: WebSocket,
-		p2: WebSocket | difficulty | trainDifficulty | undefined,
-		onEnd?: () => void
-	) {
+	constructor({
+		p1,
+		p2,
+		onEnd,
+		botDiff,
+		train = false,
+	}: {
+		p1: WebSocket;
+		p2?: WebSocket;
+		onEnd: ((ws: WebSocket) => void) | null;
+		botDiff?: difficulty;
+		train?: boolean;
+	}) {
 		this.onEnd = onEnd;
 		this.board = new Board();
-		if (typeof p2 === "object") {
+		if (p2 !== undefined) {
 			this.clients = [p1, p2];
 			return;
 		}
 		this.clients = [p1, undefined];
-		if (p2 === undefined) return;
-		if (p2[0] !== "t") this.board.connectBot(1, p2 as difficulty);
+		if (botDiff === undefined)
+			throw Error("Bot difficulty must be specified if p2 isn't set.");
+		if (train === false) this.board.connectBot(1, botDiff);
 		else {
-			console.log("connectbot ", p2);
+			console.log("connectbot ", botDiff);
 			this.board.Training = true;
 			GAMESPEED = 100;
 			this.board.connectBot(1, "hard");
-			this.board.connectBot(0, p2.slice(5) as difficulty);
+			this.board.connectBot(0, botDiff);
 		}
 	}
 
+	connectPlayer(p: WebSocket) {
+		this.board.disconnectBot();
+		this.board.restart();
+		this.clients[1] = p;
+	}
 	private send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
@@ -60,7 +74,7 @@ export default class Game {
 				reject(new Error("Training aborted."));
 			};
 			signal.addEventListener("abort", this.onAbort);
-			this.onEnd = resolve;
+			this.onResolve = resolve;
 			this.restart();
 		});
 	}
@@ -79,7 +93,13 @@ export default class Game {
 		this.signal?.removeEventListener("abort", this.onAbort);
 		const data = { event: "win", body: winner };
 		this.send(JSON.stringify(data));
-		this.onEnd?.();
+		if (this.onResolve) {
+			this.onResolve();
+			return;
+		}
+		if (!this.onEnd) return;
+		this.onEnd(this.clients[0]);
+		if (this.clients[1]) this.onEnd(this.clients[1]);
 	}
 	private restart() {
 		this.board.restart();
@@ -89,10 +109,10 @@ export default class Game {
 		if (!this.board.players[player].up && type === "press") {
 			this.board.players[player].moveUp(true);
 			this.timestamp = Date.now();
-		} else if (this.board.players[player].up && type === "release"){
+		} else if (this.board.players[player].up && type === "release") {
 			this.board.players[player].moveUp(false);
-			console.log("timestamp:", Date.now() - this.timestamp )
-			this.timestamp =0;
+			console.log("timestamp:", Date.now() - this.timestamp);
+			this.timestamp = 0;
 		}
 	}
 	private down(type: string, player: 0 | 1) {
@@ -110,6 +130,7 @@ export default class Game {
 	}
 
 	private gameLoop(): void {
+		console.log("Game loop");
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
 		const MAX_DELTA = 0.1;

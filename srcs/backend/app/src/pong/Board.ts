@@ -275,6 +275,9 @@ export default class Board {
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
 	}
+	disconnectBot(){
+		this.botController.length = 0;
+	}
 	connectBot(id: 0 | 1, diff: difficulty) {
 		this.players[id].bot = diff;
 		switch (diff) {
