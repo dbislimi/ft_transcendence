@@ -5,6 +5,7 @@ import BackgroundSurface from "../../Components/BackgroundSurface";
 import BackgroundPicker from "../../Components/BackgroundPicker";
 import GameCard from "../../Components/GameCard";
 import ChoiceGroup from "../../Components/ChoiceGroup";
+import GameInput from "../../Components/GameInput";
 
 interface LobbyMeta {
 	name: string;
@@ -89,16 +90,7 @@ export default function LobbyScreen({
 						</div>
 						<div className="mb-6">
 							<ChoiceGroup
-								options={[
-									{
-										value: "create",
-										label: t("bombParty.lobby.createTab"),
-									},
-									{
-										value: "join",
-										label: t("bombParty.lobby.joinTab"),
-									},
-								]}
+								options={["create", "join"]}
 								value={tab}
 								onChange={(val) =>
 									setTab(val as "create" | "join")
@@ -109,51 +101,19 @@ export default function LobbyScreen({
 							/>
 						</div>
 						{tab === "create" ? (
-							<div className="space-y-4">
-								<div>
-									<label className="block text-slate-300 text-sm mb-1">
-										{t("bombParty.lobby.name")}
-									</label>
-									<input
-										value={name}
-										onChange={(e) =>
-											setName(e.target.value)
-										}
-										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-									/>
-								</div>
-								<div className="flex items-center gap-2">
-									<input
-										id="isPrivate"
-										type="checkbox"
-										checked={isPrivate}
-										onChange={(e) =>
-											setIsPrivate(e.target.checked)
-										}
-									/>
-									<label
-										htmlFor="isPrivate"
-										className="text-slate-300"
-									>
-										{t("bombParty.lobby.private")}
-									</label>
-								</div>
-								{isPrivate && (
-									<div>
-										<label className="block text-slate-300 text-sm mb-1">
-											{t("bombParty.lobby.password")}
-										</label>
-										<input
-											type="password"
-											value={password}
-											onChange={(e) =>
-												setPassword(e.target.value)
-											}
-											className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-										/>
-									</div>
-								)}
-							</div>
+							<GameInput
+								name={name}
+								onNameChange={setName}
+								isPrivate={isPrivate}
+								onIsPrivateChange={setIsPrivate}
+								password={password}
+								onPasswordChange={setPassword}
+								labels={{
+									name: t("bombParty.lobby.name"),
+									private: t("bombParty.lobby.private"),
+									password: t("bombParty.lobby.password"),
+								}}
+							/>
 						) : (
 							<div className="space-y-4">
 								<div>
@@ -181,7 +141,6 @@ export default function LobbyScreen({
 										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
 									/>
 								</div>
-								{/* Join action handled by GameCard confirm button; legacy button removed */}
 							</div>
 						)}
 					</GameCard>

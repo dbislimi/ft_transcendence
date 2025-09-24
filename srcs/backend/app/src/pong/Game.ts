@@ -11,6 +11,7 @@ let GAMESPEED: number = 1;
 export default class Game {
 	readonly board: Board;
 	private readonly clients: [WebSocket, WebSocket | undefined];
+	private clientsId: WeakMap<WebSocket, 0 | 1> = new WeakMap();
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private maxScore: number = 5;
@@ -19,6 +20,7 @@ export default class Game {
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
+	private winner: 0 | 1 | undefined = undefined;
 
 	private timestamp: number;
 
@@ -37,8 +39,10 @@ export default class Game {
 	}) {
 		this.onEnd = onEnd;
 		this.board = new Board();
+		this.clientsId.set(p1, 0);
 		if (p2 !== undefined) {
 			this.clients = [p1, p2];
+			this.clientsId.set(p2, 1);
 			return;
 		}
 		this.clients = [p1, undefined];
@@ -58,6 +62,12 @@ export default class Game {
 		this.board.disconnectBot();
 		this.board.restart();
 		this.clients[1] = p;
+		this.clientsId.set(p, 1);
+	}
+	disconnectPlayer(p: WebSocket){
+		const id: 0 | 1 | undefined = this.clientsId.get(p);
+		if (id === undefined ) return;
+		this.stop((id + 1) % 2);
 	}
 	private send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
@@ -121,7 +131,14 @@ export default class Game {
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
 	}
-	move(type: string, dir: string, player: 0 | 1) {
+	move(type: string, dir: string, player: 0 | 1 | WebSocket) {
+		if (typeof player === "object") {
+			if (!this.clientsId.get(player))
+				throw new Error("ClientsId undefined");
+			if (dir === "up") this.up(type, this.clientsId.get(player)!);
+			else this.down(type, this.clientsId.get(player)!);
+			return;
+		}
 		if (dir === "up") this.up(type, player);
 		else this.down(type, player);
 	}

@@ -10,7 +10,7 @@ export default function usePongParams() {
 	const mode = searchParams.get("mode") as Mode | undefined;
 	const gamemode = searchParams.get("gamemode");
 	const diff = searchParams.get("difficulty") as Difficulty | undefined;
-	const queue = searchParams.get("queue");
+	const id = searchParams.get("id");
 
 	const setParams = useCallback(
 		(
@@ -18,7 +18,7 @@ export default function usePongParams() {
 				mode?: Mode | undefined;
 				gamemode?: string | undefined;
 				diff?: Difficulty | undefined;
-				queue?: string | undefined;
+				id?: string | undefined;
 			} | null
 		) => {
 			setSearchParams(() => {
@@ -27,7 +27,7 @@ export default function usePongParams() {
 				if (next.mode) p.set("mode", next.mode);
 				if (next.gamemode) p.set("gamemode", next.gamemode);
 				if (next.diff) p.set("difficulty", next.diff);
-				if (next.queue) p.set("queue", next.queue);
+				if (next.id) p.set("id", next.id);
 				return p;
 			});
 		},
@@ -38,7 +38,7 @@ export default function usePongParams() {
 		mode,
 		gamemode,
 		diff,
-		queue,
+		id,
 		setParams,
 	};
 }

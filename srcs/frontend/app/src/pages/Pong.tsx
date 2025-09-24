@@ -132,6 +132,40 @@ export default function Pong() {
 		};
 	};
 
+	const startOnline = (
+		gamemode: string,
+		type: string,
+		size: number,
+		id: string,
+		passwd: string
+	) => {
+		// console.log(type);
+		if (gamemode === "Tournament") {
+			setParams({ mode: "online", gamemode: "tournament", id });
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: {
+						action: `${type.toLowerCase()}_tournament`,
+						id: id,
+						size: size,
+						passwd: passwd,
+					},
+				})
+			);
+		} else {
+			setParams({ mode: "online", gamemode: "quickmatch" });
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: {
+						action: "play_online",
+					},
+				})
+			);
+		}
+		setPlay(true);
+	};
 	useLayoutEffect(() => {
 		console.log("useeefw");
 		if (!mode || !gamemode) return;
@@ -165,7 +199,7 @@ export default function Pong() {
 						<BackToMenuButton onClick={handleBackToMenu} />
 					</div>
 				)}
-				<SpaceBackground />
+				{/* <SpaceBackground /> */}
 				{!play && mode === null && (
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
 						<ActionButton
@@ -214,17 +248,7 @@ export default function Pong() {
 				{mode === "online" && !play && (
 					<OnlineCard
 						onCancel={() => setParams(null)}
-						onConfirm={(cfg: {
-							gamemode: string;
-							type?: string;
-						}) => {
-							wsRef.current?.send(
-			JSON.stringify({
-				event: "start",
-				body: { action: `create_tournament`, size:4},
-			})
-		);
-						}}
+						onConfirm={startOnline}
 					/>
 				)}
 				{showCountdown && (

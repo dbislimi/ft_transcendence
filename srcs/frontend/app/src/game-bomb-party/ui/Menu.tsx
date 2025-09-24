@@ -40,12 +40,7 @@ export default function Menu({ onStart, onCancel }: MenuProps) {
 				>
 					<ChoiceGroup
 						label={t("bombParty.menu.playersCount")}
-						options={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(
-							(n) => ({
-								value: n as number,
-								label: String(n),
-							})
-						)}
+						options={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
 						value={playersCount}
 						onChange={(val) => setPlayersCount(val as number)}
 						columns={6}

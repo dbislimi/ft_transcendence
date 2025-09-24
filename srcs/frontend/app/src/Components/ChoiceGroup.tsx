@@ -1,13 +1,10 @@
 import React from "react";
 
-export interface ChoiceOption<T extends string | number> {
-	value: T;
-	label?: string;
-}
+// Removed ChoiceOption interface since label and value are merged into a single value
 
 interface ChoiceGroupProps<T extends string | number> {
 	label?: string;
-	options: ChoiceOption<T>[];
+	options: T[];
 	value: T | null;
 	onChange: (val: T) => void;
 	columns?: number;
@@ -90,20 +87,20 @@ export default function ChoiceGroup<T extends string | number>(
 			)}
 			<div className={`grid ${gridColsClass} gap-2`}>
 				{options.map((opt) => {
-					const active = value === opt.value;
+					const active = value === opt;
 					const mode = active
 						? COLOR_ACTIVE[color]
 						: DEFAULT_INACTIVE;
 					return (
 						<button
-							key={String(opt.value)}
+							key={String(opt)}
 							type="button"
 							onClick={() => {
-								if (!active) onChange(opt.value);
+								if (!active) onChange(opt);
 							}}
 							className={`rounded-lg border transition-all duration-200 font-medium ${variantClasses[variant]} ${mode}`}
 						>
-							{opt.label ?? opt.value}
+							{String(opt)}
 						</button>
 					);
 				})}

@@ -1,6 +1,6 @@
 import GameCard from "./GameCard";
 import ChoiceGroup from "./ChoiceGroup";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Difficulty } from "../hooks/usePongParams";
 interface OfflineCardProps {
 	onCancel: () => void;
@@ -8,36 +8,35 @@ interface OfflineCardProps {
 }
 
 export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
-	const [gamemode, setGamemode] = useState<string>('solo');
-	const [botDifficulty, setBotDifficulty] = useState<string | null>('medium');
+	const [gamemode, setGamemode] = useState<string>("solo");
+	const [botDifficulty, setBotDifficulty] = useState<string | null>("medium");
 
 	return (
 		<div className="absolute inset-0 flex items-center justify-center p-4">
 			<GameCard
 				title="Offline Mode"
 				onCancel={onCancel}
-				onConfirm={() => onConfirm({gamemode: gamemode, botDifficulty: botDifficulty as Difficulty})}
+				onConfirm={() =>
+					onConfirm({
+						gamemode: gamemode,
+						botDifficulty: botDifficulty as Difficulty,
+					})
+				}
 			>
 				<div className="space-y-6">
 					<ChoiceGroup
 						label="Players"
-						options={[
-							{ value: 'solo', label: "solo" },
-							{ value: 'duo', label: "duo" },
-						]}
+						options={["solo", "duo"]}
 						value={gamemode}
 						onChange={(val) => setGamemode(val)}
 						columns={2}
 						color="cyan"
 						variant="lg"
 					/>
-					{gamemode === 'solo' && (
+					{gamemode === "solo" && (
 						<ChoiceGroup
 							label="Bot Difficulty"
-							options={["easy", "medium", "hard"].map((v) => ({
-								value: v,
-								label: v,
-							}))}
+							options={["easy", "medium", "hard"]}
 							value={botDifficulty || ""}
 							onChange={(val) => setBotDifficulty(val)}
 							columns={3}

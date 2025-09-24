@@ -10,14 +10,16 @@ export default class GamesManager {
 	private rooms: WeakMap<WebSocket, Game> = new WeakMap();
 	private waitingClient: { ws: WebSocket; game: Game } | null = null;
 
-	createTournament(id: string, passwd?: string) {
+	createTournament(ws: WebSocket, id: string, size: number, passwd: string) {
 		if (this.tournaments[id])
 			throw new Error(`Tournament with id ${id} already exists.`);
 		this.tournaments[id] = new Tournament({
-			id: id,
+			rooms: this.rooms,
+			id,
 			password: passwd,
-			bracket: 4,
+			bracket: size,
 		});
+		this.joinTournament(ws, id, passwd);
 	}
 	joinTournament(ws: WebSocket, id: string, passwd?: string) {
 		const tournament: Tournament = this.tournaments[id];
@@ -58,7 +60,7 @@ export default class GamesManager {
 		console.log("debug");
 		return { playerId: "train" };
 	}
-	startOffline(ws: WebSocket, diff?: difficulty): 0 | undefined {
+	startOffline(ws: WebSocket, diff?: difficulty): boolean {
 		const game = new Game({
 			p1: ws,
 			botDiff: diff,
@@ -68,7 +70,7 @@ export default class GamesManager {
 
 		game.start();
 		this.rooms.set(ws, game);
-		return diff ? 0 : undefined;
+		return diff === undefined;
 	}
 	startOnline(clientId: string, ws: WebSocket): 0 | 1 {
 		ws.send(JSON.stringify({ event: "searching" }));
@@ -91,7 +93,8 @@ export default class GamesManager {
 		return 0;
 	}
 	removeFromQueue(ws: WebSocket) {
-		if (this.waitingClient && ws === this.waitingClient.ws) this.waitingClient = null;	
+		if (this.waitingClient && ws === this.waitingClient.ws)
+			this.waitingClient = null;
 	}
 	getRoom(ws: WebSocket) {
 		return this.rooms.get(ws);
@@ -99,9 +102,15 @@ export default class GamesManager {
 	removeRoom(ws: WebSocket) {
 		this.rooms.delete(ws);
 	}
-	quit(ws: WebSocket) {
+	quit(ws: WebSocket, tournament?: string) {
+		if (tournament) {
+			this.tournaments[tournament].quitQueue(ws);
+			if (this.tournaments[tournament].isEmpty()) {
+				delete this.tournaments[tournament];
+				console.log(`deleted: ${tournament}`);
+			}
+		}
 		this.removeFromQueue(ws);
-		this.getRoom(ws)?.pause();
-		this.removeRoom(ws);
+		this.getRoom(ws)?.disconnectPlayer(ws);
 	}
 }
