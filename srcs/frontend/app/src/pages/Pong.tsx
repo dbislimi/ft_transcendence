@@ -99,7 +99,7 @@ export default function Pong() {
 	const wsRef = useGameWebsocket("game", onMessage);
 
 	usePongControls({
-		enabled: winner === null && play,
+		enabled: play,
 		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
 	});
 
@@ -116,7 +116,7 @@ export default function Pong() {
 			})
 		);
 	};
-	const stop = () => {
+	const stop = useCallback(() => {
 		wsRef.current?.send(
 			JSON.stringify({
 				event: "stop",
@@ -130,7 +130,7 @@ export default function Pong() {
 			},
 			bonus: { count: 0, bonuses: [] },
 		};
-	};
+	}, [wsRef]);
 
 	const startOnline = (
 		gamemode: string,
@@ -183,13 +183,17 @@ export default function Pong() {
 			}
 			showScreen(true);
 		}
-	}, [mode, gamemode, diff, setParams]);
+		else if (!play){
+			setParams({mode: "online"});
+		}
+	}, [mode, gamemode, diff, setParams, play]);
 
 	useEffect(() => {
 		if (!gamemode) {
+			if (play) stop();
 			showScreen(false);
 		}
-	}, [mode, gamemode, play]);
+	}, [mode, gamemode, play, stop]);
 
 	return (
 		<>

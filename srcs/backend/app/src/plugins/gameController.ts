@@ -19,12 +19,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			const data = JSON.parse(message.toString());
 			console.log(data);
 			if (data.event === "stop") {
+				console.log("stop called");
 				if (!status) return;
+				console.log("debug0");
 				games.quit(socket, tournamentId);
 				tournamentId = undefined;
 				status = false;
 			} else if (data.event === "start" && status === false) {
-				console.log(data.body.action);
+				// console.log(data.body.action);
 				switch (data.body.action) {
 					case "play_online":
 						games.startOnline(clientId, socket);

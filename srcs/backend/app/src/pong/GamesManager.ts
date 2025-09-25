@@ -72,29 +72,33 @@ export default class GamesManager {
 		this.rooms.set(ws, game);
 		return diff === undefined;
 	}
-	startOnline(clientId: string, ws: WebSocket): 0 | 1 {
+	startOnline(clientId: string, ws: WebSocket){
 		ws.send(JSON.stringify({ event: "searching" }));
 		if (this.waitingClient) {
 			const data = JSON.stringify({ event: "found" });
 			this.waitingClient.ws.send(data);
 			ws.send(data);
-			// game.start();
+			this.waitingClient.game.connectPlayer(ws);
 			this.rooms.set(ws, this.waitingClient.game);
 			this.waitingClient = null;
-			return 1;
+			return ;
 		}
 		const game = new Game({
 			p1: ws,
 			botDiff: "medium",
-			onEnd: (ws: WebSocket) => this.removeRoom(ws),
+			onEnd: (ws: WebSocket) => {this.removeRoom(ws);console.log(`removed: ${ws}`);},
 		});
+		game.start();
 		this.waitingClient = { ws, game };
 		this.rooms.set(ws, game);
-		return 0;
+		return ;
 	}
 	removeFromQueue(ws: WebSocket) {
-		if (this.waitingClient && ws === this.waitingClient.ws)
+		if (this.waitingClient && ws === this.waitingClient.ws){
+			console.log("waiting client removed");
+			this.waitingClient.game.disconnectPlayer(ws);
 			this.waitingClient = null;
+		}
 	}
 	getRoom(ws: WebSocket) {
 		return this.rooms.get(ws);

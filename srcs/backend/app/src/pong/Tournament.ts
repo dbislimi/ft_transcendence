@@ -66,7 +66,7 @@ export default class Tournament {
 		console.log(`Nb of players: ${this.players.length}`);
 		if (this.players.length === this.bracket) {
 			this.buildBracket();
-			this.update(this.root!);
+			this.init(this.root!);
 		}
 	}
 
@@ -111,22 +111,25 @@ export default class Tournament {
 			node.parent.game = new Game({
 				p1: node.winner,
 				botDiff: "medium",
-				onEnd: () => this.joinMatch(node.parent!),
+				onEnd: (ws) => {
+					node.parent!.winner = ws;
+					this.joinMatch(node.parent!);
+				},
 			});
 			node.parent.game.start();
 		}
 		this.rooms.set(node.winner, node.parent.game);
 	}
-	update(node: Node | undefined) {
+	init(node: Node | undefined) {
 		if (!node) return;
-		this.update(node?.right);
-		this.update(node?.left);
+		this.init(node?.right);
+		this.init(node?.left);
 		this.joinMatch(node);
 	}
 
 	startTournament() {
 		this.started = true;
-		this.update(this.root!);
+		this.init(this.root!);
 	}
 
 	// Affiche l'arbre binaire de façon visuelle dans la console

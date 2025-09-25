@@ -20,7 +20,7 @@ export default class Game {
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
-	private winner: 0 | 1 | undefined = undefined;
+	private winner: number | undefined = undefined;
 
 	private timestamp: number;
 
@@ -38,7 +38,7 @@ export default class Game {
 		train?: boolean;
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board();
+		this.board = new Board((id: number) => (this.winner = id));
 		this.clientsId.set(p1, 0);
 		if (p2 !== undefined) {
 			this.clients = [p1, p2];
@@ -64,9 +64,11 @@ export default class Game {
 		this.clients[1] = p;
 		this.clientsId.set(p, 1);
 	}
-	disconnectPlayer(p: WebSocket){
+	disconnectPlayer(p: WebSocket) {
+		console.log("try to disconnect");
 		const id: 0 | 1 | undefined = this.clientsId.get(p);
-		if (id === undefined ) return;
+		if (id === undefined) return;
+		console.log("disconnected");
 		this.stop((id + 1) % 2);
 	}
 	private send(
@@ -89,11 +91,13 @@ export default class Game {
 		});
 	}
 	public start(): void {
+		console.log("game started");
 		this.prevTime = performance.now();
 		this.gameLoop();
 	}
 	public pause(): void {
 		if (this.timeoutId) {
+			console.log("game paused");
 			clearTimeout(this.timeoutId);
 			this.timeoutId = null;
 		}
@@ -112,6 +116,7 @@ export default class Game {
 		if (this.clients[1]) this.onEnd(this.clients[1]);
 	}
 	private restart() {
+		console.log("game restarted");
 		this.board.restart();
 		this.start();
 	}
@@ -133,7 +138,7 @@ export default class Game {
 	}
 	move(type: string, dir: string, player: 0 | 1 | WebSocket) {
 		if (typeof player === "object") {
-			if (!this.clientsId.get(player))
+			if (this.clientsId.get(player) === undefined)
 				throw new Error("ClientsId undefined");
 			if (dir === "up") this.up(type, this.clientsId.get(player)!);
 			else this.down(type, this.clientsId.get(player)!);
@@ -147,16 +152,14 @@ export default class Game {
 	}
 
 	private gameLoop(): void {
-		console.log("Game loop");
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
 		const MAX_DELTA = 0.1;
 		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 
-		const winner = this.board.scores.findIndex((n) => n === this.maxScore);
-		if (winner !== -1) {
-			this.stop(winner);
+		if (this.winner !== undefined) {
+			this.stop(this.winner);
 			return;
 		}
 		this.board.update(deltaTime);
