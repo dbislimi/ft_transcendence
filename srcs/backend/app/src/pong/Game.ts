@@ -34,7 +34,7 @@ export default class Game {
 		p1: WebSocket;
 		p2?: WebSocket;
 		onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
-		botDiff?: difficulty;
+		botDiff?: difficulty | null;
 		train?: boolean;
 	}) {
 		this.onEnd = onEnd;
@@ -48,6 +48,7 @@ export default class Game {
 		this.clients = [p1, undefined];
 		if (botDiff === undefined)
 			throw Error("Bot difficulty must be specified if p2 isn't set.");
+		if (botDiff === null) return;
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
 			console.log("connectbot ", botDiff);
@@ -138,6 +139,7 @@ export default class Game {
 			this.board.players[player].moveDown(false);
 	}
 	move(type: string, dir: string, player: 0 | 1 | WebSocket) {
+		// console.log(player);
 		if (typeof player === "object") {
 			if (this.clientsId.get(player) === undefined)
 				throw new Error("ClientsId undefined");

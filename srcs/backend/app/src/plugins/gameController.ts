@@ -25,6 +25,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				games.quit(socket, tournamentId);
 				tournamentId = undefined;
 				status = false;
+				local = false;
 			} else if (data.event === "start" && status === false) {
 				// console.log(data.body.action);
 				switch (data.body.action) {

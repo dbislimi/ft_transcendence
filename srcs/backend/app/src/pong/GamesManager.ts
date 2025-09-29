@@ -60,17 +60,17 @@ export default class GamesManager {
 		console.log("debug");
 		return { playerId: "train" };
 	}
-	startOffline(ws: WebSocket, diff?: difficulty): boolean {
+	startOffline(ws: WebSocket, diff: difficulty | null): boolean {
 		const game = new Game({
 			p1: ws,
 			botDiff: diff,
 			onEnd: () => this.removeRoom(ws),
 		});
-		console.log(diff);
+		console.log("startOffline", diff === null);
 
 		game.start();
 		this.rooms.set(ws, game);
-		return diff === undefined;
+		return diff === null;
 	}
 	startOnline(clientId: string, ws: WebSocket){
 		ws.send(JSON.stringify({ event: "searching" }));
