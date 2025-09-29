@@ -16,7 +16,7 @@ export default class Game {
 	private prevTime!: number;
 	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
-	private onEnd: ((ws: WebSocket) => void) | null;
+	private onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
@@ -33,7 +33,7 @@ export default class Game {
 	}: {
 		p1: WebSocket;
 		p2?: WebSocket;
-		onEnd: ((ws: WebSocket) => void) | null;
+		onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
 		botDiff?: difficulty;
 		train?: boolean;
 	}) {
@@ -92,6 +92,7 @@ export default class Game {
 	}
 	public start(): void {
 		console.log("game started");
+		if (this.timeoutId) return;
 		this.prevTime = performance.now();
 		this.gameLoop();
 	}
@@ -112,8 +113,8 @@ export default class Game {
 			return;
 		}
 		if (!this.onEnd) return;
-		this.onEnd(this.clients[0]);
-		if (this.clients[1]) this.onEnd(this.clients[1]);
+		this.onEnd(this.clients[0], winner === 0);
+		if (this.clients[1]) this.onEnd(this.clients[1], winner === 1);
 	}
 	private restart() {
 		console.log("game restarted");

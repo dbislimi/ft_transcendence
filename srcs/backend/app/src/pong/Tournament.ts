@@ -105,15 +105,17 @@ export default class Tournament {
 
 	joinMatch(node: Node) {
 		if (!node?.parent || !node?.winner) return;
-		this.rooms.delete(node.winner);
 		if (node.parent.game) node.parent.game.connectPlayer(node.winner);
 		else {
 			node.parent.game = new Game({
 				p1: node.winner,
 				botDiff: "medium",
-				onEnd: (ws) => {
-					node.parent!.winner = ws;
-					this.joinMatch(node.parent!);
+				onEnd: (ws, winner) => {
+					this.rooms.delete(ws);
+					if (winner === true){
+						node.parent!.winner = ws;
+						this.joinMatch(node.parent!);
+					}
 				},
 			});
 			node.parent.game.start();
@@ -132,7 +134,6 @@ export default class Tournament {
 		this.init(this.root!);
 	}
 
-	// Affiche l'arbre binaire de façon visuelle dans la console
 	printTree(root: Node | null = this.root) {
 		if (!root) {
 			console.log("(arbre vide)");
