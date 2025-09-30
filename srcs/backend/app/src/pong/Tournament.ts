@@ -43,6 +43,8 @@ export default class Tournament {
 	rooms: WeakMap<WebSocket, Game>;
 	password: string | undefined;
 	depth: number = 0;
+	// Keep initial capacity (bracket size) for display / joining checks
+	capacity: number;
 	constructor({
 		rooms,
 		id,
@@ -57,14 +59,15 @@ export default class Tournament {
 		this.rooms = rooms;
 		this.password = password;
 		this.id = id;
-		this.bracket = bracket;
+		this.bracket = bracket; // mutable during bracket build
+		this.capacity = bracket; // immutable original size
 	}
 
 	join(player: WebSocket) {
 		if (!this.players.includes(player)) this.players.push(player);
 		console.log("Joined tournament: ", this.id);
 		console.log(`Nb of players: ${this.players.length}`);
-		if (this.players.length === this.bracket) {
+		if (this.players.length === this.capacity) {
 			this.buildBracket();
 			this.init(this.root!);
 		}
@@ -112,7 +115,7 @@ export default class Tournament {
 				botDiff: "medium",
 				onEnd: (ws, winner) => {
 					this.rooms.delete(ws);
-					if (winner === true){
+					if (winner === true) {
 						node.parent!.winner = ws;
 						this.joinMatch(node.parent!);
 					}

@@ -28,6 +28,17 @@ export default class GamesManager {
 			return;
 		tournament.join(ws);
 	}
+	listTournaments() {
+		return Object.values(this.tournaments)
+			.map((t) => ({
+				id: t.id,
+				players: t.players.length,
+				capacity: t.capacity,
+				private: !!t.password,
+				started: t.started,
+			}))
+			.filter((t) => !t.started);
+	}
 	async trainBot(ws: WebSocket, bot: difficulty, games: number) {
 		const controller = new AbortController();
 		const { signal } = controller;
@@ -72,7 +83,7 @@ export default class GamesManager {
 		this.rooms.set(ws, game);
 		return diff === null;
 	}
-	startOnline(clientId: string, ws: WebSocket){
+	startOnline(clientId: string, ws: WebSocket) {
 		ws.send(JSON.stringify({ event: "searching" }));
 		if (this.waitingClient) {
 			const data = JSON.stringify({ event: "found" });
@@ -81,20 +92,23 @@ export default class GamesManager {
 			this.waitingClient.game.connectPlayer(ws);
 			this.rooms.set(ws, this.waitingClient.game);
 			this.waitingClient = null;
-			return ;
+			return;
 		}
 		const game = new Game({
 			p1: ws,
 			botDiff: "medium",
-			onEnd: (ws: WebSocket) => {this.removeRoom(ws);console.log(`removed: ${ws}`);},
+			onEnd: (ws: WebSocket) => {
+				this.removeRoom(ws);
+				console.log(`removed: ${ws}`);
+			},
 		});
 		game.start();
 		this.waitingClient = { ws, game };
 		this.rooms.set(ws, game);
-		return ;
+		return;
 	}
 	removeFromQueue(ws: WebSocket) {
-		if (this.waitingClient && ws === this.waitingClient.ws){
+		if (this.waitingClient && ws === this.waitingClient.ws) {
 			console.log("waiting client removed");
 			this.waitingClient.game.disconnectPlayer(ws);
 			this.waitingClient = null;

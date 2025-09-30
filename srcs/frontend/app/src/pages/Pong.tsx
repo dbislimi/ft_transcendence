@@ -166,6 +166,7 @@ export default function Pong() {
 		}
 		setPlay(true);
 	};
+
 	useLayoutEffect(() => {
 		console.log("useeefw");
 		if (!mode || !gamemode) return;
@@ -182,9 +183,8 @@ export default function Pong() {
 				}
 			}
 			showScreen(true);
-		}
-		else if (!play){
-			setParams({mode: "online"});
+		} else if (!play) {
+			setParams({ mode: "online" });
 		}
 	}, [mode, gamemode, diff, setParams, play]);
 
@@ -203,7 +203,7 @@ export default function Pong() {
 						<BackToMenuButton onClick={handleBackToMenu} />
 					</div>
 				)}
-				{/* <SpaceBackground /> */}
+				<SpaceBackground />
 				{!play && mode === null && (
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
 						<ActionButton
@@ -253,6 +253,7 @@ export default function Pong() {
 					<OnlineCard
 						onCancel={() => setParams(null)}
 						onConfirm={startOnline}
+						wsRef={wsRef}
 					/>
 				)}
 				{showCountdown && (

@@ -29,6 +29,15 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			} else if (data.event === "start" && status === false) {
 				// console.log(data.body.action);
 				switch (data.body.action) {
+					case "list_tournaments":
+						// one-shot list response
+						socket.send(
+							JSON.stringify({
+								event: "tournaments",
+								body: games.listTournaments(),
+							})
+						);
+						return; // do not flip status
 					case "play_online":
 						games.startOnline(clientId, socket);
 						break;
