@@ -43,7 +43,6 @@ export default class Tournament {
 	rooms: WeakMap<WebSocket, Game>;
 	password: string | undefined;
 	depth: number = 0;
-	// Keep initial capacity (bracket size) for display / joining checks
 	capacity: number;
 	constructor({
 		rooms,
@@ -59,8 +58,8 @@ export default class Tournament {
 		this.rooms = rooms;
 		this.password = password;
 		this.id = id;
-		this.bracket = bracket; // mutable during bracket build
-		this.capacity = bracket; // immutable original size
+		this.bracket = bracket;
+		this.capacity = bracket;
 	}
 
 	join(player: WebSocket) {
