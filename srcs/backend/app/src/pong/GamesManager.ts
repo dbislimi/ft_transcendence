@@ -17,7 +17,11 @@ export default class GamesManager {
 			rooms: this.rooms,
 			id,
 			password: passwd,
-			bracket: size,
+			capacity: size,
+			onEnd: () => {
+				delete this.tournaments[id];
+				console.log("onEnd tour called");
+			},
 		});
 		this.joinTournament(ws, id, passwd);
 	}
@@ -120,13 +124,11 @@ export default class GamesManager {
 	removeRoom(ws: WebSocket) {
 		this.rooms.delete(ws);
 	}
-	quit(ws: WebSocket, tournament?: string) {
-		if (tournament) {
-			this.tournaments[tournament].quitQueue(ws);
-			if (this.tournaments[tournament].isEmpty()) {
-				delete this.tournaments[tournament];
-				console.log(`deleted: ${tournament}`);
-			}
+	quit(ws: WebSocket, tournamentId?: string) {
+		if (tournamentId) {
+			const tournament = this.tournaments[tournamentId];
+			if (!tournament) return ;
+			tournament.disconnect(ws);
 		}
 		this.removeFromQueue(ws);
 		this.getRoom(ws)?.disconnectPlayer(ws);

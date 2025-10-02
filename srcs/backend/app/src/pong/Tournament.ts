@@ -10,6 +10,7 @@ class Node {
 	right?: Node;
 	left?: Node;
 	winner?: Player;
+	loser?: Player;
 
 	depth?: number;
 	bracketId?: number;
@@ -29,47 +30,48 @@ class Node {
 		this.bracketId = N.id;
 	}
 
-	// isLeaf() {
-	// 	return !this.left && !this.right;
-	// }
+	isLeaf() {
+		return !this.left && !this.right;
+	}
 }
 
 export default class Tournament {
 	id: string;
 	started: boolean = false;
-	bracket: number;
+	capacity: number;
 	players: WebSocket[] = [];
+	leafs: Node[] = [];
 	root: Node | null = null;
 	rooms: WeakMap<WebSocket, Game>;
 	password: string | undefined;
-	depth: number = 0;
-	capacity: number;
+	nodeId: number = 0;
+	onEnd: () => void;
+
 	constructor({
 		rooms,
 		id,
-		bracket,
+		capacity,
 		password,
+		onEnd,
 	}: {
 		rooms: WeakMap<WebSocket, Game>;
 		id: string;
-		bracket: number;
+		capacity: number;
 		password: string;
+		onEnd: () => void;
 	}) {
 		this.rooms = rooms;
 		this.password = password;
 		this.id = id;
-		this.bracket = bracket;
-		this.capacity = bracket;
+		this.capacity = capacity;
+		this.onEnd = onEnd;
 	}
 
 	join(player: WebSocket) {
 		if (!this.players.includes(player)) this.players.push(player);
 		console.log("Joined tournament: ", this.id);
 		console.log(`Nb of players: ${this.players.length}`);
-		if (this.players.length === this.capacity) {
-			this.buildBracket();
-			this.init(this.root!);
-		}
+		if (this.players.length === this.capacity) this.startTournament();
 	}
 
 	quitQueue(player: WebSocket) {
@@ -82,7 +84,9 @@ export default class Tournament {
 			return;
 		}
 		console.log("building nodes");
+		let depth = Math.ceil(Math.log2(this.players.length));
 		let nodes: Node[] = this.players.map((p) => new Node({ p: p }));
+		this.leafs = nodes;
 		while (nodes.length > 1) {
 			let nextRound: Node[] = [];
 			for (let i = 0; i < nodes.length; i += 2) {
@@ -91,49 +95,74 @@ export default class Tournament {
 				const parent = new Node({
 					right: right,
 					left: left,
-					depth: this.bracket,
-					id: i / 2,
+					depth: depth,
+					id: this.nodeId++,
 				});
 				left.parent = parent;
 				right.parent = parent;
 				nextRound.push(parent);
 			}
 			nodes = nextRound;
-			--this.bracket;
+			--depth;
 		}
 		this.root = nodes[0];
 		this.printTree();
 	}
 
 	joinMatch(node: Node) {
-		if (!node?.parent || !node?.winner) return;
-		if (node.parent.game) node.parent.game.connectPlayer(node.winner);
+		const parent = node.parent;
+		const winner = node.winner;
+		console.log(`depth: ${node.depth}, id: ${node.bracketId}`);
+		if (!winner) return;
+		if (!parent) {
+			this.started = false;
+			// console.log("tournament winner");
+			winner.send(JSON.stringify({ event: "tournament_win" }));
+			this.onEnd();
+			return;
+		}
+		if (parent.loser) {
+			parent.winner = winner;
+			this.joinMatch(parent);
+			return;
+		}
+		if (parent.game) parent.game.connectPlayer(winner);
 		else {
-			node.parent.game = new Game({
-				p1: node.winner,
+			parent.game = new Game({
+				p1: winner,
 				botDiff: "medium",
 				onEnd: (ws, winner) => {
+					console.log("game onEnd");
 					this.rooms.delete(ws);
 					if (winner === true) {
-						node.parent!.winner = ws;
-						this.joinMatch(node.parent!);
-					}
+						parent.winner = ws;
+						this.joinMatch(parent!);
+					} else parent.loser = ws;
 				},
 			});
-			node.parent.game.start();
+			parent.game.start();
 		}
-		this.rooms.set(node.winner, node.parent.game);
+		this.rooms.set(winner, parent.game);
 	}
-	init(node: Node | undefined) {
-		if (!node) return;
-		this.init(node?.right);
-		this.init(node?.left);
-		this.joinMatch(node);
+	init() {
+		console.log(`leafs: ${this.leafs.length}`);
+		for (const leaf of this.leafs) this.joinMatch(leaf);
 	}
 
 	startTournament() {
+		this.buildBracket();
 		this.started = true;
-		this.init(this.root!);
+		this.init();
+	}
+
+	disconnect(ws: WebSocket) {
+		if (this.started === false) this.quitQueue(ws);
+		else {
+			const room = this.rooms.get(ws);
+			if (!room) throw Error("DISCONNECT FAILED");
+			room.disconnectPlayer(ws);
+		}
+		if (this.players.length === 0) this.onEnd();
 	}
 
 	printTree(root: Node | null = this.root) {

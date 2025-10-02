@@ -77,7 +77,7 @@ export default class Board {
 		this.score[player]++;
 		this.bonus = [];
 		for (const player of this.players) {
-			for (const bonus of player.ActiveBonus) bonus.remove(this, player);
+			for (const bonus of player.ActiveBonus) bonus.remove(player);
 			player.ActiveBonus = [];
 			player.y = this.height / 2 - player.size / 2;
 		}
@@ -250,7 +250,7 @@ export default class Board {
 			player.ActiveBonus = player.ActiveBonus.filter((bonus) => {
 				bonus.duration -= dt;
 				if (bonus.duration <= 0) {
-					bonus.remove(this, player);
+					bonus.remove(player);
 					return false;
 				}
 				return true;
@@ -320,13 +320,7 @@ export default class Board {
 	restart() {
 		this.score = [0, 0];
 		this.ball.reset(this);
-		for (const player of this.players) {
-			player.ActiveBonus = player.ActiveBonus.filter((bonus) => {
-				bonus.remove(this, player);
-				return false;
-			});
-			player.y = this.height / 2 - player.size / 2;
-		}
+		for (const player of this.players) player.reset();
 		if (this.training && this.botController.length !== 0) {
 			if (this.gamesNb % 10 === 0)
 				this.botController[0].save(this.gamesNb);
