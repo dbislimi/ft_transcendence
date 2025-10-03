@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 
 interface Message {
   from: string;
+  fromName: string;
   text: string;
   date: string;
   type: "global" | "private";
@@ -34,7 +35,7 @@ function useWebsocket( endpoint: string, onMessage: (event: MessageEvent) => voi
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [toUser, setToUser] = useState<number | null>(null); // null = global
+  const [toUser, setToUser] = useState<number | null>(null);
 
   const wsRef = useWebsocket("chat", (event) => {
     const data = JSON.parse(event.data);
@@ -68,7 +69,7 @@ export default function Chat() {
       <div className="h-64 overflow-y-auto border p-2 mb-2 bg-gray-50">
         {messages.map((m, i) => (
           <div key={i} className="mb-1">
-            <strong>{m.from}</strong> {m.type === "private" && "(privé)"} :{" "}
+            <strong>{m.fromName}</strong> {m.type === "private" && "(privé)"} :{" "}
             {m.text}
             <span className="text-xs text-gray-500">
               {" "}

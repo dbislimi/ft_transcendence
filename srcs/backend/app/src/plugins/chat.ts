@@ -13,7 +13,7 @@ interface Client {
 export default fp(async function Chat(fastify: FastifyInstance) {
   const clients: Client[] = [];
 
-  // Vérifie si un utilisateur est bloqué par un autre
+
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -27,25 +27,14 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     });
   }
 
-  // Envoi sûr vers un client
+
   function sendToClient(client: Client, data: any) {
     if (client.socket.readyState === 1) {
       client.socket.send(JSON.stringify(data));
     }
   }
 
-  // Diffuser un message global
-  async function broadcast(from: Client, msg: any) {
-    for (const c of clients) {
-      if (await isBlocked(c.id, from.id)) continue;
-      if (c.socket.readyState === 1) {
-        c.socket.send(JSON.stringify(msg));
-      }
-    }
-  }
-
   fastify.get("/chat", { websocket: true }, (socket, req) => {
-    // Récupère le token depuis la query string
     const { token } = req.query as { token?: string };
     if (!token) {
       socket.close();
@@ -53,7 +42,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
 
     try {
-      // Vérifie le token
       const decoded = jwt.verify(token, JWT_SECRET) as {
         id: number;
         name: string;
@@ -62,9 +50,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
       const client: Client = { id: decoded.id, name: decoded.name, socket };
       clients.push(client);
-      fastify.log.info(`${client.name} connecté`);
+      fastify.log.info(` ${client.name} connecté`);
 
-      // Gestion des messages entrants
+      // Messages entrants
       socket.on("message", async (raw: Buffer) => {
         try {
           const data = JSON.parse(raw.toString());
@@ -73,12 +61,11 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             const msg = {
               from: client.id,
               fromName: client.name,
-              to: data.to || null, // null = global
+              to: data.to || null,
               text: data.text,
               date: new Date().toISOString(),
             };
 
-            // Sauvegarde en DB
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
               [msg.from, msg.to, msg.text, msg.date]
@@ -92,11 +79,13 @@ export default fp(async function Chat(fastify: FastifyInstance) {
                   sendToClient(target, { type: "private", ...msg });
                 }
               }
-              // Toujours écho à l’expéditeur
               sendToClient(client, { type: "private", ...msg });
             } else {
               // Message global
-              await broadcast(client, { type: "global", ...msg });
+              for (const c of clients) {
+                if (await isBlocked(c.id, client.id)) continue;
+                sendToClient(c, { type: "global", ...msg });
+              }
             }
           }
 
@@ -116,11 +105,10 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} débloqué` });
           }
         } catch (err) {
-          fastify.log.error("Erreur message WS :", err);
+          fastify.log.error(" Erreur message WS :", err);
         }
       });
 
-      // Déconnexion
       socket.on("close", () => {
         const index = clients.findIndex((c) => c.id === client.id);
         if (index !== -1) clients.splice(index, 1);

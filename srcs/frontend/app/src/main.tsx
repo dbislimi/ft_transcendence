@@ -4,6 +4,7 @@ import "./index.css";
 import Layout from "./Components/Layout";
 import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { WebSocketProvider } from "./context/WebSocketContext";
 
 const router = createBrowserRouter([
 	{
@@ -25,7 +26,9 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+	<WebSocketProvider>
+    	<RouterProvider router={router} />
+	</WebSocketProvider>
   </StrictMode>
 );
 
