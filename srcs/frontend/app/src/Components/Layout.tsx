@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from "react-router";
+import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import ChatWidget from "./Chat";
 
@@ -16,3 +17,4 @@ export default function Layout() {
     </>
   );
 }
+

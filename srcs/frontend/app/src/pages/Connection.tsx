@@ -1,48 +1,19 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useUser } from "../context/UserContext";
 
 export default function Connection() {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let x = 10;
-    const speed = 2;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "blue";
-      ctx.fillRect(10, 10, 100, 100);
-
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.arc(x, 100, 30, 0, Math.PI * 2);
-      ctx.fill();
-
-      x += speed;
-      if (x > canvas.width - 30 || x < 30) x = 10;
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  }, []);
+  const { setToken } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
     const form = e.currentTarget;
-    const email = form.querySelector<HTMLInputElement>("#email")?.value || "";
-    const password = form.querySelector<HTMLInputElement>("#password")?.value || "";
+    const email = (form.querySelector<HTMLInputElement>("#email")?.value || "").trim();
+    const password = (form.querySelector<HTMLInputElement>("#password")?.value || "").trim();
 
     let formErrors: Record<string, string> = {};
 
@@ -66,7 +37,7 @@ export default function Connection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-    
+
       const data = await response.json();
       //console.log("la var en question " + data.enable2fa);
       console.log("Response /login:", { status: response.status, data });
@@ -84,66 +55,28 @@ export default function Connection() {
       else {
         alert("Identifiants invalides");
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: "Erreur réseau. Veuillez réessayer." });
-    }    
+    }
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img
-          alt="Your Company"
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-          className="mx-auto h-10 w-auto"
-        />
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-          Connexion
-        </h2>
-        <canvas
-          ref={canvasRef}
-          width={300}
-          height={200}
-          className="border-2 border-gray-800 mt-6 rounded-lg shadow-lg"
-        ></canvas>
-      </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-      {errors.general && (<p className="text-sm text-red-500 mt-2 text-center">{errors.general}</p>)}
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="min-h-full flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white p-6 rounded shadow">
+        <h2 className="text-2xl font-bold mb-4">Connexion</h2>
+        {errors.general && <p className="text-red-500 mb-2">{errors.general}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="Enter your email"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <input id="email" name="email" type="email" required className="w-full border p-2 rounded" />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
-
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              placeholder="Enter your password"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
+            <label htmlFor="password" className="block text-sm font-medium">Mot de passe</label>
+            <input id="password" name="password" type="password" required className="w-full border p-2 rounded" />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
           </div>
-
-          <button type="submit" className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md">
-            Sign in
-          </button>
+          <button type="submit" className="w-full bg-blue-600 text-white px-4 py-2 rounded">Se connecter</button>
         </form>
       </div>
     </div>
