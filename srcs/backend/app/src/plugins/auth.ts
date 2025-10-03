@@ -2,28 +2,79 @@ import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const JWT_SECRET = process.env.JWT_SECRET!;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default fp(async function authPlugin(fastify: FastifyInstance) {
   const db = fastify.db;
+
+  fastify.post("/check-user", async (request, reply) => {
+    const { email, display_name } = request.body as {
+      email: string;
+      display_name: string;
+    };
+
+    try {
+      const existingEmail = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (existingEmail) {
+        return reply.code(409).send({ exists: true, error: "Email déjà utilisé." });
+      }
+
+      const existingDisplayName = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE display_name = ?", [display_name], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (existingDisplayName) {
+        return reply.code(409).send({ exists: true, error: "Ce pseudo est déjà utilisé." });
+      }
+
+      return reply.send({ exists: false });
+    } catch {
+      return reply.code(500).send({ error: "Erreur serveur" });
+    }
+  });
+
   fastify.post("/register", async (request, reply) => {
-    const { name, email, password } = request.body as {
+    const { name, email, password, displayName, avatar } = request.body as {
       name: string;
       email: string;
       password: string;
+      displayName: string;
+      avatar?: string;
     };
 
+    const nameRegex = /^[A-Z][a-z]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const displayNameRegex = /^[a-zA-Z0-9-]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
+    if (!nameRegex.test(name)) {
+      return reply.code(400).send({ error: "Le nom doit commencer par une majuscule suivie uniquement de lettres minuscules." });
+    }
+
     if (!emailRegex.test(email)) {
-      return reply.code(400).send({ error: "Email invalide" });
+      return reply.code(400).send({ error: "Email invalide." });
+    }
+
+    if (!displayNameRegex.test(displayName)) {
+      return reply.code(400).send({ error: "Le pseudo doit contenir uniquement des lettres, chiffres ou tirets." });
+    }
+
+    if (!passwordRegex.test(password)) {
+      return reply.code(400).send({
+        error: "Le mot de passe doit contenir au moins 6 caractères, avec 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial."
+      });
     }
 
     try {
@@ -35,29 +86,52 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       });
 
       if (existingUser) {
-        return reply.code(409).send({ error: "Email déjà utilisé" });
+        return reply.code(409).send({ error: "Email déjà utilisé." });
+      }
+
+      const existingDisplayName = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE display_name = ?", [displayName], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (existingDisplayName) {
+        return reply.code(409).send({ error: "Ce pseudo est déjà utilisé." });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const chosenAvatar = avatar && avatar.trim() !== "" ? avatar.trim() : "/avatars/avatar1.png";
 
-      const lastID = await new Promise<number>((resolve, reject) => {
+      const userId = await new Promise<number>((resolve, reject) => {
         db.run(
-          "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-          [name, email, hashedPassword],
-          function (err: any) {
+          "INSERT INTO users (name, email, password, display_name, avatar) VALUES (?, ?, ?, ?, ?)",
+          [name, email, hashedPassword, displayName, chosenAvatar],
+          function (this: any, err: any) {
             if (err) reject(err);
             else resolve(this.lastID);
           }
         );
       });
 
-      const token = jwt.sign({ id: lastID, name, email }, JWT_SECRET, {
-        expiresIn: "2h",
-      });
+      const token = jwt.sign(
+        { id: userId, name, email },
+        JWT_SECRET,
+        { expiresIn: "2h" }
+      );
 
-      return reply.send({ success: true, token, name });
-    } catch (err) {
-      console.error("Erreur lors de l'inscription :", err);
+      return reply.send({
+        success: true,
+        token,
+        user: {
+          id: userId,
+          name,
+          email,
+          display_name: displayName,
+          avatar: chosenAvatar
+        }
+      });
+    } catch {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });
@@ -70,23 +144,19 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
 
     try {
       const user = await new Promise<any>((resolve, reject) => {
-        db.get(
-          "SELECT * FROM users WHERE email = ?",
-          [email],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
+        db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
       });
 
       if (!user) {
-        return reply.code(401).send({ error: "Utilisateur non trouvé" });
+        return reply.code(401).send({ error: "Utilisateur non trouvé." });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        return reply.code(401).send({ error: "Mot de passe invalide" });
+        return reply.code(401).send({ error: "Mot de passe invalide." });
       }
 
       const token = jwt.sign(
@@ -95,9 +165,18 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         { expiresIn: "2h" }
       );
 
-      return reply.send({ success: true, token, name: user.name });
-    } catch (err) {
-      console.error(err);
+      return reply.send({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          display_name: user.display_name,
+          avatar: user.avatar
+        }
+      });
+    } catch {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });

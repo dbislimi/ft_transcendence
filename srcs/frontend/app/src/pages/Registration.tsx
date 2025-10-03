@@ -1,200 +1,228 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface UserInfos {
-  name: string;
-  email: string;
-  password: string;
-}
-
 export default function Registration() {
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatar, setAvatar] = useState("/avatars/avatar1.png");
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const predefinedAvatars = [
+    "/avatars/avatar1.png",
+    "/avatars/avatar2.png",
+    "/avatars/avatar3.png",
+    "/avatars/avatar4.png",
+    "/avatars/avatar5.png",
+    "/avatars/avatar6.png",
+    "/avatars/avatar7.png",
+    "/avatars/avatar8.png",
+    "/avatars/avatar9.png",
+    "/avatars/avatar10.png",
+  ];
 
-    let x = 10;
-    const speed = 2;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "blue";
-      ctx.fillRect(10, 10, 100, 100);
-
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.arc(x, 100, 30, 0, Math.PI * 2);
-      ctx.fill();
-
-      x += speed;
-      if (x > canvas.width - 30 || x < 30) x = 10;
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const name = form.querySelector<HTMLInputElement>("#Name")?.value || "";
-    const email = form.querySelector<HTMLInputElement>("#email")?.value || "";
-    const password = form.querySelector<HTMLInputElement>("#password")?.value || "";
-    const confirmPassword = form.querySelector<HTMLInputElement>("#confirmPassword")?.value || "";
-
-    let formErrors: Record<string, string> = {};
-
-    const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ-]+$/;
-    if (!nameRegex.test(name)) {
-      formErrors.name = "Le nom ne doit contenir que des lettres.";
-    }
-
-    if (password !== confirmPassword) {
-      formErrors.password = "Les mots de passe ne correspondent pas";
-      formErrors.confirmPassword = "Les mots de passe ne correspondent pas";
-    }
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{5,}$/;
-    if (!passwordRegex.test(password)) {
-      formErrors.password =
-        "Le mot de passe doit contenir :\n- 1 majuscule\n- 1 minuscule\n- 1 chiffre\n- 1 caractère spécial\n- 5 caractères minimum";
-    }
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      formErrors.email = "Email invalide. Assurez-vous que l'email soit au format valide.";
-    }
-
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
+  const handleNextStep = async () => {
+    if (!name || !email || !displayName || !password || !confirmPassword) {
+      setIsError(true);
+      setMessage("Tous les champs sont obligatoires.");
       return;
     }
 
-    const info: UserInfos = { name, email, password };
+    if (password !== confirmPassword) {
+      setIsError(true);
+      setMessage("Les mots de passe ne correspondent pas.");
+      return;
+    }
 
-    try {
-      const response = await fetch("http://localhost:3000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(info),
-      });
+    const nameRegex = /^[A-Z][a-z]+$/;
+    if (!nameRegex.test(name)) {
+      setIsError(true);
+      setMessage("Le nom doit commencer par une majuscule suivie de lettres minuscules.");
+      return;
+    }
 
-      const data = await response.json();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setIsError(true);
+      setMessage("Adresse email invalide.");
+      return;
+    }
 
-      if (response.status === 409) {
-        setErrors({ email: "Adresse e-mail déjà utilisée." });
-      } else if (!response.ok) {
-        setErrors({ general: "Une erreur serveur est survenue. Réessayez plus tard." });
-      } else {
-        localStorage.setItem("token", data.token);
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      setErrors({ general: "Erreur réseau. Veuillez vérifier votre connexion." });
+    const displayNameRegex = /^[a-zA-Z0-9-]+$/;
+    if (!displayNameRegex.test(displayName)) {
+      setIsError(true);
+      setMessage("Le pseudo ne doit contenir que des lettres, chiffres ou tirets.");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      setIsError(true);
+      setMessage("Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.");
+      return;
+    }
+
+    const res = await fetch("http://localhost:3000/check-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, display_name: displayName }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.exists) {
+      setIsError(true);
+      setMessage(data.error || "Email ou pseudo déjà utilisé.");
+      return;
+    }
+
+    setIsError(false);
+    setMessage("");
+    setStep(2);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        displayName,
+        password,
+        avatar,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setIsError(false);
+      setMessage("Inscription réussie ! Redirection...");
+      setTimeout(() => navigate("/connection"), 2000);
+    } else {
+      setIsError(true);
+      setMessage(data.error || "Erreur lors de l'inscription");
     }
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img
-          alt="Your Company"
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-          className="mx-auto h-10 w-auto"
-        />
-        <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
-          Register
-        </h2>
-        <canvas
-          ref={canvasRef}
-          width={300}
-          height={200}
-          className="border-2 border-gray-800 mt-6 rounded-lg shadow-lg"
-        ></canvas>
+    <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow bg-white">
+      <h2 className="text-2xl font-bold mb-4 text-center">Inscription</h2>
+
+      <div className="flex items-center justify-between mb-6">
+        <div className={`flex-1 h-2 rounded-full ${step === 1 ? "bg-blue-500" : "bg-blue-300"}`} />
+        <div className="mx-2 text-sm font-medium">{step}/2</div>
+        <div className={`flex-1 h-2 rounded-full ${step === 2 ? "bg-blue-500" : "bg-blue-300"}`} />
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {errors.general && (<p className="text-sm text-red-500 mt-2 text-center">{errors.general}</p>)}
+      {message && (
+        <p className={`mb-4 text-center ${isError ? "text-red-500" : "text-green-500"}`}>
+          {message}
+        </p>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
-              Name
-            </label>
-            <input
-              id="Name"
-              name="Name"
-              type="text"
-              required
-              placeholder="Enter your name"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="Enter your email"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              placeholder="Enter your password"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              placeholder="Confirm your password"
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
-            )}
-          </div>
-
+      {step === 1 && (
+        <div>
+          <h3 className="text-lg font-semibold text-center mb-4">Tes informations</h3>
+          <input
+            type="text"
+            className="w-full border p-2 rounded mb-3"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nom"
+          />
+          <input
+            type="email"
+            className="w-full border p-2 rounded mb-3"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+          />
+          <input
+            type="text"
+            className="w-full border p-2 rounded mb-3"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Pseudo"
+          />
+          <input
+            type="password"
+            className="w-full border p-2 rounded mb-3"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mot de passe"
+          />
+          <input
+            type="password"
+            className="w-full border p-2 rounded mb-6"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirmer le mot de passe"
+          />
           <button
-            type="submit"
-            className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md"
+            onClick={handleNextStep}
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
           >
-            Sign in
+            Suivant →
           </button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={handleSubmit}>
+          <h3 className="text-lg font-semibold text-center mb-4">Choisis ton avatar</h3>
+          <div className="flex justify-center mb-4">
+            <img
+              src={avatar}
+              alt="Avatar sélectionné"
+              className="w-28 h-28 rounded-full object-cover border"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {predefinedAvatars.map((a) => (
+              <img
+                key={a}
+                src={a}
+                alt="Avatar"
+                className={`w-24 h-24 rounded-full object-cover border-4 cursor-pointer mx-auto ${
+                  avatar === a ? "border-blue-500" : "border-gray-300"
+                }`}
+                onClick={() => setAvatar(a)}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
+            >
+              ← Retour
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            >
+              S'inscrire
+            </button>
+          </div>
         </form>
-      </div>
+      )}
+
+      <button
+        onClick={() => navigate("/connection")}
+        className="w-full mt-6 bg-gray-500 text-white p-2 rounded hover:bg-gray-600 transition"
+      >
+        Déjà inscrit ? Se connecter
+      </button>
     </div>
   );
 }

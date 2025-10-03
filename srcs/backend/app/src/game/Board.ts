@@ -108,8 +108,6 @@ export default class Board {
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
 		if (p2.bot) {
-			// p2.moveUp(false);
-			// p2.moveDown(false);
 			if (this.ball.y + this.ball.radius < p2.y) {
 				p2.moveUp(true);
 				p2.moveDown(false);
