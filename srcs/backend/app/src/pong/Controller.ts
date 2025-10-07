@@ -217,7 +217,7 @@ export class HardBot extends BotController {
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
-	type = "medium";
+	type = "medium1";
 	qtable_nb = 200;
 
 	constructor(options = {}) {

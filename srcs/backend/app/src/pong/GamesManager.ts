@@ -9,6 +9,7 @@ export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
 	private rooms: WeakMap<WebSocket, Game> = new WeakMap();
 	private waitingClient: { ws: WebSocket; game: Game } | null = null;
+	private onAbort: (() => void) | undefined;
 
 	createTournament(ws: WebSocket, id: string, size: number, passwd: string) {
 		if (this.tournaments[id])
@@ -46,8 +47,8 @@ export default class GamesManager {
 	async trainBot(ws: WebSocket, bot: difficulty, games: number) {
 		const controller = new AbortController();
 		const { signal } = controller;
-
-		ws.on("close", () => controller.abort());
+		this.onAbort = () => controller.abort();
+		ws.on("close", this.onAbort);
 		const game = new Game({
 			p1: ws,
 			botDiff: bot,
@@ -125,6 +126,7 @@ export default class GamesManager {
 		this.rooms.delete(ws);
 	}
 	quit(ws: WebSocket, tournamentId?: string) {
+		this.onAbort?.();
 		if (tournamentId) {
 			const tournament = this.tournaments[tournamentId];
 			if (!tournament) return ;

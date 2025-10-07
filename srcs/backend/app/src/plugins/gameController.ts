@@ -45,7 +45,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						local = games.startOffline(socket, data.body.diff);
 						break;
 					case "trainbot":
-						games.trainBot(socket, data.body.diff, 1000);
+						games.trainBot(socket, data.body.diff, 3000);
 						break;
 					case "create_tournament":
 						games.createTournament(

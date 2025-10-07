@@ -110,12 +110,20 @@ export default function Pong() {
 	};
 
 	const start = () => {
-		wsRef.current?.send(
-			JSON.stringify({
-				event: "start",
-				body: { action: `play_${mode}`, diff: diff },
-			})
-		);
+		if (gamemode === "training")
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: { action: "trainbot", diff: diff },
+				})
+			);
+		else
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "start",
+					body: { action: `play_${mode}`, diff: diff },
+				})
+			);
 	};
 	const stop = useCallback(() => {
 		wsRef.current?.send(
@@ -194,7 +202,7 @@ export default function Pong() {
 			if (play) stop();
 			showScreen(false);
 		}
-	}, [mode, gamemode, play, stop]);
+	}, [gamemode, play, stop]);
 
 	return (
 		<>
@@ -239,7 +247,7 @@ export default function Pong() {
 							botDifficulty?: Difficulty;
 						}) => {
 							const diff =
-								cfg.gamemode === "solo"
+								cfg.gamemode !== "duo"
 									? cfg.botDifficulty
 									: undefined;
 							setParams({
