@@ -12,15 +12,15 @@ export default abstract class BonusBase {
 		this.y = y;
 		this.radius = radius;
 	}
-	abstract apply(board: Board, player: Player): boolean;
-	abstract remove(board: Board, player: Player): void;
+	abstract apply(player: Player): boolean;
+	abstract remove(player: Player): void;
 }
 
 export class Bigger extends BonusBase {
 	grow: number = 20;
 	name = "Bigger";
 	is = "bonus" as "bonus";
-	apply(board: Board, player: Player){
+	apply(player: Player){
 		const bonus = player.ActiveBonus.find(b => b.name === "Bigger");
 		if (bonus !== undefined){
 			bonus.duration += 10;
@@ -28,11 +28,11 @@ export class Bigger extends BonusBase {
 		}
 		else{
 			player.size += this.grow;
-			player.y = Math.max(0, Math.min(player.y - this.grow / 2, board.H - player.size));
+			player.y = Math.max(0, Math.min(player.y - this.grow / 2, player.boardHeight - player.size));
 		}
 		return (true);
 	}
-	remove(board: Board, player: Player){
+	remove(player: Player){
 		player.size -= this.grow;
 	}
 }
@@ -41,7 +41,7 @@ export class Faster extends BonusBase {
 	speed: number = 20;
 	name = "Faster";
 	is = "bonus" as "bonus";
-	apply(board: Board, player: Player){
+	apply(player: Player){
 		const bonus = player.ActiveBonus.find(b => b.name === "Faster");
 		if (bonus !== undefined){
 			bonus.duration += 10;
@@ -51,7 +51,7 @@ export class Faster extends BonusBase {
 			player.speed += this.speed;
 		return (true);
 	}
-	remove(board: Board, player: Player){
+	remove(player: Player){
 		player.speed -= this.speed;
 	}
 

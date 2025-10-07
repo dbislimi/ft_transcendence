@@ -27,10 +27,14 @@ export default class Board {
 	private training: boolean = false;
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
+	private maxScore: number;
 	private gamesNb: number = 1;
 	normHitpoint: number = 0;
+	private onWin: (id: number) => void;
 
-	constructor(height: number = 100, width: number = 200) {
+	constructor(onWin: (id: number) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
+		this.onWin = onWin;
+		this.maxScore = maxScore;
 		this.height = height;
 		this.width = width;
 		this.ball = new Ball(this);
@@ -73,12 +77,13 @@ export default class Board {
 		this.score[player]++;
 		this.bonus = [];
 		for (const player of this.players) {
-			for (const bonus of player.ActiveBonus) bonus.remove(this, player);
+			for (const bonus of player.ActiveBonus) bonus.remove(player);
 			player.ActiveBonus = [];
 			player.y = this.height / 2 - player.size / 2;
 		}
 		this.setBallPos();
 		this.bounceBallX(true);
+		if (this.score[player] === this.maxScore) this.onWin(player);
 	}
 	getBallSpeed(): number {
 		const pxlSecond = Math.hypot(this.ball.dx, this.ball.dy);
@@ -245,7 +250,7 @@ export default class Board {
 			player.ActiveBonus = player.ActiveBonus.filter((bonus) => {
 				bonus.duration -= dt;
 				if (bonus.duration <= 0) {
-					bonus.remove(this, player);
+					bonus.remove(player);
 					return false;
 				}
 				return true;
@@ -265,6 +270,10 @@ export default class Board {
 	}
 	update(dt: number) {
 		this.elapsedTime += dt;
+		if (this.elapsedTime >= 1) {
+			console.log("game running");
+			this.elapsedTime -= 1;
+		}
 		// console.log(`elapsed time: ${this.elapsedTime}`);
 		//console.log(`ball dy: ${this.ball.dy}`);
 		this.updateBonus(dt);
@@ -274,6 +283,9 @@ export default class Board {
 	}
 	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
 		return { up: this.players[id].up, down: this.players[id].down };
+	}
+	disconnectBot() {
+		this.botController.length = 0;
 	}
 	connectBot(id: 0 | 1, diff: difficulty) {
 		this.players[id].bot = diff;
@@ -305,33 +317,26 @@ export default class Board {
 		}
 	}
 
-	getReward(player: 0 | 1) {
-		//const maxReward = 1;
-		//const minReward = -maxReward;
-
-		const yDistance =
-			Math.abs(this.players[player].y - this.ball.y) / this.height;
-		let reward = Math.exp(-5 * yDistance);
-
-		return reward;
-	}
-	cut(y: number, nb: number) {
-		const cut = this.height / nb;
-		return Math.floor(y / cut) + 1;
-	}
-
 	restart() {
 		this.score = [0, 0];
 		this.ball.reset(this);
-		this.players[0].y =
-			Math.random() * (this.height - this.players[0].size);
-		this.players[1].y = this.height / 2;
+		for (const player of this.players) player.reset();
 		if (this.training && this.botController.length !== 0) {
 			if (this.gamesNb % 10 === 0)
 				this.botController[0].save(this.gamesNb);
-			if (this.gamesNb % 100 === 0){
-				plotRewards("rewards", this.botController[0].rewards, this.botController[0].type, this.gamesNb);
-				plotRewards("epsilons", this.botController[0].epislons, this.botController[0].type, this.gamesNb);
+			if (this.gamesNb % 100 === 0) {
+				plotRewards(
+					"rewards",
+					this.botController[0].rewards,
+					this.botController[0].type,
+					this.gamesNb
+				);
+				plotRewards(
+					"epsilons",
+					this.botController[0].epislons,
+					this.botController[0].type,
+					this.gamesNb
+				);
 			}
 			this.botController[0].newEpisode();
 		}

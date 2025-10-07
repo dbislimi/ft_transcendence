@@ -1,15 +1,18 @@
 import { useEffect, useRef } from "react";
 import { memo } from "react";
-import type { Players, Ball, Bonus, Bonuses } from "../pages/Game";
+import type { Players, Ball, Bonus } from "../pages/Pong";
 
-interface prop {
-	ball: React.RefObject<Ball>;
-	players: React.RefObject<Players>;
-	bonus: React.RefObject<Bonus>;
+interface GameRefShape {
+	ball: Ball;
+	players: Players;
+	bonus: Bonus;
+}
+interface Props {
+	gameRef: React.RefObject<GameRefShape>;
 	scale: number;
 }
 
-function PongCanvas({ ball, players, bonus, scale }: prop) {
+function PongCanvas({ gameRef, scale }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 	console.log("pong rendered");
@@ -24,8 +27,10 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 		const c = canvas.getContext("2d");
 		if (!c) return;
 		const loop = () => {
-			const p1Size = players.current.p1.size * scale;
-			const p2Size = players.current.p2.size * scale;
+			if (!gameRef.current) return;
+			const { players, ball, bonus } = gameRef.current;
+			const p1Size = players.p1.size * scale;
+			const p2Size = players.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.font = "300px Audiowide";
@@ -33,16 +38,16 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(
-				players.current.p1.score.toString(),
+				players.p1.score.toString(),
 				canvas.width / 4,
 				canvas.height / 2 + 30
 			);
 			c.fillText(
-				players.current.p2.score.toString(),
-				canvas.width * 3 / 4,
+				players.p2.score.toString(),
+				(canvas.width * 3) / 4,
 				canvas.height / 2 + 30
 			);
-			for (const bonuses of bonus.current.bonuses){
+			for (const bonuses of bonus.bonuses) {
 				c.arc(
 					100 * 4,
 					bonuses.y * 4,
@@ -54,27 +59,18 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 				c.fillStyle = "rgba(119, 45, 237, 1)";
 				c.fill();
 			}
-			c.fillStyle = 'rgba(0,0,0,0.8)'
+			c.fillStyle = "rgba(0,0,0,0.8)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.font = "15px Audiowide";
 			c.fillStyle = "white";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
-			c.fillText(
-				ball.current.speed.toString() + " km/h",
-				canvas.width / 2,
-				20
-			);
+			c.fillText(ball.speed.toString() + " km/h", canvas.width / 2, 20);
 			c.beginPath();
-			c.rect(
-				playerWidth,
-				players.current.p1.y * scale,
-				playerWidth,
-				p1Size
-			);
+			c.rect(playerWidth, players.p1.y * scale, playerWidth, p1Size);
 			c.rect(
 				fieldWidth - 2 * playerWidth,
-				players.current.p2.y * scale,
+				players.p2.y * scale,
 				playerWidth,
 				p2Size
 			);
@@ -84,15 +80,15 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 			c.fill();
 			c.beginPath();
 			c.arc(
-				ball.current.x * 4,
-				ball.current.y * 4,
-				ball.current.radius * scale,
+				ball.x * 4,
+				ball.y * 4,
+				ball.radius * scale,
 				0,
 				2 * Math.PI,
 				false
 			);
 			c.shadowBlur = 10;
-			c.shadowColor =  "rgba(102, 14, 237, 1)";
+			c.shadowColor = "rgba(102, 14, 237, 1)";
 			c.fillStyle = "rgba(189, 45, 237, 1)";
 			c.fill();
 			c.shadowBlur = 0;
@@ -101,8 +97,13 @@ function PongCanvas({ ball, players, bonus, scale }: prop) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, [ball, players, scale]);
-	return <canvas ref={canvasRef} className="z-5 border-4 border-white  rounded-lg" />;
+	}, [gameRef, scale]);
+	return (
+		<canvas
+			ref={canvasRef}
+			className="z-5 border-4 border-gray border-t-gray-300 border-b-gray-300 rounded-lg"
+		/>
+	);
 }
 
 export default memo(PongCanvas);

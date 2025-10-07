@@ -1,0 +1,132 @@
+{
+    "nav": { "signin": "Registro", "settings": "Ajustes" },
+    "home": { "connectBtn": "Conexión", "registrationBtn": "Registro", "gameBtn": "Juego", "aboutBtn": "Sobre Nosotros", "subtitle": "Desafía tus límites en el universo de Pong" },
+    "game": { "start": "iniciar", "stop": "detener", "speedUnit": "km/h" },
+  "about": {
+    "title": "Nuestro Equipo",
+    "subtitle": "Descubre los talentos detrás de Transcendence",
+    "role": "Desarrollador Full-Stack",
+    "pathway": "Trayectoria",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "portfolio": "Portfolio",
+    "descriptions": {
+      "thomas": "Desarrollador apasionado por las tecnologías web modernas e innovación. Especializado en desarrollo full-stack con un enfoque creativo y metódico.",
+      "bilal": "Experto en desarrollo backend y arquitectura de software. Apasionado por el rendimiento y la escalabilidad de las aplicaciones.",
+      "dylan": "Desarrollador frontend creativo con ojo para el diseño y la experiencia del usuario. Especializado en interfaces modernas y reactivas.",
+      "dren": "Desarrollador versátil con experiencia en DevOps y desarrollo de aplicaciones robustas. Apasionado por la automatización y eficiencia."
+    }
+  },
+  "bombParty": {
+    "info": {
+      "title": "Información",
+      "openAria": "Abrir información del juego",
+      "closeAria": "Cerrar barra lateral de información",
+      "howToGetTitle": "Cómo ganar bonos",
+      "streakRule": "Gana un bono aleatorio cada {{n}} palabras válidas seguidas.",
+      "bonusesTitle": "Bonos"
+    },
+    "lobby": {
+      "title": "Sala",
+      "createTab": "Crear",
+      "joinTab": "Unirse",
+      "name": "Nombre",
+      "private": "Privado",
+      "password": "Contraseña",
+      "passwordOpt": "Contraseña opcional",
+      "create": "Crear",
+      "join": "Unirse"
+    },
+    "debug": { "show": "Mostrar debug", "hide": "Ocultar debug" },
+    "chat": {
+      "placeholder": "Escribe aquí...",
+      "send": "Enviar",
+      "inputAria": "Entrada de chat",
+      "sendAria": "Enviar mensaje",
+      "system": { "joined": "{{name}} se unió", "left": "{{name}} salió", "you": "Tú" }
+    },
+    "bonus": {
+      "title": "Bonos",
+      "inversion": { "name": "Inversión", "desc": "Invierte el orden de turnos." },
+      "plus5sec": { "name": "+5 segundos", "desc": "Añade 5s al temporizador actual." },
+      "vitesseEclair": { "name": "Velocidad relámpago", "desc": "El próximo jugador solo tiene 3s." },
+      "doubleChance": { "name": "Doble oportunidad", "desc": "Dos intentos en tu próximo turno." },
+      "extraLife": { "name": "Vida extra", "desc": "Gana una vida (máx 9)." }
+    },
+    "menu": {
+      "title": "Bomb Party",
+      "subtitle": "¡Encuentra palabras que contengan el trigrama antes de que se agote el tiempo!",
+      "playersCount": "Número de jugadores",
+      "players": "jugadores",
+      "startGame": "Comenzar Juego",
+      "rules": {
+        "title": "Reglas del Juego",
+        "rule1": "Encuentra palabras que contengan el trigrama mostrado",
+        "rule2": "Cada jugador comienza con 3 vidas",
+        "rule3": "15 segundos por turno para responder",
+        "rule4": "¡El último sobreviviente gana el juego!",
+        "rule5": "El juego se juega únicamente en francés. Solo se aceptan palabras válidas en francés."
+      }
+    },
+    "game": {
+      "countdown": "Comenzando en",
+      "turnIndicator": "Turno de",
+      "timeRemaining": "Tiempo restante",
+      "wordSuggestions": "Sugerencias",
+      "suggestionsEnabled": "Sugerencias habilitadas",
+      "suggestionsDisabled": "Sugerencias deshabilitadas"
+    },
+    "rules": {
+      "title": "Reglas del Juego",
+      "languageNotice": "Este juego se juega solo en francés. Solo se aceptan palabras válidas en francés.",
+      "rule1": "Escribe una palabra válida que contenga el trigrama mostrado.",
+      "rule2": "Cada turno está cronometrado. Si se acaba el tiempo, pierdes una vida.",
+      "rule3": "No se permiten palabras duplicadas.",
+      "rule4": "Gana el último jugador en pie.",
+      "continue": "Entiendo, continuar",
+      "continueAria": "Continuar al lobby"
+    },
+    "hud": {
+      "yourTurn": "Tu turno",
+      "waiting": "Esperando",
+      "eliminated": "Eliminado",
+      "fastTurn": "Turno rápido",
+      "wordSuggestions": "Sugerencias de palabras"
+    }
+  }
+  ,
+  "profile": {
+    "title": "Perfil",
+    "memberSince": "Miembro desde {{date}}",
+    "stats": {
+      "games": "Partidas",
+      "wins": "Victorias",
+      "winrate": "Porcentaje de victorias",
+      "playtime": "Tiempo de juego"
+    },
+    "badges": { "title": "Insignias" },
+    "loading": "Cargando perfil...",
+    "error": "No se pudo cargar el perfil",
+    "retry": "Reintentar",
+    "closeAria": "Cerrar modal de perfil"
+  },
+  "common": { "back": "Atrás", "backAria": "Volver atrás" },
+  "accessibility": { "languageSwitcher": "Selector de idioma" },
+  "ui": {
+    "background": {
+      "title": "Fondos",
+      "open": "Fondos",
+      "openAria": "Abrir selector de fondos",
+      "selectAria": "Seleccionar fondo {{name}}",
+      "default": "Por defecto",
+      "space": "Espacio (animado)",
+      "defaultPreview": "Mantener el fondo del juego",
+      "42": "42",
+      "halloween": "Halloween",
+      "matrix42": "Matrix 42",
+      "snow": "Nieve",
+      "active": "Activo",
+      "applyAll": "Usar para todos los juegos"
+    }
+  }
+}
