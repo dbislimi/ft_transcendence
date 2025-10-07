@@ -56,7 +56,6 @@ export default abstract class BotController {
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
 	}
-
 	private epsilonGreedy() {
 		this.epsilon = Math.max(
 			this.epsilon_min,
@@ -119,7 +118,6 @@ export default abstract class BotController {
 	}
 	takeDecision(board: Board, player: Player) {
 		let reward = 0;
-		const timestamp = Date.now();
 		//console.log("time: ", timestamp - this.start);
 		const state = this.getState(board, player);
 		if (
@@ -151,6 +149,7 @@ export class HardBot extends BotController {
 	nbOfActions: number = 10;
 	type = "medium";
 	qtable_nb = 200;
+	private lastBonusCollected: number = 0;
 
 	constructor(options = {}) {
 		super({ ...options });
@@ -176,26 +175,59 @@ export class HardBot extends BotController {
 
 	rewardsPolicy(board: Board, id: number): number {
 		let reward = 0;
-		if ((id === 0 && board.ball.dx > 0) || (id === 1 && board.ball.dx < 0))
-			reward += Math.abs(board.normHitpoint);
-		board.normHitpoint = 0;
-		//const prevMyScore = this.scores[id];
+		const prevMyScore = this.scores[id];
 		const prevOppScore = this.scores[(id + 1) % 2];
-		//const myScore = board.scores[id];
+		const myScore = board.scores[id];
 		const oppScore = board.scores[(id + 1) % 2];
-		//if (myScore > prevMyScore) reward += 1.5;
+		if (myScore > prevMyScore) reward += 1.0;
 		if (oppScore > prevOppScore) reward -= 1.0;
-		console.log(`reward: ${reward}`);
+		if (board.normHitpoint !== 0) {
+			reward += 0.2;
+			board.normHitpoint = 0;
+		}
+
+		const collected = board.players[id].bonusCollectedTotal;
+		if (collected > this.lastBonusCollected) {
+			reward += 0.5 * (collected - this.lastBonusCollected);
+			this.lastBonusCollected = collected;
+		}
+
+		const ballComingToMe =
+			(id === 0 && board.ball.dx < 0) || (id === 1 && board.ball.dx > 0);
+		if (ballComingToMe && board.ball.dx !== 0) {
+			const player = board.players[id];
+			const xp = id === 0 ? player.x + player.width : player.x;
+			const { x: x0, y: y0, dx, dy } = board.ball;
+			let predictedY = y0 + ((xp - x0) / dx) * dy;
+			while (predictedY < 0 || predictedY > board.H) {
+				if (predictedY < 0) predictedY = -predictedY;
+				if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
+			}
+			const top = player.y;
+			const bottom = top + player.size;
+			let dist = 0;
+			if (predictedY < top) dist = top - predictedY;
+			else if (predictedY > bottom) dist = predictedY - bottom;
+			const distNorm = Math.min(1, dist / player.size);
+			reward += 0.05 * (1 - distNorm);
+		}
+
 		return reward;
 	}
 	getState(board: Board, player: Player): string {
-		if (
+		const opponent = board.players[(player.id + 1) % 2];
+		const oppCenter = opponent.y + opponent.size / 2;
+		const oppZone = Math.floor((oppCenter / board.H) * this.nbOfActions);
+		const firstBonusY = board.bonus[0]?.y;
+		const bonusZone =
+			firstBonusY === undefined
+				? -1
+				: Math.floor((firstBonusY / board.H) * this.nbOfActions);
+		const dir =
 			(player.id === 0 && board.ball.dx > 0) ||
 			(player.id === 1 && board.ball.dx < 0)
-		)
-			return `-1`;
-
-		const bonusPos = board.bonus[0]?.y;
+				? 0
+				: 1;
 		const dx = board.ball.dx;
 		const dy = board.ball.dy;
 		const xp = player.id === 0 ? player.x + player.width : player.x;
@@ -207,10 +239,7 @@ export class HardBot extends BotController {
 			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
-		const bonusZone = Math.floor((bonusPos / board.H) * this.nbOfActions);
-		console.log(`bonuspos: ${bonusPos}, zone: ${bonusZone}`);
-		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
-		return `${ballZone}`;
+		return `${dir}_${ballZone}_${oppZone}_${bonusZone}`;
 	}
 }
 
@@ -273,7 +302,6 @@ export class MediumBot extends BotController {
 			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
-		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
 		return `${dir}_${ballZone}`;
 	}
 }

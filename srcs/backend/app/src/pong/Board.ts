@@ -21,9 +21,9 @@ export default class Board {
 	ball: Ball;
 	private elapsedTime: number = 0;
 	bonus: Bonus[] = [];
-	private bonusNb: number = 0;
-	private bonusTime: number = 1;
-	private bonusRadius: number = 20;
+	private bonusNb: number = 2;
+	private bonusTime: number = 15;
+	private bonusRadius: number = 8;
 	private training: boolean = false;
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
@@ -126,11 +126,15 @@ export default class Board {
 						(this.ball.radius + bonus.radius)
 				) {
 					if (bonus.is === "bonus") {
-						if (bonus.apply(this.players[player]))
+						if (bonus.apply(this.players[player])) {
 							this.players[player].ActiveBonus.push(bonus);
+							this.players[player].bonusCollectedTotal++;
+						}
 					} else {
-						bonus.apply(this.players[(player + 1) % 2]);
-						this.players[(player + 1) % 2].ActiveBonus.push(bonus);
+						const opp = this.players[(player + 1) % 2];
+						bonus.apply(opp);
+						opp.ActiveBonus.push(bonus);
+						opp.bonusCollectedTotal++;
 					}
 					return false;
 				}
@@ -247,7 +251,7 @@ export default class Board {
 					++i;
 				}
 				if (retries) this.bonus.push(new Bigger(y, this.bonusRadius));
-				this.bonusTime = 1;
+				this.bonusTime = 15;
 			}
 		}
 		for (const player of this.players) {

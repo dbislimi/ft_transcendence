@@ -15,6 +15,7 @@ export default class Player {
 	bot: difficulty | undefined = undefined;
 	readonly id: 0 | 1;
 	ActiveBonus: Bonus[] = [];
+	bonusCollectedTotal: number = 0; // cumulative bonuses picked up (for reward logic)
 
 	constructor(field: Board, id: 0 | 1) {
 		this.boardHeight = field.H;
