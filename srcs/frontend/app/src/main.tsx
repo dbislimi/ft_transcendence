@@ -6,7 +6,8 @@ import Layout from "./Components/Layout";
 import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { BackgroundProvider } from "./contexts/BackgroundContext";
+import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +16,7 @@ const router = createBrowserRouter([
       { path: "/", element: <pages.Home /> },
       { path: "/Connection", element: <pages.Connection /> },
       { path: "/Registration", element: <pages.Registration /> },
-      { path: "/game", element: <pages.Game /> },
+      { path: "/pong", element: <pages.Pong /> },
       { path: "/bomb-party", element: <pages.BombParty /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
@@ -27,10 +28,12 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider>
-      <BackgroundProvider>
-        <RouterProvider router={router} />
-      </BackgroundProvider>
-    </AuthProvider>
+    <SettingsProvider>
+      <GlobalBackgroundProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </GlobalBackgroundProvider>
+    </SettingsProvider>
   </StrictMode>
 );

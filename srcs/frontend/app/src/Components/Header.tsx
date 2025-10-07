@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
-import LanguageSwitcher from "./LanguageSwitcher";
+import LanguageDropdown from "./LanguageDropdown";
 import ThemeToggle from "./ThemeToggle";
-import ContrastToggle from "./ContrastToggle";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -11,7 +10,7 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   
   return (
-    <header className="relative z-20 w-full bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 backdrop-blur-md border-b border-purple-500/20 shadow-2xl">
+    <header className="relative z-20 w-full bg-gradient-to-r from-slate-900/35 via-purple-900/35 to-slate-900/35 backdrop-blur-md border-b border-purple-500/20 shadow-2xl">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           
@@ -21,27 +20,23 @@ export default function Header() {
               // Utilisateur connecté - Afficher le profil
               <Link 
                 to="/profile" 
-                className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 hover:border-green-400/50 transition-all duration-300 hover:scale-105"
+                className="nav-btn-aesthetic"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600/0 to-emerald-600/0 group-hover:from-green-600/20 group-hover:to-emerald-600/20 transition-all duration-300"></div>
-                <span className="relative text-green-300 group-hover:text-green-200 font-semibold transition-colors duration-300">
-                  👤 Profil
+                <span className="label-aesthetic">
+                  👤 {t('nav.profile') || 'Profil'}
                 </span>
               </Link>
             ) : (
               // Utilisateur non connecté - Afficher l'inscription
               <Link 
                 to="/Registration" 
-                className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 hover:scale-105"
+                className="nav-btn-aesthetic inline-block"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/0 to-blue-600/0 group-hover:from-cyan-600/20 group-hover:to-blue-600/20 transition-all duration-300"></div>
-                <span className="relative text-cyan-300 group-hover:text-cyan-200 font-semibold transition-colors duration-300">
+                <span className="label-aesthetic">
                   {t('nav.signin')}
                 </span>
               </Link>
-            )}
-            
-            {/* Lien Bomb Party retiré du header selon demande */}
+            )}            
           </div>
           
           {/* Section centre - Logo */}
@@ -69,30 +64,16 @@ export default function Header() {
           {/* Section droite - Contrôles et Réglages */}
           <div className="flex items-center gap-4">
             {/* Sélecteur de langue amélioré */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-              <div className="relative">
-                <LanguageSwitcher />
-              </div>
-            </div>
-            
-            {/* Toggle de contraste */}
-            <ContrastToggle />
+            <LanguageDropdown />
             
             {/* Toggle de thème */}
             <ThemeToggle />
             
             {/* Bouton Réglages */}
-            <Link to="/settings">
-              <button 
-                type="button" 
-                className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:scale-105"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/20 group-hover:to-pink-600/20 transition-all duration-300"></div>
-                <span className="relative text-purple-300 group-hover:text-purple-200 font-semibold transition-colors duration-300">
-                  {t('nav.settings')}
-                </span>
-              </button>
+            <Link to="/settings" className="nav-btn-aesthetic inline-block">
+              <span className="label-aesthetic">
+                {t('nav.settings')}
+              </span>
             </Link>
 
             {/* Bouton de déconnexion si connecté */}

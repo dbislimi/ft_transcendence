@@ -70,14 +70,12 @@ export default function PlayerProfileModal({ playerId, open, onClose }: PlayerPr
                   )}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <Stat label={t('profile.stats.games')} value={(profile.stats?.wins ?? 0) + (profile.stats?.losses ?? 0)} />
                 <Stat label={t('profile.stats.wins')} value={profile.stats?.wins} />
                 <Stat label={t('profile.stats.winrate')} value={computeWinrate(profile.stats?.wins, profile.stats?.losses)} />
                 <Stat label={t('profile.stats.playtime')} value={formatPlaytimeMs(profile.totalPlayTimeMs)} />
               </div>
-
               {error && (
                 <button onClick={onClose} className="mt-2 px-4 py-2 rounded border border-slate-600 text-slate-300">
                   {t('profile.retry')}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import BackgroundSurface from "../Components/BackgroundSurface";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useTranslation } from "react-i18next";
-import { useBackground } from "../contexts/BackgroundContext";
+import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
 
 interface TeamMember {
   id: number;
@@ -66,11 +66,10 @@ const teamMembers: TeamMember[] = [
 
 export default function About() {
   const { t } = useTranslation();
-  const { getGlobalBackgroundKey } = useBackground();
+  const { currentBackground } = useGlobalBackground();
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const bgKey = getGlobalBackgroundKey();
-  const isImageBackground = bgKey !== 'default' && bgKey !== 'space';
+  const isImageBackground = currentBackground.id !== 'default';
 
   const openPopup = (member: TeamMember) => {
     setSelectedMember(member);

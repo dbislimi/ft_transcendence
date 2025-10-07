@@ -1,14 +1,27 @@
 {
   "nav": { 
     "signin": "تسجيل", 
-    "settings": "الإعدادات" 
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "home": "الرئيسية" 
   },
   "home": { 
     "connectBtn": "اتصال", 
     "registrationBtn": "تسجيل", 
     "gameBtn": "لعبة",
     "aboutBtn": "من نحن",
-    "subtitle": "تحدى حدودك في عالم بونغ"
+    "subtitle": "تحدى حدودك في عالم بونغ",
+    "welcome": "مرحباً، {{name}}!",
+    "connectDesc": "الوصول إلى حسابك",
+    "registrationDesc": "انضم إلى المغامرة",
+    "pongTitle": "بونغ",
+    "pongDesc": "تشغيل بونغ",
+    "shopDesc": "تخصيص التجربة",
+    "bombPartyTitle": "حفلة القنابل",
+    "bombPartyDesc": "تشغيل حفلة القنابل",
+    "aboutDesc": "اكتشف الفريق",
+    "readyToTranscend": "مستعد لتجاوز حدودك؟",
+    "optimalPerformance": "أداء مثالي"
   },
   "game": { 
     "start": "ابدأ", 
@@ -39,6 +52,28 @@
       "streakRule": "احصل على مكافأة عشوائية كل {{n}} كلمات صحيحة متتالية.",
       "bonusesTitle": "المكافآت"
     },
+    "debug": { 
+      "show": "إظهار التصحيح", 
+      "hide": "إخفاء التصحيح" 
+    },
+    "hud": {
+      "yourTurn": "دورك",
+      "waiting": "في الانتظار",
+      "eliminated": "مُستبعد",
+      "fastTurn": "دور سريع",
+      "wordSuggestions": "اقتراحات الكلمات"
+    },
+    "gameOver": {
+      "title": "انتهت اللعبة !",
+      "winner": "الفائز : {{name}}",
+      "backToMenu": "العودة إلى القائمة",
+      "victory": "انتصار !",
+      "winnerName": "{{name}}",
+      "winnerMessage": "تهانينا ! لقد فزت باللعبة !",
+      "livesRemaining": "{{count}} {{count, plural, one {حياة متبقية} other {حياة متبقية}}} ❤️",
+      "gameFinished": "انتهت اللعبة !"
+    },
+    "backToMenu": "العودة إلى القائمة",
     "lobby": {
       "title": "الردهة",
       "createTab": "إنشاء",
@@ -48,7 +83,13 @@
       "password": "كلمة المرور",
       "passwordOpt": "كلمة المرور اختيارية",
       "create": "إنشاء",
-      "join": "انضمام"
+      "join": "انضمام",
+      "connecting": "جاري الاتصال...",
+      "lobbyId": "معرف الردهة",
+      "playersCount": "عدد اللاعبين",
+      "lobbyIdPlaceholder": "الصق معرف الردهة هنا...",
+      "lobbyIdHelp": "اطلب معرف الردهة من المنشئ",
+      "passwordPlaceholder": "كلمة المرور (إذا كانت الردهة خاصة)"
     },
     "debug": { "show": "إظهار التصحيح", "hide": "إخفاء التصحيح" },
     "chat": {
@@ -97,7 +138,16 @@
       "rule3": "لا يُسمح بالكلمات المكررة.",
       "rule4": "الفائز هو آخر لاعب متبقٍ.",
       "continue": "أفهم، متابعة",
-      "continueAria": "الانتقال إلى الردهة"
+      "continueAria": "الانتقال إلى الردهة",
+      "modeSelection": "اختيار الوضع",
+      "localMode": "الوضع المحلي",
+      "multiplayerMode": "الوضع متعدد اللاعبين",
+      "localPlayers": "اللاعبون المحليون",
+      "localModeDesc": "العب بمفردك أو مع عدة لاعبين على نفس الشاشة",
+      "multiplayerModeDesc": "العب عبر الإنترنت مع لاعبين آخرين",
+      "playersCount": "عدد اللاعبين",
+      "players": "لاعبون",
+      "startLocalGame": "بدء اللعبة المحلية"
     },
     "hud": {
       "yourTurn": "دورك",
@@ -105,6 +155,18 @@
       "eliminated": "خارج اللعب",
       "fastTurn": "دور سريع",
       "wordSuggestions": "اقتراحات الكلمات"
+    },
+    "input": {
+      "instruction": "اعثر على كلمة تحتوي على:",
+      "placeholder": "أدخل كلمتك...",
+      "submit": "إرسال",
+      "recentWords": "الكلمات الأخيرة:",
+      "errors": {
+        "tooShort": "يجب أن تحتوي الكلمة على 3 أحرف على الأقل",
+        "noTrigram": "يجب أن تحتوي الكلمة على الثلاثي",
+        "duplicate": "كلمة مستخدمة مسبقاً",
+        "notInDictionary": "هذه الكلمة غير موجودة في القاموس الفرنسي"
+      }
     }
   }
   ,
@@ -132,7 +194,6 @@
       "openAria": "فتح محدد الخلفية",
       "selectAria": "اختر الخلفية {{name}}",
       "default": "الافتراضي",
-      "space": "فضاء (متحرك)",
       "defaultPreview": "الإبقاء على خلفية اللعبة",
       "42": "42",
       "halloween": "هالووين",
@@ -140,6 +201,84 @@
       "snow": "ثلج",
       "active": "مفعّل",
       "applyAll": "استخدم لجميع الألعاب"
+    }
+  },
+  "settings": {
+    "display": {
+      "title": "إعدادات العرض",
+      "theme": "المظهر",
+      "accessibility": "إمكانية الوصول",
+      "language": "اللغة",
+      "background": "الخلفية",
+      "performance": "الأداء",
+      "appearance": "المظهر",
+      "themeLight": "فاتح",
+      "themeDark": "داكن",
+      "fontSize": "حجم الخط",
+      "fontSmall": "صغير",
+      "fontMedium": "متوسط",
+      "fontLarge": "كبير",
+      "contrast": "التباين",
+      "contrastDesc": "ضبط التباين وسطوع النص",
+      "contrastVeryLow": "منخفض جداً",
+      "contrastLow": "منخفض",
+      "contrastNormal": "عادي",
+      "contrastHigh": "مرتفع",
+      "contrastVeryHigh": "مرتفع جداً",
+      "contrastPreview": "معاينة النص بهذا المستوى من التباين",
+      "animations": "الرسوم المتحركة",
+      "animationsDesc": "تفعيل التأثيرات البصرية والانتقالات",
+      "energySaver": "وضع توفير الطاقة",
+      "energySaverDesc": "تقليل التأثيرات البصرية لتوفير البطارية",
+      "autoSave": "يتم حفظ التغييرات تلقائياً",
+      "close": "إغلاق",
+      "description": "المظهر، التباين، اللغة، الخلفية، الرسوم المتحركة"
+    },
+    "game": {
+      "title": "اللعبة",
+      "description": "التحكم والتفضيلات"
+    },
+    "account": {
+      "title": "الحساب",
+      "description": "الملف الشخصي والأمان"
+    },
+    "advanced": {
+      "title": "متقدم",
+      "description": "خيارات تقنية"
+    },
+    "home": {
+      "description": "العودة إلى الرئيسية"
+    }
+  },
+  "shop": {
+    "title": "المتجر",
+    "sections": {
+      "backgrounds": "الخلفيات",
+      "themes": "السمات",
+      "accessibility": "إمكانية الوصول",
+      "performance": "الأداء"
+    },
+    "items": {
+      "available": "متاحة"
+    },
+    "equipped": "مجهز",
+    "contrast": {
+      "title": "التباين",
+      "description": "اضبط تباين وسطوع النص",
+      "veryLow": "منخفض جداً",
+      "low": "منخفض",
+      "normal": "عادي",
+      "high": "عالي",
+      "veryHigh": "عالي جداً",
+      "preview": "معاينة النص بهذا المستوى من التباين"
+    },
+    "animations": {
+      "title": "الرسوم المتحركة",
+      "description": "تفعيل أو إلغاء الرسوم المتحركة والتأثيرات البصرية"
+    },
+    "energySaver": {
+      "title": "توفير الطاقة",
+      "description": "يقلل التأثيرات الزخرفية لتوفير البطارية"
     }
   }
 }

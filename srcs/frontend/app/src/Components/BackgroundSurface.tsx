@@ -1,5 +1,5 @@
 import React from 'react';
-import { useBackground, type BackgroundKey } from '../contexts/BackgroundContext';
+import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
 
 interface BackgroundSurfaceProps {
   game?: 'bombparty' | 'pong';
@@ -8,18 +8,15 @@ interface BackgroundSurfaceProps {
 }
 
 export default function BackgroundSurface({ game, className = '', children }: BackgroundSurfaceProps) {
-  const { getBackgroundFor, getBackgroundUrl, getGlobalBackgroundKey } = useBackground();
-  const effectiveKey: BackgroundKey = game ? getBackgroundFor(game) : getGlobalBackgroundKey();
-  const url = getBackgroundUrl(effectiveKey);
-
-  // If default, render nothing intrusive; preserve existing native backgrounds
-  if (!url) return <>{children}</>;
-
+  const { currentBackground } = useGlobalBackground();
+  if (currentBackground.id === 'default') {
+    return <>{children}</>;
+  }
   return (
     <div
       className={`relative min-h-screen ${className}`}
       style={{
-        backgroundImage: `url(${url})`,
+        backgroundImage: currentBackground.url ? `url(${currentBackground.url})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}

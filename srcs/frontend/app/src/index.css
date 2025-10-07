@@ -1,23 +1,96 @@
 @import "tailwindcss";
 
-/* ... existing code ... */
-
-/* Thème clair */
-body {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f3f4f6;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border-color: #d1d5db;
+:root {
+  --font-size-small: 0.875rem;
+  --font-size-medium: 1rem;
+  --font-size-large: 1.125rem;
+  --animation-duration: 0.3s;
+  --animation-timing: ease-in-out;
+  --color-primary: #3b82f6;
+  --color-secondary: #1e40af;
+  --color-accent: #60a5fa;
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-button: #1e40af;
+  --color-button-hover: #1d4ed8;
+  --color-border: #475569;
+  --color-background: #0f172a;
+  --color-card: #1e293b;
 }
 
-/* Thème sombre */
-.dark body {
+:root:not(.dark) {
+  /* Arierre-planc */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: #ffffff;
+  --bg-header: rgba(248, 250, 252, 0.95);
+  
+  /* Textes */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  /* Bordures */
+  --border-color: #cbd5e1;
+  --border-hover: #94a3b8;
+  
+  /* Accents */
+  --accent-primary: #3b82f6;
+  --accent-secondary: #8b5cf6;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+  
+  /* Boutons */
+  --btn-primary-bg: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  --btn-primary-hover: linear-gradient(135deg, #2563eb, #1e40af);
+  --btn-secondary-bg: #f1f5f9;
+  --btn-secondary-hover: #e2e8f0;
+  --btn-secondary-text: #334155;
+  
+  /* Ombres */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== THeME SOMBRE ===== */
+:root.dark {
+  /* Arriere-plans */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-header: rgba(15, 23, 42, 0.95);
+  
+  /* Textes */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --border-color: #334155;
+  --text-muted: #94a3b8;
+  
+  /* Bordures */
+  --border-color: #475569;
+  --border-hover: #64748b;
+  
+  /* Accents */
+  --accent-primary: #60a5fa;
+  --accent-secondary: #a78bfa;
+  --accent-success: #34d399;
+  --accent-warning: #fbbf24;
+  --accent-error: #f87171;
+  
+  /* Boutons */
+  --btn-primary-bg: linear-gradient(135deg, #60a5fa, #3b82f6);
+  --btn-primary-hover: linear-gradient(135deg, #3b82f6, #2563eb);
+  --btn-secondary-bg: #334155;
+  --btn-secondary-hover: #475569;
+  --btn-secondary-text: #cbd5e1;
+  
+  /* Ombres */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 /* Application des couleurs */
@@ -58,9 +131,6 @@ html, body {
   height: 100%;
 }
 
-/* ... existing code ... */
-
-/* Animations personnalisées pour la page d'accueil */
 @keyframes shooting-star {
   0% {
     transform: translateX(-100px) translateY(0px);
@@ -93,4 +163,756 @@ html, body {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* ===== TAILLE DE POLICE DYNAMIQUE ===== */
+.text-small {
+  font-size: var(--font-size-small) !important;
+}
+
+.text-small * {
+  font-size: inherit !important;
+}
+
+.text-medium {
+  font-size: var(--font-size-medium);
+}
+
+.text-large {
+  font-size: var(--font-size-large) !important;
+}
+
+.text-large * {
+  font-size: inherit !important;
+}
+
+/* ===== CONTRASTE ADAPTATIF ===== */
+:root {
+  --contrast-level: 1.0;
+  --text-brightness: 1.0;
+}
+
+html {
+  filter: contrast(var(--contrast-level));
+}
+
+.text-contrast-adaptive {
+  filter: brightness(var(--text-brightness));
+}
+
+.text-adaptive {
+  color: var(--color-text);
+}
+
+.text-adaptive-secondary {
+  color: var(--color-text-secondary);
+}
+
+.bg-adaptive {
+  background-color: var(--color-background);
+}
+
+.bg-adaptive-card {
+  background-color: var(--color-card);
+}
+
+.border-adaptive {
+  border-color: var(--color-border);
+}
+
+.accent-adaptive {
+  color: var(--color-accent);
+}
+
+
+.home-card-adaptive {
+  background: linear-gradient(135deg, var(--color-card), var(--color-background));
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-card-adaptive:hover {
+  border-color: var(--color-accent);
+  box-shadow: 
+    0 0 30px var(--color-accent),
+    0 0 0 1px var(--color-accent),
+    0 8px 32px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  min-width: 120px;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.nav-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+.action-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  min-width: 150px;
+  text-align: center;
+}
+
+.action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+.close-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  min-width: auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+.home-title-adaptive {
+  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px var(--color-accent);
+  filter: drop-shadow(0 0 20px var(--color-accent));
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  position: relative;
+  animation: titleShimmer 3s ease-in-out infinite;
+}
+
+@keyframes titleShimmer {
+  0%, 100% {
+    background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px var(--color-accent);
+    filter: drop-shadow(0 0 20px var(--color-accent));
+  }
+  50% {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 50px var(--color-accent);
+    filter: drop-shadow(0 0 30px var(--color-accent));
+  }
+}
+
+/* Version statique du titre (quand animations desactivees) */
+.reduce-motion .home-title-adaptive {
+  animation: none;
+  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px var(--color-accent);
+  filter: drop-shadow(0 0 20px var(--color-accent));
+}
+
+.home-subtitle-adaptive {
+  color: var(--color-text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.025em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Typographie esthetique avancee */
+.text-aesthetic-primary {
+  background: linear-gradient(135deg, var(--color-text), var(--color-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.text-aesthetic-secondary {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.text-aesthetic-accent {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 20px var(--color-accent);
+}
+
+.text-aesthetic-glow {
+  color: var(--color-text);
+  text-shadow: 
+    0 0 10px var(--color-accent),
+    0 0 20px var(--color-accent),
+    0 0 30px var(--color-accent);
+  font-weight: 600;
+}
+
+.text-aesthetic-gradient {
+  background: linear-gradient(45deg, var(--color-primary), var(--color-accent), var(--color-secondary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite;
+  font-weight: 700;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Effets de texte pour les boutons */
+.btn-text-aesthetic {
+  color: var(--color-text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-text-aesthetic:hover {
+  text-shadow: 0 0 10px var(--color-accent);
+  transform: translateY(-1px);
+}
+
+/* Effets pour les titres de section */
+.section-title-aesthetic {
+  background: linear-gradient(135deg, var(--color-text), var(--color-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.section-title-aesthetic::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+  border-radius: 1px;
+}
+
+/* Effets pour les descriptions */
+.description-aesthetic {
+  color: var(--color-text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.015em;
+  line-height: 1.6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Effets pour les labels */
+.label-aesthetic {
+  color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Effets pour les badges */
+.badge-aesthetic {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  color: var(--color-text);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Classes pour differents niveaux de contraste */
+.contrast-low { --contrast-level: 0.7; --text-brightness: 0.8; }
+.contrast-normal { --contrast-level: 1.0; --text-brightness: 1.0; }
+.contrast-high { --contrast-level: 1.5; --text-brightness: 1.2; }
+.contrast-very-high { --contrast-level: 2.0; --text-brightness: 1.4; }
+
+/* Textes adaptatifs au contraste */
+.text-adaptive-primary {
+  color: var(--text-primary);
+  filter: brightness(var(--text-brightness));
+}
+
+.text-adaptive-secondary {
+  color: var(--text-secondary);
+  filter: brightness(calc(var(--text-brightness) * 0.9));
+}
+
+.text-adaptive-muted {
+  color: var(--text-muted);
+  filter: brightness(calc(var(--text-brightness) * 0.8));
+}
+
+/* Animations reduites */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Mode economie d'energie */
+.energy-saver {
+  --animation-duration: 0.1s;
+}
+
+.energy-saver * {
+  animation-play-state: paused !important;
+}
+
+.energy-saver .animate-spin,
+.energy-saver .animate-pulse,
+.energy-saver .animate-bounce,
+.energy-saver .animate-ping {
+  animation-play-state: paused !important;
+}
+
+/* Reduire les effets de particules en mode economie */
+.energy-saver canvas {
+  opacity: 0.3 !important;
+}
+
+.energy-saver .blur-xl {
+  filter: blur(4px) !important;
+}
+
+.energy-saver .animate-shooting-star,
+.energy-saver .animate-float {
+  animation-play-state: paused !important;
+}
+
+/* Styles pour les composants de reglages */
+.settings-modal {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+}
+
+.settings-section {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: all var(--animation-duration) var(--animation-timing);
+}
+
+.settings-section:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.settings-toggle {
+  transition: all var(--animation-duration) var(--animation-timing);
+}
+
+.settings-slider {
+  transition: all var(--animation-duration) var(--animation-timing);
+}
+
+/* Animation pour les modales de reglages */
+@keyframes settingsSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-settings-slide {
+  animation: settingsSlideIn var(--animation-duration) var(--animation-timing);
+}
+
+/* ===== APPLICATION DES VARIABLES DE THEME ===== */
+
+/* Corps de la page */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--animation-duration), color var(--animation-duration);
+}
+
+/* Cartes et conteneurs */
+.theme-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Header avec theme */
+.theme-header {
+  background: var(--bg-header);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Textes avec theme */
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.text-theme-muted { color: var(--text-muted); }
+
+/* Inputs avec theme */
+.input-theme {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all var(--animation-duration);
+}
+
+.input-theme:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Modales avec theme */
+.modal-theme {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Override des classes Tailwind pour le theme */
+.bg-slate-800 { background-color: var(--bg-secondary) !important; }
+.bg-slate-700 { background-color: var(--bg-tertiary) !important; }
+.text-white { color: var(--text-primary) !important; }
+.text-gray-300 { color: var(--text-secondary) !important; }
+.text-gray-400 { color: var(--text-muted) !important; }
+.border-gray-600 { border-color: var(--border-color) !important; }
+.border-gray-500 { border-color: var(--border-hover) !important; }
+
+/* ===== BOUTONS ===== */
+
+/* Boutons de navigation */
+.nav-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  min-width: 120px;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.nav-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+/* Effets pour les labels */
+.label-aesthetic {
+  color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Boutons d'action esthetiques */
+.action-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  min-width: 200px;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+/* Textes des boutons */
+.btn-text-aesthetic {
+  color: var(--color-text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.description-aesthetic {
+  color: var(--text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
+}
+
+/* Boutique et modales */
+.section-title-aesthetic {
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn-aesthetic {
+  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  min-width: 40px;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.close-btn-aesthetic:hover {
+  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px var(--color-accent),
+    0 0 0 1px var(--color-accent) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--color-accent);
+}
+
+/* ===== SLIDER DE CONTRASTE ===== */
+.slider-contrast {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: linear-gradient(to right, #374151, #60a5fa, #fbbf24);
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.slider-contrast::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #60a5fa;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.slider-contrast::-webkit-slider-thumb:hover {
+  background: #3b82f6;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.slider-contrast::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #60a5fa;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.slider-contrast::-moz-range-thumb:hover {
+  background: #3b82f6;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* ===== ARRIeRE-PLANS GLOBAUX ===== */
+
+/* Classe par defaut pour l'arriere-plan */
+.bg-active-default {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+/* Classes pour les arriere-plans avec images */
+.bg-active-42background,
+.bg-active-hallowenn-background,
+.bg-active-matrix-42-background,
+.bg-active-snow-background {
+  /* Les styles background-image sont appliques via JS */
+  position: relative;
+}
+
+/* Overlay pour ameliorer la lisibilite du texte sur les images */
+.bg-active-42background::before,
+.bg-active-hallowenn-background::before,
+.bg-active-matrix-42-background::before,
+.bg-active-snow-background::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Assurer que le contenu reste au-dessus */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ameliorer la lisibilite sur les arriere-plans d'image */
+body[class*="bg-active-"]:not(.bg-active-default) .text-white {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+body[class*="bg-active-"]:not(.bg-active-default) .bg-slate-800 {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  backdrop-filter: blur(8px);
+}
+
+body[class*="bg-active-"]:not(.bg-active-default) .bg-slate-700 {
+  background-color: rgba(51, 65, 85, 0.9) !important;
+  backdrop-filter: blur(8px);
 }

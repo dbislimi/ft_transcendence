@@ -15,7 +15,6 @@ export default function Form({ type }: Props) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const nav = useNavigate();
 
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const name = e.currentTarget.Name.value;

@@ -51,8 +51,8 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
     // Mise à jour initiale
     updateTimer();
 
-    // Mise à jour toutes les 100ms
-    const interval = setInterval(updateTimer, 100);
+    // Mise à jour toutes les 200ms (réduit de moitié la fréquence pour améliorer les performances)
+    const interval = setInterval(updateTimer, 200);
 
     // Gestion de la visibilité de l'onglet
     const handleVisibilityChange = () => {

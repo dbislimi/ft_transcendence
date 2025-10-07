@@ -2,16 +2,27 @@ import type { GameState, GamePhase, Player, GameConfig, BonusKey } from './types
 import { STREAK_FOR_BONUS } from './types';
 import { validateWithDictionary, validateLocal } from '../data/validator';
 import trigramWordsData from '../data/trigram_words.json';
+import { BombPartyEngineGetters } from './engine-getters';
 
 export class BombPartyEngine {
   private state: GameState;
   private lastTrigram: string = '';
-  private currentTrigramUsageCount: number = 0; // Nombre de fois que le trigramme actuel a été utilisé
-  private totalPlayersInRound: number = 0; // Nombre total de joueurs dans le tour complet
+  private currentTrigramUsageCount: number = 0;
+  private totalPlayersInRound: number = 0;
   private doubleChanceConsumedThisTurn: boolean = false;
+  private getters!: BombPartyEngineGetters;
 
   constructor() {
     this.state = this.getInitialState();
+    this.updateGetters();
+  }
+
+  private updateGetters(): void {
+    this.getters = new BombPartyEngineGetters(
+      this.state,
+      this.currentTrigramUsageCount,
+      this.totalPlayersInRound
+    );
   }
 
   private getInitialState(): GameState {
@@ -58,7 +69,7 @@ export class BombPartyEngine {
       history: []
     };
 
-    // Initialiser
+    // Init
     this.currentTrigramUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
     console.log('🎯 Nouveau système de trigrammes: nouveau trigramme à chaque tour');
@@ -69,7 +80,7 @@ export class BombPartyEngine {
   }
 
   startTurn(): void {
-    // Vérifier que le joueur actuel est vivant
+    // Check que le joueur actuel est vivant
     if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
       console.log('⚠️ Joueur actuel éliminé, passage au suivant');
       this.nextPlayer();
@@ -80,25 +91,20 @@ export class BombPartyEngine {
       }
     }
 
-    // Nouveau: un nouveau trigramme à chaque tour
     this.state.currentTrigram = this.getNewTrigram();
     this.currentTrigramUsageCount = 1;
     this.totalPlayersInRound = this.state.players.length;
     this.state.phase = 'TURN_ACTIVE';
-
-    // Reset turn-scoped flags
     this.doubleChanceConsumedThisTurn = false;
 
     const duration = this.getTurnDurationForCurrentPlayer();
     const now = performance.now();
     this.state.turnEndsAt = now + duration;
     this.state.activeTurnEndsAt = this.state.turnEndsAt;
-    // If fast turn applied to this player, clear the flag now
     const curId = this.state.players[this.state.currentPlayerIndex]?.id;
     if (curId && this.state.pendingFastForNextPlayerId === curId) {
       this.state.pendingFastForNextPlayerId = undefined;
     }
-
     console.log('🔄 Tour démarré pour:', this.state.players[this.state.currentPlayerIndex]?.name, 'Trigramme:', this.state.currentTrigram);
   }
 
@@ -108,7 +114,7 @@ export class BombPartyEngine {
     return newTrigram;
   }
 
-  // Sélectionne un trigramme depuis la ressource JSON (mapping trigram -> mots[])
+  // Selection de trigramme depuis le JSON (mapping trigram -> mots[])
   private selectRandomTrigram(): string {
     const map = trigramWordsData as unknown as Record<string, string[]>;
     const candidates = Object.keys(map);
@@ -122,7 +128,6 @@ export class BombPartyEngine {
     console.log('🔍 Validation du mot:', word, 'pour le trigramme:', this.state.currentTrigram);
     const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
     console.log('📋 Résultat de validation:', validation);
-
     if (validation.ok) {
       console.log('✅ Mot valide accepté:', word);
       this.state.usedWords.push(word.toLowerCase());
@@ -132,17 +137,11 @@ export class BombPartyEngine {
         ok: true,
         msTaken
       });
-
-      // Streak & bonus gain
       const p = this.state.players[this.state.currentPlayerIndex];
       p.streak = (p.streak || 0) + 1;
       if (p.streak > 0 && p.streak % STREAK_FOR_BONUS === 0) {
         this.giveRandomBonus(p.id);
       }
-
-      // Clear doubleChance if any pending (it should apply next turn only)
-      // no-op here
-
       this.state.phase = 'RESOLVE';
       return { ok: true };
     } else {
@@ -153,15 +152,12 @@ export class BombPartyEngine {
         ok: false,
         msTaken
       });
-      // Check double chance
       const p = this.state.players[this.state.currentPlayerIndex];
       if (p?.pendingEffects?.doubleChance && !this.doubleChanceConsumedThisTurn) {
         this.doubleChanceConsumedThisTurn = true;
-        // consume the flag but keep the turn active (no resolve here)
         if (p.pendingEffects) p.pendingEffects.doubleChance = false;
         return { ok: false, reason: validation.reason, consumedDoubleChance: true };
       }
-
       this.state.phase = 'RESOLVE';
       return { ok: false, reason: validation.reason };
     }
@@ -169,8 +165,6 @@ export class BombPartyEngine {
 
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
     console.log('🔄 Résolution du tour - Mot valide:', wordValid, 'Temps expiré:', timeExpired);
-
-    // Vérification de sécurité
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
       console.error('❌ Erreur: Aucun joueur ou index invalide');
       return;
@@ -183,11 +177,8 @@ export class BombPartyEngine {
     }
 
     console.log('👤 Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
-
     if (!wordValid || timeExpired) {
-      // Reset streak on failure
       currentPlayer.streak = 0;
-
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
       if (currentPlayer.lives === 0) {
         console.log('💀 Joueur éliminé:', currentPlayer.name);
@@ -195,29 +186,22 @@ export class BombPartyEngine {
       }
     }
 
-    // Vérifier s'il reste un seul joueur vivant
     const alivePlayers = this.state.players.filter(p => !p.isEliminated);
     if (alivePlayers.length <= 1) {
       this.state.phase = 'GAME_OVER';
       return;
     }
-
-    // Incrémenter (non significatif désormais, conservé pour compat UI)
     this.currentTrigramUsageCount++;
-
-    // Passer au joueur suivant
     this.nextPlayer();
-
-    // Démarrer le prochain tour (un nouveau trigramme sera tiré)
     this.startTurn();
   }
 
+  // why private = Changement de joueur sans validation
   private nextPlayer(): void {
     if (this.state.players.length === 0) return;
     let attempts = 0;
     const maxAttempts = this.state.players.length * 2;
     do {
-      // advance index according to direction
       const step = this.state.turnDirection === 1 ? 1 : -1;
       const len = this.state.players.length;
       this.state.currentPlayerIndex = (this.state.currentPlayerIndex + step + len) % len;
@@ -227,68 +211,67 @@ export class BombPartyEngine {
         break;
       }
     } while (this.state.players[this.state.currentPlayerIndex]?.isEliminated);
-
     if (!this.state.players[this.state.currentPlayerIndex]) {
       console.error('❌ Erreur: Aucun joueur valide trouvé');
       this.state.phase = 'GAME_OVER';
     }
   }
 
+  // Getters délégués à la classe BombPartyEngineGetters
   getState(): GameState {
-    return { ...this.state };
+    this.updateGetters();
+    return this.getters.getState();
   }
 
-  // Nouvelles méthodes pour le système de trigrammes
   getCurrentTrigramUsageCount(): number {
-    return this.currentTrigramUsageCount;
+    this.updateGetters();
+    return this.getters.getCurrentTrigramUsageCount();
   }
 
   getTotalPlayersInRound(): number {
-    return this.totalPlayersInRound;
+    this.updateGetters();
+    return this.getters.getTotalPlayersInRound();
   }
 
   getCurrentPlayer(): Player {
-    return this.state.players[this.state.currentPlayerIndex];
+    this.updateGetters();
+    return this.getters.getCurrentPlayer();
   }
 
   getAlivePlayersCount(): number {
-    return this.state.players.filter(p => !p.isEliminated).length;
+    this.updateGetters();
+    return this.getters.getAlivePlayersCount();
   }
 
   isGameOver(): boolean {
-    return this.state.phase === 'GAME_OVER';
+    this.updateGetters();
+    return this.getters.isGameOver();
   }
 
   getWinner(): Player | null {
-    if (this.state.phase !== 'GAME_OVER') return null;
-    const alivePlayers = this.state.players.filter(p => !p.isEliminated);
-    return alivePlayers.length === 1 ? alivePlayers[0] : null;
+    this.updateGetters();
+    return this.getters.getWinner();
+  }
+
+  getWordSuggestions(maxSuggestions: number = 5): string[] {
+    this.updateGetters();
+    return this.getters.getWordSuggestions(maxSuggestions);
+  }
+
+  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
+    this.updateGetters();
+    return this.getters.getCurrentTrigramInfo();
+  }
+
+  getTurnDurationForCurrentPlayer(): number {
+    this.updateGetters();
+    return this.getters.getTurnDurationForCurrentPlayer();
   }
 
   reset(): void {
     this.state = this.getInitialState();
     this.lastTrigram = '';
-  }
-
-  // Suggestions basées sur le mapping trigram -> mots[] de trigram_words.json
-  getWordSuggestions(maxSuggestions: number = 5): string[] {
-    if (!this.state.currentTrigram) return [];
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    return list
-      .filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase()))
-      .slice(0, maxSuggestions);
-  }
-
-  // Informations sur le trigramme actuel (totaux basés sur le mapping)
-  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
-    if (!this.state.currentTrigram) {
-      return { trigram: '', availableWords: 0, totalWords: 0 };
-    }
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    const availableWords = list.filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase())).length;
-    return { trigram: this.state.currentTrigram, availableWords, totalWords: list.length };
+    this.updateGetters();
   }
 
   // --- Bonuses mechanics ---
@@ -353,14 +336,5 @@ export class BombPartyEngine {
       if (!this.state.players[idx].isEliminated) return idx;
     }
     return -1;
-  }
-
-  getTurnDurationForCurrentPlayer(): number {
-    const base = this.state.baseTurnSeconds * 1000;
-    const currentId = this.state.players[this.state.currentPlayerIndex]?.id;
-    if (currentId && this.state.pendingFastForNextPlayerId === currentId) {
-      return 3000;
-    }
-    return base;
   }
 }

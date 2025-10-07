@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import gameController from "./plugins/gameController.ts";
+import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 //  Gestion des chemins de fichiers avec ES modules
 import path from "path";
 import { fileURLToPath } from "url";
@@ -20,6 +21,7 @@ const fastify = Fastify({
 
 fastify.register(websocket);
 fastify.register(gameController);
+fastify.register(bombPartyWSHandlers);
 
 const JWT_SECRET = "super_secret_key"; // À stocker dans un fichier .env pour plus de sécurité
 

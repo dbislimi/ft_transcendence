@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useBackground } from "../contexts/BackgroundContext";
+import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
 
 const colors = ["#F23041", "#F241E6", "#8C2A86", "#162059", "#41F2F2"];
 
@@ -68,15 +68,14 @@ export default function SpaceBackground() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 	const location = useLocation();
-	const { getBackgroundFor, getGlobalBackgroundKey } = useBackground();
-
+	const { currentBackground } = useGlobalBackground();
 	const shouldRender = useMemo(() => {
 		const path = location.pathname || '';
-		let key: string = getGlobalBackgroundKey();
-		if (path.startsWith('/game')) key = getBackgroundFor('pong');
-		else if (path.startsWith('/bomb-party')) key = getBackgroundFor('bombparty');
-		return key === 'default' || key === 'space';
-	}, [location.pathname, getBackgroundFor, getGlobalBackgroundKey]);
+		if (path.startsWith('/pong') || path.startsWith('/bomb-party')) {
+			return currentBackground.id === 'default' || currentBackground.id === 'space';
+		}
+		return currentBackground.id === 'default' || currentBackground.id === 'space';
+	}, [location.pathname, currentBackground.id]);
 	
 	useEffect(() => {
 		if (!shouldRender) return;
@@ -93,7 +92,6 @@ export default function SpaceBackground() {
 		};
 		const c = canvas.getContext("2d");
 		if (!c) return;
-		
 		const loop = () => {
 			c.fillStyle = "rgba(0,0,0,0.3)";
 			c.fillRect(0, 0, canvas.width, canvas.height);

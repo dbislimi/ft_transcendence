@@ -4,14 +4,14 @@ import BackgroundSurface from "./BackgroundSurface";
 
 export default function Layout() {
 	const location = useLocation();
-	const isGameRoute = location.pathname.startsWith('/game');
+	const isGameRoute = location.pathname.startsWith('/pong');
 	const isBombPartyRoute = location.pathname.startsWith('/bomb-party');
 
 	return (
 		<>
 			<Header />
 			<BackgroundSurface>
-				<main className="min-h-screen">
+				<main className="h-full">
 					<Outlet />
 				</main>
 			</BackgroundSurface>

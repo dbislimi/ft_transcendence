@@ -53,6 +53,9 @@ export interface GameState {
     ok: boolean;
     msTaken: number;
   }>;
+  // Game end
+  winner?: Player;               // Winner when game is over
+  finalStats?: any;              // Final statistics
 }
 
 export interface ValidationResult {
