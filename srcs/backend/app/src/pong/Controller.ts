@@ -135,7 +135,7 @@ export default abstract class BotController {
 		if (this.type === "easy")
 			console.log(
 				`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`
-			); // Ajout du log
+			);
 		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;
@@ -149,7 +149,7 @@ export default abstract class BotController {
 export class HardBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
-	type = "hard";
+	type = "medium";
 	qtable_nb = 200;
 
 	constructor(options = {}) {
@@ -195,8 +195,7 @@ export class HardBot extends BotController {
 		)
 			return `-1`;
 
-		const bonusPos = board.bonus[0].y;
-
+		const bonusPos = board.bonus[0]?.y;
 		const dx = board.ball.dx;
 		const dy = board.ball.dy;
 		const xp = player.id === 0 ? player.x + player.width : player.x;
@@ -209,8 +208,9 @@ export class HardBot extends BotController {
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
 		const bonusZone = Math.floor((bonusPos / board.H) * this.nbOfActions);
+		console.log(`bonuspos: ${bonusPos}, zone: ${bonusZone}`);
 		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
-		return `${bonusZone}_${ballZone}`;
+		return `${ballZone}`;
 	}
 }
 
@@ -218,7 +218,7 @@ export class MediumBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
 	type = "medium1";
-	qtable_nb = 200;
+	qtable_nb = 400;
 
 	constructor(options = {}) {
 		super({ ...options });

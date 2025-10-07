@@ -68,7 +68,7 @@ export default class GamesManager {
 			}
 		}
 		if (game.board.botController.length !== 0)
-			plotRewards("rewards", game.board.botController[0].rewards, bot);
+			plotRewards("rewards", game.board.botController[0].rewards, game.board.botController[0].type);
 		console.log("Training loop ended.");
 	}
 	startTraining(ws: WebSocket, bot: difficulty) {

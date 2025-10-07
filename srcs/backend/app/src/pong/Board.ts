@@ -1,6 +1,6 @@
 import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
-import BotController, { MediumBot } from "./Controller.ts";
+import BotController, { HardBot, MediumBot } from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
 import Bonus from "./Bonus.ts";
 import { Bigger } from "./Bonus.ts";
@@ -32,7 +32,12 @@ export default class Board {
 	normHitpoint: number = 0;
 	private onWin: (id: number) => void;
 
-	constructor(onWin: (id: number) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
+	constructor(
+		onWin: (id: number) => void,
+		maxScore: number = 5,
+		height: number = 100,
+		width: number = 200
+	) {
 		this.onWin = onWin;
 		this.maxScore = maxScore;
 		this.height = height;
@@ -192,7 +197,7 @@ export default class Board {
 	}
 	updatePlayersPosition(dt: number) {
 		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p2.bot === "hard") {
+		if (p2.bot === "impossible") {
 			//p2.y = this.ball.y - p2.size / 2;
 			// p2.moveUp(false);
 			// p2.moveDown(false);
@@ -289,6 +294,7 @@ export default class Board {
 	}
 	connectBot(id: 0 | 1, diff: difficulty, training: boolean = false) {
 		this.players[id].bot = diff;
+		console.log("connectbot ", diff, "for ", id, "training: ", training);
 		switch (diff) {
 			case "easy":
 				this.botController[id] = new EasyBot({
@@ -311,9 +317,16 @@ export default class Board {
 					training: training,
 				});
 				break;
-			// case "hard":
-			// 	this.botController[id] = new EasyController({training: true});
-			// 	break ;
+			case "hard":
+				this.botController[id] = new HardBot({
+					learning_rate: 0.1,
+					discount_factor: 0.9,
+					epsilon: 1,
+					epsilon_decay: 0.0001,
+					epsilon_min: 0.01,
+					training: training,
+				});
+				break;
 		}
 	}
 

@@ -51,11 +51,10 @@ export default class Game {
 		if (botDiff === null) return;
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
-			console.log("connectbot ", botDiff);
 			this.board.Training = true;
-			GAMESPEED = 100;
-			this.board.connectBot(0, botDiff, true);
-			this.board.connectBot(1, "medium");
+			GAMESPEED = 2;
+			this.board.connectBot(0, botDiff, false);
+			this.board.connectBot(1, "hard");
 		}
 	}
 
@@ -119,6 +118,7 @@ export default class Game {
 	}
 	private restart() {
 		console.log("game restarted");
+		this.winner = undefined;
 		this.board.restart();
 		this.start();
 	}
