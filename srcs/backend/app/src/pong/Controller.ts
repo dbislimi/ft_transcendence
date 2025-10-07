@@ -20,7 +20,7 @@ export default abstract class BotController {
 	protected qTable: { [state: string]: number[] } = {};
 	reward: number = 0;
 	rewards: number[] = [];
-	protected action: number | null = null
+	protected action: number | null = null;
 	protected lastState: string | null = null;
 	protected lastAction: number | null = null;
 	protected start: number;
@@ -104,7 +104,9 @@ export default abstract class BotController {
 				"utf-8"
 			);
 			this.qTable = JSON.parse(raw);
-			console.log(`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`);
+			console.log(
+				`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`
+			);
 		} catch (error) {
 			console.log(error);
 		}
@@ -131,7 +133,9 @@ export default abstract class BotController {
 		}
 		this.action = this.chooseAction(state);
 		if (this.type === "easy")
-			console.log(`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`); // Ajout du log
+			console.log(
+				`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`
+			); // Ajout du log
 		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;
@@ -142,6 +146,73 @@ export default abstract class BotController {
 	abstract rewardsPolicy(board: Board, id: number): number;
 }
 
+export class HardBot extends BotController {
+	targetZone: number | null = null;
+	nbOfActions: number = 10;
+	type = "hard";
+	qtable_nb = 200;
+
+	constructor(options = {}) {
+		super({ ...options });
+		if (this.training === false) this.load();
+	}
+
+	update(player: Player, board: Board, dt: number) {
+		if (this.action === null) return;
+		const zoneHeight = board.H / this.nbOfActions;
+		const targetY = this.action * zoneHeight + zoneHeight / 2;
+		const playerCenter = player.y + player.size / 2;
+		if (playerCenter > targetY + 2) {
+			player.moveUp(true);
+			player.moveDown(false);
+		} else if (playerCenter < targetY - 2) {
+			player.moveUp(false);
+			player.moveDown(true);
+		} else {
+			player.moveUp(false);
+			player.moveDown(false);
+		}
+	}
+
+	rewardsPolicy(board: Board, id: number): number {
+		let reward = 0;
+		if ((id === 0 && board.ball.dx > 0) || (id === 1 && board.ball.dx < 0))
+			reward += Math.abs(board.normHitpoint);
+		board.normHitpoint = 0;
+		//const prevMyScore = this.scores[id];
+		const prevOppScore = this.scores[(id + 1) % 2];
+		//const myScore = board.scores[id];
+		const oppScore = board.scores[(id + 1) % 2];
+		//if (myScore > prevMyScore) reward += 1.5;
+		if (oppScore > prevOppScore) reward -= 1.0;
+		console.log(`reward: ${reward}`);
+		return reward;
+	}
+	getState(board: Board, player: Player): string {
+		if (
+			(player.id === 0 && board.ball.dx > 0) ||
+			(player.id === 1 && board.ball.dx < 0)
+		)
+			return `-1`;
+
+		const bonusPos = board.bonus[0].y;
+
+		const dx = board.ball.dx;
+		const dy = board.ball.dy;
+		const xp = player.id === 0 ? player.x + player.width : player.x;
+		const x0 = board.ball.x;
+		const y0 = board.ball.y;
+		let predictedY = y0 + ((xp - x0) / dx) * dy;
+		while (predictedY < 0 || predictedY > board.H) {
+			if (predictedY < 0) predictedY = -predictedY;
+			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
+		}
+		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
+		const bonusZone = Math.floor((bonusPos / board.H) * this.nbOfActions);
+		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
+		return `${bonusZone}_${ballZone}`;
+	}
+}
 
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
@@ -157,8 +228,7 @@ export class MediumBot extends BotController {
 	update(player: Player, board: Board, dt: number) {
 		if (this.action === null) return;
 		const zoneHeight = board.H / this.nbOfActions;
-		const targetY =
-		this.action * zoneHeight + zoneHeight / 2;
+		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
 		if (playerCenter > targetY + 2) {
 			player.moveUp(true);
@@ -173,35 +243,38 @@ export class MediumBot extends BotController {
 	}
 
 	rewardsPolicy(board: Board, id: number): number {
-		let reward = 0
+		let reward = 0;
 		if ((id === 0 && board.ball.dx > 0) || (id === 1 && board.ball.dx < 0))
 			reward += Math.abs(board.normHitpoint);
 		board.normHitpoint = 0;
-		//const prevMyScore = this.scores[id];
+		const prevMyScore = this.scores[id];
 		const prevOppScore = this.scores[(id + 1) % 2];
-		//const myScore = board.scores[id];
+		const myScore = board.scores[id];
 		const oppScore = board.scores[(id + 1) % 2];
-		//if (myScore > prevMyScore) reward += 1.5;
+		if (myScore > prevMyScore) reward += 1.5;
 		if (oppScore > prevOppScore) reward -= 1.0;
 		console.log(`reward: ${reward}`);
 		return reward;
 	}
 	getState(board: Board, player: Player): string {
-		if ((player.id === 0 && board.ball.dx > 0) || (player.id === 1 && board.ball.dx < 0))
-			return (`-1`);
+		const dir =
+			(player.id === 0 && board.ball.dx > 0) ||
+			(player.id === 1 && board.ball.dx < 0)
+				? 0
+				: 1;
 		const dx = board.ball.dx;
 		const dy = board.ball.dy;
 		const xp = player.id === 0 ? player.x + player.width : player.x;
 		const x0 = board.ball.x;
 		const y0 = board.ball.y;
-		let predictedY =  y0 + ((xp - x0) / dx) * dy;
-		while (predictedY < 0 || predictedY > board.H){
+		let predictedY = y0 + ((xp - x0) / dx) * dy;
+		while (predictedY < 0 || predictedY > board.H) {
 			if (predictedY < 0) predictedY = -predictedY;
 			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
 		}
-		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions)
+		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
 		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
-		return `${ballZone}`;
+		return `${dir}_${ballZone}`;
 	}
 }
 
@@ -219,8 +292,7 @@ export class EasyBot extends BotController {
 	update(player: Player, board: Board, dt: number) {
 		if (this.action === null) return;
 		const zoneHeight = board.H / this.nbOfActions;
-		const targetY =
-		this.action * zoneHeight + zoneHeight / 2;
+		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
 		if (playerCenter > targetY + 2) {
 			player.moveUp(true);
@@ -253,9 +325,10 @@ export class EasyBot extends BotController {
 			(player.id === 0 && predictedX < player.x + player.width) ||
 			(player.id === 1 && predictedX > player.x);
 		if (isBehind) predictedY = board.ball.getNextXY(0.6).nextY;
-		while (predictedY < 0 || predictedY > board.H){
+		while (predictedY < 0 || predictedY > board.H) {
 			if (predictedY < 0) predictedY = -predictedY;
-			if (predictedY > board.H) predictedY = board.H - (predictedY - board.H)
+			if (predictedY > board.H)
+				predictedY = board.H - (predictedY - board.H);
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
 		console.log(`ballzone: ${ballZone}`);

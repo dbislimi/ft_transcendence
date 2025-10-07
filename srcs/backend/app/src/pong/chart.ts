@@ -1,6 +1,12 @@
 import fetch from "node-fetch";
 import { writeFileSync } from "fs";
 
+function shrinkTab(tab: number[]){
+	if (tab.length < 300)
+		return (tab);
+	return tab.filter((_, i) => i % 10 === 0);
+}
+
 export default async function plotRewards(name: string,tab: number[], diff: string, episode?: number) {
 	const chartConfig = {
 		type: "line",
@@ -9,7 +15,7 @@ export default async function plotRewards(name: string,tab: number[], diff: stri
 			datasets: [
 				{
 					label: name,
-					data: tab,
+					data: shrinkTab(tab),
 					borderColor: "blue",
 					fill: false,
 				},

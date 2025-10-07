@@ -54,8 +54,8 @@ export default class Game {
 			console.log("connectbot ", botDiff);
 			this.board.Training = true;
 			GAMESPEED = 100;
+			this.board.connectBot(0, botDiff, true);
 			this.board.connectBot(1, "hard");
-			this.board.connectBot(0, botDiff);
 		}
 	}
 

@@ -121,10 +121,10 @@ export default class Board {
 						(this.ball.radius + bonus.radius)
 				) {
 					if (bonus.is === "bonus") {
-						if (bonus.apply(this, this.players[player]))
+						if (bonus.apply(this.players[player]))
 							this.players[player].ActiveBonus.push(bonus);
 					} else {
-						bonus.apply(this, this.players[(player + 1) % 2]);
+						bonus.apply(this.players[(player + 1) % 2]);
 						this.players[(player + 1) % 2].ActiveBonus.push(bonus);
 					}
 					return false;
@@ -287,7 +287,7 @@ export default class Board {
 	disconnectBot() {
 		this.botController.length = 0;
 	}
-	connectBot(id: 0 | 1, diff: difficulty) {
+	connectBot(id: 0 | 1, diff: difficulty, training: boolean = false) {
 		this.players[id].bot = diff;
 		switch (diff) {
 			case "easy":
@@ -297,7 +297,7 @@ export default class Board {
 					epsilon: 1,
 					epsilon_decay: 0.00023,
 					epsilon_min: 0.01,
-					training: false,
+					training: training,
 				});
 				console.log("debug");
 				break;
@@ -308,7 +308,7 @@ export default class Board {
 					epsilon: 1,
 					epsilon_decay: 0.0001,
 					epsilon_min: 0.01,
-					training: this.training,
+					training: training,
 				});
 				break;
 			// case "hard":
