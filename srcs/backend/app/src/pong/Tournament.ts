@@ -112,20 +112,21 @@ export default class Tournament {
 	joinMatch(node: Node) {
 		const parent = node.parent;
 		const winner = node.winner;
-		console.log(`depth: ${node.depth}, id: ${node.bracketId}`);
+		console.log("joinMatch called");
+		console.log(`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`);
 		if (!winner) return;
 		if (!parent) {
-			this.started = false;
-			// console.log("tournament winner");
+			console.log("tournament winner");
 			winner.send(JSON.stringify({ event: "tournament_win" }));
-			this.onEnd();
 			return;
 		}
 		if (parent.loser) {
+			console.log("bye");
 			parent.winner = winner;
 			this.joinMatch(parent);
 			return;
 		}
+		console.log("start");
 		if (parent.game) parent.game.connectPlayer(winner);
 		else {
 			parent.game = new Game({
@@ -156,12 +157,9 @@ export default class Tournament {
 	}
 
 	disconnect(ws: WebSocket) {
-		if (this.started === false) this.quitQueue(ws);
-		else {
-			const room = this.rooms.get(ws);
-			if (!room) throw Error("DISCONNECT FAILED");
-			room.disconnectPlayer(ws);
-		}
+		if (this.started === true) this.rooms.get(ws)?.disconnectPlayer(ws);
+		this.quitQueue(ws);
+		console.log(`nb of players: ${this.players.length}`);
 		if (this.players.length === 0) this.onEnd();
 	}
 

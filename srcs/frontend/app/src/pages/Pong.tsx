@@ -50,6 +50,7 @@ export default function Pong() {
 	const [scale] = useState(4);
 	const [winner, setWinner] = useState<number | null>(null);
 	const [showCountdown, setShowCountdown] = useState(false);
+	const playerIds = { self: "You", opponent: "Opponent" };
 	const startedRef = useRef(false);
 
 	const gameRef = useRef<{
@@ -203,7 +204,7 @@ export default function Pong() {
 						<BackToMenuButton onClick={handleBackToMenu} />
 					</div>
 				)}
-				{/* <SpaceBackground /> */}
+				{/*<SpaceBackground />*/}
 				{!play && mode === null && (
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
 						<ActionButton
@@ -265,7 +266,29 @@ export default function Pong() {
 						}}
 					/>
 				)}
-				{play && <PongCanvas gameRef={gameRef} scale={scale} />}
+				{play && (
+					<div className="relative">
+						<div className="absolute -top-10 left-0 right-0 flex justify-between text-xs sm:text-sm font-semibold px-2">
+							<div className="flex items-center gap-2">
+								<div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-[10px] text-white">
+									P1
+								</div>
+								<span className="text-cyan-300">
+									{playerIds.self}
+								</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<span className="text-pink-300">
+									{playerIds.opponent}
+								</span>
+								<div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center text-[10px] text-white">
+									P2
+								</div>
+							</div>
+						</div>
+						<PongCanvas gameRef={gameRef} scale={scale} />
+					</div>
+				)}
 				<Chat />
 			</div>
 		</>
