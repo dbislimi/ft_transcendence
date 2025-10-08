@@ -52,9 +52,9 @@ export default class Game {
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
 			this.board.Training = true;
-			GAMESPEED = 2;
-			this.board.connectBot(0, botDiff, false);
-			this.board.connectBot(1, "hard");
+			GAMESPEED = 50;
+			this.board.connectBot(0, botDiff, true);
+			this.board.connectBot(1, "medium");
 		}
 	}
 
@@ -157,7 +157,7 @@ export default class Game {
 	private gameLoop(): void {
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
-		const MAX_DELTA = 0.1;
+		const MAX_DELTA = 0.08;
 		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 

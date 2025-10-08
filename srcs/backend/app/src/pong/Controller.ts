@@ -29,6 +29,8 @@ export default abstract class BotController {
 	abstract nbOfActions: number;
 	abstract type: string;
 	abstract qtable_nb: number;
+	protected maxDecisions: number;
+	protected decisionsMade: number = 0;
 
 	constructor(
 		options: {
@@ -38,6 +40,7 @@ export default abstract class BotController {
 			epsilon_decay?: number;
 			epsilon_min?: number;
 			training?: boolean;
+			maxDecisions?: number;
 		} = {}
 	) {
 		const {
@@ -47,6 +50,7 @@ export default abstract class BotController {
 			epsilon_decay = 0.00001,
 			epsilon_min = 0.01,
 			training = false,
+			maxDecisions = 100,
 		} = options;
 		this.start = Date.now();
 		this.training = training;
@@ -55,6 +59,7 @@ export default abstract class BotController {
 		this.epsilon = epsilon;
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
+		this.maxDecisions = maxDecisions;
 	}
 	private epsilonGreedy() {
 		this.epsilon = Math.max(
@@ -65,11 +70,12 @@ export default abstract class BotController {
 	protected chooseAction(state: string) {
 		if (!(state in this.qTable))
 			this.qTable[state] = Array(this.nbOfActions).fill(0);
-		if (this.training && Math.random() < this.epsilon) {
-			this.epsilonGreedy();
-			return Math.floor(Math.random() * this.nbOfActions);
-		}
-		return np.argmax(this.qTable[state]);
+		let action: number;
+		if (this.training && Math.random() < this.epsilon)
+			action = Math.floor(Math.random() * this.nbOfActions);
+		else action = np.argmax(this.qTable[state]);
+		if (this.training) this.epsilonGreedy();
+		return action;
 	}
 
 	protected updateQtable(
@@ -111,13 +117,19 @@ export default abstract class BotController {
 		}
 	}
 	newEpisode() {
+		console.log(`decisionsMade: ${this.decisionsMade}`);
 		this.epislons.push(this.epsilon);
 		this.rewards.push(this.reward);
 		this.reward = 0;
 		this.scores = [0, 0];
+		this.decisionsMade = 0;
+	}
+	reachedDecisionLimit(): boolean {
+		return this.decisionsMade >= this.maxDecisions;
 	}
 	takeDecision(board: Board, player: Player) {
 		let reward = 0;
+		if (this.training) ++this.decisionsMade;
 		//console.log("time: ", timestamp - this.start);
 		const state = this.getState(board, player);
 		if (
@@ -147,8 +159,8 @@ export default abstract class BotController {
 export class HardBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
-	type = "medium";
-	qtable_nb = 200;
+	type = "hard";
+	qtable_nb = 400;
 	private lastBonusCollected: number = 0;
 
 	constructor(options = {}) {
@@ -161,37 +173,58 @@ export class HardBot extends BotController {
 		const zoneHeight = board.H / this.nbOfActions;
 		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
-		if (playerCenter > targetY + 2) {
-			player.moveUp(true);
-			player.moveDown(false);
-		} else if (playerCenter < targetY - 2) {
-			player.moveUp(false);
-			player.moveDown(true);
+		const stopMargin = Math.max(1, player.speed * dt * 0.5); // bande interne (arrêt)
+		const startMargin = stopMargin * 1.2; // bande externe (déclenchement)
+		const diff = targetY - playerCenter;
+		const moving = player.up || player.down;
+		if (moving) {
+			if (Math.abs(diff) <= stopMargin) {
+				player.moveUp(false);
+				player.moveDown(false);
+			} else if (diff > 0) {
+				player.moveUp(false);
+				player.moveDown(true);
+			} else {
+				player.moveUp(true);
+				player.moveDown(false);
+			}
 		} else {
-			player.moveUp(false);
-			player.moveDown(false);
+			if (Math.abs(diff) >= startMargin) {
+				if (diff > 0) {
+					player.moveUp(false);
+					player.moveDown(true);
+				} else {
+					player.moveUp(true);
+					player.moveDown(false);
+				}
+			} else {
+				player.moveUp(false);
+				player.moveDown(false);
+			}
 		}
 	}
 
 	rewardsPolicy(board: Board, id: number): number {
-		let reward = 0;
+		let rScore = 0;
+		let rHit = 0;
+		let rBonus = 0;
+		let rTrack = 0;
 		const prevMyScore = this.scores[id];
 		const prevOppScore = this.scores[(id + 1) % 2];
 		const myScore = board.scores[id];
 		const oppScore = board.scores[(id + 1) % 2];
-		if (myScore > prevMyScore) reward += 1.0;
-		if (oppScore > prevOppScore) reward -= 1.0;
+		if (myScore > prevMyScore) rScore += 1.0;
+		if (oppScore > prevOppScore) rScore -= 1.0;
 		if (board.normHitpoint !== 0) {
-			reward += 0.2;
+			rHit = 0.2;
 			board.normHitpoint = 0;
 		}
-
 		const collected = board.players[id].bonusCollectedTotal;
 		if (collected > this.lastBonusCollected) {
-			reward += 0.5 * (collected - this.lastBonusCollected);
+			const diff = collected - this.lastBonusCollected;
+			rBonus = 0.5 * diff;
 			this.lastBonusCollected = collected;
 		}
-
 		const ballComingToMe =
 			(id === 0 && board.ball.dx < 0) || (id === 1 && board.ball.dx > 0);
 		if (ballComingToMe && board.ball.dx !== 0) {
@@ -209,9 +242,18 @@ export class HardBot extends BotController {
 			if (predictedY < top) dist = top - predictedY;
 			else if (predictedY > bottom) dist = predictedY - bottom;
 			const distNorm = Math.min(1, dist / player.size);
-			reward += 0.05 * (1 - distNorm);
+			rTrack = 0.05 * (1 - distNorm);
 		}
-
+		const reward = rScore + rHit + rBonus + rTrack;
+		console.log(
+			`[hard][reward] step=${this.decisionsMade} total=${reward.toFixed(
+				3
+			)} = score(${rScore.toFixed(2)}) + hit(${rHit.toFixed(
+				2
+			)}) + bonus(${rBonus.toFixed(2)}) + track(${rTrack.toFixed(
+				3
+			)}) eps=${this.epsilon.toFixed(3)}`
+		);
 		return reward;
 	}
 	getState(board: Board, player: Player): string {
@@ -259,15 +301,34 @@ export class MediumBot extends BotController {
 		const zoneHeight = board.H / this.nbOfActions;
 		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
-		if (playerCenter > targetY + 2) {
-			player.moveUp(true);
-			player.moveDown(false);
-		} else if (playerCenter < targetY - 2) {
-			player.moveUp(false);
-			player.moveDown(true);
+		const stopMargin = Math.max(1, player.speed * dt * 0.5);
+		const startMargin = stopMargin * 1.2;
+		const diff = targetY - playerCenter;
+		const moving = player.up || player.down;
+		if (moving) {
+			if (Math.abs(diff) <= stopMargin) {
+				player.moveUp(false);
+				player.moveDown(false);
+			} else if (diff > 0) {
+				player.moveUp(false);
+				player.moveDown(true);
+			} else {
+				player.moveUp(true);
+				player.moveDown(false);
+			}
 		} else {
-			player.moveUp(false);
-			player.moveDown(false);
+			if (Math.abs(diff) >= startMargin) {
+				if (diff > 0) {
+					player.moveUp(false);
+					player.moveDown(true);
+				} else {
+					player.moveUp(true);
+					player.moveDown(false);
+				}
+			} else {
+				player.moveUp(false);
+				player.moveDown(false);
+			}
 		}
 	}
 
@@ -322,15 +383,34 @@ export class EasyBot extends BotController {
 		const zoneHeight = board.H / this.nbOfActions;
 		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
-		if (playerCenter > targetY + 2) {
-			player.moveUp(true);
-			player.moveDown(false);
-		} else if (playerCenter < targetY - 2) {
-			player.moveUp(false);
-			player.moveDown(true);
+		const stopMargin = Math.max(1, player.speed * dt * 0.5);
+		const startMargin = stopMargin * 1.2;
+		const diff = targetY - playerCenter;
+		const moving = player.up || player.down;
+		if (moving) {
+			if (Math.abs(diff) <= stopMargin) {
+				player.moveUp(false);
+				player.moveDown(false);
+			} else if (diff > 0) {
+				player.moveUp(false);
+				player.moveDown(true);
+			} else {
+				player.moveUp(true);
+				player.moveDown(false);
+			}
 		} else {
-			player.moveUp(false);
-			player.moveDown(false);
+			if (Math.abs(diff) >= startMargin) {
+				if (diff > 0) {
+					player.moveUp(false);
+					player.moveDown(true);
+				} else {
+					player.moveUp(true);
+					player.moveDown(false);
+				}
+			} else {
+				player.moveUp(false);
+				player.moveDown(false);
+			}
 		}
 	}
 

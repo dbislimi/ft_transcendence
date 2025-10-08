@@ -267,7 +267,7 @@ export default function Pong() {
 				)}
 				{showCountdown && (
 					<Countdown
-						seconds={3}
+						seconds={1}
 						onComplete={() => {
 							setShowCountdown(false);
 							start();
