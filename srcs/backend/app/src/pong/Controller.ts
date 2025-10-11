@@ -288,7 +288,7 @@ export class HardBot extends BotController {
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
-	type = "medium1";
+	type = "medium2";
 	qtable_nb = 400;
 
 	constructor(options = {}) {
@@ -334,16 +334,48 @@ export class MediumBot extends BotController {
 
 	rewardsPolicy(board: Board, id: number): number {
 		let reward = 0;
+		let rTouch = 0;
+		let rTrack = 0;
+		let rScore = 0;
 		if ((id === 0 && board.ball.dx > 0) || (id === 1 && board.ball.dx < 0))
-			reward += Math.abs(board.normHitpoint);
+			rTouch += Math.abs(board.normHitpoint);
 		board.normHitpoint = 0;
+
+		const ballComingToMe =
+			(id === 0 && board.ball.dx < 0) || (id === 1 && board.ball.dx > 0);
+		if (ballComingToMe && board.ball.dx !== 0) {
+			const player = board.players[id];
+			const xp = id === 0 ? player.x + player.width : player.x;
+			const { x: x0, y: y0, dx, dy } = board.ball;
+			let predictedY = y0 + ((xp - x0) / dx) * dy;
+			while (predictedY < 0 || predictedY > board.H) {
+				if (predictedY < 0) predictedY = -predictedY;
+				if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
+			}
+			const top = player.y;
+			const bottom = top + player.size;
+			let dist = 0;
+			if (predictedY < top) dist = top - predictedY;
+			else if (predictedY > bottom) dist = predictedY - bottom;
+			const norm = 1 - dist / player.size;
+			rTrack = 0.05 * norm;
+		}
+
 		const prevMyScore = this.scores[id];
 		const prevOppScore = this.scores[(id + 1) % 2];
 		const myScore = board.scores[id];
 		const oppScore = board.scores[(id + 1) % 2];
-		if (myScore > prevMyScore) reward += 1.5;
-		if (oppScore > prevOppScore) reward -= 1.0;
-		console.log(`reward: ${reward}`);
+		if (myScore > prevMyScore) rScore += 1.5;
+		if (oppScore > prevOppScore) rScore -= 1.0;
+
+		reward = rScore + rTouch + rTrack;
+		console.log(
+			`[medium][reward] step=${this.decisionsMade} total=${reward.toFixed(
+				3
+			)} track=${rTrack.toFixed(3)}, touch=${rTouch.toFixed(
+				3
+			)}, score=${rScore}`
+		);
 		return reward;
 	}
 	getState(board: Board, player: Player): string {

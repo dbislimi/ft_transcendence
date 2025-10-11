@@ -22,7 +22,7 @@ export default class Game {
 	private signal: AbortSignal | undefined = undefined;
 	private winner: number | undefined = undefined;
 
-	private timestamp: number;
+	elaspedTime: number = 0;
 
 	constructor({
 		p1,
@@ -38,7 +38,10 @@ export default class Game {
 		train?: boolean;
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board((id: number) => (this.winner = id));
+		this.board = new Board((id: number) => {
+			this.winner = id;
+			this.board.reset();
+		});
 		this.clientsId.set(p1, 0);
 		if (p2 !== undefined) {
 			this.clients = [p1, p2];
@@ -54,13 +57,13 @@ export default class Game {
 			this.board.Training = true;
 			GAMESPEED = 50;
 			this.board.connectBot(0, botDiff, true);
-			this.board.connectBot(1, "medium");
+			this.board.connectBot(1, "impossible");
 		}
 	}
 
 	connectPlayer(p: WebSocket) {
 		this.board.disconnectBot();
-		this.board.restart();
+		this.board.reset();
 		this.clients[1] = p;
 		this.clientsId.set(p, 1);
 	}
@@ -119,18 +122,14 @@ export default class Game {
 	private restart() {
 		console.log("game restarted");
 		this.winner = undefined;
-		this.board.restart();
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {
-		if (!this.board.players[player].up && type === "press") {
+		if (!this.board.players[player].up && type === "press")
 			this.board.players[player].moveUp(true);
-			this.timestamp = Date.now();
-		} else if (this.board.players[player].up && type === "release") {
+		else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
-			console.log("timestamp:", Date.now() - this.timestamp);
-			this.timestamp = 0;
-		}
+
 	}
 	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")
@@ -166,6 +165,7 @@ export default class Game {
 			return;
 		}
 		this.board.update(deltaTime);
+		this.elapsedTime += deltaTime;
 		const data = {
 			event: "data",
 			body: {

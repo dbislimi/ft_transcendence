@@ -70,6 +70,11 @@ export default class GamesManager {
 		if (game.board.botController.length !== 0)
 			plotRewards("rewards", game.board.botController[0].rewards, game.board.botController[0].type);
 		console.log("Training loop ended.");
+		const totalSeconds = Math.floor(game.elaspedTime);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+		console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
 	}
 	startTraining(ws: WebSocket, bot: difficulty) {
 		this.trainBot(ws, bot, 100);

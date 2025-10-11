@@ -21,7 +21,7 @@ export default class Board {
 	ball: Ball;
 	private elapsedTime: number = 0;
 	bonus: Bonus[] = [];
-	private bonusNb: number = 1;
+	private bonusNb: number = 0;
 	private bonusSpawnInterval: number = 5;
 	private lastBonusSpawn: number = 0;
 	private bonusRadius: number = 8;
@@ -277,7 +277,7 @@ export default class Board {
 				bot.aiLag -= 1;
 				if (bot.reachedDecisionLimit()) {
 					console.log("DEBUUUUG");
-					this.onWin(0)
+					this.onWin(0);
 					return false;
 				}
 			}
@@ -341,13 +341,13 @@ export default class Board {
 		}
 	}
 
-	restart() {
+	reset() {
 		this.score = [0, 0];
 		this.ball.reset(this);
 		for (const player of this.players) player.reset();
 		this.bonus.length = 0;
+		this.lastBonusSpawn = 0;
 		this.elapsedTime = 0;
-		this.lastBonusSpawn = this.elapsedTime;
 		if (this.training && this.botController.length !== 0) {
 			if (this.gamesNb % 50 === 0)
 				this.botController[0].save(this.gamesNb);

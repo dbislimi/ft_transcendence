@@ -48,11 +48,11 @@ export default class MyNumpy {
 	}
 }
 
-const arr: matrice = MyNumpy.zeros(4, 6);
-arr[2][5] = 1;
-arr[1][3] = 10;
+//const arr: matrice = MyNumpy.zeros(4, 6);
+//arr[2][5] = 1;
+//arr[1][3] = 10;
 
-console.log(arr);
-console.log(MyNumpy.shape(arr));
-console.log(MyNumpy.argmax(arr));
-console.log(MyNumpy.max(arr));
+//console.log(arr);
+//console.log(MyNumpy.shape(arr));
+//console.log(MyNumpy.argmax(arr));
+//console.log(MyNumpy.max(arr));
