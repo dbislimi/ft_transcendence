@@ -5,6 +5,8 @@ import { Application, Graphics, Sprite, Container, Texture } from "pixi.js";
 
 const colors = [0xf23041, 0xf241e6, 0x8c2a86, 0x162059, 0x41f2f2];
 const STAR_DENSITY_PER_MEGAPIXEL = 2000;
+const PARALLAX_FACTOR = 0.09;
+const PARALLAX_SMOOTHING = 0.023;
 
 class Star {
 	x: number;
@@ -41,8 +43,9 @@ class Star {
 	}
 
 	getScreenCoords(z: number) {
-		const offsetX = (Star.maxDepth / 2) * (this.x / z) + this.width / 2;
-		const offsetY = (Star.maxDepth / 2) * (this.y / z) + this.height / 2;
+		const focal = Star.maxDepth / 2;
+		const offsetX = focal * (this.x / z) + this.width / 2;
+		const offsetY = focal * (this.y / z) + this.height / 2;
 		return { x: offsetX, y: offsetY };
 	}
 
@@ -73,6 +76,9 @@ export default function SpaceBackground() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const appRef = useRef<Application | null>(null);
 	const starsRef = useRef<Star[]>([]);
+	// Track mouse and smoothed center offset for parallax
+	const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+	const centerOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 	const location = useLocation();
 	const { getBackgroundFor, getGlobalBackgroundKey } = useBackground();
 
@@ -94,6 +100,7 @@ export default function SpaceBackground() {
 		let loop: (() => void) | null = null;
 		let onResize: (() => void) | null = null;
 		let handleVisibility: (() => void) | null = null;
+		let onPointerMove: ((ev: PointerEvent) => void) | null = null;
 		const app = new Application();
 
 		const init = async () => {
@@ -150,7 +157,6 @@ export default function SpaceBackground() {
 				for (const child of removed) child.destroy();
 			};
 
-			
 			const init_stars = () => {
 				const w = app.renderer.width;
 				const h = app.renderer.height;
@@ -170,11 +176,24 @@ export default function SpaceBackground() {
 			};
 
 			init_stars();
+			pointerRef.current.x = app.renderer.width / 2;
+			pointerRef.current.y = app.renderer.height / 2;
 
 			loop = () => {
 				const stars = starsRef.current;
 				const w = app.renderer.width;
 				const h = app.renderer.height;
+
+				const cx = w / 2;
+				const cy = h / 2;
+				const dx = pointerRef.current.x - cx;
+				const dy = pointerRef.current.y - cy;
+				const targetX = -dx * PARALLAX_FACTOR;
+				const targetY = -dy * PARALLAX_FACTOR;
+				centerOffsetRef.current.x +=
+					(targetX - centerOffsetRef.current.x) * PARALLAX_SMOOTHING;
+				centerOffsetRef.current.y +=
+					(targetY - centerOffsetRef.current.y) * PARALLAX_SMOOTHING;
 
 				for (const s of stars) {
 					s.width = w;
@@ -182,10 +201,13 @@ export default function SpaceBackground() {
 					s.update();
 
 					const minRadius = 0.2;
-					const maxRadius = 2;
+					const maxRadius = 2.2;
 					const normZ = (Star.maxDepth - s.z) / Star.maxDepth;
 					const radius = minRadius + normZ * (maxRadius - minRadius);
 					const pos = s.getScreenCoords(s.z);
+
+					pos.x += centerOffsetRef.current.x;
+					pos.y += centerOffsetRef.current.y;
 
 					if (s.isOffscreen(pos, 500)) {
 						s.reset();
@@ -208,6 +230,10 @@ export default function SpaceBackground() {
 				app.renderer.resize(window.innerWidth, window.innerHeight);
 				init_stars();
 			};
+			onPointerMove = (ev: PointerEvent) => {
+				pointerRef.current.x = ev.clientX;
+				pointerRef.current.y = ev.clientY;
+			};
 			handleVisibility = () => {
 				if (document.hidden) app.ticker.maxFPS = 10;
 				else app.ticker.maxFPS = 50;
@@ -215,6 +241,7 @@ export default function SpaceBackground() {
 			app.start();
 			document.addEventListener("visibilitychange", handleVisibility);
 			window.addEventListener("resize", onResize);
+			window.addEventListener("pointermove", onPointerMove);
 			app.ticker.maxFPS = 50;
 		};
 
@@ -229,6 +256,8 @@ export default function SpaceBackground() {
 					"visibilitychange",
 					handleVisibility
 				);
+			if (onPointerMove)
+				window.removeEventListener("pointermove", onPointerMove);
 			if (a) {
 				if (loop) a.ticker.remove(loop);
 				a.stop();
@@ -243,6 +272,8 @@ export default function SpaceBackground() {
 		<div
 			ref={containerRef}
 			className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black"
-		/>
+		>
+			<div className="absolute inset-0 bg-black/30 pointer-events-none z-10" />
+		</div>
 	);
 }
