@@ -22,7 +22,7 @@ export default class Game {
 	private signal: AbortSignal | undefined = undefined;
 	private winner: number | undefined = undefined;
 
-	private timestamp: number;
+	private timestamp: number = 0;
 
 	constructor({
 		p1,
@@ -51,11 +51,10 @@ export default class Game {
 		if (botDiff === null) return;
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
-			console.log("connectbot ", botDiff);
 			this.board.Training = true;
-			GAMESPEED = 100;
-			this.board.connectBot(1, "hard");
+			GAMESPEED = 50;
 			this.board.connectBot(0, botDiff);
+			this.board.connectBot(1, "medium");
 		}
 	}
 
@@ -157,7 +156,7 @@ export default class Game {
 	private gameLoop(): void {
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
-		const MAX_DELTA = 0.1;
+		const MAX_DELTA = 0.08;
 		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 

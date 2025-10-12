@@ -6,8 +6,8 @@ RUN apk add --no-cache sqlite sqlite-dev python3 make g++
 
 COPY ./app/package*.json ./
 RUN npm install
-RUN npm rebuild sqlite3
 
 COPY ./app .
+RUN npm rebuild sqlite3
 
 CMD ["npm", "run", "dev"]

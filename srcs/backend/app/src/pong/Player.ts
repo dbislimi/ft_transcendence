@@ -1,7 +1,7 @@
 import Board from "./Board.ts";
 import Bonus from "./Bonus.ts";
 
-export type difficulty = "easy" | "medium" | "hard";
+export type difficulty = "easy" | "medium" | "hard" | "impossible";
 
 export default class Player {
 	private static playerWidth: number;
@@ -15,6 +15,7 @@ export default class Player {
 	bot: difficulty | undefined = undefined;
 	readonly id: 0 | 1;
 	ActiveBonus: Bonus[] = [];
+	bonusCollectedTotal: number = 0;
 
 	constructor(field: Board, id: 0 | 1) {
 		this.boardHeight = field.H;
@@ -37,9 +38,9 @@ export default class Player {
 		return { size: this.size, y: this.y };
 	}
 	reset() {
-		this.bot = undefined;
+		//this.bot = undefined;
 		this.ActiveBonus = this.ActiveBonus.filter((bonus) => {
-			bonus.remove(this);
+			//bonus.remove(this);
 			return false;
 		});
 		this.y = this.boardHeight / 2 - this.size / 2;

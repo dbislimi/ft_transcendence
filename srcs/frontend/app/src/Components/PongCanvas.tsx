@@ -96,6 +96,7 @@ function PongCanvas({ gameRef, scale }: Props) {
 			frameIdRef.current = requestAnimationFrame(loop);
 		};
 		frameIdRef.current = requestAnimationFrame(loop);
+
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [gameRef, scale]);
 	return (

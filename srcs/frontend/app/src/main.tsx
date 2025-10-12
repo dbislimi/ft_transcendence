@@ -7,6 +7,7 @@ import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
+import { BackgroundProvider } from "./contexts/BackgroundContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 
 const router = createBrowserRouter([
@@ -30,9 +31,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SettingsProvider>
       <GlobalBackgroundProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <BackgroundProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </BackgroundProvider>
       </GlobalBackgroundProvider>
     </SettingsProvider>
   </StrictMode>
