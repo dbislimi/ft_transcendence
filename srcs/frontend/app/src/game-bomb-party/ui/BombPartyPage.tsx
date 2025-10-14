@@ -22,7 +22,6 @@ import PlayerProfileModal from '../../Components/PlayerProfileModal';
 import BackgroundSurface from '../../Components/BackgroundSurface';
 import SpaceBackground from '../../Components/SpaceBackground';
 
-// Flag pour activer/desactiver les suggestions des mots
 const SUGGESTIONS_ENABLED = true;
 
 export default function BombPartyPage() {
@@ -57,7 +56,6 @@ export default function BombPartyPage() {
   // Timer pour le mode local (utilise l'engine)
   const localRemainingMs = gameMode === 'local' && gameState.phase === 'TURN_ACTIVE' ? Math.max(0, (gameState.turnEndsAt || 0) - performance.now()) : 0;
 
-  // Sauvegarder les statistiques quand la partie se termine
   useEffect(() => {
     if (gameState.phase === 'GAME_OVER' && gameStartTime && playerId) {
       const gameEndTime = Date.now();
@@ -130,7 +128,6 @@ export default function BombPartyPage() {
       setGamePhase('GAME');
       setCountdown(0);
     } else {
-      // Mode multijoueur : envoyer au serveur
       if (!roomId) {
         console.log('❌ Pas de roomId pour démarrer le jeu');
         return;

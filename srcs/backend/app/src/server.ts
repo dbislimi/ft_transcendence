@@ -4,7 +4,6 @@ import websocket from "@fastify/websocket";
 import gameController from "./plugins/gameController.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
-//  Gestion des chemins de fichiers avec ES modules
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -162,5 +161,4 @@ fastify.get("/me", async (request, reply) => {
 	}
 });
 
-// Lancement du serveur
 fastify.listen({ port: 3000, host: "0.0.0.0" });
