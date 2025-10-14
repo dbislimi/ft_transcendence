@@ -4,7 +4,6 @@
  * Gère la persistance des parties et statistiques
  */
 
-// Types pour la base de données (évite les imports problématiques)
 interface Database {
   serialize(callback: () => void): void;
   run(sql: string, params?: any[], callback?: (this: any, err: any) => void): void;
@@ -37,7 +36,6 @@ export class BombPartyDatabase {
    */
   private initializeTables(): void {
     this.db.serialize(() => {
-      // Table des parties
       this.db.run(`
         CREATE TABLE IF NOT EXISTS bp_matches (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +71,6 @@ export class BombPartyDatabase {
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
     });
 
-    console.log('📊 [BombParty] Tables de base de données initialisées');
   }
 
   /**
@@ -91,7 +88,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur création match:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Match créé:', { matchId: this.lastID, roomId });
           resolve({ success: true, data: this.lastID });
         }
       });
@@ -114,7 +110,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur démarrage match:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Match démarré:', matchId);
           resolve({ success: true });
         }
       });
@@ -147,7 +142,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur fin match:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Match terminé:', { matchId, winnerId, rounds: totalRounds });
           resolve({ success: true });
         }
       });
@@ -173,12 +167,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur ajout participant:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Participant ajouté:', { 
-            participantId: this.lastID, 
-            matchId, 
-            playerId, 
-            playerName 
-          });
           resolve({ success: true, data: this.lastID });
         }
       });
@@ -223,7 +211,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur update participant:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Stats participant mises à jour:', { matchId, playerId });
           resolve({ success: true });
         }
       });
@@ -331,7 +318,6 @@ export class BombPartyDatabase {
     participants: any[];
   }>> {
     return new Promise((resolve) => {
-      // D'abord récupérer les détails de la partie
       const matchQuery = `SELECT * FROM bp_matches WHERE id = ?`;
       
       this.db.get(matchQuery, [matchId], (err, match) => {
@@ -345,7 +331,6 @@ export class BombPartyDatabase {
           return;
         }
 
-        // Ensuite récupérer les participants
         const participantsQuery = `SELECT * FROM bp_participants WHERE match_id = ?`;
         
         this.db.all(participantsQuery, [matchId], (err, participants) => {
@@ -380,7 +365,6 @@ export class BombPartyDatabase {
           console.error('❌ [BombParty] Erreur nettoyage:', err);
           resolve({ success: false, error: err.message });
         } else {
-          console.log('✅ [BombParty] Nettoyage effectué:', this.changes, 'parties supprimées');
           resolve({ success: true, data: this.changes });
         }
       });

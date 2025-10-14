@@ -27,7 +27,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				status = false;
 				local = false;
 			} else if (data.event === "start" && status === false) {
-				// console.log(data.body.action);
 				switch (data.body.action) {
 					case "list_tournaments":
 						// one-shot list response

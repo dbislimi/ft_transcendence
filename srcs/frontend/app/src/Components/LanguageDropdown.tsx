@@ -30,7 +30,6 @@ export default function LanguageDropdown() {
 
   const currentLanguage = languageOptions.find(lang => lang.key === settings.display.language) || languageOptions[0];
 
-  // Fermer le dropdown si on clique à l'extérieur
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

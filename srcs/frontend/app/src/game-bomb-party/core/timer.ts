@@ -27,7 +27,6 @@ export class TurnTimer {
     this.isActive = false;
   }
 
-  // Méthode publique pour vérifier si le timer est actif
   isTimerActive(): boolean {
     return this.isActive;
   }
@@ -48,13 +47,10 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
       return;
     }
 
-    // Mise à jour initiale
     updateTimer();
 
-    // Mise à jour toutes les 200ms (réduit de moitié la fréquence pour améliorer les performances)
     const interval = setInterval(updateTimer, 200);
 
-    // Gestion de la visibilité de l'onglet
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         updateTimer();

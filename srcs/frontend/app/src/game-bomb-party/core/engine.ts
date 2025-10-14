@@ -85,7 +85,6 @@ export class BombPartyEngine {
       console.log('⚠️ Joueur actuel éliminé, passage au suivant');
       this.nextPlayer();
       if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
-        // Tous les joueurs sont éliminés
         this.state.phase = 'GAME_OVER';
         return;
       }
@@ -217,7 +216,6 @@ export class BombPartyEngine {
     }
   }
 
-  // Getters délégués à la classe BombPartyEngineGetters
   getState(): GameState {
     this.updateGetters();
     return this.getters.getState();

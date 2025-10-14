@@ -7,7 +7,6 @@ export function useGameWebsocket(
 	const wsRef = useRef<WebSocket | null>(null);
 	const onMessageRef = useRef(onMessage);
 
-	// Mettre à jour la référence du callback sans recréer la connexion
 	useEffect(() => {
 		onMessageRef.current = onMessage;
 	}, [onMessage]);
@@ -21,6 +20,6 @@ export function useGameWebsocket(
 		return () => {
 			ws.close();
 		};
-	}, [api]); // Seulement api comme dépendance
+	}, [api]);
 	return wsRef;
 }

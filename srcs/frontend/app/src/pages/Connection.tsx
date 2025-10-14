@@ -41,7 +41,6 @@ export default function Connection() {
       });
 
       if (response.ok) {
-        // Simuler une connexion réussie avec des données utilisateur
         const userData = {
           id: "1",
           name: email.split('@')[0], // Utiliser la partie avant @ comme nom
@@ -54,7 +53,6 @@ export default function Connection() {
         alert("Identifiants invalides");
       }
     } catch (error) {
-      // En cas d'erreur réseau, simuler une connexion pour la démo
       const userData = {
         id: "1",
         name: email.split('@')[0],

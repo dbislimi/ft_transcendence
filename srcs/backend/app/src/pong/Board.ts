@@ -180,10 +180,9 @@ export default class Board {
 		nextY = Math.max(radius, Math.min(nextY, this.height - radius));
 		this.ball.x = nextX;
 		this.ball.y = nextY;
-		this.ball.clampSpeed(); // Limite la vitesse à chaque update
+		this.ball.clampSpeed();
 
 		// Correction de la logique de score :
-		// Si la balle sort complètement du terrain à gauche ou à droite, on attribue le point
 		if (nextX - radius <= 0) {
 			this.addScore(1);
 		} else if (nextX + radius >= this.width) {
@@ -274,8 +273,6 @@ export default class Board {
 			console.log("game running");
 			this.elapsedTime -= 1;
 		}
-		// console.log(`elapsed time: ${this.elapsedTime}`);
-		//console.log(`ball dy: ${this.ball.dy}`);
 		this.updateBonus(dt);
 		this.updateBot(dt);
 		this.updatePlayersPosition(dt);

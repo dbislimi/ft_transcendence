@@ -17,7 +17,6 @@ function normalizeText(text: string): string {
     .toLowerCase();
 }
 
-// Lexique anglais construit depuis les données de trigrammes
 const englishLexicon: Set<string> = new Set(
   Object.values(trigramMap)
     .flat()
@@ -25,10 +24,6 @@ const englishLexicon: Set<string> = new Set(
     .map(w => normalizeText(w))
 );
 
-console.log('📚 [BombParty] Lexique anglais chargé:', {
-  words: englishLexicon.size,
-  trigrams: Object.keys(trigramMap).length
-});
 
 /**
  * Valide un mot avec le dictionnaire intégré
@@ -37,7 +32,6 @@ export function validateWithDictionary(word: string, trigram: string, usedWords:
   const normalizedWord = normalizeText(word);
   const normalizedTrigram = normalizeText(trigram);
 
-  // Vérifications de base
   if (normalizedWord.length < 3) {
     return { ok: false, reason: 'too_short' };
   }
@@ -46,19 +40,16 @@ export function validateWithDictionary(word: string, trigram: string, usedWords:
     return { ok: false, reason: 'no_trigram' };
   }
 
-  // Vérifier les doublons
   const normalizedUsedWords = usedWords.map(u => normalizeText(u));
   if (normalizedUsedWords.includes(normalizedWord)) {
     return { ok: false, reason: 'duplicate' };
   }
 
-  // Vérifier les caractères valides (lettres anglaises + tiret)
   const validCharsRegex = /^[a-z\-]+$/;
   if (!validCharsRegex.test(normalizedWord)) {
     return { ok: false, reason: 'invalid_chars' };
   }
 
-  // Vérifier dans le dictionnaire
   if (!englishLexicon.has(normalizedWord)) {
     return { ok: false };
   }
@@ -114,17 +105,12 @@ export function getWordSuggestions(trigram: string, maxSuggestions: number = 5):
  * Debug du dictionnaire
  */
 export function debugDictionary(): void {
-  console.log('🔍 [BombParty] === DICTIONARY DEBUG ===');
-  console.log('📚 Lexicon size:', englishLexicon.size);
-  console.log('🔤 Trigram keys:', Object.keys(trigramMap).slice(0, 10));
   
   const testTrigrams = ['the', 'ing', 'ion', 'est', 'tri'];
   testTrigrams.forEach(trigram => {
     const suggestions = getWordSuggestions(trigram, 3);
-    console.log(`🔤 Suggestions for "${trigram}":`, suggestions);
   });
   
-  console.log('🔍 === END DEBUG ===');
 }
 
 /**

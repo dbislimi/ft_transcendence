@@ -74,7 +74,6 @@ function getFileType(filename: string): 'image' | 'svg' {
   return filename.endsWith('.svg') ? 'svg' : 'image';
 }
 
-// Construit le catalog a partir des fichiers découverts
 function buildCatalog(): BackgroundItem[] {
   const items: BackgroundItem[] = [];
   items.push({
@@ -122,7 +121,6 @@ function buildCatalog(): BackgroundItem[] {
   return items;
 }
 
-// Catalog complet des arrière-plans
 
 export const backgroundCatalog: BackgroundItem[] = buildCatalog();
 
@@ -151,7 +149,6 @@ export function searchBackgrounds(query: string): BackgroundItem[] {
   );
 }
 
-//    Log de debug
 export function logCatalog(): void {
   console.log('🖼️ [Backgrounds] Catalog loaded:', {
     total: backgroundCatalog.length,

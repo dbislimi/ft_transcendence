@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { BombPartyEngine } from '../core/engine';
 import { TurnTimer, useTurnTimer } from '../core/timer';
 import type { GameConfig, BonusKey } from '../core/types';
 import { debugDictionary } from '../data/validator';
 import { BombPartyClient } from '../../services/ws/bombPartyClient';
+import { bombPartyStatsService } from '../../services/bombPartyStatsService';
+import { useAuth } from '../../contexts/AuthContext';
 import Menu from './Menu';
 import PlayerCircle from './PlayerCircle';
 import BombTimer from './BombTimer';
@@ -24,11 +27,12 @@ const SUGGESTIONS_ENABLED = true;
 
 export default function BombPartyPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [gamePhase, setGamePhase] = useState<'RULES' | 'LOBBY' | 'PLAYERS' | 'GAME' | 'GAME_OVER'>('RULES');
   const [gameMode, setGameMode] = useState<'local' | 'multiplayer'>('local');
   const [engine] = useState(() => new BombPartyEngine());
   const [timer] = useState(() => new TurnTimer());
-  const [client] = useState(() => new BombPartyClient());
+  const [client] = useState(() => new BombPartyClient({ mock: false }));
   const [countdown, setCountdown] = useState(3);
   const [gameState, setGameState] = useState(engine.getState());
   const [wordJustSubmitted, setWordJustSubmitted] = useState(false);
@@ -44,6 +48,7 @@ export default function BombPartyPage() {
   const [isHost, setIsHost] = useState(false);
   const [lobbyMaxPlayers, setLobbyMaxPlayers] = useState(4);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
+  const [gameStartTime, setGameStartTime] = useState<number | null>(null);
 
   // Timer pour le mode multijoueur
   const isMultiplayerTimerActive = gameState.phase === 'TURN_ACTIVE' && gameMode === 'multiplayer';
@@ -51,22 +56,36 @@ export default function BombPartyPage() {
   
   // Timer pour le mode local (utilise l'engine)
   const localRemainingMs = gameMode === 'local' && gameState.phase === 'TURN_ACTIVE' ? Math.max(0, (gameState.turnEndsAt || 0) - performance.now()) : 0;
+
+  // Sauvegarder les statistiques quand la partie se termine
+  useEffect(() => {
+    if (gameState.phase === 'GAME_OVER' && gameStartTime && playerId) {
+      const gameEndTime = Date.now();
+      const gameData = {
+        players: gameState.players,
+        history: gameState.history,
+        usedWords: gameState.usedWords,
+        startTime: gameStartTime,
+        endTime: gameEndTime,
+        winnerId: (gameState as any).winner?.id
+      };
+
+      const stats = bombPartyStatsService.calculateGameStats(gameData, playerId, user?.id || '');
+      
+      bombPartyStatsService.saveGameStats(stats).catch(error => {
+        console.error('Erreur sauvegarde statistiques:', error);
+      });
+    }
+  }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords]);
   const remainingMs = gameMode === 'local' ? localRemainingMs : multiplayerRemainingMs;
   
-  // Debug timer (désactivé en production pour améliorer les performances)
-  // useEffect(() => {
-  //   if (gameMode === 'multiplayer' && gameState.phase === 'TURN_ACTIVE') {
-  //     console.log('🕐 Timer multijoueur - remainingMs:', remainingMs, 'isTimerActive:', timer.isTimerActive());
-  //   }
-  // }, [gameMode, gameState.phase, remainingMs, timer]);
 
-  // Force re-render pour le timer local (réduit la fréquence pour améliorer les performances)
   const [, forceUpdate] = useState({});
   useEffect(() => {
     if (gameMode === 'local' && gameState.phase === 'TURN_ACTIVE') {
       const interval = setInterval(() => {
         forceUpdate({});
-      }, 200); // Réduit de 100ms à 200ms
+      }, 200);
       return () => clearInterval(interval);
     }
   }, [gameMode, gameState.phase]);
@@ -103,8 +122,9 @@ export default function BombPartyPage() {
   const startGame = useCallback((config: GameConfig) => {
     console.log('🎮 startGame appelé avec config:', config);
     
+    setGameStartTime(Date.now());
+    
     if (gameMode === 'local') {
-      // Mode local : démarrer directement avec l'engine
       engine.startGame(config);
       setGameState(engine.getState());
       setGamePhase('GAME');
@@ -125,17 +145,29 @@ export default function BombPartyPage() {
     startGame({ livesPerPlayer: 3, turnDurationMs: 15000, playersCount: lobbyPlayers.length });
   }, [startGame, lobbyPlayers.length]);
 
-  // Gestionnaires d'événements WebSocket
   useEffect(() => {
+    const handleConnected = () => {
+      console.log('🔌 [BombParty] WebSocket connecté, démarrage authentification...');
+      if (user?.name) {
+        console.log('🔑 [BombParty] Authentification avec le nom:', user.name);
+        client.authenticate(user.name);
+      } else {
+        const guestName = `Guest_${Math.floor(Math.random() * 1000)}`;
+        console.log('👤 [BombParty] Utilisateur non connecté, utilisation du nom:', guestName);
+        client.authenticate(guestName);
+      }
+    };
+
     const handleAuthSuccess = (payload: any) => {
       console.log('✅ [BombParty] Authentification réussie:', payload);
+      clearTimeout(authTimeout);
       setPlayerId(payload.playerId);
       setIsAuthenticating(false);
     };
 
     const handleConnectionError = () => {
       console.error('❌ [BombParty] Erreur de connexion WebSocket');
-      setIsAuthenticating(false); // Permettre de créer un lobby même en cas d'erreur
+      setIsAuthenticating(false);
     };
 
     const handleLobbyCreated = (payload: any) => {
@@ -174,13 +206,11 @@ export default function BombPartyPage() {
       
       setGameState(payload.gameState);
       
-      // Ne pas forcer le retour au jeu si la partie est terminée
       if (payload.gameState.phase !== 'GAME_OVER') {
-        setGamePhase('GAME'); // Passer à l'écran de jeu seulement si la partie continue
+        setGamePhase('GAME');
       }
-      setCountdown(0); // Arrêter le décompte de démarrage
+      setCountdown(0);
       
-      // Réinitialiser les flags pour permettre la prochaine soumission
       setWordJustSubmitted(false);
       setTurnInProgress(false);
       
@@ -196,7 +226,6 @@ export default function BombPartyPage() {
     const handleGameEnd = (payload: any) => {
       console.log('🏁 [BombParty] Fin de partie reçue:', payload);
       
-      // Mettre à jour l'état du jeu pour marquer la fin
       setGameState(prevState => ({
         ...prevState,
         phase: 'GAME_OVER',
@@ -204,7 +233,7 @@ export default function BombPartyPage() {
         finalStats: payload.finalStats
       }));
       
-      setGamePhase('GAME_OVER'); // Rester sur l'écran de victoire
+      setGamePhase('GAME_OVER');
     };
 
     // Timeout pour l'authentification (5 secondes)
@@ -213,18 +242,15 @@ export default function BombPartyPage() {
       setIsAuthenticating(false);
     }, 5000);
 
-    // S'abonner aux événements
-    const unsubscribeAuth = client.on('auth:success', handleAuthSuccess);
-    const unsubscribeCreated = client.on('lobby:created', handleLobbyCreated);
-    const unsubscribeJoined = client.on('lobby:joined', handleLobbyJoined);
-    const unsubscribePlayerJoined = client.on('lobby:player_joined', handlePlayerJoined);
-    const unsubscribePlayerLeft = client.on('lobby:player_left', handlePlayerLeft);
-    const unsubscribeGameState = client.on('game:state', handleGameState);
-    const unsubscribeGameEnd = client.on('game:end', handleGameEnd);
-    const unsubscribeConnected = client.on('connected', () => {
-      clearTimeout(authTimeout);
-      client.authenticate('Player' + Math.floor(Math.random() * 1000));
-    });
+    const unsubscribeAuth = client.on('bp:auth:success', handleAuthSuccess);
+    const unsubscribeCreated = client.on('bp:lobby:created', handleLobbyCreated);
+    const unsubscribeJoined = client.on('bp:lobby:joined', handleLobbyJoined);
+    const unsubscribePlayerJoined = client.on('bp:lobby:player_joined', handlePlayerJoined);
+    const unsubscribePlayerLeft = client.on('bp:lobby:player_left', handlePlayerLeft);
+    const unsubscribeGameState = client.on('bp:game:state', handleGameState);
+    const unsubscribeGameEnd = client.on('bp:game:end', handleGameEnd);
+    console.log('🎧 [BombParty] Enregistrement listener pour événement connected');
+    const unsubscribeConnected = client.on('connected', handleConnected);
     const unsubscribeError = client.on('error', handleConnectionError);
 
     return () => {
@@ -244,6 +270,10 @@ export default function BombPartyPage() {
   const handleWordSubmit = useCallback((word: string) => {
     setWordJustSubmitted(true);
     setTurnInProgress(true);
+    
+    // Enregistrer la tentative de trigramme pour les statistiques
+    const responseTime = turnStartTime > 0 ? Date.now() - turnStartTime : 0;
+    bombPartyStatsService.recordTrigramAttempt(gameState.currentTrigram, true, responseTime);
 
     if (gameMode === 'local') {
       // Mode local : utiliser l'engine local
@@ -260,7 +290,6 @@ export default function BombPartyPage() {
         console.log('🎮 Après mot valide - Phase:', newState.phase, 'isGameOver:', engine.isGameOver());
         
         if (!engine.isGameOver()) {
-          // Redémarrer le timer pour le prochain tour
           setTimeout(() => {
             setTurnStartTime(performance.now());
             setGameState(engine.getState());
@@ -268,12 +297,10 @@ export default function BombPartyPage() {
             setWordJustSubmitted(false);
           }, 500);
         }
-        // Sinon, laisser l'écran de victoire s'afficher (gameState.phase === 'GAME_OVER')
       } else {
         // Mot invalide
         console.log('❌ Mot invalide, vérifier double chance:', result.consumedDoubleChance);
         if (result.consumedDoubleChance) {
-          // Double chance utilisée, le joueur peut réessayer
           setTurnInProgress(false);
           setWordJustSubmitted(false);
         } else {
@@ -292,7 +319,6 @@ export default function BombPartyPage() {
               setWordJustSubmitted(false);
             }, 500);
           }
-          // Sinon, laisser l'écran de victoire s'afficher (gameState.phase === 'GAME_OVER')
         }
       }
     } else {
@@ -344,16 +370,14 @@ export default function BombPartyPage() {
   const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1) => {
     setGameMode(mode);
     if (mode === 'local') {
-      // Mode local : initialiser et démarrer le jeu avec le nombre de joueurs choisi
       engine.reset();
       const config = { livesPerPlayer: 3, turnDurationMs: 15000, playersCount };
       engine.startGame(config);
-      engine.startTurn(); // Démarrer le premier tour
+      engine.startTurn();
       setGameState(engine.getState());
       setGamePhase('GAME');
       setCountdown(0);
       
-      // En mode local, l'engine gère son propre timer
       setTurnStartTime(performance.now());
     } else {
       // Mode multijoueur : aller au lobby
@@ -361,7 +385,6 @@ export default function BombPartyPage() {
     }
   }, [engine, timer]);
 
-  // Vérifier si c'est le tour du joueur actuel
   const isCurrentPlayerTurn = useCallback(() => {
     if (gameMode === 'local') {
       // Mode local : toujours actif si le jeu est en cours
@@ -404,8 +427,6 @@ export default function BombPartyPage() {
         console.log('🎮 Après expiration timer - Phase:', newState.phase, 'isGameOver:', engine.isGameOver());
 
         if (!engine.isGameOver()) {
-          // L'engine.resolveTurn() appelle déjà startTurn(), donc on n'a pas besoin de l'appeler à nouveau
-          // En mode local, l'engine gère son propre timer
           setTimeout(() => {
             setTurnStartTime(performance.now());
             setGameState(engine.getState());
@@ -413,10 +434,7 @@ export default function BombPartyPage() {
             setWordJustSubmitted(false);
           }, 500);
         }
-        // Sinon, l'écran de victoire s'affichera automatiquement
       } else {
-        // Mode multijoueur : le serveur gère la logique, on ne fait rien ici
-        // Le serveur enverra automatiquement le nouvel état via handleGameState
         console.log('⏰ Timer expiré en mode multijoueur, attente de la mise à jour du serveur');
       }
     }
@@ -442,9 +460,8 @@ export default function BombPartyPage() {
     );
   }
 
-  // Lorsque 12 joueurs sont présents, on augmente l’espacement via PlayerCircle (voir prop radiusBoost plus bas).
   const playersCountForLayout = gameState.players.length;
-  const radiusBoost = Math.max(0, (playersCountForLayout - 8) * 15); // +60px à 12 joueurs
+  const radiusBoost = Math.max(0, (playersCountForLayout - 8) * 15);
 
   return (
     <BackgroundSurface game="bombparty">
@@ -455,7 +472,6 @@ export default function BombPartyPage() {
 
       {/* Écran de fin de partie */}
       {gameState.phase === 'GAME_OVER' && (() => {
-        // Utiliser le winner du backend ou calculer à partir des joueurs vivants
         const winner = (gameState as any).winner || gameState.players.find(p => !p.isEliminated);
         console.log('🏆 [Victory Screen] gameState.phase:', gameState.phase, 'winner:', winner, 'gameState.winner:', (gameState as any).winner);
         
@@ -543,13 +559,21 @@ export default function BombPartyPage() {
           />
         </DraggablePanel>
 
-        {/* Bouton retour au menu */}
-        <button
-          onClick={handleBackToMenu}
-          className="absolute top-6 left-6 px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-all duration-200"
-        >
-          {t('bombParty.backToMenu')}
-        </button>
+        {/* Boutons de navigation */}
+        <div className="absolute top-6 left-6 flex gap-2">
+          <button
+            onClick={handleBackToMenu}
+            className="px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-all duration-200"
+          >
+            {t('bombParty.backToMenu')}
+          </button>
+          <Link
+            to="/bomb-party/stats"
+            className="px-4 py-2 bg-cyan-800/80 backdrop-blur-md border border-cyan-600 rounded-lg text-cyan-300 hover:text-white hover:border-cyan-500 transition-all duration-200"
+          >
+            📊 Stats
+          </Link>
+        </div>
 
         {/* Chat - seulement en mode multijoueur */}
         {gameMode === 'multiplayer' && <Chat />}

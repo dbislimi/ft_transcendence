@@ -70,7 +70,6 @@ fastify.register(async function (fastify) {
   });
 });
 
-// Gestionnaires d'événements
 function handleAuth(connection: any, payload: any) {
   const playerId = `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   console.log('✅ [BombParty] Authentification:', playerId);
@@ -116,7 +115,6 @@ function handleLobbyJoin(connection: any, payload: any) {
 function handleLobbyStart(connection: any, payload: any) {
   console.log('🎮 [BombParty] Démarrage du jeu:', payload.roomId);
   
-  // Simuler un état de jeu
   const gameState = {
     phase: 'TURN_ACTIVE',
     players: [
@@ -203,7 +201,6 @@ function sendError(connection: any, message: string, code: string) {
   });
 }
 
-// Démarrage du serveur
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: '0.0.0.0' });

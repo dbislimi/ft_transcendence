@@ -37,34 +37,45 @@ export class BombPartyClient {
   }
 
   private connect() {
+    console.log('🔌 [BombPartyClient] Tentative de connexion WebSocket...');
     this.ws = new WebSocket('ws://localhost:3000/bombparty/ws');
+    
     this.ws.onopen = () => {
+      console.log('✅ [BombPartyClient] Connexion WebSocket établie');
+      console.log('🔌 [BombPartyClient] Émission événement connected');
       this._emit('connected', {});
     };
+    
     this.ws.onmessage = (event) => {
       try {
+        console.log('📨 [BombPartyClient] Message reçu:', event.data);
         const data = JSON.parse(event.data);
+        console.log('📨 [BombPartyClient] Message parsé:', data);
         this._emit(data.event, data.payload);
       } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
+        console.error('❌ [BombPartyClient] Erreur parsing message:', err);
       }
     };
-    this.ws.onclose = () => {
+    
+    this.ws.onclose = (event) => {
+      console.log('🔌 [BombPartyClient] Connexion fermée:', event.code, event.reason);
       this._emit('disconnected', {});
     };
+    
     this.ws.onerror = (error) => {
+      console.error('❌ [BombPartyClient] Erreur WebSocket:', error);
       this._emit('error', { error: 'WebSocket error' });
     };
   }
 
   on(event: 'bonus:applied', handler: EventHandler): () => void;
-  on(event: 'auth:success', handler: EventHandler): () => void;
-  on(event: 'lobby:created', handler: EventHandler): () => void;
-  on(event: 'lobby:joined', handler: EventHandler): () => void;
-  on(event: 'lobby:player_joined', handler: EventHandler): () => void;
-  on(event: 'lobby:player_left', handler: EventHandler): () => void;
-  on(event: 'game:state', handler: EventHandler): () => void;
-  on(event: 'game:end', handler: EventHandler): () => void;
+  on(event: 'bp:auth:success', handler: EventHandler): () => void;
+  on(event: 'bp:lobby:created', handler: EventHandler): () => void;
+  on(event: 'bp:lobby:joined', handler: EventHandler): () => void;
+  on(event: 'bp:lobby:player_joined', handler: EventHandler): () => void;
+  on(event: 'bp:lobby:player_left', handler: EventHandler): () => void;
+  on(event: 'bp:game:state', handler: EventHandler): () => void;
+  on(event: 'bp:game:end', handler: EventHandler): () => void;
   on(event: 'connected', handler: EventHandler): () => void;
   on(event: 'error', handler: EventHandler): () => void;
   on(event: string, handler: EventHandler): () => void {
@@ -76,19 +87,19 @@ export class BombPartyClient {
     };
   }
 
-  emit(event: 'bonus:activate', payload: BonusActivatePayload): void;
-  emit(event: 'auth:request', payload: any): void;
-  emit(event: 'lobby:create', payload: any): void;
-  emit(event: 'lobby:join', payload: any): void;
-  emit(event: 'lobby:leave', payload: any): void;
-  emit(event: 'lobby:start', payload: any): void;
-  emit(event: 'game:submit_word', payload: any): void;
+  emit(event: 'bp:bonus:activate', payload: BonusActivatePayload): void;
+  emit(event: 'bp:auth', payload: any): void;
+  emit(event: 'bp:lobby:create', payload: any): void;
+  emit(event: 'bp:lobby:join', payload: any): void;
+  emit(event: 'bp:lobby:leave', payload: any): void;
+  emit(event: 'bp:lobby:start', payload: any): void;
+  emit(event: 'bp:game:input', payload: any): void;
   emit(event: string, payload: any): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({ event, payload }));
     } else if (this.mock) {
       // Simulate server acknowledgement/broadcast
-      if (event === 'bonus:activate') {
+      if (event === 'bp:bonus:activate') {
         setTimeout(() => {
           this._emit('bonus:applied', {
             roomId: payload.roomId,
@@ -101,45 +112,43 @@ export class BombPartyClient {
     }
   }
 
-  // Méthodes pour l'authentification
   authenticate(playerName: string): void {
-    this.emit('auth:request', { playerName });
+    this.emit('bp:auth', { playerName });
   }
 
-  // Méthodes pour le lobby
   createLobby(name: string, isPrivate: boolean, password?: string, maxPlayers: number = 4): void {
-    this.emit('lobby:create', { name, isPrivate, password, maxPlayers });
+    this.emit('bp:lobby:create', { name, isPrivate, password, maxPlayers });
   }
 
   joinLobby(roomId: string, password?: string): void {
-    this.emit('lobby:join', { roomId, password });
+    this.emit('bp:lobby:join', { roomId, password });
   }
 
   leaveLobby(roomId: string): void {
-    this.emit('lobby:leave', { roomId });
+    this.emit('bp:lobby:leave', { roomId });
   }
 
   startGame(roomId: string): void {
-    this.emit('lobby:start', { roomId });
+    this.emit('bp:lobby:start', { roomId });
   }
 
-  // Méthodes pour le jeu
   submitWord(roomId: string, word: string, msTaken: number): void {
-    this.emit('game:submit_word', { roomId, word, msTaken });
+    this.emit('bp:game:input', { roomId, word, msTaken });
   }
 
   activateBonus(roomId: string, bonusKey: BonusKey): void {
-    this.emit('bonus:activate', { roomId, playerId: 'current', bonusKey });
+    this.emit('bp:bonus:activate', { roomId, playerId: 'current', bonusKey });
   }
 
-  // Méthode générique pour envoyer des messages
   sendMessage(message: { event: string; payload: any }): void {
+    console.log('📤 [BombPartyClient] Envoi message:', message);
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
+    } else {
+      console.error('❌ [BombPartyClient] WebSocket non connecté, état:', this.ws?.readyState);
     }
   }
 
-  // Méthode pour supprimer un écouteur d'événement
   off(event: string, handler: EventHandler): void {
     const set = this.handlers.get(event);
     if (set) {
@@ -148,8 +157,13 @@ export class BombPartyClient {
   }
 
   private _emit(event: string, payload: any) {
+    console.log('🔊 [BombPartyClient] Émission événement:', event, payload);
     const set = this.handlers.get(event);
-    if (!set) return;
+    if (!set) {
+      console.log('⚠️ [BombPartyClient] Aucun handler pour l\'événement:', event);
+      return;
+    }
+    console.log('📢 [BombPartyClient] Handlers trouvés pour', event, ':', set.size);
     for (const handler of set) {
       try {
         handler(payload);

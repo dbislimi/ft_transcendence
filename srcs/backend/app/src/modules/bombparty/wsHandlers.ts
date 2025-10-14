@@ -11,7 +11,6 @@ import { BombPartyRoomManager } from './RoomManager.ts';
 import { 
   validateClientMessage, 
   validatePlayerName,
-  // ValidationResult importé depuis GameEngine 
 } from './validation.ts';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface WSSession {
   playerId?: string;
   playerName?: string;
+  roomId?: string;
   authenticated: boolean;
 }
 
@@ -36,7 +36,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       authenticated: false
     };
 
-    console.log('🔌 [BombParty] Nouvelle connexion WebSocket');
 
     /**
      * Envoie un message d'erreur au client
@@ -84,10 +83,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
 
       roomManager.registerPlayer(socket, session.playerId, session.playerName);
       
-      console.log('✅ [BombParty] Joueur authentifié:', {
-        id: session.playerId,
-        name: session.playerName
-      });
 
       return true;
     }
@@ -103,13 +98,10 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       return true;
     }
 
-    // Gestion des messages entrants
     socket.on('message', (data: Buffer) => {
       try {
         const rawMessage = JSON.parse(data.toString());
-        console.log('📨 [BombParty] Message reçu:', rawMessage);
 
-        // Gestion spéciale pour l'authentification
         if (rawMessage.event === 'bp:auth') {
           if (!rawMessage.payload?.playerName) {
             sendError('Nom de joueur requis', 'MISSING_PLAYER_NAME');
@@ -128,10 +120,8 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
           return;
         }
 
-        // Vérifier l'authentification pour les autres messages
         if (!requireAuth()) return;
 
-        // Valider le message
         const validation = validateClientMessage(rawMessage);
         if (!validation.success) {
           sendError(validation.error || 'Message invalide', 'VALIDATION_ERROR');
@@ -141,7 +131,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
         const message = validation.data!;
         const playerId = session.playerId!;
 
-        // Router les messages selon le type
         switch (message.event) {
           case 'bp:lobby:create':
             handleLobbyCreate(playerId, message.payload);
@@ -189,7 +178,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
      * Gère la création d'un lobby
      */
     function handleLobbyCreate(playerId: string, payload: any): void {
-      console.log('🎯 [Backend-wsHandlers] handleLobbyCreate reçu payload.maxPlayers:', payload.maxPlayers);
       
       const result = roomManager.createRoom(
         playerId,
@@ -200,7 +188,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       );
 
       if (result.success) {
-        console.log('🎯 [Backend-wsHandlers] Envoi bp:lobby:created avec maxPlayers:', result.maxPlayers);
+        session.roomId = result.roomId;
         sendMessage({
           event: 'bp:lobby:created',
           payload: {
@@ -221,7 +209,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       const result = roomManager.joinRoom(playerId, payload.roomId, payload.password);
 
       if (result.success) {
-        console.log('🎯 [Backend-wsHandlers] Envoi bp:lobby:joined avec maxPlayers:', result.maxPlayers);
+        session.roomId = payload.roomId;
         sendMessage({
           event: 'bp:lobby:joined',
           payload: {
@@ -302,7 +290,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       if (!result.success) {
         sendError(result.error || 'Erreur démarrage partie', 'START_FAILED');
       }
-      // Le succès est géré par le broadcasting automatique du RoomManager
     }
 
     /**
@@ -319,7 +306,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       if (!result.success) {
         sendError(result.error || 'Erreur entrée jeu', 'INPUT_FAILED');
       }
-      // Le succès est géré par le broadcasting automatique du RoomManager
     }
 
     /**
@@ -335,13 +321,9 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       if (!result.success) {
         sendError(result.error || 'Erreur activation bonus', 'BONUS_FAILED');
       }
-      // Le succès est géré par le broadcasting automatique du RoomManager
     }
 
-    // Gestion de la déconnexion
     socket.on('close', () => {
-      console.log('❌ [BombParty] Connexion fermée:', session.playerName || 'Anonyme');
-      // Le cleanup est géré automatiquement par le RoomManager
     });
 
     socket.on('error', (error) => {
@@ -356,9 +338,18 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
         version: '1.0.0'
       }
     });
+
+     socket.on('close', (code: number, reason: Buffer) => {
+       if (session.playerId && session.roomId) {
+         roomManager.leaveRoom(session.playerId, session.roomId);
+       }
+     });
+
+     socket.on('error', (error: Error) => {
+       console.error('❌ [BombParty] Erreur WebSocket:', error);
+     });
   });
 
-  console.log('🎮 [BombParty] Handlers WebSocket enregistrés sur /bombparty/ws');
 }
 
 /**

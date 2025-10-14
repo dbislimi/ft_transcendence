@@ -17,17 +17,25 @@ export default function Header() {
           {/* Section gauche - Liens */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
-              // Utilisateur connecté - Afficher le profil
-              <Link 
-                to="/profile" 
-                className="nav-btn-aesthetic"
-              >
-                <span className="label-aesthetic">
-                  👤 {t('nav.profile') || 'Profil'}
-                </span>
-              </Link>
+              <>
+                <Link 
+                  to="/profile" 
+                  className="nav-btn-aesthetic"
+                >
+                  <span className="label-aesthetic">
+                    👤 {t('nav.profile') || 'Profil'}
+                  </span>
+                </Link>
+                <Link 
+                  to="/bomb-party/stats" 
+                  className="nav-btn-aesthetic"
+                >
+                  <span className="label-aesthetic">
+                    📊 Statistiques
+                  </span>
+                </Link>
+              </>
             ) : (
-              // Utilisateur non connecté - Afficher l'inscription
               <Link 
                 to="/Registration" 
                 className="nav-btn-aesthetic inline-block"

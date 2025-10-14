@@ -138,7 +138,6 @@ export default class Game {
 			this.board.players[player].moveDown(false);
 	}
 	move(type: string, dir: string, player: 0 | 1 | WebSocket) {
-		// console.log(player);
 		if (typeof player === "object") {
 			if (this.clientsId.get(player) === undefined)
 				throw new Error("ClientsId undefined");

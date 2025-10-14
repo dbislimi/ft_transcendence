@@ -116,7 +116,6 @@ export default class Tournament {
 		if (!winner) return;
 		if (!parent) {
 			this.started = false;
-			// console.log("tournament winner");
 			winner.send(JSON.stringify({ event: "tournament_win" }));
 			this.onEnd();
 			return;

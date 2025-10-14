@@ -164,7 +164,6 @@ export default function Pong() {
 		id: string,
 		passwd: string
 	) => {
-		// console.log(type);
 		try {
 			if (gamemode === "Tournament") {
 				setParams({ mode: "online", gamemode: "tournament", id });

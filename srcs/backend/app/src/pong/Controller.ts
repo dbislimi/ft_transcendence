@@ -3,12 +3,6 @@ import Player from "./Player.ts";
 import np from "./MyNumpy/MyNumpy.ts";
 import * as fs from "fs";
 
-//export default interface BotController {
-//	update(player: Player, board: Board): void;
-//}
-//// alpha = learning_rate
-// gamma = discount_factor
-// epsilon = explo
 export default abstract class BotController {
 	protected training: boolean;
 	protected learning_rate: number;
@@ -118,7 +112,6 @@ export default abstract class BotController {
 	takeDecision(board: Board, player: Player) {
 		let reward = 0;
 		const timestamp = Date.now();
-		//console.log("time: ", timestamp - this.start);
 		const state = this.getState(board, player);
 		if (
 			this.training &&
@@ -126,12 +119,11 @@ export default abstract class BotController {
 			this.lastAction !== null
 		) {
 			reward = this.rewardsPolicy(board, player.id);
-			//console.log(`reward: ${reward}`);
 			this.updateQtable(this.lastState, this.lastAction, reward, state);
 		}
 		this.action = this.chooseAction(state);
 		if (this.type === "easy")
-			console.log(`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`); // Ajout du log
+			console.log(`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`);
 		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;
@@ -177,11 +169,8 @@ export class MediumBot extends BotController {
 		if ((id === 0 && board.ball.dx > 0) || (id === 1 && board.ball.dx < 0))
 			reward += Math.abs(board.normHitpoint);
 		board.normHitpoint = 0;
-		//const prevMyScore = this.scores[id];
 		const prevOppScore = this.scores[(id + 1) % 2];
-		//const myScore = board.scores[id];
 		const oppScore = board.scores[(id + 1) % 2];
-		//if (myScore > prevMyScore) reward += 1.5;
 		if (oppScore > prevOppScore) reward -= 1.0;
 		console.log(`reward: ${reward}`);
 		return reward;
@@ -200,7 +189,6 @@ export class MediumBot extends BotController {
 			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions)
-		//console.log(`y: ${board.ball.y}, PrediY: ${predictedY}`);
 		return `${ballZone}`;
 	}
 }

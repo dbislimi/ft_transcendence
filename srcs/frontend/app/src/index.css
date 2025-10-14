@@ -19,7 +19,7 @@
 }
 
 :root:not(.dark) {
-  /* Arierre-planc */
+  /* Arrière-plan */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #e2e8f0;

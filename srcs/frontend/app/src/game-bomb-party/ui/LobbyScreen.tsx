@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../../Components/SpaceBackground";
 import BackgroundSurface from "../../Components/BackgroundSurface";
-// BackgroundPicker removed
 
 interface LobbyMeta {
 	name: string;

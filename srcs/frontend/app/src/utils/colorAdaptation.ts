@@ -130,7 +130,6 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     card: '#1F2937'
   },
   
-  // Fond par défaut spécial
   'default-dark': {
     primary: '#3B82F6',
     secondary: '#1E40AF',
@@ -161,7 +160,6 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
  * Analyse un fond et détermine le schéma de couleurs approprié
  */
 export function analyzeBackground(backgroundId: string, backgroundUrl?: string): BackgroundAnalysis {
-  // Mapping des fonds vers leurs schémas recommandés
   const backgroundMappings: Record<string, string> = {
     // Fonds sombres
     'default': 'default-dark',
@@ -240,7 +238,6 @@ export function applyColorScheme(scheme: ColorScheme): void {
   root.style.setProperty('--color-background', scheme.background);
   root.style.setProperty('--color-card', scheme.card);
   
-  // Ajouter une classe pour identifier le schéma actuel
   document.body.className = document.body.className
     .split(' ')
     .filter(cls => !cls.startsWith('color-scheme-'))
@@ -270,11 +267,9 @@ export function generateAdaptiveColors(imageUrl: string): Promise<ColorScheme> {
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       
-      // Analyser les couleurs dominantes (simplifié)
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const colors = analyzeImageColors(imageData);
       
-      // Générer un schéma basé sur l'analyse
       const scheme = generateSchemeFromColors(colors);
       resolve(scheme);
     };
@@ -314,7 +309,6 @@ function generateSchemeFromColors(colors: { r: number; g: number; b: number; bri
   const avgBrightness = colors.reduce((sum, color) => sum + color.brightness, 0) / colors.length;
   const isDark = avgBrightness < 128;
   
-  // Couleur dominante basée sur la moyenne
   const avgR = colors.reduce((sum, color) => sum + color.r, 0) / colors.length;
   const avgG = colors.reduce((sum, color) => sum + color.g, 0) / colors.length;
   const avgB = colors.reduce((sum, color) => sum + color.b, 0) / colors.length;

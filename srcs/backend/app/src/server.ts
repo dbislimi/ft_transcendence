@@ -3,11 +3,11 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import gameController from "./plugins/gameController.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
+import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
 //  Gestion des chemins de fichiers avec ES modules
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Import des modules serveur et sécurité
 import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken"; // compatible avec ESM/TypeScript
 
@@ -23,23 +23,22 @@ fastify.register(websocket);
 fastify.register(gameController);
 fastify.register(bombPartyWSHandlers);
 
-const JWT_SECRET = "super_secret_key"; // À stocker dans un fichier .env pour plus de sécurité
+const JWT_SECRET = "super_secret_key";
 
-// Récupère le dossier courant (utile pour importer la DB)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// import de la base de données SQLite
 const db = (await import(path.join(__dirname, "..", "index.js"))).default;
 
-// Création de l'app Fastify
 
-// Autorise les requêtes depuis le frontend (CORS)
 await fastify.register(cors, {
 	origin: "http://localhost:5173", // ton app React
 });
 
-// Route de test
+console.log('📊 [Stats] Enregistrement des routes de statistiques...');
+await fastify.register(bombPartyStatsRoutes);
+console.log('✅ [Stats] Routes de statistiques enregistrées');
+
 fastify.get("/", async () => {
 	return { hello: "from docker" };
 });
@@ -77,7 +76,6 @@ fastify.post("/register", async (request, reply) => {
 	}
 });
 
-// Connexion utilisateur + génération du JWT
 fastify.post("/login", async (request, reply) => {
 	const { email, password } = request.body as {
 		email: string;
@@ -117,7 +115,6 @@ fastify.post("/login", async (request, reply) => {
 	);
 });
 
-// Route protégée de test
 fastify.get("/profile", async (request, reply) => {
 	try {
 		const authHeader = request.headers.authorization;
@@ -137,7 +134,6 @@ fastify.get("/profile", async (request, reply) => {
 	}
 });
 
-// Route pour récupérer les infos utilisateur
 fastify.get("/me", async (request, reply) => {
 	try {
 		const authHeader = request.headers.authorization;

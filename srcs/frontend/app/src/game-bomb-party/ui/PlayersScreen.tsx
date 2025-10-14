@@ -27,17 +27,10 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
   const canStart = players.length >= 2 && isHost;
   const shouldAutoStart = players.length >= 2 && !isCountingDown;
 
-  // Logs désactivés pour améliorer les performances
-  // console.log('🎮 PlayersScreen - players.length:', players.length, 'isHost:', isHost, 'isCountingDown:', isCountingDown);
-  // console.log('🎮 PlayersScreen - canStart:', canStart, 'shouldAutoStart:', shouldAutoStart);
 
-  // Démarrer automatiquement le décompte quand il y a assez de joueurs
   useEffect(() => {
-    // console.log('🎮 useEffect - players.length:', players.length, 'maxPlayers:', maxPlayers, 'hasStarted:', hasStartedRef.current);
     
-    // Si on n'a plus assez de joueurs, arrêter le décompte
     if (players.length < maxPlayers && hasStartedRef.current) {
-      // console.log('🎮 Arrêt du décompte - pas assez de joueurs');
       hasStartedRef.current = false;
       setIsCountingDown(false);
       setCountdown(0);
@@ -48,23 +41,19 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
       return;
     }
     
-    // Ne démarrer que si on a exactement le nombre maximum de joueurs configuré et qu'on n'a pas encore démarré
     if (players.length === maxPlayers && !hasStartedRef.current) {
-      // console.log('🎮 Démarrage du décompte automatique');
       hasStartedRef.current = true;
       setIsCountingDown(true);
       setCountdown(3);
       
       intervalRef.current = setInterval(() => {
         setCountdown(prev => {
-          // console.log('🎮 Décompte:', prev);
           if (prev <= 1) {
-            // console.log('🎮 Fin du décompte, appel de onStart()');
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
               intervalRef.current = null;
             }
-            setIsCountingDown(false); // Arrêter le décompte
+            setIsCountingDown(false);
             onStart();
             return 0;
           }
@@ -74,9 +63,7 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
     }
     
     return () => {
-      // Ne nettoyer l'intervalle que lors du démontage final du composant
       if (intervalRef.current && players.length < 2) {
-        // console.log('🎮 Nettoyage de l\'intervalle (composant démonté)');
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
@@ -86,14 +73,13 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
   const handleStart = () => {
     if (!canStart) return;
     
-    // Démarrer le compte à rebours
     setIsCountingDown(true);
     setCountdown(3);
     const interval = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          setIsCountingDown(false); // Arrêter le décompte
+          setIsCountingDown(false);
           onStart();
           return 0;
         }

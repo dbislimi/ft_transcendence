@@ -26,11 +26,9 @@ export default function BombTimer({
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Désactivation de la coloration rouge/danger à 6s
   const isDanger = false;
   const timeDisplay = formatTime(remainingMs);
 
-  // Ne pas afficher si le timer n'est pas actif ou si le temps est écoulé
   if (!isActive || remainingMs <= 0) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

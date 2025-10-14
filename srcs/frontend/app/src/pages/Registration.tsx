@@ -58,7 +58,6 @@ export default function Registration() {
       });
 
       if (response.ok) {
-        // Simuler une inscription réussie et connecter l'utilisateur
         const userData = {
           id: "1",
           name: name,
@@ -71,7 +70,6 @@ export default function Registration() {
         alert("Erreur serveur");
       }
     } catch (error) {
-      // En cas d'erreur réseau, simuler une inscription pour la démo
       const userData = {
         id: "1",
         name: name,

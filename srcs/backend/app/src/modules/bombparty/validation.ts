@@ -150,7 +150,7 @@ export function validateLobbyCreateMessage(payload: any): ValidationResult<BPLob
     password = passwordResult.data;
   }
 
-  let maxPlayers = 6; // défaut
+  let maxPlayers = 6;
   if (payload.maxPlayers !== undefined) {
     const maxPlayersResult = validateNumber(payload.maxPlayers, 'maxPlayers', 2, 8);
     if (!maxPlayersResult.success) return maxPlayersResult;

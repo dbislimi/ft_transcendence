@@ -8,7 +8,7 @@ interface WordInputProps {
   usedWords: string[];
   onSubmit: (word: string) => void;
   isActive: boolean;
-  engine?: any; // Ajout de l'engine pour accéder aux nouvelles méthodes
+  engine?: any;
   bonuses?: PlayerBonuses;
   onActivateBonus?: (bonus: BonusKey) => boolean;
   hasDoubleChance?: boolean;
@@ -33,7 +33,6 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
   // Charger les suggestions et informations du trigramme quand il change
   useEffect(() => {
     if (trigram && trigram.length >= 3) {
-      // Utiliser l'engine si disponible, sinon fallback sur l'ancienne méthode
       if (engine && engine.getWordSuggestions) {
         const newSuggestions = engine.getWordSuggestions(5);
         const info = engine.getCurrentTrigramInfo();
