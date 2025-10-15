@@ -6,12 +6,15 @@
  */
 
 import type { FastifyInstance } from 'fastify';
-import type WebSocket from 'ws';
+import WebSocket from 'ws';
 import { BombPartyRoomManager } from './RoomManager.ts';
+import { BombPartyWSServer } from './wsServer.ts';
 import { 
   validateClientMessage, 
   validatePlayerName,
+  validateAuthMessage
 } from './validation.ts';
+import { ErrorCode } from './types.ts';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -29,42 +32,29 @@ interface WSSession {
  */
 export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
   const roomManager = new BombPartyRoomManager();
+  const wsServer = new BombPartyWSServer();
 
-  // Route WebSocket pour Bomb Party
+  // WebSocket route for Bomb Party
   fastify.get('/bombparty/ws', { websocket: true }, (socket: WebSocket, request) => {
     const session: WSSession = {
       authenticated: false
     };
 
+    wsServer.registerConnection(socket);
+
 
     /**
-     * Envoie un message d'erreur au client
+     * Envoie un message d'erreur typé au client
      */
-    function sendError(error: string, code?: string): void {
-      const message = {
-        event: 'bp:lobby:error',
-        payload: {
-          error,
-          code: code || 'UNKNOWN_ERROR'
-        }
-      };
-      
-      try {
-        socket.send(JSON.stringify(message));
-      } catch (err) {
-        console.error('❌ [BombParty] Erreur envoi message:', err);
-      }
+    function sendError(error: string, code: ErrorCode = ErrorCode.STATE_ERROR): void {
+      wsServer.sendError(socket, error, code);
     }
 
     /**
      * Envoie un message de succès au client
      */
     function sendMessage(message: any): void {
-      try {
-        socket.send(JSON.stringify(message));
-      } catch (err) {
-        console.error('❌ [BombParty] Erreur envoi message:', err);
-      }
+      wsServer.sendMessage(socket, message);
     }
 
     /**
@@ -73,7 +63,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
     function authenticatePlayer(playerName: string): boolean {
       const nameResult = validatePlayerName(playerName);
       if (!nameResult.success) {
-        sendError(nameResult.error || 'Nom invalide', 'INVALID_NAME');
+        sendError(nameResult.error || 'Nom invalide', nameResult.code || ErrorCode.VALIDATION_ERROR);
         return false;
       }
 
@@ -82,8 +72,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       session.authenticated = true;
 
       roomManager.registerPlayer(socket, session.playerId, session.playerName);
-      
-
+      wsServer.updateConnection(socket, session.playerId);
       return true;
     }
 
@@ -92,7 +81,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
      */
     function requireAuth(): boolean {
       if (!session.authenticated || !session.playerId) {
-        sendError('Authentification requise', 'AUTH_REQUIRED');
+        sendError('Authentification requise', ErrorCode.AUTH_ERROR);
         return false;
       }
       return true;
@@ -103,12 +92,13 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
         const rawMessage = JSON.parse(data.toString());
 
         if (rawMessage.event === 'bp:auth') {
-          if (!rawMessage.payload?.playerName) {
-            sendError('Nom de joueur requis', 'MISSING_PLAYER_NAME');
+          const validation = validateAuthMessage(rawMessage);
+          if (!validation.success) {
+            sendError(validation.error || 'Message d\'authentification invalide', validation.code || ErrorCode.VALIDATION_ERROR);
             return;
           }
           
-          if (authenticatePlayer(rawMessage.payload.playerName)) {
+          if (authenticatePlayer(validation.data!.payload.playerName)) {
             sendMessage({
               event: 'bp:auth:success',
               payload: {
@@ -124,7 +114,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
 
         const validation = validateClientMessage(rawMessage);
         if (!validation.success) {
-          sendError(validation.error || 'Message invalide', 'VALIDATION_ERROR');
+          sendError(validation.error || 'Message invalide', validation.code || ErrorCode.VALIDATION_ERROR);
           return;
         }
 
@@ -165,12 +155,12 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
             break;
 
           default:
-            sendError(`Event non supporté: ${message.event}`, 'UNSUPPORTED_EVENT');
+            sendError(`Event non supporté: ${message.event}`, ErrorCode.VALIDATION_ERROR);
         }
 
       } catch (error) {
-        console.error('❌ [BombParty] Erreur traitement message:', error);
-        sendError('Erreur traitement message', 'MESSAGE_ERROR');
+        console.error('[BombParty] Erreur traitement message:', error);
+        sendError('Erreur traitement message', ErrorCode.STATE_ERROR);
       }
     });
 
@@ -189,6 +179,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
 
       if (result.success) {
         session.roomId = result.roomId;
+        wsServer.updateConnection(socket, session.playerId, result.roomId);
         sendMessage({
           event: 'bp:lobby:created',
           payload: {
@@ -198,7 +189,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
           }
         });
       } else {
-        sendError(result.error || 'Erreur création lobby', 'CREATE_FAILED');
+        sendError(result.error || 'Erreur création lobby', ErrorCode.STATE_ERROR);
       }
     }
 
@@ -210,6 +201,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
 
       if (result.success) {
         session.roomId = payload.roomId;
+        wsServer.updateConnection(socket, session.playerId, payload.roomId);
         sendMessage({
           event: 'bp:lobby:joined',
           payload: {
@@ -220,11 +212,11 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
           }
         });
       } else {
-        let code = 'JOIN_FAILED';
-        if (result.error?.includes('non trouvée')) code = 'ROOM_NOT_FOUND';
-        else if (result.error?.includes('pleine')) code = 'ROOM_FULL';
-        else if (result.error?.includes('mot de passe')) code = 'WRONG_PASSWORD';
-        else if (result.error?.includes('déjà dans')) code = 'ALREADY_IN_ROOM';
+        let code: ErrorCode = ErrorCode.STATE_ERROR;
+        if (result.error?.includes('non trouvée')) code = ErrorCode.STATE_ERROR;
+        else if (result.error?.includes('pleine')) code = ErrorCode.STATE_ERROR;
+        else if (result.error?.includes('mot de passe')) code = ErrorCode.AUTH_ERROR;
+        else if (result.error?.includes('déjà dans')) code = ErrorCode.STATE_ERROR;
 
         sendError(result.error || 'Erreur rejoindre lobby', code);
       }
@@ -237,6 +229,8 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       const result = roomManager.leaveRoom(playerId, payload.roomId);
 
       if (result.success) {
+        session.roomId = undefined;
+        wsServer.updateConnection(socket, session.playerId);
         sendMessage({
           event: 'bp:lobby:left',
           payload: {
@@ -245,7 +239,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
           }
         });
       } else {
-        sendError(result.error || 'Erreur sortie lobby', 'LEAVE_FAILED');
+        sendError(result.error || 'Erreur sortie lobby', ErrorCode.STATE_ERROR);
       }
     }
 
@@ -277,7 +271,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
           }
         });
       } else {
-        sendError(result.error || 'Lobby non trouvé', 'ROOM_NOT_FOUND');
+        sendError(result.error || 'Lobby non trouvé', ErrorCode.STATE_ERROR);
       }
     }
 
@@ -288,7 +282,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       const result = roomManager.startGame(playerId, payload.roomId);
 
       if (!result.success) {
-        sendError(result.error || 'Erreur démarrage partie', 'START_FAILED');
+        sendError(result.error || 'Erreur démarrage partie', ErrorCode.STATE_ERROR);
       }
     }
 
@@ -304,7 +298,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       );
 
       if (!result.success) {
-        sendError(result.error || 'Erreur entrée jeu', 'INPUT_FAILED');
+        sendError(result.error || 'Erreur entrée jeu', ErrorCode.STATE_ERROR);
       }
     }
 
@@ -319,18 +313,20 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       );
 
       if (!result.success) {
-        sendError(result.error || 'Erreur activation bonus', 'BONUS_FAILED');
+        sendError(result.error || 'Erreur activation bonus', ErrorCode.STATE_ERROR);
       }
     }
 
-    socket.on('close', () => {
+    socket.on('close', (code: number, reason: Buffer) => {
+      if (session.playerId && session.roomId) {
+        roomManager.leaveRoom(session.playerId, session.roomId);
+      }
     });
 
-    socket.on('error', (error) => {
-      console.error('❌ [BombParty] Erreur WebSocket:', error);
+    socket.on('error', (error: Error) => {
+      console.error('[BombParty] Erreur WebSocket:', error);
     });
 
-    // Envoyer un message de bienvenue
     sendMessage({
       event: 'bp:welcome',
       payload: {
@@ -338,16 +334,6 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
         version: '1.0.0'
       }
     });
-
-     socket.on('close', (code: number, reason: Buffer) => {
-       if (session.playerId && session.roomId) {
-         roomManager.leaveRoom(session.playerId, session.roomId);
-       }
-     });
-
-     socket.on('error', (error: Error) => {
-       console.error('❌ [BombParty] Erreur WebSocket:', error);
-     });
   });
 
 }

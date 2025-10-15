@@ -21,7 +21,7 @@ export interface LobbyJoinPayload {
 }
 
 export interface BombPartyClientOptions {
-  mock?: boolean; // if true, echo server events locally for dev
+  mock?: boolean;
 }
 
 export class BombPartyClient {
@@ -30,6 +30,7 @@ export class BombPartyClient {
   private ws: WebSocket | null = null;
 
   constructor(options: BombPartyClientOptions = {}) {
+    console.log('[BombPartyClient] 🏗️ Construction du client WebSocket');
     this.mock = options.mock ?? true;
     if (!this.mock) {
       this.connect();
@@ -37,33 +38,38 @@ export class BombPartyClient {
   }
 
   private connect() {
-    console.log('🔌 [BombPartyClient] Tentative de connexion WebSocket...');
-    this.ws = new WebSocket('ws://localhost:3000/bombparty/ws');
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+      console.log('[BombPartyClient] Connexion déjà en cours, abandon...');
+      return;
+    }
+    
+    console.log('[BombPartyClient] Tentative de connexion WebSocket...');
+    this.ws = new WebSocket('ws://localhost:3002/bombparty/ws');
     
     this.ws.onopen = () => {
-      console.log('✅ [BombPartyClient] Connexion WebSocket établie');
-      console.log('🔌 [BombPartyClient] Émission événement connected');
+      console.log('[BombPartyClient] ✅ Connexion WebSocket établie');
+      console.log('[BombPartyClient] Émission événement connected');
       this._emit('connected', {});
     };
     
     this.ws.onmessage = (event) => {
       try {
-        console.log('📨 [BombPartyClient] Message reçu:', event.data);
+        console.log('[BombPartyClient] Message reçu:', event.data);
         const data = JSON.parse(event.data);
-        console.log('📨 [BombPartyClient] Message parsé:', data);
+        console.log('[BombPartyClient] Message parsé:', data);
         this._emit(data.event, data.payload);
       } catch (err) {
-        console.error('❌ [BombPartyClient] Erreur parsing message:', err);
+        console.error('[BombPartyClient] Erreur parsing message:', err);
       }
     };
     
     this.ws.onclose = (event) => {
-      console.log('🔌 [BombPartyClient] Connexion fermée:', event.code, event.reason);
+      console.log('[BombPartyClient] ❌ Connexion fermée:', event.code, event.reason);
       this._emit('disconnected', {});
     };
     
     this.ws.onerror = (error) => {
-      console.error('❌ [BombPartyClient] Erreur WebSocket:', error);
+      console.error('[BombPartyClient] ❌ Erreur WebSocket:', error);
       this._emit('error', { error: 'WebSocket error' });
     };
   }
@@ -75,6 +81,7 @@ export class BombPartyClient {
   on(event: 'bp:lobby:player_joined', handler: EventHandler): () => void;
   on(event: 'bp:lobby:player_left', handler: EventHandler): () => void;
   on(event: 'bp:game:state', handler: EventHandler): () => void;
+  on(event: 'bp:game:word_result', handler: EventHandler): () => void;
   on(event: 'bp:game:end', handler: EventHandler): () => void;
   on(event: 'connected', handler: EventHandler): () => void;
   on(event: 'error', handler: EventHandler): () => void;
@@ -95,10 +102,12 @@ export class BombPartyClient {
   emit(event: 'bp:lobby:start', payload: any): void;
   emit(event: 'bp:game:input', payload: any): void;
   emit(event: string, payload: any): void {
+    console.log('[BombPartyClient] 📤 Envoi message:', event, 'État WebSocket:', this.ws?.readyState);
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ event, payload }));
+      const message = JSON.stringify({ event, payload });
+      console.log('[BombPartyClient] 📤 Message envoyé:', message);
+      this.ws.send(message);
     } else if (this.mock) {
-      // Simulate server acknowledgement/broadcast
       if (event === 'bp:bonus:activate') {
         setTimeout(() => {
           this._emit('bonus:applied', {
@@ -113,6 +122,7 @@ export class BombPartyClient {
   }
 
   authenticate(playerName: string): void {
+    console.log('[BombPartyClient] 🔐 Envoi authentification pour:', playerName);
     this.emit('bp:auth', { playerName });
   }
 
@@ -145,7 +155,7 @@ export class BombPartyClient {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     } else {
-      console.error('❌ [BombPartyClient] WebSocket non connecté, état:', this.ws?.readyState);
+      console.error('[BombPartyClient] WebSocket non connecté, état:', this.ws?.readyState);
     }
   }
 
@@ -160,7 +170,7 @@ export class BombPartyClient {
     console.log('🔊 [BombPartyClient] Émission événement:', event, payload);
     const set = this.handlers.get(event);
     if (!set) {
-      console.log('⚠️ [BombPartyClient] Aucun handler pour l\'événement:', event);
+      console.log('[BombPartyClient] Aucun handler pour l\'événement:', event);
       return;
     }
     console.log('📢 [BombPartyClient] Handlers trouvés pour', event, ':', set.size);

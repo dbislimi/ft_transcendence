@@ -1,0 +1,133 @@
+import Game from "./Game.ts";
+import plotRewards from "./chart.ts";
+import Tournament from "./Tournament.ts";
+export default class GamesManager {
+    tournaments = {};
+    rooms = new WeakMap();
+    waitingClient = null;
+    createTournament(ws, id, size, passwd) {
+        if (this.tournaments[id])
+            throw new Error(`Tournament with id ${id} already exists.`);
+        this.tournaments[id] = new Tournament({
+            rooms: this.rooms,
+            id,
+            password: passwd,
+            capacity: size,
+            onEnd: () => {
+                delete this.tournaments[id];
+                console.log("onEnd tour called");
+            },
+        });
+        this.joinTournament(ws, id, passwd);
+    }
+    joinTournament(ws, id, passwd) {
+        const tournament = this.tournaments[id];
+        if (!tournament || tournament.started)
+            return;
+        if (tournament.password && (!passwd || passwd !== tournament.password))
+            return;
+        tournament.join(ws);
+    }
+    listTournaments() {
+        return Object.values(this.tournaments)
+            .map((t) => ({
+            id: t.id,
+            players: t.players.length,
+            capacity: t.capacity,
+            private: !!t.password,
+            started: t.started,
+        }))
+            .filter((t) => !t.started);
+    }
+    async trainBot(ws, bot, games) {
+        const controller = new AbortController();
+        const { signal } = controller;
+        ws.on("close", () => controller.abort());
+        const game = new Game({
+            p1: ws,
+            botDiff: bot,
+            train: true,
+            onEnd: null,
+        });
+        for (let i = 0; i < games; ++i) {
+            if (signal.aborted)
+                break;
+            console.log(`game ${i + 1}`);
+            try {
+                await game.startAsync(signal);
+            }
+            catch (e) {
+                console.log("test");
+                if (signal.aborted)
+                    console.log("Training aborted during game ", i);
+                break;
+            }
+        }
+        if (game.board.botController.length !== 0)
+            plotRewards("rewards", game.board.botController[0].rewards, bot);
+        console.log("Training loop ended.");
+    }
+    startTraining(ws, bot) {
+        this.trainBot(ws, bot, 100);
+        console.log("debug");
+        return { playerId: "train" };
+    }
+    startOffline(ws, diff) {
+        const game = new Game({
+            p1: ws,
+            botDiff: diff,
+            onEnd: () => this.removeRoom(ws),
+        });
+        console.log("startOffline", diff === null);
+        game.start();
+        this.rooms.set(ws, game);
+        return diff === null;
+    }
+    startOnline(clientId, ws) {
+        ws.send(JSON.stringify({ event: "searching" }));
+        if (this.waitingClient) {
+            const data = JSON.stringify({ event: "found" });
+            this.waitingClient.ws.send(data);
+            ws.send(data);
+            this.waitingClient.game.connectPlayer(ws);
+            this.rooms.set(ws, this.waitingClient.game);
+            this.waitingClient = null;
+            return;
+        }
+        const game = new Game({
+            p1: ws,
+            botDiff: "medium",
+            onEnd: (ws) => {
+                this.removeRoom(ws);
+                console.log(`removed: ${ws}`);
+            },
+        });
+        game.start();
+        this.waitingClient = { ws, game };
+        this.rooms.set(ws, game);
+        return;
+    }
+    removeFromQueue(ws) {
+        if (this.waitingClient && ws === this.waitingClient.ws) {
+            console.log("waiting client removed");
+            this.waitingClient.game.disconnectPlayer(ws);
+            this.waitingClient = null;
+        }
+    }
+    getRoom(ws) {
+        return this.rooms.get(ws);
+    }
+    removeRoom(ws) {
+        this.rooms.delete(ws);
+    }
+    quit(ws, tournamentId) {
+        if (tournamentId) {
+            const tournament = this.tournaments[tournamentId];
+            if (!tournament)
+                return;
+            tournament.disconnect(ws);
+        }
+        this.removeFromQueue(ws);
+        this.getRoom(ws)?.disconnectPlayer(ws);
+    }
+}

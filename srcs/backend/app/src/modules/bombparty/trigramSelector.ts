@@ -6,7 +6,7 @@ const availableTrigrams = Object.keys(trigramMap);
 
 export function getRandomTrigram(excludeTrigram?: string): string {
   if (availableTrigrams.length === 0) {
-    console.warn('⚠️ [BombParty] Aucun trigramme disponible');
+    console.warn('[BombParty] Aucun trigramme disponible');
     return 'the';
   }
 

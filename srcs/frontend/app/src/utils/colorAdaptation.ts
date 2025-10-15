@@ -24,9 +24,6 @@ export interface BackgroundAnalysis {
   recommendedScheme: ColorScheme;
 }
 
-/**
- * Schémas de couleurs prédéfinis pour différents types de fonds
- */
 const COLOR_SCHEMES: Record<string, ColorScheme> = {
   // Fonds sombres
   'dark-blue': {
@@ -226,7 +223,6 @@ function getContrastLevel(schemeKey: string): BackgroundAnalysis['contrast'] {
 export function applyColorScheme(scheme: ColorScheme): void {
   const root = document.documentElement;
   
-  // Appliquer les variables CSS
   root.style.setProperty('--color-primary', scheme.primary);
   root.style.setProperty('--color-secondary', scheme.secondary);
   root.style.setProperty('--color-accent', scheme.accent);
@@ -245,10 +241,7 @@ export function applyColorScheme(scheme: ColorScheme): void {
     .join(' ');
 }
 
-/**
- * Génère des couleurs adaptatives basées sur l'URL d'une image
- * (Pour une future implémentation avec analyse d'image réelle)
- */
+
 export function generateAdaptiveColors(imageUrl: string): Promise<ColorScheme> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -282,14 +275,12 @@ export function generateAdaptiveColors(imageUrl: string): Promise<ColorScheme> {
   });
 }
 
-/**
- * Analyse les couleurs d'une image (simplifié)
- */
+
 function analyzeImageColors(imageData: ImageData): { r: number; g: number; b: number; brightness: number }[] {
   const data = imageData.data;
   const colors: { r: number; g: number; b: number; brightness: number }[] = [];
   
-  // Échantillonner les pixels (tous les 100 pixels)
+  // Sample pixels (every 100 pixels)
   for (let i = 0; i < data.length; i += 400) {
     const r = data[i];
     const g = data[i + 1];
@@ -302,9 +293,6 @@ function analyzeImageColors(imageData: ImageData): { r: number; g: number; b: nu
   return colors;
 }
 
-/**
- * Génère un schéma de couleurs à partir de l'analyse des couleurs
- */
 function generateSchemeFromColors(colors: { r: number; g: number; b: number; brightness: number }[]): ColorScheme {
   const avgBrightness = colors.reduce((sum, color) => sum + color.brightness, 0) / colors.length;
   const isDark = avgBrightness < 128;

@@ -72,7 +72,7 @@ export class BombPartyEngine {
     // Init
     this.currentTrigramUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
-    console.log('🎯 Nouveau système de trigrammes: nouveau trigramme à chaque tour');
+    console.log('Nouveau système de trigrammes: nouveau trigramme à chaque tour');
   }
 
   startCountdown(): void {
@@ -80,9 +80,8 @@ export class BombPartyEngine {
   }
 
   startTurn(): void {
-    // Check que le joueur actuel est vivant
     if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
-      console.log('⚠️ Joueur actuel éliminé, passage au suivant');
+      console.log('Joueur actuel éliminé, passage au suivant');
       this.nextPlayer();
       if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
         this.state.phase = 'GAME_OVER';
@@ -113,7 +112,6 @@ export class BombPartyEngine {
     return newTrigram;
   }
 
-  // Selection de trigramme depuis le JSON (mapping trigram -> mots[])
   private selectRandomTrigram(): string {
     const map = trigramWordsData as unknown as Record<string, string[]>;
     const candidates = Object.keys(map);
@@ -128,7 +126,7 @@ export class BombPartyEngine {
     const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
     console.log('📋 Résultat de validation:', validation);
     if (validation.ok) {
-      console.log('✅ Mot valide accepté:', word);
+      console.log('Mot valide accepté:', word);
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
@@ -144,7 +142,7 @@ export class BombPartyEngine {
       this.state.phase = 'RESOLVE';
       return { ok: true };
     } else {
-      console.log('❌ Mot invalide rejeté:', word, 'Raison:', validation.reason);
+      console.log('Mot invalide rejeté:', word, 'Raison:', validation.reason);
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
         word,
@@ -165,17 +163,17 @@ export class BombPartyEngine {
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
     console.log('🔄 Résolution du tour - Mot valide:', wordValid, 'Temps expiré:', timeExpired);
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
-      console.error('❌ Erreur: Aucun joueur ou index invalide');
+      console.error('Erreur: Aucun joueur ou index invalide');
       return;
     }
 
     const currentPlayer = this.state.players[this.state.currentPlayerIndex];
     if (!currentPlayer) {
-      console.error('❌ Erreur: Joueur actuel non trouvé');
+      console.error('Erreur: Joueur actuel non trouvé');
       return;
     }
 
-    console.log('👤 Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
+    console.log('Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
     if (!wordValid || timeExpired) {
       currentPlayer.streak = 0;
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
@@ -195,7 +193,6 @@ export class BombPartyEngine {
     this.startTurn();
   }
 
-  // why private = Changement de joueur sans validation
   private nextPlayer(): void {
     if (this.state.players.length === 0) return;
     let attempts = 0;
@@ -206,12 +203,12 @@ export class BombPartyEngine {
       this.state.currentPlayerIndex = (this.state.currentPlayerIndex + step + len) % len;
       attempts++;
       if (attempts > maxAttempts) {
-        console.error('❌ Erreur: Impossible de trouver le prochain joueur');
+        console.error('Erreur: Impossible de trouver le prochain joueur');
         break;
       }
     } while (this.state.players[this.state.currentPlayerIndex]?.isEliminated);
     if (!this.state.players[this.state.currentPlayerIndex]) {
-      console.error('❌ Erreur: Aucun joueur valide trouvé');
+      console.error('Erreur: Aucun joueur valide trouvé');
       this.state.phase = 'GAME_OVER';
     }
   }

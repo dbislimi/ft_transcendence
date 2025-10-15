@@ -1,10 +1,11 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
-import gameController from "./plugins/gameController.ts";
-import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
+// import gameController from "./plugins/gameController.ts";
+import wsServer from "./ws/index.ts";
+// import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
+import path from "path";
 import { fileURLToPath } from "url";
-// Import des modules serveur et sécurité
 import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken"; // compatible avec ESM/TypeScript
 const fastify = Fastify({
@@ -15,23 +16,21 @@ const fastify = Fastify({
     },
 });
 fastify.register(websocket);
-fastify.register(gameController);
-fastify.register(bombPartyWSHandlers);
-const JWT_SECRET = "super_secret_key"; // À stocker dans un fichier .env pour plus de sécurité
-// Récupère le dossier courant (utile pour importer la DB)
+// fastify.register(gameController);
+fastify.register(wsServer);
+const JWT_SECRET = "super_secret_key";
 const __filename = fileURLToPath(import.meta.url);
-// import de la base de données SQLite
-const db = (await import("./index.js")).default;
-// Création de l'app Fastify
-// Autorise les requêtes depuis le frontend (CORS)
+const __dirname = path.dirname(__filename);
+const db = (await import(path.join(__dirname, "..", "index.js"))).default;
 await fastify.register(cors, {
-    origin: "http://localhost:5173", // ton app React
+    origin: "http://localhost:5173",
 });
-// Route de test
+console.log('[Stats] Enregistrement des routes de statistiques...');
+// await fastify.register(bombPartyStatsRoutes);
+console.log('[Stats] Routes de statistiques enregistrées');
 fastify.get("/", async () => {
     return { hello: "from docker" };
 });
-// Enregistrement d'un nouvel utilisateur
 fastify.post("/register", async (request, reply) => {
     const { name, email, password } = request.body;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -53,7 +52,6 @@ fastify.post("/register", async (request, reply) => {
         return reply.code(500).send({ error: "Erreur serveur" });
     }
 });
-// Connexion utilisateur + génération du JWT
 fastify.post("/login", async (request, reply) => {
     const { email, password } = request.body;
     db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
@@ -73,7 +71,6 @@ fastify.post("/login", async (request, reply) => {
         return reply.send({ success: true, token, name: user.name });
     });
 });
-// Route protégée de test
 fastify.get("/profile", async (request, reply) => {
     try {
         const authHeader = request.headers.authorization;
@@ -88,7 +85,6 @@ fastify.get("/profile", async (request, reply) => {
         return reply.code(401).send({ error: "Token invalide ou expiré" });
     }
 });
-// Route pour récupérer les infos utilisateur
 fastify.get("/me", async (request, reply) => {
     try {
         const authHeader = request.headers.authorization;
@@ -110,5 +106,4 @@ fastify.get("/me", async (request, reply) => {
         return reply.code(401).send({ error: "Token invalide ou expiré" });
     }
 });
-// Lancement du serveur
 fastify.listen({ port: 3000, host: "0.0.0.0" });

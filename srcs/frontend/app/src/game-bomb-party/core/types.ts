@@ -55,7 +55,7 @@ export interface GameState {
   }>;
   // Game end
   winner?: Player;               // Winner when game is over
-  finalStats?: any;              // Final statistics
+  finalStats?: any;
 }
 
 export interface ValidationResult {

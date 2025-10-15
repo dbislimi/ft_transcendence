@@ -85,7 +85,7 @@ export class BombPartyDatabase {
 
       this.db.run(query, [roomId], function(err) {
         if (err) {
-          console.error('❌ [BombParty] Erreur création match:', err);
+          console.error('[BombParty] Erreur création match:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true, data: this.lastID });
@@ -107,7 +107,7 @@ export class BombPartyDatabase {
 
       this.db.run(query, [matchId], function(err) {
         if (err) {
-          console.error('❌ [BombParty] Erreur démarrage match:', err);
+          console.error('[BombParty] Erreur démarrage match:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true });
@@ -139,7 +139,7 @@ export class BombPartyDatabase {
 
       this.db.run(query, [winnerId, totalRounds, finalStateJson, matchId], function(err) {
         if (err) {
-          console.error('❌ [BombParty] Erreur fin match:', err);
+          console.error('[BombParty] Erreur fin match:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true });
@@ -164,7 +164,7 @@ export class BombPartyDatabase {
 
       this.db.run(query, [matchId, playerId, playerName], function(err) {
         if (err) {
-          console.error('❌ [BombParty] Erreur ajout participant:', err);
+          console.error('[BombParty] Erreur ajout participant:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true, data: this.lastID });
@@ -208,7 +208,7 @@ export class BombPartyDatabase {
         playerId
       ], function(err) {
         if (err) {
-          console.error('❌ [BombParty] Erreur update participant:', err);
+          console.error('[BombParty] Erreur update participant:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true });
@@ -246,7 +246,7 @@ export class BombPartyDatabase {
 
       this.db.all(query, [playerId, limit], (err, rows) => {
         if (err) {
-          console.error('❌ [BombParty] Erreur historique joueur:', err);
+          console.error('[BombParty] Erreur historique joueur:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true, data: rows || [] });
@@ -281,7 +281,7 @@ export class BombPartyDatabase {
 
       this.db.get(query, [playerId], (err, row: any) => {
         if (err) {
-          console.error('❌ [BombParty] Erreur stats joueur:', err);
+          console.error('[BombParty] Erreur stats joueur:', err);
           resolve({ success: false, error: err.message });
         } else if (!row) {
           resolve({
@@ -362,7 +362,7 @@ export class BombPartyDatabase {
 
       this.db.run(query, [], function(this: any, err: any) {
         if (err) {
-          console.error('❌ [BombParty] Erreur nettoyage:', err);
+          console.error('[BombParty] Erreur nettoyage:', err);
           resolve({ success: false, error: err.message });
         } else {
           resolve({ success: true, data: this.changes });

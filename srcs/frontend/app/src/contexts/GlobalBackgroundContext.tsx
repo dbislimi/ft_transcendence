@@ -35,7 +35,7 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     const background = getBackgroundById(currentBackgroundId);
     if (!background) return;
 
-    console.log('🖼️ [Background] Application:', {
+    console.log('[Background] Application:', {
       id: background.id,
       name: background.name,
       type: background.type
@@ -77,38 +77,38 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
   }, [currentBackgroundId]);
 
   const setBackground = useCallback(async (id: string) => {
-    console.log('🖼️ [Background] setBackground appelé avec ID:', id);
+    console.log('[Background] setBackground appelé avec ID:', id);
     const background = getBackgroundById(id);
     if (!background) {
-      console.warn('🖼️ [Background] ID non trouvé:', id);
-      console.log('🖼️ [Background] Catalog disponible:', backgroundCatalog.map(bg => bg.id));
+      console.warn('[Background] ID non trouvé:', id);
+      console.log('[Background] Catalog disponible:', backgroundCatalog.map(bg => bg.id));
       return;
     }
 
-    console.log('🖼️ [Background] Background trouvé:', background);
+      console.log('[Background] Background trouvé:', background);
     setIsLoading(true);
     
     try {
       if (background.url && background.type === 'image') {
-        console.log('🖼️ [Background] Préchargement de l\'image:', background.url);
+        console.log('[Background] Préchargement de l\'image:', background.url);
         const img = new Image();
         await new Promise((resolve, reject) => {
           img.onload = () => {
-            console.log('🖼️ [Background] Image préchargée avec succès');
+            console.log('[Background] Image préchargée avec succès');
             resolve(true);
           };
           img.onerror = (error) => {
-            console.error('🖼️ [Background] Erreur de préchargement:', error);
+            console.error('[Background] Erreur de préchargement:', error);
             reject(error);
           };
           img.src = background.url!;
         });
       }
       
-      console.log('🖼️ [Background] Mise à jour de currentBackgroundId vers:', id);
+      console.log('[Background] Mise à jour de currentBackgroundId vers:', id);
       setCurrentBackgroundId(id);
     } catch (error) {
-      console.error('🖼️ [Background] Erreur lors du chargement:', error);
+      console.error('[Background] Erreur lors du chargement:', error);
     } finally {
       setIsLoading(false);
     }
@@ -140,8 +140,6 @@ export function useGlobalBackground() {
   }
   return context;
 }
-
-// Hook pour obtenir le background actuel (compatible avec l'ancien systeme)
 
 export function useCurrentBackground(): BackgroundItem {
   const { currentBackground } = useGlobalBackground();

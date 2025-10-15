@@ -1,13 +1,6 @@
-/**
- * Validator pour Bomb Party - Backend
- * 
- * Port du validator frontend avec dictionnaire intégré
- */
-
-import type { ValidationResult } from './GameEngine.ts';
+import type { ValidationResult } from './GameEngine.js';
 import trigramWordsData from './data/trigram_words.json' with { type: 'json' };
 
-// Construction du lexique depuis le mapping trigram -> mots[]
 const trigramMap = trigramWordsData as Record<string, string[]>;
 
 function normalizeText(text: string): string {
@@ -25,9 +18,6 @@ const englishLexicon: Set<string> = new Set(
 );
 
 
-/**
- * Valide un mot avec le dictionnaire intégré
- */
 export function validateWithDictionary(word: string, trigram: string, usedWords: string[]): ValidationResult {
   const normalizedWord = normalizeText(word);
   const normalizedTrigram = normalizeText(trigram);

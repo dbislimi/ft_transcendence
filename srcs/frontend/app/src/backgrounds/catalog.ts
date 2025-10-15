@@ -18,7 +18,6 @@ export interface BackgroundItem {
 function generateNameFromFilename(filename: string): string {
   const basename = filename.split('/').pop()?.replace(/\.(svg|webp|png|jpg|jpeg)$/, '') || '';
   
-  // Mappings speciaux pour les noms connus
   const specialNames: Record<string, string> = {
     '42background': '42',
     'hallowenn_background': 'Halloween',
@@ -150,7 +149,7 @@ export function searchBackgrounds(query: string): BackgroundItem[] {
 }
 
 export function logCatalog(): void {
-  console.log('🖼️ [Backgrounds] Catalog loaded:', {
+  console.log('[Backgrounds] Catalog loaded:', {
     total: backgroundCatalog.length,
     types: {
       default: getBackgroundsByType('default').length,
@@ -165,7 +164,6 @@ export function logCatalog(): void {
   });
 }
 
-// Log automatique en developpement
 if (import.meta.env.DEV) {
   logCatalog();
 }

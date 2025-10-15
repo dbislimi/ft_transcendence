@@ -4,7 +4,7 @@ import type { FastifyPluginAsync } from "fastify";
 import * as jwt from "jsonwebtoken";
 import { BombPartyStatsManager } from "./StatsManager.ts";
 
-const JWT_SECRET = "super_secret_key"; // À stocker dans un fichier .env
+const JWT_SECRET = "super_secret_key"; // Should be stored in .env file
 
 interface StatsParams {
   userId: string;
@@ -73,7 +73,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur récupération stats:", error);
+        console.error("[Stats API] Erreur récupération stats:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }
@@ -111,7 +111,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur récupération historique:", error);
+        console.error("[Stats API] Erreur récupération historique:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }
@@ -148,7 +148,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur récupération trigram stats:", error);
+        console.error("[Stats API] Erreur récupération trigram stats:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }
@@ -175,7 +175,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur récupération classement:", error);
+        console.error("[Stats API] Erreur récupération classement:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }
@@ -227,7 +227,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         });
 
         if (!historyResult.success) {
-          console.error("❌ [Stats API] Erreur ajout historique:", historyResult.error);
+          console.error("[Stats API] Erreur ajout historique:", historyResult.error);
         }
 
         return reply.send({
@@ -235,7 +235,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           message: "Statistiques mises à jour avec succès"
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur mise à jour stats:", error);
+        console.error("[Stats API] Erreur mise à jour stats:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }
@@ -273,7 +273,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           message: "Statistiques de trigramme mises à jour"
         });
       } catch (error) {
-        console.error("❌ [Stats API] Erreur mise à jour trigram stats:", error);
+        console.error("[Stats API] Erreur mise à jour trigram stats:", error);
         return reply.code(500).send({ error: "Erreur serveur" });
       }
     }

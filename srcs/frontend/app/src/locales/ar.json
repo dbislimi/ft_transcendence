@@ -26,7 +26,15 @@
   "game": { 
     "start": "ابدأ", 
     "stop": "توقف", 
-    "speedUnit": "كم/ساعة" 
+    "speedUnit": "كم/ساعة",
+    "online": "عبر الإنترنت",
+    "selectBotDifficulty": "اختيار صعوبة البوت",
+    "local": "محلي",
+    "easy": "سهل",
+    "medium": "متوسط",
+    "hard": "صعب",
+    "play": "لعب",
+    "train": "تدريب"
   },
   "about": {
     "title": "فريقنا",
@@ -73,7 +81,36 @@
       "livesRemaining": "{{count}} {{count, plural, one {حياة متبقية} other {حياة متبقية}}} ❤️",
       "gameFinished": "انتهت اللعبة !"
     },
+    "players": {
+      "title": "اللاعبون المنتظرون",
+      "players": "لاعبين",
+      "roomId": "معرف الردهة",
+      "waiting": "في الانتظار",
+      "host": "المضيف",
+      "waitingForPlayers": "في انتظار لاعبين إضافيين...",
+      "startingIn": "يبدأ في",
+      "startGame": "بدء اللعبة",
+      "leave": "مغادرة"
+    },
     "backToMenu": "العودة إلى القائمة",
+    "stats": {
+      "date": "التاريخ",
+      "position": "الموضع",
+      "words": "الكلمات",
+      "livesRemaining": "الأرواح المتبقية",
+      "duration": "المدة",
+      "result": "النتيجة",
+      "trigram": "الثلاثي",
+      "averageTime": "متوسط الوقت",
+      "rank": "الرتبة",
+      "player": "اللاعب",
+      "wins": "الانتصارات",
+      "games": "الألعاب",
+      "winRate": "معدل الفوز",
+      "bestStreak": "أفضل سلسلة",
+      "history": "تاريخ الألعاب",
+      "error": "خطأ"
+    },
     "lobby": {
       "title": "الردهة",
       "createTab": "إنشاء",
@@ -180,12 +217,23 @@
       "playtime": "وقت اللعب"
     },
     "badges": { "title": "الشارات" },
+    "playTime": "وقت اللعب",
+    "wins": "الانتصارات",
+    "losses": "الخسائر",
     "loading": "جاري تحميل الملف الشخصي...",
     "error": "فشل تحميل الملف الشخصي",
     "retry": "إعادة المحاولة",
     "closeAria": "إغلاق نافذة الملف الشخصي"
   },
-  "common": { "back": "رجوع", "backAria": "العودة للخلف" },
+  "shop": {
+    "title": "المتجر"
+  },
+  "common": { 
+    "back": "رجوع", 
+    "backAria": "العودة للخلف",
+    "goBackHome": "العودة للرئيسية",
+    "error": "خطأ"
+  },
   "accessibility": { "languageSwitcher": "محدد اللغة" },
   "ui": {
     "background": {
@@ -194,6 +242,7 @@
       "openAria": "فتح محدد الخلفية",
       "selectAria": "اختر الخلفية {{name}}",
       "default": "الافتراضي",
+      "space": "فضاء (متحرك)",
       "defaultPreview": "الإبقاء على خلفية اللعبة",
       "42": "42",
       "halloween": "هالووين",
@@ -226,6 +275,7 @@
       "contrastHigh": "مرتفع",
       "contrastVeryHigh": "مرتفع جداً",
       "contrastPreview": "معاينة النص بهذا المستوى من التباين",
+      "normal": "عادي",
       "animations": "الرسوم المتحركة",
       "animationsDesc": "تفعيل التأثيرات البصرية والانتقالات",
       "energySaver": "وضع توفير الطاقة",
@@ -280,5 +330,13 @@
       "title": "توفير الطاقة",
       "description": "يقلل التأثيرات الزخرفية لتوفير البطارية"
     }
+  },
+  "auth": {
+    "emailPlaceholder": "بريدك@الإلكتروني.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "اسمك الكامل",
+    "emailInvalid": "بريد إلكتروني غير صحيح.",
+    "passwordRequired": "كلمة المرور مطلوبة.",
+    "passwordsDontMatch": "كلمات المرور غير متطابقة"
   }
 }

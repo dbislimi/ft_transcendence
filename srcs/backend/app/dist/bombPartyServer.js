@@ -21,14 +21,13 @@ fastify.register(cors, {
 });
 // Configuration WebSocket
 fastify.register(websocket);
-// Gestionnaire WebSocket pour Bomb Party
 fastify.register(async function (fastify) {
     fastify.get('/bombparty/ws', { websocket: true }, (connection, req) => {
-        console.log('🔌 [BombParty] Nouvelle connexion WebSocket');
+        console.log('[BombParty] Nouvelle connexion WebSocket');
         connection.on('message', (message) => {
             try {
                 const data = JSON.parse(message.toString());
-                console.log('📨 [BombParty] Message reçu:', data);
+                console.log('[BombParty] Message reçu:', data);
                 switch (data.event) {
                     case 'bp:auth':
                         handleAuth(connection, data.payload);
@@ -53,19 +52,18 @@ fastify.register(async function (fastify) {
                 }
             }
             catch (err) {
-                console.error('❌ [BombParty] Erreur parsing message:', err);
+                console.error('[BombParty] Erreur parsing message:', err);
                 sendError(connection, 'Message invalide', 'INVALID_MESSAGE');
             }
         });
         connection.on('close', () => {
-            console.log('❌ [BombParty] Connexion fermée');
+            console.log('[BombParty] Connexion fermée');
         });
     });
 });
-// Gestionnaires d'événements
 function handleAuth(connection, payload) {
     const playerId = `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    console.log('✅ [BombParty] Authentification:', playerId);
+    console.log('[BombParty] Authentification:', playerId);
     sendMessage(connection, {
         event: 'bp:auth:success',
         payload: {
@@ -100,8 +98,7 @@ function handleLobbyJoin(connection, payload) {
     });
 }
 function handleLobbyStart(connection, payload) {
-    console.log('🎮 [BombParty] Démarrage du jeu:', payload.roomId);
-    // Simuler un état de jeu
+    console.log('[BombParty] Démarrage du jeu:', payload.roomId);
     const gameState = {
         phase: 'TURN_ACTIVE',
         players: [
@@ -126,8 +123,7 @@ function handleLobbyStart(connection, payload) {
     });
 }
 function handleGameInput(connection, payload) {
-    console.log('🎯 [BombParty] Mot soumis:', payload.word);
-    // Simuler une validation simple
+    console.log('[BombParty] Mot soumis:', payload.word);
     const isValid = payload.word.toLowerCase().includes('cha') && payload.word.length >= 3;
     sendMessage(connection, {
         event: 'bp:game:state',
@@ -179,12 +175,11 @@ function sendError(connection, message, code) {
         }
     });
 }
-// Démarrage du serveur
 const start = async () => {
     try {
         await fastify.listen({ port: 3000, host: '0.0.0.0' });
-        console.log('🚀 [BombParty] Serveur démarré sur http://localhost:3000');
-        console.log('🔌 [BombParty] WebSocket disponible sur ws://localhost:3000/bombparty/ws');
+        console.log('[BombParty] Serveur démarré sur http://localhost:3000');
+        console.log('[BombParty] WebSocket disponible sur ws://localhost:3000/bombparty/ws');
     }
     catch (err) {
         fastify.log.error(err);

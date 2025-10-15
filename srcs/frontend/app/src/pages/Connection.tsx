@@ -43,7 +43,7 @@ export default function Connection() {
       if (response.ok) {
         const userData = {
           id: "1",
-          name: email.split('@')[0], // Utiliser la partie avant @ comme nom
+          name: email.split('@')[0],
           email: email
         };
         

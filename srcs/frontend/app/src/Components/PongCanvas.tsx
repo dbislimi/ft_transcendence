@@ -48,7 +48,10 @@ function PongCanvas({ gameRef, scale }: Props) {
 				(canvas.width * 3) / 4,
 				canvas.height / 2 + 30
 			);
+			c.fillStyle = "rgba(0,0,0,0.8)";
+			c.fillRect(0, 0, canvas.width, canvas.height);
 			for (const bonuses of bonus.bonuses) {
+				c.beginPath();
 				c.arc(
 					100 * 4,
 					bonuses.y * 4,
@@ -57,11 +60,33 @@ function PongCanvas({ gameRef, scale }: Props) {
 					2 * Math.PI,
 					false
 				);
-				c.fillStyle = "rgba(119, 45, 237, 1)";
+				
+				// Different colors based on bonus type
+				let color, shadowColor;
+				switch (bonuses.name) {
+					case "Bigger":
+						color = "rgba(0, 255, 0, 1)"; // Vert pour les bonus positifs
+						shadowColor = "rgba(0, 255, 0, 0.8)";
+						break;
+					case "Faster":
+						color = "rgba(0, 150, 255, 1)"; // Bleu pour la vitesse
+						shadowColor = "rgba(0, 150, 255, 0.8)";
+						break;
+					case "Smaller":
+						color = "rgba(255, 100, 100, 1)"; // Red for penalties
+						shadowColor = "rgba(255, 100, 100, 0.8)";
+						break;
+					default:
+						color = "rgba(255, 215, 0, 1)"; // Gold by default
+						shadowColor = "rgba(255, 215, 0, 0.8)";
+				}
+				
+				c.fillStyle = color;
+				c.shadowBlur = 15;
+				c.shadowColor = shadowColor;
 				c.fill();
+				c.shadowBlur = 0;
 			}
-			c.fillStyle = "rgba(0,0,0,0.8)";
-			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.font = "15px Audiowide";
 			c.fillStyle = "white";
 			c.textAlign = "center";

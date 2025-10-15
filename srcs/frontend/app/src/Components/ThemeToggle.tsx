@@ -1,4 +1,3 @@
-// mode light / dark button
 import React from "react";
 
 import { useSettings } from "../contexts/SettingsContext";

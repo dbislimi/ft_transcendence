@@ -39,5 +39,5 @@ export default async function plotRewards(name: string,tab: number[], diff: stri
 	const buffer = Buffer.from(await res.arrayBuffer());
 	const suffix = episode && episode !== 0 ? `_${episode}` : "";
 	writeFileSync(`../AI/qtable_saves/${diff}/graph/${name}${suffix}.png`, buffer);
-	console.log(`✅ Graphique généré : ${name}.png`);
+	console.log(`Graphique généré : ${name}.png`);
 }

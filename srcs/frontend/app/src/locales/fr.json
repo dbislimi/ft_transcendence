@@ -10,7 +10,7 @@
     "registrationBtn": "Inscription", 
     "gameBtn": "Jeu", 
     "aboutBtn": "À propos de nous", 
-    "subtitle": "Défie tes limites dans l'univers du Pong",
+    "subtitle": "Le pong de la famille",
     "welcome": "Bienvenue, {{name}} !",
     "connectDesc": "Accéder à ton compte",
     "registrationDesc": "Rejoindre l'aventure",
@@ -26,7 +26,15 @@
   "game": { 
     "start": "démarrer", 
     "stop": "arrêter", 
-    "speedUnit": "km/h" 
+    "speedUnit": "km/h",
+    "online": "En ligne",
+    "selectBotDifficulty": "Sélectionner la difficulté du bot",
+    "local": "Local",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "play": "Jouer",
+    "train": "Entraîner"
   },
   "about": {
     "title": "Notre Équipe",
@@ -174,7 +182,25 @@
       "livesRemaining": "{{count}} {{count, plural, one {vie restante} other {vies restantes}}} ❤️",
       "gameFinished": "Partie terminée !"
     },
-    "backToMenu": "Retour au menu"
+    "backToMenu": "Retour au menu",
+    "stats": {
+      "date": "Date",
+      "position": "Position",
+      "words": "Mots",
+      "livesRemaining": "Vies restantes",
+      "duration": "Durée",
+      "result": "Résultat",
+      "trigram": "Trigramme",
+      "averageTime": "Temps moyen",
+      "rank": "Rang",
+      "player": "Joueur",
+      "wins": "Victoires",
+      "games": "Parties",
+      "winRate": "Taux de victoire",
+      "bestStreak": "Meilleur streak",
+      "history": "Historique des parties",
+      "error": "Erreur"
+    }
   },
   "profile": {
     "title": "Profil",
@@ -185,6 +211,9 @@
       "winrate": "Taux de victoire",
       "playtime": "Temps de jeu"
     },
+    "playTime": "Temps de jeu",
+    "wins": "Victoires",
+    "losses": "Défaites",
     "badges": { "title": "Badges" },
     "loading": "Chargement du profil...",
     "error": "Échec du chargement du profil",
@@ -193,7 +222,9 @@
   },
   "common": { 
     "back": "Retour", 
-    "backAria": "Revenir en arrière" 
+    "backAria": "Revenir en arrière",
+    "goBackHome": "Retour à l'accueil",
+    "error": "Erreur"
   },
   "accessibility": { 
     "languageSwitcher": "Sélecteur de langue" 
@@ -205,6 +236,7 @@
       "openAria": "Ouvrir le sélecteur d'arrière-plan",
       "selectAria": "Sélectionner l'arrière-plan {{name}}",
       "default": "Par défaut",
+      "space": "Espace (animé)",
       "defaultPreview": "Conserver le fond du jeu",
       "42": "42",
       "halloween": "Halloween",
@@ -237,6 +269,7 @@
       "contrastHigh": "Élevé",
       "contrastVeryHigh": "Très élevé",
       "contrastPreview": "Aperçu du texte avec ce niveau de contraste",
+      "normal": "Normal",
       "animations": "Animations",
       "animationsDesc": "Active les effets visuels et transitions",
       "energySaver": "Mode économie d'énergie",
@@ -291,5 +324,13 @@
       "title": "Économie d'énergie",
       "description": "Réduit les effets décoratifs pour économiser la batterie"
     }
+  },
+  "auth": {
+    "emailPlaceholder": "votre@email.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "Votre nom complet",
+    "emailInvalid": "Email invalide.",
+    "passwordRequired": "Le mot de passe est requis.",
+    "passwordsDontMatch": "Les mots de passe ne correspondent pas"
   }
 }

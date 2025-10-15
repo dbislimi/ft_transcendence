@@ -1,48 +1,71 @@
 import fp from "fastify-plugin";
 import { v4 as uuidv4 } from "uuid";
-import GamesManager from "../game/GamesManager.ts";
+import GamesManager from "../pong/GamesManager.ts";
 const gameController = async (fastify, options) => {
     const games = new GamesManager();
     fastify.get("/game/ws", { websocket: true }, (socket, req) => {
         const clientId = uuidv4();
-        let player;
+        let tournamentId = undefined;
+        let local = false;
+        let status = false;
         socket.on("message", (message) => {
             const data = JSON.parse(message.toString());
             console.log(data);
-            if (data.event === "start") {
+            if (data.event === "stop") {
+                console.log("stop called");
+                if (!status)
+                    return;
+                console.log("debug0");
+                games.quit(socket, tournamentId);
+                tournamentId = undefined;
+                status = false;
+                local = false;
+            }
+            else if (data.event === "start" && status === false) {
                 switch (data.body.action) {
+                    case "list_tournaments":
+                        // one-shot list response
+                        socket.send(JSON.stringify({
+                            event: "tournaments",
+                            body: games.listTournaments(),
+                        }));
+                        return; // do not flip status
                     case "play_online":
-                        player = games.startOnline(clientId, socket);
-                        break;
-                    case "cancel":
-                        games.removeFromQueue(clientId);
-                        player = undefined;
+                        games.startOnline(clientId, socket);
                         break;
                     case "play_offline":
-                        player = games.startOffline(socket, data.body.diff);
+                        local = games.startOffline(socket, data.body.diff);
                         break;
                     case "trainbot":
                         games.trainBot(socket, data.body.diff, 1000);
+                        break;
+                    case "create_tournament":
+                        games.createTournament(socket, data.body.id, data.body.size, data.body.passwd);
+                        tournamentId = data.body.id;
+                        break;
+                    case "join_tournament":
+                        games.joinTournament(socket, data.body.id, data.body.passwd);
+                        tournamentId = data.body.id;
+                        break;
                 }
+                status = true;
             }
-            else if (data.event === "play" && player !== undefined) {
-                if (player.playerId === undefined)
+            else if (data.event === "play" && status === true) {
+                if (local === true)
                     games
-                        .getRoom(player.gameId)
+                        .getRoom(socket)
                         ?.move(data.body.type, data.body.dir, data.body.id);
                 else
                     games
-                        .getRoom(player.gameId)
-                        ?.move(data.body.type, data.body.dir, player.playerId);
+                        .getRoom(socket)
+                        ?.move(data.body.type, data.body.dir, socket);
             }
         });
         socket.on("close", () => {
             console.log("close ", clientId);
-            games.removeFromQueue(clientId);
-            if (!player)
+            if (!status)
                 return;
-            games.getRoom(player.gameId)?.pause();
-            games.removeRoom(player.gameId);
+            games.quit(socket, tournamentId);
         });
     });
 };

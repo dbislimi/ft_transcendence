@@ -53,14 +53,14 @@ export default class Game {
 		else {
 			this.board.Training = true;
 			GAMESPEED = 50;
-			this.board.connectBot(0, botDiff);
-			this.board.connectBot(1, "medium");
+			this.board.connectBot(0, botDiff, true);
+			this.board.connectBot(1, "impossible");
 		}
 	}
 
 	connectPlayer(p: WebSocket) {
 		this.board.disconnectBot();
-		this.board.restart();
+		this.board.reset();
 		this.clients[1] = p;
 		this.clientsId.set(p, 1);
 	}
@@ -118,7 +118,7 @@ export default class Game {
 	}
 	private restart() {
 		console.log("game restarted");
-		this.board.restart();
+		this.board.reset();
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {

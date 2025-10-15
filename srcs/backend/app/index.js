@@ -10,9 +10,9 @@ const dbPath = path.join(__dirname, 'data', 'my-database.db');
 
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
 	if (err) {
-		console.error("❌ Erreur d'ouverture de la base :", err.message);
+		console.error("Erreur d'ouverture de la base :", err.message);
 	} else {
-		console.log("✅ Connecté à la base SQLite");
+		console.log("Connecté à la base SQLite");
 	}
 });
 
@@ -53,7 +53,7 @@ db.serialize(() => {
 		);
 	`);
 
-	// Tables de statistiques Bomb Party
+	// Tables de statistiques
 	db.run(`
 		CREATE TABLE IF NOT EXISTS bp_user_stats (
 			user_id INTEGER PRIMARY KEY,
@@ -110,7 +110,7 @@ db.serialize(() => {
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_user_id ON bp_trigram_stats (user_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_trigram ON bp_trigram_stats (trigram);`);
 
-	console.log("✅ Tables Bomb Party et statistiques initialisées");
+	console.log("Tables Bomb Party et statistiques initialisées");
 });
 
 export default db;

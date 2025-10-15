@@ -30,7 +30,6 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
     }
   }, [isActive]);
 
-  // Charger les suggestions et informations du trigramme quand il change
   useEffect(() => {
     if (trigram && trigram.length >= 3) {
       if (engine && engine.getWordSuggestions) {
@@ -52,7 +51,6 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
 
     const trimmedWord = word.trim();
     
-    // Validation basique
     if (trimmedWord.length < 3) {
       setError(t('bombParty.input.errors.tooShort'));
       return;
@@ -68,7 +66,6 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
       return;
     }
 
-    // Mot valide
     setError(null);
     onSubmit(trimmedWord);
     setWord('');

@@ -1,7 +1,41 @@
 {
-    "nav": { "signin": "Registro", "settings": "Ajustes" },
-    "home": { "connectBtn": "Conexión", "registrationBtn": "Registro", "gameBtn": "Juego", "aboutBtn": "Sobre Nosotros", "subtitle": "Desafía tus límites en el universo de Pong" },
-    "game": { "start": "iniciar", "stop": "detener", "speedUnit": "km/h" },
+    "nav": { 
+      "signin": "Registro", 
+      "settings": "Ajustes",
+      "profile": "Perfil",
+      "home": "Inicio"
+    },
+    "home": { 
+      "connectBtn": "Conexión", 
+      "registrationBtn": "Registro", 
+      "gameBtn": "Juego", 
+      "aboutBtn": "Sobre Nosotros", 
+      "subtitle": "Desafía tus límites en el universo de Pong",
+      "welcome": "¡Bienvenido, {{name}}!",
+      "connectDesc": "Acceder a tu cuenta",
+      "registrationDesc": "Unirse a la aventura",
+      "pongTitle": "Pong",
+      "pongDesc": "Lanzar Pong",
+      "shopDesc": "Personalizar la experiencia",
+      "bombPartyTitle": "Bomb Party",
+      "bombPartyDesc": "Lanzar Bomb Party",
+      "aboutDesc": "Descubrir el equipo",
+      "readyToTranscend": "¿Listo para trascender tus límites?",
+      "optimalPerformance": "Rendimiento óptimo"
+    },
+    "game": { 
+      "start": "iniciar", 
+      "stop": "detener", 
+      "speedUnit": "km/h",
+      "online": "En línea",
+      "selectBotDifficulty": "Seleccionar dificultad del bot",
+      "local": "Local",
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil",
+      "play": "Jugar",
+      "train": "Entrenar"
+    },
   "about": {
     "title": "Nuestro Equipo",
     "subtitle": "Descubre los talentos detrás de Transcendence",
@@ -26,17 +60,23 @@
       "streakRule": "Gana un bono aleatorio cada {{n}} palabras válidas seguidas.",
       "bonusesTitle": "Bonos"
     },
-    "lobby": {
-      "title": "Sala",
-      "createTab": "Crear",
-      "joinTab": "Unirse",
-      "name": "Nombre",
-      "private": "Privado",
-      "password": "Contraseña",
-      "passwordOpt": "Contraseña opcional",
-      "create": "Crear",
-      "join": "Unirse"
-    },
+      "lobby": {
+        "title": "Sala",
+        "createTab": "Crear",
+        "joinTab": "Unirse",
+        "name": "Nombre",
+        "private": "Privado",
+        "password": "Contraseña",
+        "passwordOpt": "Contraseña opcional",
+        "create": "Crear",
+        "join": "Unirse",
+        "connecting": "Conectando...",
+        "lobbyId": "ID del lobby",
+        "playersCount": "Número de jugadores",
+        "lobbyIdPlaceholder": "Pega el ID del lobby aquí...",
+        "lobbyIdHelp": "Pide el ID del lobby al creador",
+        "passwordPlaceholder": "Contraseña (si el lobby es privado)"
+      },
     "debug": { "show": "Mostrar debug", "hide": "Ocultar debug" },
     "chat": {
       "placeholder": "Escribe aquí...",
@@ -84,7 +124,16 @@
       "rule3": "No se permiten palabras duplicadas.",
       "rule4": "Gana el último jugador en pie.",
       "continue": "Entiendo, continuar",
-      "continueAria": "Continuar al lobby"
+      "continueAria": "Continuar al lobby",
+      "modeSelection": "Selección de modo",
+      "localMode": "Modo Local",
+      "multiplayerMode": "Modo Multijugador",
+      "localPlayers": "Jugadores locales",
+      "localModeDesc": "Jugar solo o con otros en la misma pantalla",
+      "multiplayerModeDesc": "Jugar en línea con otros jugadores",
+      "playersCount": "Número de jugadores",
+      "players": "jugadores",
+      "startLocalGame": "Comenzar juego local"
     },
     "hud": {
       "yourTurn": "Tu turno",
@@ -92,9 +141,60 @@
       "eliminated": "Eliminado",
       "fastTurn": "Turno rápido",
       "wordSuggestions": "Sugerencias de palabras"
+    },
+    "input": {
+      "instruction": "Encuentra una palabra que contenga:",
+      "placeholder": "Ingresa tu palabra...",
+      "submit": "Enviar",
+      "recentWords": "Palabras recientes:",
+      "errors": {
+        "tooShort": "La palabra debe tener al menos 3 letras",
+        "noTrigram": "La palabra debe contener el trigrama",
+        "duplicate": "Palabra ya utilizada",
+        "notInDictionary": "Esta palabra no está en el diccionario francés"
+      }
+    },
+    "gameOver": {
+      "title": "¡Juego terminado!",
+      "winner": "Ganador: {{name}}",
+      "backToMenu": "Volver al menú",
+      "victory": "¡Victoria!",
+      "winnerName": "{{name}}",
+      "winnerMessage": "¡Felicidades! ¡Has ganado el juego!",
+      "livesRemaining": "{{count}} {{count, plural, one {vida restante} other {vidas restantes}}} ❤️",
+      "gameFinished": "¡Juego terminado!"
+    },
+    "players": {
+      "title": "Jugadores esperando",
+      "players": "jugadores",
+      "roomId": "ID del lobby",
+      "waiting": "Esperando",
+      "host": "Anfitrión",
+      "waitingForPlayers": "Esperando más jugadores...",
+      "startingIn": "Comenzando en",
+      "startGame": "Comenzar juego",
+      "leave": "Salir"
+    },
+    "backToMenu": "Volver al menú",
+    "stats": {
+      "date": "Fecha",
+      "position": "Posición",
+      "words": "Palabras",
+      "livesRemaining": "Vidas restantes",
+      "duration": "Duración",
+      "result": "Resultado",
+      "trigram": "Trigrama",
+      "averageTime": "Tiempo promedio",
+      "rank": "Rango",
+      "player": "Jugador",
+      "wins": "Victorias",
+      "games": "Partidas",
+      "winRate": "Tasa de victoria",
+      "bestStreak": "Mejor racha",
+      "history": "Historial de partidas",
+      "error": "Error"
     }
-  }
-  ,
+  },
   "profile": {
     "title": "Perfil",
     "memberSince": "Miembro desde {{date}}",
@@ -105,12 +205,107 @@
       "playtime": "Tiempo de juego"
     },
     "badges": { "title": "Insignias" },
+    "playTime": "Tiempo de juego",
+    "wins": "Victorias",
+    "losses": "Derrotas",
     "loading": "Cargando perfil...",
     "error": "No se pudo cargar el perfil",
     "retry": "Reintentar",
     "closeAria": "Cerrar modal de perfil"
   },
-  "common": { "back": "Atrás", "backAria": "Volver atrás" },
+  "shop": {
+    "title": "Tienda",
+    "sections": {
+      "backgrounds": "Fondos",
+      "themes": "Temas",
+      "accessibility": "Accesibilidad",
+      "performance": "Rendimiento"
+    },
+    "items": {
+      "available": "disponibles"
+    },
+    "equipped": "Equipado",
+    "contrast": {
+      "title": "Contraste",
+      "description": "Ajusta el contraste y brillo del texto",
+      "veryLow": "Muy Bajo",
+      "low": "Bajo",
+      "normal": "Normal",
+      "high": "Alto",
+      "veryHigh": "Muy Alto",
+      "preview": "Vista previa del texto con este nivel de contraste"
+    },
+    "animations": {
+      "title": "Animaciones",
+      "description": "Activa o desactiva animaciones y efectos visuales"
+    },
+    "energySaver": {
+      "title": "Ahorro de energía",
+      "description": "Reduce efectos decorativos para ahorrar batería"
+    }
+  },
+  "auth": {
+    "emailPlaceholder": "tu@email.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "Tu nombre completo",
+    "emailInvalid": "Email inválido.",
+    "passwordRequired": "La contraseña es requerida.",
+    "passwordsDontMatch": "Las contraseñas no coinciden"
+  },
+  "settings": {
+    "display": {
+      "title": "Configuración de pantalla",
+      "theme": "Tema",
+      "accessibility": "Accesibilidad",
+      "language": "Idioma",
+      "background": "Fondo",
+      "performance": "Rendimiento",
+      "appearance": "Apariencia",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro",
+      "fontSize": "Tamaño del texto",
+      "fontSmall": "Pequeño",
+      "fontMedium": "Mediano",
+      "fontLarge": "Grande",
+      "contrast": "Contraste",
+      "contrastDesc": "Ajusta el contraste y brillo del texto",
+      "contrastVeryLow": "Muy Bajo",
+      "contrastLow": "Bajo",
+      "contrastNormal": "Normal",
+      "contrastHigh": "Alto",
+      "contrastVeryHigh": "Muy Alto",
+      "contrastPreview": "Vista previa del texto con este nivel de contraste",
+      "normal": "Normal",
+      "animations": "Animaciones",
+      "animationsDesc": "Activa efectos visuales y transiciones",
+      "energySaver": "Modo ahorro de energía",
+      "energySaverDesc": "Reduce efectos visuales para ahorrar batería",
+      "autoSave": "Los cambios se guardan automáticamente",
+      "close": "Cerrar",
+      "description": "Tema, contraste, idioma, fondo, animaciones"
+    },
+    "game": {
+      "title": "Juego",
+      "description": "Controles y preferencias"
+    },
+    "account": {
+      "title": "Cuenta",
+      "description": "Perfil y seguridad"
+    },
+    "advanced": {
+      "title": "Avanzado",
+      "description": "Opciones técnicas"
+    },
+    "home": {
+      "description": "Volver al inicio"
+    }
+  },
+  "common": { 
+    "back": "Atrás", 
+    "backAria": "Volver atrás",
+    "goBackHome": "Volver al inicio",
+    "error": "Error"
+  },
   "accessibility": { "languageSwitcher": "Selector de idioma" },
   "ui": {
     "background": {

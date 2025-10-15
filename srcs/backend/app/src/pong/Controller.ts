@@ -23,6 +23,8 @@ export default abstract class BotController {
 	abstract nbOfActions: number;
 	abstract type: string;
 	abstract qtable_nb: number;
+	protected maxDecisions: number;
+	protected decisionsMade: number = 0;
 
 	constructor(
 		options: {
@@ -32,6 +34,7 @@ export default abstract class BotController {
 			epsilon_decay?: number;
 			epsilon_min?: number;
 			training?: boolean;
+			maxDecisions?: number;
 		} = {}
 	) {
 		const {
@@ -41,6 +44,7 @@ export default abstract class BotController {
 			epsilon_decay = 0.00001,
 			epsilon_min = 0.01,
 			training = false,
+			maxDecisions = 100,
 		} = options;
 		this.start = Date.now();
 		this.training = training;
@@ -49,6 +53,7 @@ export default abstract class BotController {
 		this.epsilon = epsilon;
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
+		this.maxDecisions = maxDecisions;
 	}
 
 	private epsilonGreedy() {
@@ -84,34 +89,63 @@ export default abstract class BotController {
 	}
 
 	public save(episode: number): void {
-		fs.writeFileSync(
-			`../AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${episode}.json`,
-			JSON.stringify(this.qTable, null, 2),
-			"utf-8"
-		);
+		try {
+			fs.writeFileSync(
+				`/usr/AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${episode}.json`,
+				JSON.stringify(this.qTable, null, 2),
+				"utf-8"
+			);
+			console.log(`Saved: ${this.type}/qtable_${this.type}_episode_${episode}.json`);
+		} catch (error) {
+			console.log(`Failed to save Q-table for ${this.type}:`, error);
+		}
 	}
 
 	protected load() {
-		try {
-			const raw = fs.readFileSync(
-				`/Users/benelgorch/Desktop/GitHub/ft_transcendence/AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`,
-				"utf-8"
-			);
-			this.qTable = JSON.parse(raw);
-			console.log(`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`);
-		} catch (error) {
-			console.log(error);
+		const maxRetries = 3;
+		let retries = 0;
+		
+		while (retries < maxRetries) {
+			try {
+				const raw = fs.readFileSync(
+					`/usr/AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`,
+					"utf-8"
+				);
+				this.qTable = JSON.parse(raw);
+				console.log(`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`);
+				return;
+			} catch (error) {
+				retries++;
+				console.log(`Failed to load Q-table for ${this.type} (attempt ${retries}/${maxRetries}):`, error.message);
+				
+				if (retries < maxRetries) {
+					console.log(`Retrying in 1 second...`);
+					// Attendre 1 seconde avant de reessayer
+					const start = Date.now();
+					while (Date.now() - start < 1000) {
+					}
+				} else {
+					console.log(`🚨 Failed to load Q-table after ${maxRetries} attempts. AI will use empty Q-table.`);
+					// Initialize with empty Q-table
+					this.qTable = {};
+				}
+			}
 		}
 	}
 	newEpisode() {
+		console.log(`decisionsMade: ${this.decisionsMade}`);
 		this.epislons.push(this.epsilon);
 		this.rewards.push(this.reward);
 		this.reward = 0;
 		this.scores = [0, 0];
+		this.decisionsMade = 0;
+	}
+	reachedDecisionLimit(): boolean {
+		return this.decisionsMade >= this.maxDecisions;
 	}
 	takeDecision(board: Board, player: Player) {
 		let reward = 0;
-		const timestamp = Date.now();
+		if (this.training) ++this.decisionsMade;
 		const state = this.getState(board, player);
 		if (
 			this.training &&
@@ -123,7 +157,9 @@ export default abstract class BotController {
 		}
 		this.action = this.chooseAction(state);
 		if (this.type === "easy")
-			console.log(`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`);
+			console.log(
+				`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`
+			);
 		this.lastAction = this.action;
 		this.lastState = state;
 		this.reward += reward;

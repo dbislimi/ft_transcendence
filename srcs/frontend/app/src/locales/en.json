@@ -1,7 +1,41 @@
 {
-    "nav": { "signin": "Sign in", "settings": "Settings" },
-    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "aboutBtn": "About Us", "subtitle": "Challenge your limits in the Pong universe" },
-    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" },
+    "nav": { 
+      "signin": "Sign in", 
+      "settings": "Settings",
+      "profile": "Profile",
+      "home": "Home"
+    },
+    "home": { 
+      "connectBtn": "Connect", 
+      "registrationBtn": "Registration", 
+      "gameBtn": "Game", 
+      "aboutBtn": "About Us", 
+      "subtitle": "Challenge your limits in the Pong universe",
+      "welcome": "Welcome, {{name}}!",
+      "connectDesc": "Access your account",
+      "registrationDesc": "Join the adventure",
+      "pongTitle": "Pong",
+      "pongDesc": "Launch Pong",
+      "shopDesc": "Customize the experience",
+      "bombPartyTitle": "Bomb Party",
+      "bombPartyDesc": "Launch Bomb Party",
+      "aboutDesc": "Discover the team",
+      "readyToTranscend": "Ready to transcend your limits?",
+      "optimalPerformance": "Optimal performance"
+    },
+    "game": { 
+      "start": "start", 
+      "stop": "stop", 
+      "speedUnit": "km/h",
+      "online": "Online",
+      "selectBotDifficulty": "Select bot difficulty",
+      "local": "Local",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "play": "Play",
+      "train": "Train"
+    },
   "about": {
     "title": "Our Team",
     "subtitle": "Discover the talents behind Transcendence",
@@ -26,17 +60,23 @@
       "streakRule": "Earn a random bonus every {{n}} valid words in a row.",
       "bonusesTitle": "Bonuses"
     },
-    "lobby": {
-      "title": "Lobby",
-      "createTab": "Create",
-      "joinTab": "Join",
-      "name": "Name",
-      "private": "Private",
-      "password": "Password",
-      "passwordOpt": "Optional password",
-      "create": "Create",
-      "join": "Join"
-    },
+      "lobby": {
+        "title": "Lobby",
+        "createTab": "Create",
+        "joinTab": "Join",
+        "name": "Name",
+        "private": "Private",
+        "password": "Password",
+        "passwordOpt": "Optional password",
+        "create": "Create",
+        "join": "Join",
+        "connecting": "Connecting...",
+        "lobbyId": "Lobby ID",
+        "playersCount": "Number of players",
+        "lobbyIdPlaceholder": "Paste lobby ID here...",
+        "lobbyIdHelp": "Ask the lobby creator for the ID",
+        "passwordPlaceholder": "Password (if lobby is private)"
+      },
     "debug": { "show": "Show debug", "hide": "Hide debug" },
     "chat": {
       "placeholder": "Type here...",
@@ -65,8 +105,17 @@
         "rule1": "Find words containing the trigram",
         "rule2": "Each player has 3 lives",
         "rule3": "15 seconds per turn",
-        "rule4": "Last survivor wins!"
+        "rule4": "Last survivor wins!",
+        "rule5": "Words must be in French and valid"
       }
+    },
+    "game": {
+      "countdown": "Starting in",
+      "turnIndicator": "Turn of",
+      "timeRemaining": "Time remaining",
+      "wordSuggestions": "Suggestions",
+      "suggestionsEnabled": "Suggestions enabled",
+      "suggestionsDisabled": "Suggestions disabled"
     },
     "rules": {
       "title": "Game Rules",
@@ -76,7 +125,16 @@
       "rule3": "No duplicate words.",
       "rule4": "Last player standing wins.",
       "continue": "I understand, continue",
-      "continueAria": "Continue to lobby"
+      "continueAria": "Continue to lobby",
+      "modeSelection": "Mode Selection",
+      "localMode": "Local Mode",
+      "multiplayerMode": "Multiplayer Mode",
+      "localPlayers": "Local Players",
+      "localModeDesc": "Play alone or with others on the same screen",
+      "multiplayerModeDesc": "Play online with other players",
+      "playersCount": "Number of players",
+      "players": "players",
+      "startLocalGame": "Start Local Game"
     },
     "input": {
       "instruction": "Find a word containing:",
@@ -93,7 +151,23 @@
     "gameOver": {
       "title": "Game Over!",
       "winner": "Winner: {{name}}",
-      "backToMenu": "Back to Menu"
+      "backToMenu": "Back to Menu",
+      "victory": "Victory!",
+      "winnerName": "{{name}}",
+      "winnerMessage": "Congratulations! You won the game!",
+      "livesRemaining": "{{count}} {{count, plural, one {life remaining} other {lives remaining}}} ❤️",
+      "gameFinished": "Game finished!"
+    },
+    "players": {
+      "title": "Waiting Players",
+      "players": "players",
+      "roomId": "Lobby ID",
+      "waiting": "Waiting",
+      "host": "Host",
+      "waitingForPlayers": "Waiting for more players...",
+      "startingIn": "Starting in",
+      "startGame": "Start Game",
+      "leave": "Leave"
     },
     "hud": {
       "yourTurn": "Your turn",
@@ -102,7 +176,25 @@
       "fastTurn": "Fast turn",
       "wordSuggestions": "Word suggestions"
     },
-    "backToMenu": "Back to Menu"
+    "backToMenu": "Back to Menu",
+    "stats": {
+      "date": "Date",
+      "position": "Position",
+      "words": "Words",
+      "livesRemaining": "Lives remaining",
+      "duration": "Duration",
+      "result": "Result",
+      "trigram": "Trigram",
+      "averageTime": "Average time",
+      "rank": "Rank",
+      "player": "Player",
+      "wins": "Wins",
+      "games": "Games",
+      "winRate": "Win rate",
+      "bestStreak": "Best streak",
+      "history": "Game history",
+      "error": "Error"
+    }
   }
   ,
   "profile": {
@@ -115,12 +207,107 @@
       "playtime": "Play time"
     },
     "badges": { "title": "Badges" },
+    "playTime": "Play time",
+    "wins": "Wins",
+    "losses": "Losses",
     "loading": "Loading profile...",
     "error": "Failed to load profile",
     "retry": "Retry",
     "closeAria": "Close profile modal"
   },
-  "common": { "back": "Back", "backAria": "Go back" },
+  "shop": {
+    "title": "Shop",
+    "sections": {
+      "backgrounds": "Backgrounds",
+      "themes": "Themes",
+      "accessibility": "Accessibility",
+      "performance": "Performance"
+    },
+    "items": {
+      "available": "available"
+    },
+    "equipped": "Equipped",
+    "contrast": {
+      "title": "Contrast",
+      "description": "Adjust text contrast and brightness",
+      "veryLow": "Very Low",
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "veryHigh": "Very High",
+      "preview": "Text preview with this contrast level"
+    },
+    "animations": {
+      "title": "Animations",
+      "description": "Enable or disable animations and visual effects"
+    },
+    "energySaver": {
+      "title": "Energy Saver",
+      "description": "Reduce decorative effects to save battery"
+    }
+  },
+  "auth": {
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "Your full name",
+    "emailInvalid": "Invalid email.",
+    "passwordRequired": "Password is required.",
+    "passwordsDontMatch": "Passwords do not match"
+  },
+  "settings": {
+    "display": {
+      "title": "Display Settings",
+      "theme": "Theme",
+      "accessibility": "Accessibility",
+      "language": "Language",
+      "background": "Background",
+      "performance": "Performance",
+      "appearance": "Appearance",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "fontSize": "Text Size",
+      "fontSmall": "Small",
+      "fontMedium": "Medium",
+      "fontLarge": "Large",
+      "contrast": "Contrast",
+      "contrastDesc": "Adjust text contrast and brightness",
+      "contrastVeryLow": "Very Low",
+      "contrastLow": "Low",
+      "contrastNormal": "Normal",
+      "contrastHigh": "High",
+      "contrastVeryHigh": "Very High",
+      "contrastPreview": "Text preview with this contrast level",
+      "normal": "Normal",
+      "animations": "Animations",
+      "animationsDesc": "Enable visual effects and transitions",
+      "energySaver": "Energy Saver Mode",
+      "energySaverDesc": "Reduce visual effects to save battery",
+      "autoSave": "Changes are saved automatically",
+      "close": "Close",
+      "description": "Theme, contrast, language, background, animations"
+    },
+    "game": {
+      "title": "Game",
+      "description": "Controls and preferences"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Profile and security"
+    },
+    "advanced": {
+      "title": "Advanced",
+      "description": "Technical options"
+    },
+    "home": {
+      "description": "Return to home"
+    }
+  },
+  "common": { 
+    "back": "Back", 
+    "backAria": "Go back",
+    "goBackHome": "Go back home",
+    "error": "Error"
+  },
   "accessibility": { "languageSwitcher": "Language selector" },
   "ui": {
     "background": {

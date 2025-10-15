@@ -78,7 +78,6 @@ export default function ParticleProvider() {
       }
     };
 
-    // Gestionnaire de souris
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;

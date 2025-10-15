@@ -78,13 +78,11 @@ class BombPartyStatsService {
    */
   async saveGameStats(stats: GameStats & { userId: string | number }): Promise<void> {
     try {
-      // Sauvegarder les statistiques principales
       await this.fetchWithAuth(`${this.baseUrl}/stats/update`, {
         method: 'POST',
         body: JSON.stringify(stats)
       });
 
-      // Sauvegarder les statistiques de trigrammes
       for (const attempt of this.trigramAttempts) {
         await this.fetchWithAuth(`${this.baseUrl}/trigram-stats/update`, {
           method: 'POST',
@@ -94,9 +92,9 @@ class BombPartyStatsService {
 
       this.trigramAttempts = [];
 
-      console.log('✅ Statistiques sauvegardées avec succès');
+      console.log('Statistiques sauvegardées avec succès');
     } catch (error) {
-      console.error('❌ Erreur sauvegarde statistiques:', error);
+      console.error('Erreur sauvegarde statistiques:', error);
     }
   }
 
@@ -121,7 +119,6 @@ class BombPartyStatsService {
     
     const trigramCounts: Record<string, number> = {};
     gameData.usedWords.forEach(word => {
-      // Extraire les trigrammes du mot (simplification)
       for (let i = 0; i < word.length - 2; i++) {
         const trigram = word.substring(i, i + 3).toLowerCase();
         trigramCounts[trigram] = (trigramCounts[trigram] || 0) + 1;

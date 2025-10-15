@@ -71,7 +71,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   };
 
   const handleBackgroundChange = (backgroundId: string) => {
-    console.log('🖼️ [Background] Changement vers:', backgroundId);
+    console.log('[Background] Changement vers:', backgroundId);
     setBackground(backgroundId);
   };
 

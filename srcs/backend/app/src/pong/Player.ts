@@ -38,9 +38,7 @@ export default class Player {
 		return { size: this.size, y: this.y };
 	}
 	reset() {
-		//this.bot = undefined;
 		this.ActiveBonus = this.ActiveBonus.filter((bonus) => {
-			//bonus.remove(this);
 			return false;
 		});
 		this.y = this.boardHeight / 2 - this.size / 2;

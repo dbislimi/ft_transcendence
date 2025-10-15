@@ -120,7 +120,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						<button
 							type="button"
 							onClick={() => {
-								console.log('🎯 [Frontend-LobbyScreen] Création lobby avec maxPlayers:', maxPlayers);
+								console.log('[Frontend-LobbyScreen] Création lobby avec maxPlayers:', maxPlayers);
 								onCreate({ name, isPrivate, password: isPrivate ? password : undefined, maxPlayers });
 							}}
 							disabled={!name.trim() || !isAuthenticated}

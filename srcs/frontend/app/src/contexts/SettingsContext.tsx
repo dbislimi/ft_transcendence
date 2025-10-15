@@ -149,7 +149,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.add(`text-${fontSize}`);
     // Animations
     document.documentElement.classList.toggle('reduce-motion', !animations);
-    // Mode economie d´energie
     document.documentElement.classList.toggle('energy-saver', energySaver);
     // Langue
     i18n.changeLanguage(language);

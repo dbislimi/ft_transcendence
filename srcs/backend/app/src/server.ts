@@ -8,7 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken"; // compatible avec ESM/TypeScript
+import * as jwt from "jsonwebtoken";
 
 const fastify = Fastify({
 	logger: {
@@ -31,18 +31,17 @@ const db = (await import(path.join(__dirname, "..", "index.js"))).default;
 
 
 await fastify.register(cors, {
-	origin: "http://localhost:5173", // ton app React
+	origin: "http://localhost:5173",
 });
 
-console.log('📊 [Stats] Enregistrement des routes de statistiques...');
+console.log('[Stats] Enregistrement des routes de statistiques...');
 await fastify.register(bombPartyStatsRoutes);
-console.log('✅ [Stats] Routes de statistiques enregistrées');
+console.log('[Stats] Routes de statistiques enregistrées');
 
 fastify.get("/", async () => {
 	return { hello: "from docker" };
 });
 
-// Enregistrement d'un nouvel utilisateur
 fastify.post("/register", async (request, reply) => {
 	const { name, email, password } = request.body as {
 		name: string;
@@ -61,7 +60,7 @@ fastify.post("/register", async (request, reply) => {
 		db.run(
 			"INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
 			[name, email, hashedPassword],
-			function (err: any) {
+			function (this: any, err: any) {
 				if (err) {
 					return reply
 						.code(500)
@@ -146,7 +145,7 @@ fastify.get("/me", async (request, reply) => {
 		db.get(
 			"SELECT id, name, email, twoFAEnabled FROM users WHERE id = ?",
 			[decoded.id],
-			(err, user) => {
+			(err: any, user: any) => {
 				if (err || !user) {
 					return reply
 						.code(404)
@@ -161,4 +160,4 @@ fastify.get("/me", async (request, reply) => {
 	}
 });
 
-fastify.listen({ port: 3000, host: "0.0.0.0" });
+fastify.listen({ port: 3001, host: "0.0.0.0" });
