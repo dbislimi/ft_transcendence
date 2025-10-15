@@ -6,7 +6,7 @@ import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
-import websocketPlugin from "@fastify/websocket";
+import websocket from "@fastify/websocket";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -21,6 +21,9 @@ import wsFriends from "./plugins/ws-friends.ts";
 import matchesPlugin from "./plugins/matches.ts";
 import leaderboardPlugin from "./plugins/leaderboard.ts";
 import friendsPlugin from "./plugins/friends.ts";
+import googleAuth from "./plugins/google.ts";
+import Settings from "./plugins/settings.ts";
+import Chat from "./plugins/chat.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -43,8 +46,6 @@ async function main() {
   });
 
   await fastify.register(websocket);
-
-  await fastify.register(authHook);
   await fastify.register(fastifyFormbody);
   await fastify.register(multipart);
   
@@ -62,14 +63,11 @@ async function main() {
     });
   });
   
-  await fastify.register(websocketPlugin);
-  
   await fastify.register(wsFriends);
   
   await fastify.register(authUtilsPlugin);
   await fastify.register(authPlugin);
-  await fastify.register(GoogleAuth);
-  await fastify.register(Send2faMail);
+  await fastify.register(googleAuth);
   await fastify.register(userPlugin);
   await fastify.register(wsGame);
   await fastify.register(Settings);

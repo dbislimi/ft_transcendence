@@ -7,6 +7,6 @@ export { default as Game } from './Game';
 export { default as auth } from './auth';
 export { default as Confirmation } from './Confirmation';
 export { default as Reglages } from './Reglages';
-export {default as chat} from './chat';
+export { default as chat } from './chat';
 export { default as Profile } from "./Profile";
 export { default as Friends } from "./Friends";

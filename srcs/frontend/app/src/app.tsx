@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+/*import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Connection from "./pages/Connection";
@@ -58,3 +58,4 @@ export default function App() {
     </UserProvider>
   );
 }
+*/

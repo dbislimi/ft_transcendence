@@ -18,7 +18,7 @@ async function dbPlugin(fastify, opts) {
     }
   });
 
-  db.serialize(() => {
+  /*db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -39,7 +39,65 @@ async function dbPlugin(fastify, opts) {
       blockedId INTEGER,
       PRIMARY KEY (blockerId, blockedId)
     );`);
+  });*/
+
+  db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+  	  twoFAEnabled INTEGER DEFAULT 0,
+    	twoFAOtp TEXT,
+      display_name TEXT UNIQUE,
+      avatar TEXT DEFAULT '',
+      wins INTEGER DEFAULT 0,
+      losses INTEGER DEFAULT 0,
+      online INTEGER DEFAULT 0
+    );`);
+  
+    db.run(`CREATE TABLE IF NOT EXISTS matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      player1_id INTEGER NOT NULL,
+      player2_id INTEGER NOT NULL,
+      winner_id INTEGER,
+      played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (player1_id) REFERENCES users(id),
+      FOREIGN KEY (player2_id) REFERENCES users(id),
+      FOREIGN KEY (winner_id) REFERENCES users(id)
+    );`);
+  
+    db.run(`CREATE TABLE IF NOT EXISTS friends (
+      user_id INTEGER NOT NULL,
+      friend_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (friend_id) REFERENCES users(id),
+      PRIMARY KEY (user_id, friend_id)
+    );`);
+  
+    db.run(`CREATE TABLE IF NOT EXISTS friend_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id INTEGER NOT NULL,
+      receiver_id INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sender_id) REFERENCES users(id),
+      FOREIGN KEY (receiver_id) REFERENCES users(id),
+      UNIQUE (sender_id, receiver_id)
+    );`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS blocked_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      blocker_id INTEGER NOT NULL,
+      blocked_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (blocker_id) REFERENCES users (id) ON DELETE CASCADE,
+      FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE,
+      UNIQUE(blocker_id, blocked_id)
+    );`);
   });
+
 
   fastify.decorate('db', db);
 
