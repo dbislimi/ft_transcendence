@@ -1,30 +1,26 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom","ES2023"],
+    "lib": ["ES2023"],
     "module": "ES2022",
-    "skipLibCheck": true,
-    "outDir": "dist",
-    "esModuleInterop": true,
-    
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
-
-    /* Linting */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true
   },
+  "include": ["src", "types.d.ts"],
+  "exclude": ["node_modules"],
   "ts-node": {
-    "esm": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
 }

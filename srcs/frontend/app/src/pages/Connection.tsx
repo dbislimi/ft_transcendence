@@ -2,20 +2,22 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";import { useUser } from "../context/UserContext";
 
 export default function Connection() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const { setToken } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
     const form = e.currentTarget;
-    const email = form.querySelector<HTMLInputElement>("#email")?.value || "";
-    const password = form.querySelector<HTMLInputElement>("#password")?.value || "";
+    const email = (form.querySelector<HTMLInputElement>("#email")?.value || "").trim();
+    const password = (form.querySelector<HTMLInputElement>("#password")?.value || "").trim();
 
     let formErrors: Record<string, string> = {};
 
@@ -32,37 +34,33 @@ export default function Connection() {
       setErrors(formErrors);
       return;
     }
-
     try {
+
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+      //console.log("la var en question " + data.enable2fa);
+      console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
-        // Simuler une connexion réussie avec des données utilisateur
-        const userData = {
-          id: "1",
-          name: email.split('@')[0], // Utiliser la partie avant @ comme nom
-          email: email
-        };
-        
-        login(userData);
-        navigate("/");
-      } else {
+        if (data.require2fa){
+          localStorage.setItem("for2FaUserId", data.userId.toString());
+          navigate("/auth");
+        }
+        else{
+          console.log("BAAAAAAAAAAAAAAAAAAAAAA");
+          localStorage.setItem("token", data.token);
+          navigate("/Dashboard");
+        }
+      } 
+      else {
         alert("Identifiants invalides");
       }
-    } catch (error) {
-      // En cas d'erreur réseau, simuler une connexion pour la démo
-      const userData = {
-        id: "1",
-        name: email.split('@')[0],
-        email: email
-      };
-      
-      login(userData);
-      navigate("/");
+    } catch {
+      setErrors({ general: "Erreur réseau. Veuillez réessayer." });
     }
   };
 

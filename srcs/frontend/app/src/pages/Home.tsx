@@ -1,12 +1,32 @@
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundPicker from "../Components/BackgroundPicker";
 import { useAuth } from "../contexts/AuthContext";
 import ActionButton from "../Components/ActionButton";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const token = params.get("token");
+		const require2fa = params.get("require2fa");
+
+		if (token) {
+			localStorage.setItem("token", token);
+			const cleanUrl = window.location.origin + window.location.pathname;
+			window.history.replaceState({}, document.title, cleanUrl);
+			navigate("/dashboard");
+		}
+		else if (require2fa == '1'){
+			const cleanUrl = window.location.origin + window.location.pathname;
+			window.history.replaceState({}, document.title, cleanUrl);
+			navigate("/auth");
+		}
+	}, []);
+
 	const { t } = useTranslation();
 	const { isAuthenticated, user } = useAuth();
 	const [isLoaded, setIsLoaded] = useState(false);
