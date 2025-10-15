@@ -76,7 +76,6 @@ export default function SpaceBackground() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const appRef = useRef<Application | null>(null);
 	const starsRef = useRef<Star[]>([]);
-	// Track mouse and smoothed center offset for parallax
 	const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 	const centerOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 	const location = useLocation();
@@ -273,7 +272,7 @@ export default function SpaceBackground() {
 			ref={containerRef}
 			className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black"
 		>
-			<div className="absolute inset-0 bg-black/30 pointer-events-none z-10" />
+			<div className="absolute inset-0 bg-black/30 pointer-events-none z-1" />
 		</div>
 	);
 }

@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-/* ... existing code ... */
-
 /* Thème clair */
 body {
   --bg-primary: #ffffff;
@@ -20,7 +18,6 @@ body {
   --border-color: #334155;
 }
 
-/* Application des couleurs */
 .dark .bg-gradient-to-br {
   background: linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary));
 }
@@ -41,7 +38,6 @@ body {
   background-color: var(--bg-secondary);
 }
 
-/* Classes pour le contraste */
 .contrast-150 {
   filter: contrast(150%);
 }
@@ -58,10 +54,8 @@ html, body {
   height: 100%;
 }
 
-/* ... existing code ... */
-
 /* Animations personnalisées pour la page d'accueil */
-@keyframes shooting-star {
+/* @keyframes shooting-star {
   0% {
     transform: translateX(-100px) translateY(0px);
     opacity: 0;
@@ -76,16 +70,16 @@ html, body {
     transform: translateX(calc(100vw + 100px)) translateY(100px);
     opacity: 0;
   }
-}
+} */
 
-@keyframes float {
+/* @keyframes float {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
     transform: translateY(-20px) rotate(180deg);
   }
-}
+} */
 
 .animate-shooting-star {
   animation: shooting-star 8s linear infinite;

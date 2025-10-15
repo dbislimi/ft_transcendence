@@ -34,7 +34,7 @@ function PongCanvas({ gameRef, scale }: Props) {
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.font = "300px Audiowide";
-			c.fillStyle = "black";
+			c.fillStyle = "white";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(
