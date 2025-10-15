@@ -87,11 +87,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
       <BackgroundProvider>
-        <UserProvider>
-      <WebSocketProvider>
+        {/* <UserProvider> */}
+      {/* <WebSocketProvider> */}
         <RouterProvider router={router} />
-      </WebSocketProvider>
-      </UserProvider>
+      {/* </WebSocketProvider> */}
+      {/* </UserProvider> */}
       </BackgroundProvider>
     </AuthProvider>
   </StrictMode>

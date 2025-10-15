@@ -16,7 +16,6 @@ import dbPlugin from "../index.js";
 import authPlugin from "./plugins/auth.ts";
 import authUtilsPlugin from "./utils/auth.ts";
 import userPlugin from "./plugins/user.ts";
-import wsGame from "./plugins/ws-game.ts";
 import wsFriends from "./plugins/ws-friends.ts";
 import matchesPlugin from "./plugins/matches.ts";
 import leaderboardPlugin from "./plugins/leaderboard.ts";
@@ -71,7 +70,6 @@ async function main() {
   await fastify.register(authPlugin);
   await fastify.register(googleAuth);
   await fastify.register(userPlugin);
-  await fastify.register(wsGame);
   await fastify.register(Settings);
   await fastify.register(Chat);
   await fastify.register(matchesPlugin);

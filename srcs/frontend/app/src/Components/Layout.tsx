@@ -14,11 +14,11 @@ export default function Layout() {
   return (
     <>
       <Header />
-			{/* <BackgroundSurface> */}
+			<BackgroundSurface>
       <main className="h-full">
         <Outlet />
       </main>
-			{/* </BackgroundSurface> */}
+			</BackgroundSurface>
       {!hiddenRoutes.includes(location.pathname) && <ChatWidget />}
     </>
   );
