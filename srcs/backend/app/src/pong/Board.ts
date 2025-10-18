@@ -3,7 +3,7 @@ import Ball from "./Ball.ts";
 import BotController, { HardBot, MediumBot } from "./Controller.ts";
 //import { EasyController } from "./Controller.ts";
 import Bonus from "./Bonus.ts";
-import { Bigger } from "./Bonus.ts";
+import { Bigger, Smaller, Faster } from "./Bonus.ts";
 import { EasyBot } from "./Controller.ts";
 import plotRewards from "./chart.ts";
 interface PlayerData {
@@ -21,9 +21,9 @@ export default class Board {
 	ball: Ball;
 	private elapsedTime: number = 0;
 	bonus: Bonus[] = [];
-	private bonusNb: number = 0;
-	private bonusSpawnInterval: number = 5;
-	private lastBonusSpawn: number = 0;
+	private bonusNb: number = 1;
+	private bonusSpawnInterval: number = 1;
+	private bonusSpawnTimer: number = 0;
 	private bonusRadius: number = 8;
 	private training: boolean = false;
 	botController: BotController[];
@@ -72,7 +72,8 @@ export default class Board {
 
 		if (player === null) this.ball.dy *= -1;
 		else {
-			this.normHitpoint = (2 * hitpoint) / player.size - 1;
+			const clamped = Math.max(0, Math.min(hitpoint, player.size));
+			this.normHitpoint = (2 * clamped) / player.size - 1;
 			const angle = this.normHitpoint * (Math.PI / 4);
 			const dir = this.ball.dx < 0 ? -1 : 1;
 			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
@@ -82,12 +83,8 @@ export default class Board {
 	private addScore(player: number) {
 		this.score[player]++;
 		this.bonus = [];
-		this.lastBonusSpawn = this.elapsedTime;
-		for (const player of this.players) {
-			//for (const bonus of player.ActiveBonus) bonus.remove(player);
-			player.ActiveBonus = [];
-			player.y = this.height / 2 - player.size / 2;
-		}
+		for (const p of this.players) p.reset();
+		this.bonusSpawnTimer = 0;
 		this.setBallPos();
 		this.bounceBallX(true);
 		if (this.score[player] === this.maxScore) this.onWin(player);
@@ -128,14 +125,13 @@ export default class Board {
 						(this.ball.radius + bonus.radius)
 				) {
 					this.players[player].bonusCollectedTotal++;
+					console.log("BONUS: ", bonus.name);
 					if (bonus.is === "bonus") {
-						//if (bonus.apply(this.players[player])) {
-						this.players[player].ActiveBonus.push(bonus);
-						//}
+						if (bonus.apply(this.players[player]))
+							this.players[player].ActiveBonus.push(bonus);
 					} else {
 						const opp = this.players[(player + 1) % 2];
-						//bonus.apply(opp);
-						opp.ActiveBonus.push(bonus);
+						if (bonus.apply(opp)) opp.ActiveBonus.push(bonus);
 					}
 					return false;
 				}
@@ -227,12 +223,12 @@ export default class Board {
 		}
 	}
 	updateBonus(dt: number) {
-		if (this.bonus.length < this.bonusNb) {
-			if (
-				this.elapsedTime - this.lastBonusSpawn >=
-				this.bonusSpawnInterval
-			) {
-				let retries = 2;
+		this.bonusSpawnTimer += dt;
+		if (this.bonusSpawnTimer >= this.bonusSpawnInterval) {
+			this.bonusSpawnTimer -= this.bonusSpawnInterval;
+			if (this.bonus.length < this.bonusNb) {
+				let retries = 1;
+				
 				let y = Math.floor(
 					Math.random() * (this.height - this.bonusRadius * 2) +
 						this.bonusRadius
@@ -251,8 +247,13 @@ export default class Board {
 					++i;
 				}
 				if (retries) {
-					this.bonus.push(new Bigger(y, this.bonusRadius));
-					this.lastBonusSpawn = this.elapsedTime;
+					const bonusTypes = [Bigger, Smaller, Faster];
+					const bonus =
+						bonusTypes[
+							Math.floor(Math.random() * bonusTypes.length)
+						];
+					const newBonus = new bonus(y, this.bonusRadius);
+					this.bonus.push(newBonus);
 				}
 			}
 		}
@@ -261,7 +262,7 @@ export default class Board {
 			player.ActiveBonus = player.ActiveBonus.filter((bonus) => {
 				bonus.duration -= dt;
 				if (bonus.duration <= 0) {
-					//bonus.remove(player);
+					bonus.remove(player);
 					return false;
 				}
 				return true;
@@ -330,7 +331,7 @@ export default class Board {
 				break;
 			case "hard":
 				this.botController[id] = new HardBot({
-					learning_rate: 0.05,
+					learning_rate: 0.1,
 					discount_factor: 0.9,
 					epsilon: 1,
 					epsilon_decay: 0.00008,
@@ -346,7 +347,6 @@ export default class Board {
 		this.ball.reset(this);
 		for (const player of this.players) player.reset();
 		this.bonus.length = 0;
-		this.lastBonusSpawn = 0;
 		this.elapsedTime = 0;
 		if (this.training && this.botController.length !== 0) {
 			if (this.gamesNb % 50 === 0)

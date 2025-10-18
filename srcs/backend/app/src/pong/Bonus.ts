@@ -17,7 +17,7 @@ export default abstract class BonusBase {
 }
 
 export class Bigger extends BonusBase {
-	grow: number = 20;
+	grow: number = 15;
 	name = "Bigger";
 	is = "bonus" as "bonus";
 	apply(player: Player){
@@ -38,7 +38,7 @@ export class Bigger extends BonusBase {
 }
 
 export class Smaller extends BonusBase {
-	grow: number = 20;
+	grow: number = 10;
 	name = "Smaller";
 	is = "penalty" as "penalty";
 	apply(player: Player){
