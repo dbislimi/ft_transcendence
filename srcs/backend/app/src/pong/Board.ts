@@ -30,9 +30,9 @@ export default class Board {
 	private maxScore: number;
 	private gamesNb: number = 1;
 	normHitpoint: number = 0;
-	private onWin: (id: number) => void;
+	private onWin: (id: 0 | 1) => void;
 
-	constructor(onWin: (id: number) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
+	constructor(onWin: (id: 0 | 1) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
 		this.onWin = onWin;
 		this.maxScore = maxScore;
 		this.height = height;

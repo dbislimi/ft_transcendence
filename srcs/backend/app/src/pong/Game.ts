@@ -1,28 +1,23 @@
 import type WebSocket from "ws";
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
+import type { Client } from "../plugins/gameController.ts";
 
-export type clientSocket = {
-	clientId: string;
-	ws: WebSocket;
-};
 let GAMESPEED: number = 1;
 
 export default class Game {
 	readonly board: Board;
-	private readonly clients: [WebSocket, WebSocket | undefined];
-	private clientsId: WeakMap<WebSocket, 0 | 1> = new WeakMap();
+	clients: [Client, Client | undefined];
+	private clientsId: WeakMap<Client, 0 | 1> = new WeakMap();
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
-	private onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
+	private onEnd: ((client: Client, winner: boolean) => void) | null;
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
-	private winner: number | undefined = undefined;
-
-	private timestamp: number;
+	private winner: 0 | 1 | undefined = undefined;
 
 	constructor({
 		p1,
@@ -31,16 +26,18 @@ export default class Game {
 		botDiff,
 		train = false,
 	}: {
-		p1: WebSocket;
-		p2?: WebSocket;
-		onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
+		p1: Client;
+		p2?: Client;
+		onEnd: ((client: Client, winner: boolean) => void) | null;
 		botDiff?: difficulty | null;
 		train?: boolean;
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board((id: number) => (this.winner = id));
+		this.board = new Board((id: 0 | 1) => (this.winner = id));
 		this.clientsId.set(p1, 0);
+		p1.inGameId = 0;
 		if (p2 !== undefined) {
+			p2.inGameId = 1;
 			this.clients = [p1, p2];
 			this.clientsId.set(p2, 1);
 			return;
@@ -59,24 +56,25 @@ export default class Game {
 		}
 	}
 
-	connectPlayer(p: WebSocket) {
+	connectPlayer(p: Client) {
 		this.board.disconnectBot();
 		this.board.restart();
 		this.clients[1] = p;
+		p.inGameId = 1;
 		this.clientsId.set(p, 1);
 	}
-	disconnectPlayer(p: WebSocket) {
+	disconnectPlayer(p: Client) {
 		console.log("try to disconnect");
-		const id: 0 | 1 | undefined = this.clientsId.get(p);
+		const id: 0 | 1 | undefined = p.inGameId;
 		if (id === undefined) return;
 		console.log("disconnected");
-		this.stop((id + 1) % 2);
+		this.stop(((id + 1) % 2) as 0 | 1);
 	}
 	private send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {
-		for (const ws of this.clients) ws?.send(data, cb);
+		for (const client of this.clients) client?.socket?.send(data, cb);
 	}
 	public startAsync(signal: AbortSignal) {
 		this.signal = signal;
@@ -98,13 +96,12 @@ export default class Game {
 		this.gameLoop();
 	}
 	public pause(): void {
-		if (this.timeoutId) {
-			console.log("game paused");
-			clearTimeout(this.timeoutId);
-			this.timeoutId = null;
-		}
+		if (!this.timeoutId) return;
+		console.log("game paused");
+		clearTimeout(this.timeoutId);
+		this.timeoutId = null;
 	}
-	private stop(winner: number): void {
+	private stop(winner: 0 | 1): void {
 		this.pause();
 		this.signal?.removeEventListener("abort", this.onAbort);
 		const data = { event: "win", body: winner };
@@ -114,8 +111,9 @@ export default class Game {
 			return;
 		}
 		if (!this.onEnd) return;
-		this.onEnd(this.clients[0], winner === 0);
-		if (this.clients[1]) this.onEnd(this.clients[1], winner === 1);
+		this.onEnd(this.clients[0], this.clients[0].inGameId === winner);
+		if (this.clients[1])
+			this.onEnd(this.clients[1], this.clients[1].inGameId === winner);
 	}
 	private restart() {
 		console.log("game restarted");
@@ -123,14 +121,10 @@ export default class Game {
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {
-		if (!this.board.players[player].up && type === "press") {
+		if (!this.board.players[player].up && type === "press")
 			this.board.players[player].moveUp(true);
-			this.timestamp = Date.now();
-		} else if (this.board.players[player].up && type === "release") {
+		else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
-			console.log("timestamp:", Date.now() - this.timestamp);
-			this.timestamp = 0;
-		}
 	}
 	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")
@@ -138,13 +132,17 @@ export default class Game {
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
 	}
-	move(type: string, dir: string, player: 0 | 1 | WebSocket) {
+	move(type: string, dir: string, player: 0 | 1 | undefined) {
 		// console.log(player);
-		if (typeof player === "object") {
-			if (this.clientsId.get(player) === undefined)
-				throw new Error("ClientsId undefined");
-			if (dir === "up") this.up(type, this.clientsId.get(player)!);
-			else this.down(type, this.clientsId.get(player)!);
+		//if (typeof player === "object") {
+		//	if (this.clientsId.get(player) === undefined)
+		//		throw new Error("ClientsId undefined");
+		//	if (dir === "up") this.up(type, this.clientsId.get(player)!);
+		//	else this.down(type, this.clientsId.get(player)!);
+		//	return;
+		//}
+		if (player === undefined) {
+			console.log("PLAYER GAMEID UNDEFINED");
 			return;
 		}
 		if (dir === "up") this.up(type, player);
@@ -185,5 +183,9 @@ export default class Game {
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);
+	}
+	getOpp(client: Client) {
+		const socket = this.clients.find((c) => c !== client);
+		return socket;
 	}
 }

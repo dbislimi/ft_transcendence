@@ -1,7 +1,6 @@
 import Game from "./Game.ts";
 import WebSocket from "ws";
-
-type Player = WebSocket;
+import type { Client } from "../plugins/gameController.ts";
 
 class Node {
 	game?: Game;
@@ -9,14 +8,14 @@ class Node {
 	parent?: Node;
 	right?: Node;
 	left?: Node;
-	winner?: Player;
-	loser?: Player;
+	winner?: Client;
+	loser?: Client;
 
 	depth?: number;
 	bracketId?: number;
 
 	constructor(N: {
-		p?: Player;
+		p?: Client;
 		left?: Node;
 		right?: Node;
 		depth?: number;
@@ -39,10 +38,10 @@ export default class Tournament {
 	id: string;
 	started: boolean = false;
 	capacity: number;
-	players: WebSocket[] = [];
+	players: Client[] = [];
 	leafs: Node[] = [];
 	root: Node | null = null;
-	rooms: WeakMap<WebSocket, Game>;
+	rooms: WeakMap<Client, Game>;
 	password: string | undefined;
 	nodeId: number = 0;
 	onEnd: () => void;
@@ -54,7 +53,7 @@ export default class Tournament {
 		password,
 		onEnd,
 	}: {
-		rooms: WeakMap<WebSocket, Game>;
+		rooms: WeakMap<Client, Game>;
 		id: string;
 		capacity: number;
 		password: string;
@@ -67,15 +66,15 @@ export default class Tournament {
 		this.onEnd = onEnd;
 	}
 
-	join(player: WebSocket) {
+	join(player: Client) {
 		if (!this.players.includes(player)) this.players.push(player);
 		console.log("Joined tournament: ", this.id);
 		console.log(`Nb of players: ${this.players.length}`);
 		if (this.players.length === this.capacity) this.startTournament();
 	}
 
-	quitQueue(player: WebSocket) {
-		this.players = this.players.filter((ws) => ws !== player);
+	quitQueue(player: Client) {
+		this.players = this.players.filter((p) => p !== player);
 	}
 
 	buildBracket() {
@@ -111,39 +110,41 @@ export default class Tournament {
 
 	joinMatch(node: Node) {
 		const parent = node.parent;
-		const winner = node.winner;
+		const player = node.winner;
 		console.log("joinMatch called");
-		console.log(`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`);
-		if (!winner) return;
+		console.log(
+			`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`
+		);
+		if (!player) return;
 		if (!parent) {
 			console.log("tournament winner");
-			winner.send(JSON.stringify({ event: "tournament_win" }));
+			player.socket?.send(JSON.stringify({ event: "tournament_win" }));
 			return;
 		}
 		if (parent.loser) {
 			console.log("bye");
-			parent.winner = winner;
+			parent.winner = player;
 			this.joinMatch(parent);
 			return;
 		}
 		console.log("start");
-		if (parent.game) parent.game.connectPlayer(winner);
+		if (parent.game) parent.game.connectPlayer(player);
 		else {
 			parent.game = new Game({
-				p1: winner,
+				p1: player,
 				botDiff: "medium",
-				onEnd: (ws, winner) => {
+				onEnd: (client, winner) => {
 					console.log("game onEnd");
-					this.rooms.delete(ws);
+					this.rooms.delete(client);
 					if (winner === true) {
-						parent.winner = ws;
+						parent.winner = client;
 						this.joinMatch(parent!);
-					} else parent.loser = ws;
+					} else parent.loser = client;
 				},
 			});
 			parent.game.start();
 		}
-		this.rooms.set(winner, parent.game);
+		this.rooms.set(player, parent.game);
 	}
 	init() {
 		console.log(`leafs: ${this.leafs.length}`);
@@ -156,9 +157,26 @@ export default class Tournament {
 		this.init();
 	}
 
-	disconnect(ws: WebSocket) {
-		if (this.started === true) this.rooms.get(ws)?.disconnectPlayer(ws);
-		this.quitQueue(ws);
+	reconnect(client: Client) {
+		const room: Game | undefined = this.rooms.get(client);
+		if (!room) return;
+		if (room.clients[0].socket && room.clients[1]?.socket) room.start();
+	}
+	disconnect(client: Client) {
+		if (this.started === false) this.quitQueue(client);
+		else {
+			const game = this.rooms.get(client);
+			if (!game) return;
+			if (client.tournament?.allowReconnect) {
+				client.tournament.allowReconnect = false;
+				game.pause();
+				const opp = game.getOpp(client);
+				opp?.socket?.send(JSON.stringify({ event: "waiting" }));
+			} else {
+				game.disconnectPlayer(client);
+				client.tournament = undefined;
+			}
+		}
 		console.log(`nb of players: ${this.players.length}`);
 		if (this.players.length === 0) this.onEnd();
 	}

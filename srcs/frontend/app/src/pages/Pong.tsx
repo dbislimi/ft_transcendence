@@ -18,6 +18,7 @@ import usePongParams from "../hooks/usePongParams";
 import type { Difficulty } from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { OnlineCard } from "../Components/OnlineCard";
+import { useWebsocket } from "./chat";
 interface Player {
 	size: number;
 	y: number;
@@ -97,7 +98,7 @@ export default function Pong() {
 				break;
 		}
 	}, []);
-	const wsRef = useGameWebsocket("game", onMessage);
+	const wsRef = useWebsocket("game", onMessage);
 
 	usePongControls({
 		enabled: play,

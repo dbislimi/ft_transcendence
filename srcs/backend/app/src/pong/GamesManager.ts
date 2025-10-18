@@ -1,16 +1,16 @@
 import Game from "./Game.ts";
-import type { clientSocket } from "./Game.ts";
 import WebSocket from "ws";
 import type { difficulty } from "./Player.ts";
 import plotRewards from "./chart.ts";
 import Tournament from "./Tournament.ts";
+import type { Client } from "../plugins/gameController.ts";
 
 export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
-	private rooms: WeakMap<WebSocket, Game> = new WeakMap();
-	private waitingClient: { ws: WebSocket; game: Game } | null = null;
+	private rooms: WeakMap<Client, Game> = new WeakMap();
+	private waitingClient: Client | null = null;
 
-	createTournament(ws: WebSocket, id: string, size: number, passwd: string) {
+	createTournament(client: Client, id: string, size: number, passwd: string) {
 		if (this.tournaments[id])
 			throw new Error(`Tournament with id ${id} already exists.`);
 		this.tournaments[id] = new Tournament({
@@ -23,14 +23,14 @@ export default class GamesManager {
 				console.log("onEnd tour called");
 			},
 		});
-		this.joinTournament(ws, id, passwd);
+		this.joinTournament(client, id, passwd);
 	}
-	joinTournament(ws: WebSocket, id: string, passwd?: string) {
-		const tournament: Tournament = this.tournaments[id];
+	joinTournament(client: Client, id: string, passwd?: string) {
+		const tournament: Tournament | undefined = this.tournaments[id];
 		if (!tournament || tournament.started) return;
 		if (tournament.password && (!passwd || passwd !== tournament.password))
 			return;
-		tournament.join(ws);
+		tournament.join(client);
 	}
 	listTournaments() {
 		return Object.values(this.tournaments)
@@ -48,8 +48,9 @@ export default class GamesManager {
 		const { signal } = controller;
 
 		ws.on("close", () => controller.abort());
+		const trainingClient: Client = { name: "trainer", socket: ws };
 		const game = new Game({
-			p1: ws,
+			p1: trainingClient,
 			botDiff: bot,
 			train: true,
 			onEnd: null,
@@ -66,8 +67,8 @@ export default class GamesManager {
 				break;
 			}
 		}
-		if (game.board.botController.length !== 0)
-			plotRewards("rewards", game.board.botController[0].rewards, bot);
+		const controllerBot = game.board.botController[0];
+		if (controllerBot) plotRewards("rewards", controllerBot.rewards, bot);
 		console.log("Training loop ended.");
 	}
 	startTraining(ws: WebSocket, bot: difficulty) {
@@ -75,62 +76,60 @@ export default class GamesManager {
 		console.log("debug");
 		return { playerId: "train" };
 	}
-	startOffline(ws: WebSocket, diff: difficulty | null): boolean {
+	startOffline(client: Client, diff: difficulty | null): boolean {
 		const game = new Game({
-			p1: ws,
+			p1: client,
 			botDiff: diff,
-			onEnd: () => this.removeRoom(ws),
+			onEnd: () => this.removeRoom(client),
 		});
-		console.log("startOffline", diff === null);
-
 		game.start();
-		this.rooms.set(ws, game);
+		this.rooms.set(client, game);
 		return diff === null;
 	}
-	startOnline(clientId: string, ws: WebSocket) {
-		ws.send(JSON.stringify({ event: "searching" }));
-		if (this.waitingClient) {
-			const data = JSON.stringify({ event: "found" });
-			this.waitingClient.ws.send(data);
-			ws.send(data);
-			this.waitingClient.game.connectPlayer(ws);
-			this.rooms.set(ws, this.waitingClient.game);
+	startOnline(client: Client) {
+		client.socket?.send(JSON.stringify({ event: "searching" }));
+		if (this.waitingClient && this.waitingClient !== client) {
+			const opponent = this.waitingClient;
 			this.waitingClient = null;
+			const onEnd = (c: Client) => {
+				this.removeRoom(c);
+				console.log(`removed: ${c.name}`);
+			};
+			const game = new Game({
+				p1: opponent,
+				p2: client,
+				onEnd,
+			});
+			this.rooms.set(opponent, game);
+			this.rooms.set(client, game);
+			const data = JSON.stringify({ event: "found" });
+			opponent.socket?.send(data);
+			client.socket?.send(data);
+			game.start();
 			return;
 		}
-		const game = new Game({
-			p1: ws,
-			botDiff: "medium",
-			onEnd: (ws: WebSocket) => {
-				this.removeRoom(ws);
-				console.log(`removed: ${ws}`);
-			},
-		});
-		game.start();
-		this.waitingClient = { ws, game };
-		this.rooms.set(ws, game);
-		return;
+		if (this.waitingClient === client) return;
+		this.waitingClient = client;
 	}
-	removeFromQueue(ws: WebSocket) {
-		if (this.waitingClient && ws === this.waitingClient.ws) {
+	removeFromQueue(client: Client) {
+		if (this.waitingClient && client === this.waitingClient) {
 			console.log("waiting client removed");
-			this.waitingClient.game.disconnectPlayer(ws);
 			this.waitingClient = null;
 		}
 	}
-	getRoom(ws: WebSocket) {
-		return this.rooms.get(ws);
+	getRoom(client: Client) {
+		return this.rooms.get(client);
 	}
-	removeRoom(ws: WebSocket) {
-		this.rooms.delete(ws);
+	removeRoom(client: Client) {
+		this.rooms.delete(client);
 	}
-	quit(ws: WebSocket, tournamentId?: string) {
-		if (tournamentId) {
-			const tournament = this.tournaments[tournamentId];
-			if (!tournament) return ;
-			tournament.disconnect(ws);
+	quit(client: Client) {
+		if (client.tournament) {
+			const tournament = this.tournaments[client.tournament.tournamentId];
+			if (!tournament) return;
+			tournament.disconnect(client);
 		}
-		this.removeFromQueue(ws);
-		this.getRoom(ws)?.disconnectPlayer(ws);
+		this.removeFromQueue(client);
+		this.getRoom(client)?.disconnectPlayer(client);
 	}
 }

@@ -10,14 +10,14 @@ interface Message {
 }
 
 
-function useWebsocket( endpoint: string, onMessage: (event: MessageEvent) => void) {
+export function useWebsocket( endpoint: string, onMessage: (event: MessageEvent) => void) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const ws = new WebSocket(`ws://localhost:3000/chat?token=${token}`);
+    const ws = new WebSocket(`ws://localhost:3000/${endpoint}?token=${token}`);
     wsRef.current = ws;
 
     ws.onopen = () => console.log(`ws ouvert`);
