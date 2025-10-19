@@ -128,7 +128,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				}
 			});
 			socket.on("close", () => {
-				console.log("close ", socket, " of ", decoded.name);
+				console.log("close ", decoded.name);
 				client.socket = undefined;
 				if (!status) return;
 				games.quit(client);

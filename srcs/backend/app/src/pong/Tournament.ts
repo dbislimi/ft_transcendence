@@ -1,5 +1,4 @@
 import Game from "./Game.ts";
-import WebSocket from "ws";
 import type { Client } from "../plugins/gameController.ts";
 
 class Node {
@@ -45,6 +44,10 @@ export default class Tournament {
 	password: string | undefined;
 	nodeId: number = 0;
 	onEnd: () => void;
+	private startCountdown: (
+		game: Game,
+		clients: (Client | undefined)[]
+	) => void;
 
 	constructor({
 		rooms,
@@ -52,18 +55,21 @@ export default class Tournament {
 		capacity,
 		password,
 		onEnd,
+		startCountdown,
 	}: {
 		rooms: WeakMap<Client, Game>;
 		id: string;
 		capacity: number;
 		password: string;
 		onEnd: () => void;
+		startCountdown: (game: Game, clients: (Client | undefined)[]) => void;
 	}) {
 		this.rooms = rooms;
 		this.password = password;
 		this.id = id;
 		this.capacity = capacity;
 		this.onEnd = onEnd;
+		this.startCountdown = startCountdown;
 	}
 
 	join(player: Client) {
@@ -89,8 +95,8 @@ export default class Tournament {
 		while (nodes.length > 1) {
 			let nextRound: Node[] = [];
 			for (let i = 0; i < nodes.length; i += 2) {
-				const right = nodes[i];
-				const left = nodes[i + 1];
+				const right = nodes[i]!;
+				const left = nodes[i + 1]!;
 				const parent = new Node({
 					right: right,
 					left: left,
@@ -104,7 +110,7 @@ export default class Tournament {
 			nodes = nextRound;
 			--depth;
 		}
-		this.root = nodes[0];
+		this.root = nodes[0] ?? null;
 		this.printTree();
 	}
 
@@ -128,11 +134,13 @@ export default class Tournament {
 			return;
 		}
 		console.log("start");
-		if (parent.game) parent.game.connectPlayer(player);
-		else {
+		if (parent.game) {
+			parent.game.connectPlayer(player);
+			this.startCountdown(parent.game, parent.game.clients);
+		} else {
 			parent.game = new Game({
 				p1: player,
-				botDiff: "medium",
+				botDiff: null,
 				onEnd: (client, winner) => {
 					console.log("game onEnd");
 					this.rooms.delete(client);
@@ -142,7 +150,6 @@ export default class Tournament {
 					} else parent.loser = client;
 				},
 			});
-			parent.game.start();
 		}
 		this.rooms.set(player, parent.game);
 	}

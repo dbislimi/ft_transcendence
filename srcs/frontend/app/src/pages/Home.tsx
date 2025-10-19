@@ -19,8 +19,7 @@ export default function Home() {
 			const cleanUrl = window.location.origin + window.location.pathname;
 			window.history.replaceState({}, document.title, cleanUrl);
 			navigate("/dashboard");
-		}
-		else if (require2fa == '1'){
+		} else if (require2fa == "1") {
 			const cleanUrl = window.location.origin + window.location.pathname;
 			window.history.replaceState({}, document.title, cleanUrl);
 			navigate("/auth");

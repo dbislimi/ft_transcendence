@@ -9,6 +9,8 @@ export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
 	private rooms: WeakMap<Client, Game> = new WeakMap();
 	private waitingClient: Client | null = null;
+	private countdowns: WeakMap<Game, { cancelled: boolean }> = new WeakMap();
+	private static readonly COUNTDOWN_SECONDS = 3;
 
 	createTournament(client: Client, id: string, size: number, passwd: string) {
 		if (this.tournaments[id])
@@ -22,6 +24,8 @@ export default class GamesManager {
 				delete this.tournaments[id];
 				console.log("onEnd tour called");
 			},
+			startCountdown: (game, clients) =>
+				this.startWithCountdown(game, clients),
 		});
 		this.joinTournament(client, id, passwd);
 	}
@@ -82,8 +86,8 @@ export default class GamesManager {
 			botDiff: diff,
 			onEnd: () => this.removeRoom(client),
 		});
-		game.start();
 		this.rooms.set(client, game);
+		game.start();
 		return diff === null;
 	}
 	startOnline(client: Client) {
@@ -105,7 +109,7 @@ export default class GamesManager {
 			const data = JSON.stringify({ event: "found" });
 			opponent.socket?.send(data);
 			client.socket?.send(data);
-			game.start();
+			this.startWithCountdown(game, [opponent, client]);
 			return;
 		}
 		if (this.waitingClient === client) return;
@@ -117,19 +121,76 @@ export default class GamesManager {
 			this.waitingClient = null;
 		}
 	}
+	private broadcastPlayersInfo(game: Game, clients: (Client | undefined)[]) {
+		for (const client of clients) {
+			if (!client?.socket) continue;
+			const opponent = game.getOpp(client)?.name ?? null;
+			client.socket.send(
+				JSON.stringify({
+					event: "players",
+					body: {
+						opponent,
+						side: client.inGameId ?? null,
+					},
+				})
+			);
+		}
+	}
+	private async startWithCountdown(
+		game: Game,
+		clients: (Client | undefined)[],
+		seconds: number = GamesManager.COUNTDOWN_SECONDS
+	) {
+		const entry = { cancelled: false };
+		this.countdowns.set(game, entry);
+		this.broadcastPlayersInfo(game, clients);
+		for (let remaining = seconds; remaining > 0; remaining--) {
+			if (entry.cancelled) {
+				this.countdowns.delete(game);
+				return;
+			}
+			this.broadcastCountdown(clients, remaining);
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		}
+		if (entry.cancelled) {
+			this.countdowns.delete(game);
+			return;
+		}
+		this.broadcastCountdown(clients, 0);
+		this.countdowns.delete(game);
+		game.start();
+	}
+	private broadcastCountdown(
+		clients: (Client | undefined)[],
+		remaining: number
+	) {
+		const payload = JSON.stringify({
+			event: "countdown",
+			body: { remaining },
+		});
+		for (const client of clients) client?.socket?.send(payload);
+	}
 	getRoom(client: Client) {
 		return this.rooms.get(client);
 	}
 	removeRoom(client: Client) {
+		const game = this.rooms.get(client);
+		if (!game) return;
 		this.rooms.delete(client);
+		const countdown = this.countdowns.get(game);
+		if (countdown) {
+			countdown.cancelled = true;
+			this.countdowns.delete(game);
+		}
 	}
 	quit(client: Client) {
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
 			if (!tournament) return;
 			tournament.disconnect(client);
+		} else {
+			this.removeFromQueue(client);
+			this.getRoom(client)?.disconnectPlayer(client);
 		}
-		this.removeFromQueue(client);
-		this.getRoom(client)?.disconnectPlayer(client);
 	}
 }

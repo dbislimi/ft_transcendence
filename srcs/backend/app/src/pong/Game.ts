@@ -172,7 +172,7 @@ export default class Game {
 					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),
 				},
 				players: this.board.getPlayersData(),
-				bonus: {
+				bonuses: {
 					count: this.board.bonus.length,
 					bonuses: this.board.getBonusData(),
 				},
@@ -185,7 +185,7 @@ export default class Game {
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);
 	}
 	getOpp(client: Client) {
-		const socket = this.clients.find((c) => c !== client);
-		return socket;
+		const opp = this.clients.find((c) => c !== client);
+		return opp;
 	}
 }

@@ -1,15 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface UsePongControlsOptions {
-	enabled: boolean;
+	isEnabled: () => boolean;
 	send: (payload: any) => void;
 }
 
-export function usePongControls({ enabled, send }: UsePongControlsOptions) {
-	useEffect(() => {
-		if (!enabled) return;
+export function usePongControls({ isEnabled, send }: UsePongControlsOptions) {
+	const enabledRef = useRef(isEnabled);
 
+	useEffect(() => {
+		enabledRef.current = isEnabled;
+	}, [isEnabled]);
+
+	useEffect(() => {
 		const handleKey = (e: KeyboardEvent, type: "press" | "release") => {
+			if (!enabledRef.current()) return;
 			const key = e.key;
 			let payload: { dir: "up" | "down"; id: number } | null = null;
 			if (["Shift", "s"].includes(key)) payload = { dir: "down", id: 0 };
@@ -32,5 +37,5 @@ export function usePongControls({ enabled, send }: UsePongControlsOptions) {
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
 		};
-	}, [enabled, send]);
+	}, [send]);
 }

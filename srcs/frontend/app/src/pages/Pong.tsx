@@ -1,297 +1,286 @@
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
-import ActionButton from "../Components/ActionButton";
 import Countdown from "../Components/Countdown";
-import { useGameWebsocket } from "../hooks/useGameWebsocket";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
-import PongCanvas from "../Components/PongCanvas";
-import { useSearchParams } from "react-router-dom";
 import usePongParams from "../hooks/usePongParams";
-import type { Difficulty } from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { OnlineCard } from "../Components/OnlineCard";
 import { useWebsocket } from "./chat";
-interface Player {
-	size: number;
-	y: number;
-	score: number;
-}
-export interface Bonuses {
-	y: number;
-	name: string;
-	radius: number;
-}
-export interface Bonus {
-	count: number;
-	bonuses: Bonuses[];
-}
-export interface Players {
-	p1: Player;
-	p2: Player;
-}
-export interface Ball {
-	radius: number;
-	x: number;
-	y: number;
-	speed: number;
-}
+import PongModeSelection from "../Components/PongModeSelection";
+import PongGameArea from "../Components/PongGameArea";
+import type { GameState } from "../types/GameState";
+import type { OfflineConfig } from "../Components/OfflineCard";
+import { useAuth } from "../contexts/AuthContext";
+
+type CountdownState =
+	| { mode: "remote"; value: number }
+	| { mode: "local"; seconds: number }
+	| null;
+
+type PlayerLabels = {
+	self: string;
+	opponent: string;
+};
+
+type Difficulty = "easy" | "medium" | "hard";
+
+const PLAYER_LABELS = {
+	self: "You",
+	opponent: "Opponent",
+} as const;
+
+const SCALE = 4;
+
+const initGameState = (): GameState => ({
+	ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
+	players: {
+		p1: { size: 25, y: 37.5, score: 0 },
+		p2: { size: 25, y: 37.5, score: 0 },
+	},
+	bonuses: { count: 0, bonuses: [] },
+});
 
 export default function Pong() {
+	const { user } = useAuth();
+	console.log("user: ",localStorage.getItem('user'));
+	const defaultSelfLabel = useMemo(
+		() => (user?.name ? `${user.name} (You)` : PLAYER_LABELS.self),
+		[user]
+	);
+	const getDefaultLabels = useCallback(
+		(): PlayerLabels => ({
+			self: defaultSelfLabel,
+			opponent: PLAYER_LABELS.opponent,
+		}),
+		[defaultSelfLabel]
+	);
 	const [play, setPlay] = useState(false);
-	const [showMode, setShowMode] = useState(false);
-	const [search, setSearch] = useState(false);
-	const [scale] = useState(4);
-	const [winner, setWinner] = useState<number | null>(null);
-	const [showCountdown, setShowCountdown] = useState(false);
-	const playerIds = { self: "You", opponent: "Opponent" };
-	const startedRef = useRef(false);
+	const [countdownState, setCountdownState] = useState<CountdownState>(null);
+	const [labels, setLabels] = useState<PlayerLabels>(() =>
+		getDefaultLabels()
+	);
+	const { mode, setParams } = usePongParams();
 
-	const gameRef = useRef<{
-		ball: Ball;
-		players: Players;
-		bonus: Bonus;
-	}>({
-		ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
-		players: {
-			p1: { size: 25, y: 37.5, score: 0 },
-			p2: { size: 25, y: 37.5, score: 0 },
-		},
-		bonus: { count: 0, bonuses: [] },
-	});
-
-	const { mode, diff, setParams, gamemode } = usePongParams();
-
-	const handleBackToMenu = () => {
-		stop();
-		setPlay(false);
-		setWinner(null);
-		setSearch(false);
-		setShowCountdown(false);
-
-		startedRef.current = false;
-		setParams({ mode: mode });
-	};
-	const onMessage = useCallback((event: MessageEvent) => {
-		const data = JSON.parse(event.data);
-		switch (data.event) {
-			case "searching":
-				setSearch(true);
-				break;
-			case "found":
-				setSearch(false);
-				break;
-			case "win":
-				setWinner(data.body);
-				break;
-			case "data":
-				gameRef.current.ball = data.body.ball;
-				gameRef.current.players = data.body.players;
-				gameRef.current.bonus = data.body.bonus;
-				break;
-		}
+	const gameRef = useRef<GameState>(initGameState());
+	const offlinePayloadRef = useRef<{ diff: Difficulty | null } | null>(null);
+	const controlsReadyRef = useRef(false);
+	const setControlsReady = useCallback((next: boolean) => {
+		controlsReadyRef.current = next;
 	}, []);
+	const isControlsReady = useCallback(() => controlsReadyRef.current, []);
+
+	const resetGameState = useCallback(() => {
+		gameRef.current = initGameState();
+	}, []);
+
+	const resetLabels = useCallback(() => {
+		setLabels(getDefaultLabels());
+	}, [getDefaultLabels]);
+
+	const onMessage = useCallback(
+		(event: MessageEvent) => {
+			if (!play) return;
+			const data = JSON.parse(event.data);
+			switch (data.event) {
+				case "players": {
+					const opponentLabel = data.body?.opponent;
+					setLabels((prev) => ({
+						...prev,
+						opponent:
+							typeof opponentLabel === "string" &&
+							opponentLabel.trim().length
+								? opponentLabel
+								: prev.opponent,
+					}));
+					break;
+				}
+				case "countdown": {
+					const remaining = data.body?.remaining;
+					if (typeof remaining === "number") {
+						if (remaining > 0)
+							setCountdownState({
+								mode: "remote",
+								value: remaining,
+							});
+						else setCountdownState(null);
+					}
+					setControlsReady(false);
+					break;
+				}
+				case "data":
+					setControlsReady(true);
+					gameRef.current.ball = data.body.ball;
+					gameRef.current.players = data.body.players;
+					gameRef.current.bonuses = data.body.bonuses;
+					break;
+				case "stop":
+					setControlsReady(false);
+					setCountdownState(null);
+					resetLabels();
+					break;
+			}
+		},
+		[play, resetLabels, setControlsReady]
+	);
+
 	const wsRef = useWebsocket("game", onMessage);
 
-	usePongControls({
-		enabled: play,
-		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
-	});
+	const showGame = useCallback(
+		(flag: boolean) => {
+			setPlay(flag);
+			if (!flag) resetLabels();
+			setCountdownState(null);
+			setControlsReady(false);
+		},
+		[resetLabels, setControlsReady]
+	);
 
-	const showScreen = (flag: boolean) => {
-		setPlay(flag);
-		setShowCountdown(flag);
-	};
-
-	const start = () => {
-		wsRef.current?.send(
-			JSON.stringify({
-				event: "start",
-				body: { action: `play_${mode}`, diff: diff },
-			})
-		);
-	};
 	const stop = useCallback(() => {
 		wsRef.current?.send(
 			JSON.stringify({
 				event: "stop",
 			})
 		);
-		gameRef.current = {
-			ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
-			players: {
-				p1: { size: 25, y: 37.5, score: 0 },
-				p2: { size: 25, y: 37.5, score: 0 },
-			},
-			bonus: { count: 0, bonuses: [] },
-		};
-	}, [wsRef]);
+		resetGameState();
+		offlinePayloadRef.current = null;
+		setCountdownState(null);
+		setControlsReady(false);
+		resetLabels();
+	}, [resetGameState, resetLabels, setControlsReady, wsRef]);
 
-	const startOnline = (
-		gamemode: string,
-		type: string,
-		size: number,
-		id: string,
-		passwd: string
-	) => {
-		// console.log(type);
-		if (gamemode === "Tournament") {
-			setParams({ mode: "online", gamemode: "tournament", id });
+	const handleBackToMenu = useCallback(() => {
+		stop();
+		showGame(false);
+		setParams(mode ? { mode } : null);
+	}, [mode, showGame, stop, setParams]);
+
+	const sendStartEvent = useCallback(
+		(body: Record<string, unknown>) => {
 			wsRef.current?.send(
 				JSON.stringify({
 					event: "start",
-					body: {
-						action: `${type.toLowerCase()}_tournament`,
-						id: id,
-						size: size,
-						passwd: passwd,
-					},
+					body,
 				})
 			);
-		} else {
-			setParams({ mode: "online", gamemode: "quickmatch" });
-			wsRef.current?.send(
-				JSON.stringify({
-					event: "start",
-					body: {
-						action: "play_online",
-					},
-				})
-			);
-		}
-		setPlay(true);
-	};
+		},
+		[wsRef]
+	);
 
-	useLayoutEffect(() => {
-		console.log("useeefw");
-		if (!mode || !gamemode) return;
-		if (mode === "offline") {
-			if (gamemode === "solo") {
-				const validDiff =
-					diff && ["easy", "medium", "hard"].includes(diff);
-				if (!validDiff) {
-					setParams({
-						mode: "offline",
-						gamemode: "solo",
-						diff: "medium",
-					});
-				}
+	const handleOnlineConfirm = useCallback(
+		(
+			selectedMode: string,
+			matchType: string,
+			size: number,
+			id: string,
+			passwd: string
+		) => {
+			if (selectedMode === "Tournament") {
+				setParams({ mode: "online", id });
+				sendStartEvent({
+					action: `${matchType.toLowerCase()}_tournament`,
+					id,
+					size,
+					passwd,
+				});
+			} else {
+				setParams({ mode: "online" });
+				sendStartEvent({ action: "play_online" });
 			}
-			showScreen(true);
-		} else if (!play) {
-			setParams({ mode: "online" });
-		}
-	}, [mode, gamemode, diff, setParams, play]);
+			resetLabels();
+			showGame(true);
+		},
+		[sendStartEvent, showGame, resetLabels, setParams]
+	);
+
+	const handleOfflineConfirm = useCallback(
+		({ gamemode, botDiff }: OfflineConfig) => {
+			setParams({ mode: "offline" });
+			if (gamemode === "solo") {
+				offlinePayloadRef.current = { diff: botDiff };
+				setLabels({
+					self: defaultSelfLabel,
+					opponent: `Bot (${
+						botDiff.charAt(0).toUpperCase() + botDiff.slice(1)
+					})`,
+				});
+			} else {
+				offlinePayloadRef.current = { diff: null };
+				setLabels({
+					self: "Player 1",
+					opponent: "Player 2",
+				});
+			}
+			showGame(true);
+			setCountdownState({ mode: "local", seconds: 3 });
+		},
+		[defaultSelfLabel, setParams, showGame]
+	);
+
+	const handleOfflineCountdown = useCallback(() => {
+		const payload = offlinePayloadRef.current;
+		sendStartEvent({
+			action: "play_offline",
+			diff: payload ? payload.diff : null,
+		});
+		offlinePayloadRef.current = null;
+		setCountdownState(null);
+	}, [sendStartEvent]);
+
+	usePongControls({
+		isEnabled: isControlsReady,
+		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
+	});
 
 	useEffect(() => {
-		if (!gamemode) {
+		if (!mode) {
 			if (play) stop();
-			showScreen(false);
+			showGame(false);
 		}
-	}, [mode, gamemode, play, stop]);
+	}, [mode, play, stop, showGame]);
+
+	useEffect(() => stop, [stop]);
 
 	return (
-		<>
-			<div className="relative w-screen h-screen flex items-center justify-center">
-				{play && (
-					<div className="absolute top-4 left-4 z-50">
-						<BackToMenuButton onClick={handleBackToMenu} />
-					</div>
-				)}
-				<SpaceBackground />
-				{!play && mode === null && (
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-						<ActionButton
-							color="gray"
-							icon={
-								<span role="img" aria-label="offline">
-									🎮
-								</span>
-							}
-							title="Offline"
-							subtitle="Play offline"
-							onClick={() => setParams({ mode: "offline" })}
-						/>
-						<ActionButton
-							color="cyan"
-							icon={
-								<span role="img" aria-label="online">
-									🌐
-								</span>
-							}
-							title="Online"
-							subtitle="Play online"
-							onClick={() => setParams({ mode: "online" })}
-						/>
-					</div>
-				)}
-				{mode === "offline" && !play && (
-					<OfflineCard
-						onCancel={() => setParams(null)}
-						onConfirm={(cfg: {
-							gamemode: string;
-							botDifficulty?: Difficulty;
-						}) => {
-							const diff =
-								cfg.gamemode === "solo"
-									? cfg.botDifficulty
-									: undefined;
-							setParams({
-								mode: "offline",
-								gamemode: cfg.gamemode,
-								diff: diff,
-							});
-						}}
-					/>
-				)}
-				{mode === "online" && !play && (
-					<OnlineCard
-						onCancel={() => setParams(null)}
-						onConfirm={startOnline}
-						wsRef={wsRef}
-					/>
-				)}
-				{showCountdown && (
+		<div className="relative w-screen h-screen flex items-center justify-center">
+			<SpaceBackground />
+			{play && (
+				<div className="absolute top-4 left-4 z-50">
+					<BackToMenuButton onClick={handleBackToMenu} />
+				</div>
+			)}
+			{!play && !mode && (
+				<PongModeSelection
+					onSelect={(nextMode) => setParams({ mode: nextMode })}
+				/>
+			)}
+			{mode === "offline" && !play && (
+				<OfflineCard
+					onCancel={() => setParams(null)}
+					onConfirm={handleOfflineConfirm}
+				/>
+			)}
+			{mode === "online" && !play && (
+				<OnlineCard
+					onCancel={() => setParams(null)}
+					onConfirm={handleOnlineConfirm}
+					wsRef={wsRef}
+				/>
+			)}
+			{countdownState &&
+				(countdownState.mode === "remote" ? (
+					<Countdown value={countdownState.value} />
+				) : (
 					<Countdown
-						seconds={3}
-						onComplete={() => {
-							setShowCountdown(false);
-							start();
-						}}
+						seconds={countdownState.seconds}
+						onComplete={handleOfflineCountdown}
 					/>
-				)}
-				{play && (
-					<div className="relative">
-						<div className="absolute -top-10 left-0 right-0 flex justify-between text-xs sm:text-sm font-semibold px-2">
-							<div className="flex items-center gap-2">
-								<div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-[10px] text-white">
-									P1
-								</div>
-								<span className="text-cyan-300">
-									{playerIds.self}
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<span className="text-pink-300">
-									{playerIds.opponent}
-								</span>
-								<div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center text-[10px] text-white">
-									P2
-								</div>
-							</div>
-						</div>
-						<PongCanvas gameRef={gameRef} scale={scale} />
-					</div>
-				)}
-				<Chat />
-			</div>
-		</>
+				))}
+			{play && (
+				<PongGameArea labels={labels} gameRef={gameRef} scale={SCALE} />
+			)}
+			<Chat />
+		</div>
 	);
 }
