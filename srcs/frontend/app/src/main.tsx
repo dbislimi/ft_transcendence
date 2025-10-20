@@ -22,26 +22,26 @@ import { UserProvider, useUser } from "./context/UserContext";
 }*/
 
 const router = createBrowserRouter([
-  {
-    element: <Layout />,
-    children: [
-      { path: "/", element: <pages.Home /> },
-      { path: "/Connection", element: <pages.Connection /> },
+	{
+		element: <Layout />,
+		children: [
+			{ path: "/", element: <pages.Home /> },
+			{ path: "/Connection", element: <pages.Connection /> },
 			{ path: "/Confirmation", element: <pages.Confirmation /> },
-      { path: "/Registration", element: <pages.Registration /> },
-      { path: "/pong", element: <pages.Pong /> },
-      { path: "/bomb-party", element: <pages.BombParty /> },
-      { path: "/about", element: <pages.About /> },
-      { path: "/auth", element: <pages.auth /> },
-      { path: "/settings", element: <pages.Settings /> },
+			{ path: "/Registration", element: <pages.Registration /> },
+			{ path: "/pong", element: <pages.Pong /> },
+			{ path: "/bomb-party", element: <pages.BombParty /> },
+			{ path: "/about", element: <pages.About /> },
+			{ path: "/auth", element: <pages.auth /> },
+			{ path: "/settings", element: <pages.Settings /> },
 			{ path: "/Dashboard", element: <pages.Dashboard /> },
 			{ path: "/Reglages", element: <pages.Reglages /> },
 			{ path: "/chat", element: <pages.chat /> },
-      { path: "/profile", element: <pages.Profile /> },
-      { path: "/friends", element: <pages.Friends /> },
-      { path: "*", element: <pages.NotFoundPage /> },
-    ],
-  },
+			{ path: "/profile", element: <pages.Profile /> },
+			{ path: "/friends", element: <pages.Friends /> },
+			{ path: "*", element: <pages.NotFoundPage /> },
+		],
+	},
 ]);
 
 /*const router = createBrowserRouter([
@@ -84,15 +84,15 @@ const router = createBrowserRouter([
 ]);*/
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AuthProvider>
-      <BackgroundProvider>
-        {/* <UserProvider> */}
-      {/* <WebSocketProvider> */}
-        <RouterProvider router={router} />
-      {/* </WebSocketProvider> */}
-      {/* </UserProvider> */}
-      </BackgroundProvider>
-    </AuthProvider>
-  </StrictMode>
+	<StrictMode>
+		<AuthProvider>
+		<BackgroundProvider>
+			<UserProvider>
+				<WebSocketProvider>
+					<RouterProvider router={router} />
+				</WebSocketProvider>
+			</UserProvider>
+		</BackgroundProvider>
+		</AuthProvider>
+	</StrictMode>
 );

@@ -13,6 +13,7 @@ import PongGameArea from "../Components/PongGameArea";
 import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
 import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 
 type CountdownState =
 	| { mode: "remote"; value: number }
@@ -43,8 +44,8 @@ const initGameState = (): GameState => ({
 });
 
 export default function Pong() {
-	const { user } = useAuth();
-	console.log("user: ",localStorage.getItem('user'));
+	const { user } = useUser();
+	console.log("user: ",user);
 	const defaultSelfLabel = useMemo(
 		() => (user?.name ? `${user.name} (You)` : PLAYER_LABELS.self),
 		[user]

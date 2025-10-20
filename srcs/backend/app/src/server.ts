@@ -11,7 +11,7 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
 import "./types/fastify.d.ts";
-
+import wsController from "./plugins/websockets.ts";
 import dbPlugin from "../index.js";
 import authPlugin from "./plugins/auth.ts";
 import authUtilsPlugin from "./utils/auth.ts";
@@ -44,9 +44,7 @@ async function main() {
     maxAge: 86400,
     strictPreflight: true
   });
-
-  await fastify.register(websocket);
-  await fastify.register(gameController);
+  await fastify.register(wsController);
   await fastify.register(fastifyFormbody);
   await fastify.register(multipart);
   
@@ -71,7 +69,6 @@ async function main() {
   await fastify.register(googleAuth);
   await fastify.register(userPlugin);
   await fastify.register(Settings);
-  await fastify.register(Chat);
   await fastify.register(matchesPlugin);
   await fastify.register(leaderboardPlugin);
   
