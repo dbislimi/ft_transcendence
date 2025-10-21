@@ -22,6 +22,7 @@ export function verifyToken(
 ): { id: number; name?: string; email?: string } | null {
   const authHeader = request.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
+    reply.log.warn("Header Authorization manquant ou malformé");
     return null;
   }
   try {
@@ -32,7 +33,30 @@ export function verifyToken(
       email?: string;
     };
     return decoded;
-  } catch {
+  } catch (error) {
+    reply.log.error("Erreur de vérification JWT:", {
+      error: error instanceof Error ? error.message : String(error),
+      tokenExists: !!authHeader
+    });
+    return null;
+  }
+}
+
+// Nouvelle fonction pour vérifier les tokens depuis query params (pour WebSocket)
+export function verifyTokenFromQuery(token: string): { id: number; name?: string; email?: string } | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: number;
+      name?: string;
+      email?: string;
+    };
+    return decoded;
+  } catch (error) {
+    console.error("Token JWT invalide depuis query:", {
+      error: error instanceof Error ? error.message : String(error),
+      tokenPreview: token.substring(0, 20) + "...",
+      tokenLength: token.length
+    });
     return null;
   }
 }

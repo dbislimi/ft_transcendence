@@ -13,6 +13,9 @@ interface UserContextType {
   refreshUser: () => Promise<void>;
   setToken: (token: string | null) => void;
   token: string | null;
+  login: (userData: User, token: string) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -20,6 +23,9 @@ const UserContext = createContext<UserContextType>({
   refreshUser: async () => {},
   setToken: () => {},
   token: null,
+  login: () => {},
+  logout: () => {},
+  isAuthenticated: false,
 });
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -60,6 +66,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const login = (userData: User, userToken: string) => {
+    setUser(userData);
+    sessionStorage.setItem("token", userToken);
+    setTokenState(userToken);
+  };
+
+  const logout = () => {
+    setToken(null);
+  };
+
   const refreshUser = async () => {
     if (!token) {
       setUser(null);
@@ -78,7 +94,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           avatar: data.avatar && data.avatar.trim() !== "" ? data.avatar : "/avatars/avatar1.png",
         });
       } else {
-        setUser(null);
+        setToken(null);
       }
     } catch {
       setUser(null);
@@ -97,33 +113,25 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && token) {
-        const blob = new Blob([JSON.stringify({})], { type: "application/json" });
-        navigator.sendBeacon("http://localhost:3000/logout", blob);
-      }
-    };
-
-    const handlePageHide = () => {
-      if (token) {
-        const blob = new Blob([JSON.stringify({})], { type: "application/json" });
-        navigator.sendBeacon("http://localhost:3000/logout", blob);
-      }
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", handlePageHide);
     
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handlePageHide);
     };
   }, [token]);
 
+  const isAuthenticated = !!token && !!user;
+
   return (
-    <UserContext.Provider value={{ user, refreshUser, setToken, token }}>
+    <UserContext.Provider value={{ 
+      user, 
+      refreshUser, 
+      setToken, 
+      token, 
+      login, 
+      logout, 
+      isAuthenticated 
+    }}>
       {children}
     </UserContext.Provider>
   );

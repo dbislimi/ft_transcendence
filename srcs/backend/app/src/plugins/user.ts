@@ -127,3 +127,5 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
     return reply.send({ success: true });
   });
 });
+
+//supprimer la route /me inutile et a la place recupere l'info du 2fa et l'envoyer au front home nn ?
