@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
-import { useAuth } from "../contexts/AuthContext";import { useUser } from "../context/UserContext";
+import { useUser } from "../context/UserContext";
 
 export default function Connection() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, setToken } = useUser();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
-  const { setToken } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,7 +42,6 @@ export default function Connection() {
       });
 
       const data = await response.json();
-      //console.log("la var en question " + data.enable2fa);
       console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
         if (data.require2fa){
@@ -51,8 +49,8 @@ export default function Connection() {
           navigate("/auth");
         }
         else{
-          console.log("BAAAAAAAAAAAAAAAAAAAAAA");
-          localStorage.setItem("token", data.token);
+          // Utiliser setToken au lieu de localStorage directement
+          setToken(data.token);
           navigate("/Dashboard");
         }
       } 

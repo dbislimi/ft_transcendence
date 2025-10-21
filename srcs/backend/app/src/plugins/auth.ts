@@ -108,8 +108,8 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
 
       const userId = await new Promise<number>((resolve, reject) => {
         db.run(
-          "INSERT INTO users (name, email, password, display_name, avatar) VALUES (?, ?, ?, ?, ?)",
-          [name, email, hashedPassword, displayName, chosenAvatar],
+          "INSERT INTO users (name, email, password, display_name, avatar, wins, losses, online, twoFAEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [name, email, hashedPassword, displayName, chosenAvatar, 0, 0, 0, 0],
           function (this: any, err: any) {
             if (err) reject(err);
             else resolve(this.lastID);
@@ -204,4 +204,29 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });
+<<<<<<< HEAD
+=======
+
+  fastify.get("/user/:id", async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    try {
+      const user = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (!user) {
+        return reply.code(404).send({ error: "Utilisateur non trouvé." });
+      }
+
+      const { password, twoFAOtp, ...userInfo } = user;
+      return reply.send({ user: userInfo });
+    } catch {
+      return reply.code(500).send({ error: "Erreur serveur" });
+    }
+  });
+>>>>>>> back
 });

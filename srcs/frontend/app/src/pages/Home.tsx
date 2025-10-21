@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundPicker from "../Components/BackgroundPicker";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 import ActionButton from "../Components/ActionButton";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +19,8 @@ export default function Home() {
 			const cleanUrl = window.location.origin + window.location.pathname;
 			window.history.replaceState({}, document.title, cleanUrl);
 			navigate("/dashboard");
-		} else if (require2fa == "1") {
+		}
+		else if (require2fa == '1'){
 			const cleanUrl = window.location.origin + window.location.pathname;
 			window.history.replaceState({}, document.title, cleanUrl);
 			navigate("/auth");
@@ -27,7 +28,8 @@ export default function Home() {
 	}, []);
 
 	const { t } = useTranslation();
-	const { isAuthenticated, user } = useAuth();
+	const { user, token } = useUser();
+	const isAuthenticated = !!token && !!user;
 	const [isLoaded, setIsLoaded] = useState(false);
 	const [openPicker, setOpenPicker] = useState(false);
 
@@ -169,7 +171,7 @@ export default function Home() {
 								color="cyan"
 								icon={
 									<span className="text-cyan-400 text-xl">
-										🖼️
+											🖼️
 									</span>
 								}
 								title="Boutique"
@@ -181,7 +183,7 @@ export default function Home() {
 								color="pink"
 								icon={
 									<span className="text-pink-400 text-xl">
-										💣
+											💣
 									</span>
 								}
 								title="Bomb Party"
