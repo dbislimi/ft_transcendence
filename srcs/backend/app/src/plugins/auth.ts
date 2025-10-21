@@ -204,8 +204,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });
-<<<<<<< HEAD
-=======
 
   fastify.get("/user/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
@@ -228,5 +226,4 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });
->>>>>>> back
 });

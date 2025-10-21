@@ -6,6 +6,8 @@ interface User {
   email: string;
   display_name: string;
   avatar?: string;
+  wins?: number;
+  losses?: number;
 }
 
 interface UserContextType {
