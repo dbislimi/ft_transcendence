@@ -2,7 +2,6 @@ declare module "fastify" {
   interface FastifyInstance {
 	db: any;
     clients: Map<number, Client>;
-    games: GamesManager;
 	getClient(req: FastifyRequest, socket: WebSocket): Client | null;
   }
 }

@@ -9,7 +9,9 @@ import gameController from "./gameController.ts";
 import chat from "./chat.ts";
 import '@fastify/cookie';
 import fastifyCookie from "@fastify/cookie";
+import dotenv from "dotenv";
 
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -24,15 +26,11 @@ export interface Client {
 	inGameId?: 0 | 1;
 }
 
-
-
-
-
 const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
   fastify,
   options
 ) => {
-  console.log("GameController plugged");
+  console.log("wsController plugged");
   if (!JWT_SECRET) {
     console.log(`JWT SECRET issue`);
     return;
@@ -40,7 +38,6 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
   console.log("JWT OK");
   fastify.register(fastifyCookie);
   fastify.decorate("clients", new Map<number, Client>());
-  fastify.decorate("games", new GamesManager());
   fastify.decorate("getClient", (req: FastifyRequest, socket: WebSocket): Client | null => {
     const token = req.cookies.token;
 	if (!token) return null;

@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 
-const JWT_SECRET = process.env.JWT_SECRET;
 
 interface Tournament {
 	tournamentId: string;
@@ -22,19 +21,13 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance,
 	options
 ) => {
-	console.log("GameController plugged");
-	if (!JWT_SECRET) {
-		console.log(`JWT SECRET issue`);
-		return;
-	}
-
-	console.log("JWT OK");
-
+	const games = new GamesManager();
+	
 	fastify.get("/game", { websocket: true }, (socket: WebSocket, req) => {
 		console.log("pong WS connected");
 		const client = fastify.getClient(req, socket);
 		if (!client) return socket.close();
-		console.log("client:", client);
+		console.log("client:", client.name);
 		let local: boolean = false;
 		// Status init to true if user currently in a tournament
 		let status: boolean = client.tournament ? true : false;
@@ -44,7 +37,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			if (data.event === "stop") {
 				console.log("stop called");
 				if (!status) return;
-				fastify.games.quit(client);
+				games.quit(client);
 				status = false;
 				local = false;
 			} else if (data.event === "start" && status === false) {
@@ -54,25 +47,25 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						socket.send(
 							JSON.stringify({
 								event: "tournaments",
-								body: fastify.games.listTournaments(),
+								body: games.listTournaments(),
 							})
 						);
 						return;
 					case "play_online":
-						fastify.games.startOnline(client);
+						games.startOnline(client);
 						break;
 					case "play_offline":
-						local = fastify.games.startOffline(client, data.body.diff);
+						local = games.startOffline(client, data.body.diff);
 						break;
 					case "trainbot":
-						fastify.games.trainBot(socket, data.body.diff, 1000);
+						games.trainBot(socket, data.body.diff, 1000);
 						break;
 					case "create_tournament":
 						client.tournament = {
 							tournamentId: data.body.id,
 							allowReconnect: true,
 						};
-						fastify.games.createTournament(
+						games.createTournament(
 							client,
 							data.body.id,
 							data.body.size,
@@ -84,7 +77,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 							tournamentId: data.body.id,
 							allowReconnect: true,
 						};
-						fastify.games.joinTournament(
+						games.joinTournament(
 							client,
 							data.body.id,
 							data.body.passwd
@@ -94,11 +87,11 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				status = true;
 			} else if (data.event === "play" && status === true) {
 				if (local === true)
-					fastify.games
+					games
 						.getRoom(client)
 						?.move(data.body.type, data.body.dir, data.body.id);
 				else
-					fastify.games
+					games
 						.getRoom(client)
 						?.move(data.body.type, data.body.dir, client.inGameId);
 			}
@@ -107,7 +100,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			console.log("close ", client.name);
 			client.socket = undefined;
 			if (!status) return;
-			fastify.games.quit(client);
+			games.quit(client);
 		});
 	});
 };
