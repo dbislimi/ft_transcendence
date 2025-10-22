@@ -7,13 +7,13 @@ import { OfflineCard } from "../Components/OfflineCard";
 import usePongParams from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { OnlineCard } from "../Components/OnlineCard";
-import { useWebsocket } from "./chat";
+import { useWebSocket } from "../context/WebSocketContext";
 import PongModeSelection from "../Components/PongModeSelection";
 import PongGameArea from "../Components/PongGameArea";
 import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
-import { useAuth } from "../contexts/AuthContext";
 import { useUser } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 type CountdownState =
 	| { mode: "remote"; value: number }
@@ -44,8 +44,11 @@ const initGameState = (): GameState => ({
 });
 
 export default function Pong() {
+	console.log("PONG");
+	const nav = useNavigate();
 	const { user } = useUser();
-	console.log("user: ",user);
+	if (!user) nav("/connection")
+	console.log("user: ", user);
 	const defaultSelfLabel = useMemo(
 		() => (user?.name ? `${user.name} (You)` : PLAYER_LABELS.self),
 		[user]
@@ -126,7 +129,7 @@ export default function Pong() {
 		[play, resetLabels, setControlsReady]
 	);
 
-	const wsRef = useWebsocket("game", onMessage);
+	const { pongWsRef } = useWebSocket();
 
 	const showGame = useCallback(
 		(flag: boolean) => {
@@ -139,7 +142,7 @@ export default function Pong() {
 	);
 
 	const stop = useCallback(() => {
-		wsRef.current?.send(
+		pongWsRef?.current?.send(
 			JSON.stringify({
 				event: "stop",
 			})
@@ -149,7 +152,7 @@ export default function Pong() {
 		setCountdownState(null);
 		setControlsReady(false);
 		resetLabels();
-	}, [resetGameState, resetLabels, setControlsReady, wsRef]);
+	}, [resetGameState, resetLabels, setControlsReady, pongWsRef]);
 
 	const handleBackToMenu = useCallback(() => {
 		stop();
@@ -159,14 +162,14 @@ export default function Pong() {
 
 	const sendStartEvent = useCallback(
 		(body: Record<string, unknown>) => {
-			wsRef.current?.send(
+			pongWsRef.current?.send(
 				JSON.stringify({
 					event: "start",
 					body,
 				})
 			);
 		},
-		[wsRef]
+		[pongWsRef]
 	);
 
 	const handleOnlineConfirm = useCallback(
@@ -231,7 +234,7 @@ export default function Pong() {
 
 	usePongControls({
 		isEnabled: isControlsReady,
-		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
+		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
 	});
 
 	useEffect(() => {
@@ -266,7 +269,7 @@ export default function Pong() {
 				<OnlineCard
 					onCancel={() => setParams(null)}
 					onConfirm={handleOnlineConfirm}
-					wsRef={wsRef}
+					wsRef={pongWsRef}
 				/>
 			)}
 			{countdownState &&
@@ -281,7 +284,7 @@ export default function Pong() {
 			{play && (
 				<PongGameArea labels={labels} gameRef={gameRef} scale={SCALE} />
 			)}
-			<Chat />
+			{/* <Chat /> */}
 		</div>
 	);
 }

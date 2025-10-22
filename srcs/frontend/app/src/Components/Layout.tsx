@@ -19,7 +19,7 @@ export default function Layout() {
         <Outlet />
       </main>
 			</BackgroundSurface>
-      {!hiddenRoutes.includes(location.pathname) && <ChatWidget />}
+      {/* {!hiddenRoutes.includes(location.pathname) && <ChatWidget />} */}
     </>
   );
 }
