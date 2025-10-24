@@ -20,7 +20,6 @@ const router = createBrowserRouter([
 				{ path: "/settings", element: <pages.Settings /> },
 				{ path: "/profile", element: <pages.Profile /> },
 				{ path: "/friends", element: <pages.Friends /> },
-				{ path: "/Dashboard", element: <pages.Dashboard /> }
 				
 			] },
 			{ path: "/", element: <pages.Home /> },

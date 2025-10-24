@@ -27,8 +27,7 @@ export default function Home() {
 	}, []);
 
 	const { t } = useTranslation();
-	const { user, token } = useUser();
-	const isAuthenticated = !!token && !!user;
+	const { user, isAuthenticated } = useUser();
 	const [isLoaded, setIsLoaded] = useState(false);
 	const [openPicker, setOpenPicker] = useState(false);
 

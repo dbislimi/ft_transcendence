@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 
-
 interface Tournament {
 	tournamentId: string;
 	allowReconnect: boolean;
@@ -22,25 +21,21 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	options
 ) => {
 	const games = new GamesManager();
-	
+
 	fastify.get("/game", { websocket: true }, (socket: WebSocket, req) => {
 		console.log("pong WS connected");
 		const client = fastify.getClient(req, socket);
 		if (!client) return socket.close();
 		console.log("client:", client.name);
 		let local: boolean = false;
-		// Status init to true if user currently in a tournament
-		let status: boolean = client.tournament ? true : false;
 		socket.on("message", (message) => {
 			const data = JSON.parse(message.toString());
 			console.log(data);
 			if (data.event === "stop") {
 				console.log("stop called");
-				if (!status) return;
 				games.quit(client);
-				status = false;
 				local = false;
-			} else if (data.event === "start" && status === false) {
+			} else if (data.event === "start" && !games.getRoom(client)) {
 				// console.log(data.body.action);
 				switch (data.body.action) {
 					case "list_tournaments":
@@ -84,8 +79,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						);
 						break;
 				}
-				status = true;
-			} else if (data.event === "play" && status === true) {
+			} else if (data.event === "play") {
+				const room = games.getRoom(client);
+				if (!room) return;
 				if (local === true)
 					games
 						.getRoom(client)
@@ -99,7 +95,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		socket.on("close", () => {
 			console.log("close ", client.name);
 			client.socket = undefined;
-			if (!status) return;
 			games.quit(client);
 		});
 	});

@@ -5,6 +5,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import { useUser } from "./UserContext";
 import { Friends } from "../pages";
 
 interface Message {
@@ -23,6 +24,8 @@ interface WebSocketContextType {
 		text: string;
 		to?: number | null;
 	}) => void;
+	addPongListener: (fn: (ev: MessageEvent) => void) => void;
+	removePongListener: (fn: (ev: MessageEvent) => void) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -34,11 +37,23 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const chatWsRef = useRef<WebSocket | null>(null);
 	const pongWsRef = useRef<WebSocket | null>(null);
 	const friendsWsRef = useRef<WebSocket | null>(null);
+	const pongListenersRef = useRef(new Set<(ev: MessageEvent) => void>());
+
+	const { isAuthenticated, token } = useUser();
 
 	useEffect(() => {
-		const token = localStorage.getItem("token");
-		if (!token) return;
+		if (!isAuthenticated || !token) {
+			chatWsRef.current?.close();
+			pongWsRef.current?.close();
+			friendsWsRef.current?.close();
+			chatWsRef.current = null;
+			pongWsRef.current = null;
+			friendsWsRef.current = null;
+			return;
+		}
+
 		document.cookie = `token=${token}; path=/; SameSite=Strict`;
+
 		pongWsRef.current = new WebSocket(`ws://localhost:3000/game`);
 		chatWsRef.current = new WebSocket(`ws://localhost:3000/chat`);
 		friendsWsRef.current = new WebSocket(`ws://localhost:3000/ws-friends`);
@@ -63,28 +78,52 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		// TODO: notification pour rejoindre un tournoi que tas quitte
 		pongWsRef.current.onmessage = (msg) => {
-			//
-		}
+			for (const fn of pongListenersRef.current) {
+				fn(msg as MessageEvent);
+			}
+		};
 
 		return () => {
 			chatWsRef.current?.close();
 			pongWsRef.current?.close();
 			friendsWsRef.current?.close();
+			chatWsRef.current = null;
+			pongWsRef.current = null;
+			friendsWsRef.current = null;
 		};
-	}, []);
+	}, [isAuthenticated, token]);
 
 	const sendMessage = (msg: {
 		type: string;
 		text: string;
 		to?: number | null;
 	}) => {
-		if (chatWsRef.current && chatWsRef.current.readyState === WebSocket.OPEN) {
+		if (
+			chatWsRef.current &&
+			chatWsRef.current.readyState === WebSocket.OPEN
+		) {
 			chatWsRef.current.send(JSON.stringify(msg));
 		}
 	};
 
+	const addPongListener = (fn: (ev: MessageEvent) => void) => {
+		pongListenersRef.current.add(fn);
+	};
+
+	const removePongListener = (fn: (ev: MessageEvent) => void) => {
+		pongListenersRef.current.delete(fn);
+	};
+
 	return (
-		<WebSocketContext.Provider value={{pongWsRef, messages, sendMessage }}>
+		<WebSocketContext.Provider
+			value={{
+				pongWsRef,
+				messages,
+				sendMessage,
+				addPongListener,
+				removePongListener,
+			}}
+		>
 			{children}
 		</WebSocketContext.Provider>
 	);

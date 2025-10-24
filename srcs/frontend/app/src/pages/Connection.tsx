@@ -51,7 +51,7 @@ export default function Connection() {
         else{
           // Utiliser setToken au lieu de localStorage directement
           setToken(data.token);
-          navigate("/Dashboard");
+          navigate("/");
         }
       } 
       else {

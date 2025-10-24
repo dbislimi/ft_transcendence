@@ -34,7 +34,7 @@ export default class Board {
 
 	constructor(onWin: (id: 0 | 1) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
 		this.onWin = onWin;
-		this.maxScore = maxScore;
+		this.maxScore = 1;
 		this.height = height;
 		this.width = width;
 		this.ball = new Ball(this);
@@ -175,15 +175,14 @@ export default class Board {
 				this.bounceBallY(this.players[1], yCross - y2);
 			}
 		}
-		// Clamp la position de la balle dans les bornes du terrain
+
 		nextX = Math.max(radius, Math.min(nextX, this.width - radius));
 		nextY = Math.max(radius, Math.min(nextY, this.height - radius));
 		this.ball.x = nextX;
 		this.ball.y = nextY;
-		this.ball.clampSpeed(); // Limite la vitesse à chaque update
+		this.ball.clampSpeed();
 
-		// Correction de la logique de score :
-		// Si la balle sort complètement du terrain à gauche ou à droite, on attribue le point
+		
 		if (nextX - radius <= 0) {
 			this.addScore(1);
 		} else if (nextX + radius >= this.width) {

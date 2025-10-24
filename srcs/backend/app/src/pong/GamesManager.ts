@@ -84,9 +84,17 @@ export default class GamesManager {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
-			onEnd: () => this.removeRoom(client),
+			onEnd: (c: Client, didWin: boolean, scores: number[]) => {
+				this.removeRoom(client);
+				c.socket?.send(
+					JSON.stringify({
+						event: "result",
+						body: { is: "offline", didWin, scores },
+					})
+				);
+			},
 		});
-		this.rooms.set(client, game);
+		this.setRoom(client, game);
 		game.start();
 		return diff === null;
 	}
@@ -95,24 +103,28 @@ export default class GamesManager {
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
-			const onEnd = (c: Client) => {
+			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				this.removeRoom(c);
-				console.log(`removed: ${c.name}`);
+				c.socket?.send(
+					JSON.stringify({
+						event: "result",
+						body: { is: "quick", didWin, scores },
+					})
+				);
 			};
 			const game = new Game({
 				p1: opponent,
 				p2: client,
 				onEnd,
 			});
-			this.rooms.set(opponent, game);
-			this.rooms.set(client, game);
+			this.setRoom(opponent, game);
+			this.setRoom(client, game);
 			const data = JSON.stringify({ event: "found" });
 			opponent.socket?.send(data);
 			client.socket?.send(data);
 			this.startWithCountdown(game, [opponent, client]);
 			return;
 		}
-		if (this.waitingClient === client) return;
 		this.waitingClient = client;
 	}
 	removeFromQueue(client: Client) {
@@ -170,10 +182,19 @@ export default class GamesManager {
 		});
 		for (const client of clients) client?.socket?.send(payload);
 	}
+	setRoom(client: Client, game: Game) {
+		const room = this.rooms.get(client);
+		if (room) {
+			room.disconnectPlayer(client);
+			this.rooms.delete(client);
+		}
+		this.rooms.set(client, game);
+	}
 	getRoom(client: Client) {
 		return this.rooms.get(client);
 	}
 	removeRoom(client: Client) {
+		console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
 		if (!game) return;
 		this.rooms.delete(client);

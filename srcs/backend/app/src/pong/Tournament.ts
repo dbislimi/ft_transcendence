@@ -141,10 +141,16 @@ export default class Tournament {
 			parent.game = new Game({
 				p1: player,
 				botDiff: null,
-				onEnd: (client, winner) => {
+				onEnd: (client, didWin) => {
 					console.log("game onEnd");
 					this.rooms.delete(client);
-					if (winner === true) {
+					client.socket?.send(
+						JSON.stringify({
+							event: "result",
+							data: { is: "tournament", didWin },
+						})
+					);
+					if (didWin === true) {
 						parent.winner = client;
 						this.joinMatch(parent!);
 					} else parent.loser = client;

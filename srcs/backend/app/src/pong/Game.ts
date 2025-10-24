@@ -11,9 +11,8 @@ export default class Game {
 	private clientsId: WeakMap<Client, 0 | 1> = new WeakMap();
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
-	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
-	private onEnd: ((client: Client, winner: boolean) => void) | null;
+	private onEnd: ((client: Client, winner: boolean, scores: number[]) => void) | null;
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
@@ -28,7 +27,7 @@ export default class Game {
 	}: {
 		p1: Client;
 		p2?: Client;
-		onEnd: ((client: Client, winner: boolean) => void) | null;
+		onEnd: ((client: Client, winner: boolean, scores: number[]) => void) | null;
 		botDiff?: difficulty | null;
 		train?: boolean;
 	}) {
@@ -104,16 +103,14 @@ export default class Game {
 	private stop(winner: 0 | 1): void {
 		this.pause();
 		this.signal?.removeEventListener("abort", this.onAbort);
-		const data = { event: "win", body: winner };
-		this.send(JSON.stringify(data));
 		if (this.onResolve) {
 			this.onResolve();
 			return;
 		}
 		if (!this.onEnd) return;
-		this.onEnd(this.clients[0], this.clients[0].inGameId === winner);
+		this.onEnd(this.clients[0], this.clients[0].inGameId === winner, this.board.scores);
 		if (this.clients[1])
-			this.onEnd(this.clients[1], this.clients[1].inGameId === winner);
+			this.onEnd(this.clients[1], this.clients[1].inGameId === winner, this.board.scores);
 	}
 	private restart() {
 		console.log("game restarted");
