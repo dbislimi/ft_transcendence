@@ -12,7 +12,9 @@ export default class Game {
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
 	private static readonly TICK_RATE = 1000 / 60;
-	private onEnd: ((client: Client, winner: boolean, scores: number[]) => void) | null;
+	private onEnd:
+		| ((client: Client, winner: boolean, scores: number[]) => void)
+		| null;
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
@@ -27,7 +29,9 @@ export default class Game {
 	}: {
 		p1: Client;
 		p2?: Client;
-		onEnd: ((client: Client, winner: boolean, scores: number[]) => void) | null;
+		onEnd:
+			| ((client: Client, winner: boolean, scores: number[]) => void)
+			| null;
 		botDiff?: difficulty | null;
 		train?: boolean;
 	}) {
@@ -39,6 +43,7 @@ export default class Game {
 			p2.inGameId = 1;
 			this.clients = [p1, p2];
 			this.clientsId.set(p2, 1);
+			this.send(JSON.stringify({ event: "found" }));
 			return;
 		}
 		this.clients = [p1, undefined];
@@ -61,7 +66,9 @@ export default class Game {
 		this.clients[1] = p;
 		p.inGameId = 1;
 		this.clientsId.set(p, 1);
+		this.send(JSON.stringify({ event: "found" }));
 	}
+
 	disconnectPlayer(p: Client) {
 		console.log("try to disconnect");
 		const id: 0 | 1 | undefined = p.inGameId;
@@ -108,9 +115,17 @@ export default class Game {
 			return;
 		}
 		if (!this.onEnd) return;
-		this.onEnd(this.clients[0], this.clients[0].inGameId === winner, this.board.scores);
+		this.onEnd(
+			this.clients[0],
+			this.clients[0].inGameId === winner,
+			this.board.scores
+		);
 		if (this.clients[1])
-			this.onEnd(this.clients[1], this.clients[1].inGameId === winner, this.board.scores);
+			this.onEnd(
+				this.clients[1],
+				this.clients[1].inGameId === winner,
+				this.board.scores
+			);
 	}
 	private restart() {
 		console.log("game restarted");

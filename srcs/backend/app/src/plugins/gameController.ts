@@ -30,11 +30,15 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		let local: boolean = false;
 		socket.on("message", (message) => {
 			const data = JSON.parse(message.toString());
+			console.log(`FROM: ${client.name}`);
 			console.log(data);
-			if (data.event === "stop") {
-				console.log("stop called");
-				games.quit(client);
+			if (data.event === "stop_offline") {
+				console.log("stop_offline called");
+				games.stop_offline(client);
 				local = false;
+			} else if (data.event === "stop_online") {
+				console.log("stop_online called");
+				games.stop_online(client);
 			} else if (data.event === "start" && !games.getRoom(client)) {
 				// console.log(data.body.action);
 				switch (data.body.action) {
@@ -56,16 +60,18 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						games.trainBot(socket, data.body.diff, 1000);
 						break;
 					case "create_tournament":
-						client.tournament = {
-							tournamentId: data.body.id,
-							allowReconnect: true,
-						};
-						games.createTournament(
-							client,
-							data.body.id,
-							data.body.size,
-							data.body.passwd
-						);
+						if (
+							games.createTournament(
+								client,
+								data.body.id,
+								data.body.size,
+								data.body.passwd
+							)
+						)
+							client.tournament = {
+								tournamentId: data.body.id,
+								allowReconnect: true,
+							};
 						break;
 					case "join_tournament":
 						client.tournament = {
@@ -95,7 +101,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		socket.on("close", () => {
 			console.log("close ", client.name);
 			client.socket = undefined;
-			games.quit(client);
+			games.stop_online(client);
 		});
 	});
 };

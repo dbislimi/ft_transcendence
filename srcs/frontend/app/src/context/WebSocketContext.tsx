@@ -52,11 +52,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 
-		document.cookie = `token=${token}; path=/; SameSite=Strict`;
+		const tokenParam = encodeURIComponent(token);
 
-		pongWsRef.current = new WebSocket(`ws://localhost:3000/game`);
-		chatWsRef.current = new WebSocket(`ws://localhost:3000/chat`);
-		friendsWsRef.current = new WebSocket(`ws://localhost:3000/ws-friends`);
+		pongWsRef.current = new WebSocket(
+			`ws://localhost:3000/game?token=${tokenParam}`
+		);
+		chatWsRef.current = new WebSocket(
+			`ws://localhost:3000/chat?token=${tokenParam}`
+		);
+		friendsWsRef.current = new WebSocket(
+			`ws://localhost:3000/ws-friends?token=${tokenParam}`
+		);
 
 		const onOpen = (name: string) =>
 			console.log(`${name} Websocket connecté`);

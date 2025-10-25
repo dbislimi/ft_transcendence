@@ -3,6 +3,7 @@ import GameCard from "./GameCard";
 import ChoiceGroup from "./ChoiceGroup";
 import GameInput from "./GameInput";
 import { useEffect, useState, type RefObject } from "react";
+import { useWebSocket } from "../context/WebSocketContext";
 
 interface OnlineCardProps {
 	onCancel: () => void;
@@ -13,7 +14,6 @@ interface OnlineCardProps {
 		id: string,
 		passwd: string
 	) => void;
-	wsRef?: RefObject<WebSocket | null>;
 }
 
 interface Tournament {
@@ -23,29 +23,30 @@ interface Tournament {
 	private: boolean;
 }
 
-export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
+export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	const { t } = useTranslation();
 	const [mode, setMode] = useState("Quick Match");
-	const [variant, setVariant] = useState("Create");
+	const [variant, setVariant] = useState("Join");
 	const [size, setSize] = useState(4);
 	const [name, setName] = useState("");
 	const [password, setPassword] = useState("");
 	const [priv, setPriv] = useState(false);
 	const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
+	const { pongWsRef, addPongListener, removePongListener } = useWebSocket();
+
 	useEffect(() => {
-		if (mode !== "Tournament" || variant !== "Join" || !wsRef?.current)
-			return;
+		if (mode !== "Tournament" || variant !== "Join") return;
 		const handler = (e: MessageEvent) => {
-			try {
-				const d = JSON.parse(e.data);
-				if (d.event === "tournaments") setTournaments(d.body);
-			} catch {}
+			const d = JSON.parse(e.data);
+			if (d.event === "tournaments") setTournaments(d.body);
 		};
-		wsRef.current.addEventListener("message", handler);
+
+		addPongListener(handler);
+
 		const ask = () => {
-			if (wsRef.current?.readyState === WebSocket.OPEN)
-				wsRef.current.send(
+			if (pongWsRef.current?.readyState === WebSocket.OPEN)
+				pongWsRef.current.send(
 					JSON.stringify({
 						event: "start",
 						body: { action: "list_tournaments" },
@@ -56,9 +57,9 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 		const id = setInterval(ask, 3000);
 		return () => {
 			clearInterval(id);
-			wsRef.current?.removeEventListener("message", handler);
+			removePongListener(handler);
 		};
-	}, [mode, variant, wsRef]);
+	}, [mode, variant, addPongListener, removePongListener, pongWsRef]);
 
 	const disable =
 		variant === "Create"

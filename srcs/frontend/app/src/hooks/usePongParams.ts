@@ -1,18 +1,16 @@
 import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
-type Mode = "offline" | "online";
-
 export default function usePongParams() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const mode = searchParams.get("mode") as Mode | undefined;
+	const mode = searchParams.get("mode");
 	const id = searchParams.get("id");
 
 	const setParams = useCallback(
 		(
 			next: {
-				mode?: Mode | undefined;
+				mode?: string | undefined;
 				id?: string | undefined;
 			} | null
 		) => {
@@ -26,7 +24,6 @@ export default function usePongParams() {
 		},
 		[setSearchParams]
 	);
-
 	return {
 		mode,
 		id,

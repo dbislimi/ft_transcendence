@@ -7,6 +7,7 @@ class Node {
 	parent?: Node;
 	right?: Node;
 	left?: Node;
+	waiting?: Client;
 	winner?: Client;
 	loser?: Client;
 
@@ -41,9 +42,11 @@ export default class Tournament {
 	leafs: Node[] = [];
 	root: Node | null = null;
 	rooms: WeakMap<Client, Game>;
+	setRoom: (client: Client, game: Game) => void;
 	password: string | undefined;
 	nodeId: number = 0;
 	onEnd: () => void;
+	initialDepth?: number;
 	private startCountdown: (
 		game: Game,
 		clients: (Client | undefined)[]
@@ -56,6 +59,7 @@ export default class Tournament {
 		password,
 		onEnd,
 		startCountdown,
+		setRoom,
 	}: {
 		rooms: WeakMap<Client, Game>;
 		id: string;
@@ -63,6 +67,7 @@ export default class Tournament {
 		password: string;
 		onEnd: () => void;
 		startCountdown: (game: Game, clients: (Client | undefined)[]) => void;
+		setRoom: (client: Client, game: Game) => void;
 	}) {
 		this.rooms = rooms;
 		this.password = password;
@@ -70,10 +75,12 @@ export default class Tournament {
 		this.capacity = capacity;
 		this.onEnd = onEnd;
 		this.startCountdown = startCountdown;
+		this.setRoom = setRoom;
 	}
 
 	join(player: Client) {
 		if (!this.players.includes(player)) this.players.push(player);
+		player.socket?.send(JSON.stringify({ event: "searching" }));
 		console.log("Joined tournament: ", this.id);
 		console.log(`Nb of players: ${this.players.length}`);
 		if (this.players.length === this.capacity) this.startTournament();
@@ -90,6 +97,7 @@ export default class Tournament {
 		}
 		console.log("building nodes");
 		let depth = Math.ceil(Math.log2(this.players.length));
+		this.initialDepth = depth;
 		let nodes: Node[] = this.players.map((p) => new Node({ p: p }));
 		this.leafs = nodes;
 		while (nodes.length > 1) {
@@ -134,20 +142,17 @@ export default class Tournament {
 			return;
 		}
 		console.log("start");
-		if (parent.game) {
-			parent.game.connectPlayer(player);
-			this.startCountdown(parent.game, parent.game.clients);
-		} else {
+		if (parent.waiting) {
 			parent.game = new Game({
-				p1: player,
-				botDiff: null,
+				p1: parent.waiting,
+				p2: player,
 				onEnd: (client, didWin) => {
 					console.log("game onEnd");
 					this.rooms.delete(client);
 					client.socket?.send(
 						JSON.stringify({
 							event: "result",
-							data: { is: "tournament", didWin },
+							body: { is: "tournament", didWin },
 						})
 					);
 					if (didWin === true) {
@@ -156,8 +161,19 @@ export default class Tournament {
 					} else parent.loser = client;
 				},
 			});
+			this.setRoom(player, parent.game);
+			this.setRoom(parent.waiting, parent.game);
+			this.startCountdown(parent.game, parent.game.clients);
+			parent.waiting = undefined;
+		} else {
+			parent.waiting = player;
+			if (
+				parent.depth &&
+				this.initialDepth &&
+				parent.depth !== this.initialDepth
+			)
+				player.socket?.send(JSON.stringify({ event: "searching" }));
 		}
-		this.rooms.set(player, parent.game);
 	}
 	init() {
 		console.log(`leafs: ${this.leafs.length}`);

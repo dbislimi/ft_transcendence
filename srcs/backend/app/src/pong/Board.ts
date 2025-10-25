@@ -32,9 +32,9 @@ export default class Board {
 	normHitpoint: number = 0;
 	private onWin: (id: 0 | 1) => void;
 
-	constructor(onWin: (id: 0 | 1) => void, maxScore: number = 5, height: number = 100, width: number = 200) {
+	constructor(onWin: (id: 0 | 1) => void, maxScore: number = 2, height: number = 100, width: number = 200) {
 		this.onWin = onWin;
-		this.maxScore = 1;
+		this.maxScore = maxScore;
 		this.height = height;
 		this.width = width;
 		this.ball = new Ball(this);

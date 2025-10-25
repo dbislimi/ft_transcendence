@@ -12,9 +12,18 @@ export default class GamesManager {
 	private countdowns: WeakMap<Game, { cancelled: boolean }> = new WeakMap();
 	private static readonly COUNTDOWN_SECONDS = 3;
 
-	createTournament(client: Client, id: string, size: number, passwd: string) {
-		if (this.tournaments[id])
-			throw new Error(`Tournament with id ${id} already exists.`);
+	createTournament(
+		client: Client,
+		id: string,
+		size: number,
+		passwd: string
+	): boolean {
+		if (this.tournaments[id]) {
+			client.socket?.send(
+				JSON.stringify({ event: "error", msg: "tournamentId" })
+			);
+			return false;
+		}
 		this.tournaments[id] = new Tournament({
 			rooms: this.rooms,
 			id,
@@ -26,8 +35,10 @@ export default class GamesManager {
 			},
 			startCountdown: (game, clients) =>
 				this.startWithCountdown(game, clients),
+			setRoom: (client, game) => this.setRoom(client, game),
 		});
 		this.joinTournament(client, id, passwd);
+		return true;
 	}
 	joinTournament(client: Client, id: string, passwd?: string) {
 		const tournament: Tournament | undefined = this.tournaments[id];
@@ -80,18 +91,20 @@ export default class GamesManager {
 		console.log("debug");
 		return { playerId: "train" };
 	}
-	startOffline(client: Client, diff: difficulty | null): boolean {
+	startOffline(
+		client: Client,
+		diff: difficulty | null	): boolean {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
 			onEnd: (c: Client, didWin: boolean, scores: number[]) => {
 				this.removeRoom(client);
-				c.socket?.send(
-					JSON.stringify({
-						event: "result",
-						body: { is: "offline", didWin, scores },
-					})
-				);
+					c.socket?.send(
+						JSON.stringify({
+							event: "result",
+							body: { is: "offline", didWin, scores },
+						})
+					);
 			},
 		});
 		this.setRoom(client, game);
@@ -99,7 +112,6 @@ export default class GamesManager {
 		return diff === null;
 	}
 	startOnline(client: Client) {
-		client.socket?.send(JSON.stringify({ event: "searching" }));
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
@@ -119,12 +131,10 @@ export default class GamesManager {
 			});
 			this.setRoom(opponent, game);
 			this.setRoom(client, game);
-			const data = JSON.stringify({ event: "found" });
-			opponent.socket?.send(data);
-			client.socket?.send(data);
 			this.startWithCountdown(game, [opponent, client]);
 			return;
 		}
+		client.socket?.send(JSON.stringify({ event: "searching" }));
 		this.waitingClient = client;
 	}
 	removeFromQueue(client: Client) {
@@ -185,8 +195,12 @@ export default class GamesManager {
 	setRoom(client: Client, game: Game) {
 		const room = this.rooms.get(client);
 		if (room) {
-			room.disconnectPlayer(client);
-			this.rooms.delete(client);
+			if (room.clients[0] && room.clients[1])
+				room.disconnectPlayer(client);
+			else {
+				room.pause();
+				this.removeRoom(client);
+			}
 		}
 		this.rooms.set(client, game);
 	}
@@ -204,7 +218,10 @@ export default class GamesManager {
 			this.countdowns.delete(game);
 		}
 	}
-	quit(client: Client) {
+	stop_offline(client: Client) {
+		this.getRoom(client)?.disconnectPlayer(client);
+	}
+	stop_online(client: Client) {
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
 			if (!tournament) return;

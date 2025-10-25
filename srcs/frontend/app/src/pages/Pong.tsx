@@ -68,8 +68,10 @@ export default function Pong() {
 		getDefaultLabels()
 	);
 	const [waiting, setWaiting] = useState(false);
-	const [training, setTraining] = useState(false);
+	const trainingRef = useRef(false);
 	const { mode, setParams } = usePongParams();
+
+	const sessionTypeRef = useRef<"offline" | "online" | null>(null);
 
 	const gameRef = useRef<GameState>(initGameState());
 	const offlinePayloadRef = useRef<{ diff: Difficulty | null } | null>(null);
@@ -90,20 +92,21 @@ export default function Pong() {
 	const onMessage = useCallback(
 		(event: MessageEvent) => {
 			const data = JSON.parse(event.data);
-			console.log(`data: ${data}`);
+			console.log(`data: ${data.event}`);
 			switch (data.event) {
 				case "searching": {
-					setPlay(false);
+					console.log("searching");
+					setWaiting(true);
 					resetLabels();
 					setCountdownState(null);
 					setControlsReady(false);
-					setWaiting(true);
 					break;
 				}
 				case "found": {
 					console.log("found");
-					setWaiting(false);
 					setPlay(true);
+					trainingRef.current = false;
+					setWaiting(false);
 					break;
 				}
 				case "players": {
@@ -142,17 +145,14 @@ export default function Pong() {
 					const type: string = data.body.is;
 					const didWin: boolean = data.body.didWin;
 					const scores: number[] = data.body.scores;
+					if (trainingRef.current) {
+						trainingRef.current = false;
+					}
 					setControlsReady(false);
 					setCountdownState(null);
-					setPlay(false);
 					resetGameState();
 					resetLabels();
-
-					if (training) {
-						setTraining(false);
-						break;
-					}
-
+					setPlay(false);
 					break;
 				}
 				case "tournament_win": {
@@ -161,9 +161,15 @@ export default function Pong() {
 
 					break;
 				}
+				case "error":
+					if (data.msg === "tournamentId")
+						window.alert(
+							"Le nom de tournoi est deja utilisé. Choisissez-en un autre"
+						);
+					break;
 			}
 		},
-		[play, resetLabels, setControlsReady, labels.opponent, defaultSelfLabel]
+		[play, resetLabels, setControlsReady, labels.opponent, defaultSelfLabel, setPlay]
 	);
 
 	const { pongWsRef, addPongListener, removePongListener } = useWebSocket();
@@ -175,34 +181,35 @@ export default function Pong() {
 		};
 	}, [addPongListener, removePongListener, onMessage]);
 
-	const showGame = useCallback(
-		(flag: boolean) => {
-			setPlay(flag);
-			if (!flag) resetLabels();
+	const stop = useCallback(
+		(forceOnline: boolean = false) => {
+			setPlay(false);
+			trainingRef.current = false;
+			console.log(
+				`training=${trainingRef.current}, mode=${sessionTypeRef.current}, forceOnline=${forceOnline}`
+			);
+			const stop =
+				forceOnline ||
+				(!trainingRef.current &&
+					!(sessionTypeRef.current === "offline"))
+					? "stop_online"
+					: "stop_offline";
+			console.log(`stop: ${stop}`);
+			pongWsRef?.current?.send(JSON.stringify({ event: stop }));
+			resetGameState();
+			offlinePayloadRef.current = null;
 			setCountdownState(null);
 			setControlsReady(false);
+			resetLabels();
 		},
-		[resetLabels, setControlsReady]
+		[resetGameState, resetLabels, setControlsReady, pongWsRef]
 	);
 
-	const stop = useCallback(() => {
-		pongWsRef?.current?.send(
-			JSON.stringify({
-				event: "stop",
-			})
-		);
-		resetGameState();
-		offlinePayloadRef.current = null;
-		setCountdownState(null);
-		setControlsReady(false);
-		resetLabels();
-	}, [resetGameState, resetLabels, setControlsReady, pongWsRef]);
-
 	const handleBackToMenu = useCallback(() => {
-		stop();
-		showGame(false);
+		stop(true);
 		setParams(mode ? { mode } : null);
-	}, [mode, showGame, stop, setParams]);
+		sessionTypeRef.current = mode as "offline" | "online" | null;
+	}, [mode, stop, setParams]);
 
 	const sendStartEvent = useCallback(
 		(body: Record<string, unknown>) => {
@@ -226,26 +233,27 @@ export default function Pong() {
 		) => {
 			if (selectedMode === "Tournament") {
 				setParams({ mode: "online", id });
+				sessionTypeRef.current = "online";
 				sendStartEvent({
 					action: `${matchType.toLowerCase()}_tournament`,
 					id,
 					size,
 					passwd,
 				});
-				setWaiting(true);
 			} else {
 				setParams({ mode: "online" });
+				sessionTypeRef.current = "online";
 				sendStartEvent({ action: "play_online" });
-				setWaiting(true);
 			}
 			resetLabels();
 		},
-		[sendStartEvent, showGame, resetLabels, setParams]
+		[sendStartEvent, resetLabels, setParams]
 	);
 
 	const handleOfflineConfirm = useCallback(
 		({ gamemode, botDiff }: OfflineConfig) => {
 			setParams({ mode: "offline" });
+			sessionTypeRef.current = "offline";
 			if (gamemode === "solo") {
 				offlinePayloadRef.current = { diff: botDiff };
 				setLabels({
@@ -261,10 +269,10 @@ export default function Pong() {
 					opponent: "Player 2",
 				});
 			}
-			showGame(true);
+			setPlay(true);
 			setCountdownState({ mode: "local", seconds: 1 });
 		},
-		[defaultSelfLabel, setParams, showGame]
+		[defaultSelfLabel, setParams]
 	);
 
 	const handleOfflineCountdown = useCallback(() => {
@@ -287,11 +295,14 @@ export default function Pong() {
 	useEffect(() => {
 		if (!mode) {
 			if (play) stop();
-			showGame(false);
 		}
-	}, [mode, play, stop, showGame]);
+	}, [mode, play, stop]);
 
-	useEffect(() => stop, [stop]);
+	useEffect(() => {
+		return () => {
+			pongWsRef?.current?.send(JSON.stringify({ event: "stop_online" }));
+		};
+	}, []);
 
 	return (
 		<div className="relative w-screen h-screen flex items-center justify-center">
@@ -308,42 +319,46 @@ export default function Pong() {
 			)}
 			{mode === "offline" && !play && (
 				<OfflineCard
-					onCancel={() => setParams(null)}
+					onCancel={() => {
+						setParams(null);
+						sessionTypeRef.current = null;
+					}}
 					onConfirm={handleOfflineConfirm}
 				/>
 			)}
 			{mode === "online" && !play && !waiting && (
 				<OnlineCard
-					onCancel={() => setParams(null)}
+					onCancel={() => {
+						setParams(null);
+						sessionTypeRef.current = null;
+					}}
 					onConfirm={handleOnlineConfirm}
-					wsRef={pongWsRef}
 				/>
 			)}
 			{waiting && (
 				<WaitingOverlay
-					training={training}
+					training={trainingRef.current}
 					onQuit={() => {
 						stop();
-						showGame(false);
 						setParams({ mode: "online" });
 						setWaiting(false);
 					}}
 					onQuitTraining={() => {
 						stop();
-						showGame(false);
-						setTraining(false);
+						setPlay(false);
+						trainingRef.current = false;
 						setWaiting(true);
 					}}
 					onTrain={(diff) => {
+						trainingRef.current = true;
 						sendStartEvent({ action: "play_offline", diff });
-						setTraining(true);
 						setLabels({
 							self: defaultSelfLabel,
 							opponent: `Bot (${
 								diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
 						});
-						showGame(true);
+						setPlay(true);
 					}}
 				/>
 			)}
