@@ -1,5 +1,5 @@
 import type WebSocket from 'ws';
-import { BombPartyEngine } from './GameEngine.js';
+import { BombPartyEngine } from './GameEngine.ts';
 import {
   type Room,
   type PlayerConnection,
@@ -20,7 +20,7 @@ import {
   handlePlayerDisconnect,
   startTurnCheckInterval,
   cleanupInterval
-} from './room';
+} from './room/index.ts';
 
 export class BombPartyRoomManager {
   private rooms = new Map<string, Room>();
@@ -80,29 +80,32 @@ export class BombPartyRoomManager {
     return this.players.get(playerId);
   }
 
-  getPublicRooms(): RoomInfo[] {
-    const publicRooms: RoomInfo[] = [];
+  getAllRooms(): RoomInfo[] {
+    const allRooms: RoomInfo[] = [];
 
     for (const [roomId, room] of this.rooms) {
-      if (!room.isPrivate) {
-        publicRooms.push({
-          id: roomId,
-          name: room.name,
-          players: room.players.size,
-          maxPlayers: room.maxPlayers,
-          isStarted: this.roomEngines.has(roomId),
-          createdAt: room.createdAt
-        });
-      }
+      allRooms.push({
+        id: roomId,
+        name: room.name,
+        players: room.players.size,
+        maxPlayers: room.maxPlayers,
+        isPrivate: room.isPrivate,
+        isStarted: this.roomEngines.has(roomId),
+        createdAt: room.createdAt
+      });
     }
 
-    return publicRooms.sort((a, b) => b.createdAt - a.createdAt);
+    return allRooms.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  getPublicRooms(): RoomInfo[] {
+    return this.getAllRooms().filter(room => !room.isPrivate);
   }
 
   getRoomDetails(roomId: string): RoomDetailsResult {
     const room = this.rooms.get(roomId);
     if (!room) {
-      return { success: false, error: 'Salle non trouvée' };
+      return { success: false, error: 'Room not found' };
     }
 
     return {

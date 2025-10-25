@@ -1,4 +1,4 @@
-import type { Room, PlayerConnection, BPServerMessage } from './roomTypes';
+import type { Room, PlayerConnection, BPServerMessage } from './roomTypes.ts';
 
 export function broadcastToRoom(
   room: Room | undefined,

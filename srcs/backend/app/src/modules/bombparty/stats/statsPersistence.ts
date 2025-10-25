@@ -6,14 +6,14 @@ import type {
   MatchData, 
   MatchHistoryData,
   RankingEntry 
-} from './statsModel';
-import { StatsModel } from './statsModel';
+} from './statsModel.ts';
+import { StatsModel } from './statsModel.ts';
 import { 
   computeUpdatedUserStats, 
   computeNewUserStats, 
   computeUpdatedTrigramStats, 
   computeNewTrigramStats 
-} from './statsCompute';
+} from './statsCompute.ts';
 
 export class StatsPersistence {
   private model: StatsModel;
@@ -29,7 +29,7 @@ export class StatsPersistence {
         [userId],
         (err, existingStats) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération stats:', err);
+            console.error(' [Stats] Error fetching stats:', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -62,7 +62,7 @@ export class StatsPersistence {
               ],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Erreur mise à jour stats:', err);
+                  console.error(' [Stats] Error updating stats:', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -91,7 +91,7 @@ export class StatsPersistence {
               ],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Erreur création stats:', err);
+                  console.error(' [Stats] Error creating stats:', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -126,7 +126,7 @@ export class StatsPersistence {
         ],
         function(err) {
           if (err) {
-            console.error(' [Stats] Erreur ajout historique:', err);
+            console.error(' [Stats] Error adding history:', err);
             resolve({ success: false, error: err.message });
           } else {
             resolve({ success: true, data: this.lastID });
@@ -148,7 +148,7 @@ export class StatsPersistence {
         [userId, trigram],
         (err, existingStats) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération trigram stats:', err);
+            console.error(' [Stats] Error fetching trigram stats:', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -166,7 +166,7 @@ export class StatsPersistence {
               [computed.newTimesUsed, computed.newSuccessRate, computed.newAverageTime, userId, trigram],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Erreur mise à jour trigram stats:', err);
+                  console.error(' [Stats] Error updating trigram stats:', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -183,7 +183,7 @@ export class StatsPersistence {
               [userId, trigram, computed.timesUsed, computed.successRate, computed.averageTime],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Erreur création trigram stats:', err);
+                  console.error(' [Stats] Error creating trigram stats:', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -203,7 +203,7 @@ export class StatsPersistence {
         [userId],
         (err, row) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération stats user:', err);
+            console.error(' [Stats] Error fetching user stats:', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -233,7 +233,7 @@ export class StatsPersistence {
         [userId, limit, offset],
         (err, rows) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération historique:', err);
+            console.error(' [Stats] Error fetching history:', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -258,7 +258,7 @@ export class StatsPersistence {
         [userId, limit],
         (err, rows) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération trigram stats:', err);
+            console.error(' [Stats] Error fetching trigram stats:', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -291,7 +291,7 @@ export class StatsPersistence {
         [limit],
         (err, rows) => {
           if (err) {
-            console.error(' [Stats] Erreur récupération classement:', err);
+            console.error(' [Stats] Error fetching leaderboard:', err);
             resolve({ success: false, error: err.message });
             return;
           }

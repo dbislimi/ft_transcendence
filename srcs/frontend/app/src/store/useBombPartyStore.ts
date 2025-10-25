@@ -53,6 +53,16 @@ export interface UIState {
   infoOpen: boolean;
 }
 
+export interface LobbyInfo {
+  id: string;
+  name: string;
+  players: number;
+  maxPlayers: number;
+  isPrivate: boolean;
+  isStarted: boolean;
+  createdAt: number;
+}
+
 export interface ConnectionState {
   state: ConnectionStateType;
   playerId: string | null;
@@ -71,6 +81,7 @@ interface BombPartyStore {
   gameState: GameState | null;
   ui: UIState;
   connection: ConnectionState;
+  lobbies: LobbyInfo[];
   
   // Actions
   setGamePhase: (phase: GamePhase) => void;
@@ -82,6 +93,8 @@ interface BombPartyStore {
   leaveRoom: () => void;
   createRoom: (name: string, isPrivate: boolean, password?: string, maxPlayers?: number) => void;
   startGame: () => void;
+  setLobbies: (lobbies: LobbyInfo[]) => void;
+  requestLobbyList: () => void;
   
   // Connection actions
   setConnectionState: (state: ConnectionStateType) => void;
@@ -152,6 +165,7 @@ export const useBombPartyStore = create<BombPartyStore>()(
     gameState: null,
     ui: initialUIState,
     connection: initialConnectionState,
+    lobbies: [],
     
     // Game phase actions
     setGamePhase: (phase) => set({ gamePhase: phase }),
@@ -259,6 +273,19 @@ export const useBombPartyStore = create<BombPartyStore>()(
     setInfoOpen: (infoOpen) => set((prev) => ({ 
       ui: { ...prev.ui, infoOpen } 
     })),
+    
+    // Lobby actions
+    setLobbies: (lobbies) => set({ lobbies }),
+    
+    requestLobbyList: () => {
+      import('../services/bombPartyService').then(({ bombPartyService }) => {
+        try {
+          bombPartyService.requestLobbyList();
+        } catch (err) {
+          console.warn('[useBombPartyStore] Erreur lors de la requête de la liste des lobbies:', err);
+        }
+      });
+    },
     
     // Computed getters
     getCurrentPlayer: () => {

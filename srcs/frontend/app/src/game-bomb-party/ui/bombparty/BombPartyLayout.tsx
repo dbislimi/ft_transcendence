@@ -62,7 +62,7 @@ export default function BombPartyLayout({
             trigram={state.gameState.currentTrigram}
             remainingMs={remainingMs}
             isActive={state.gameState.phase === 'TURN_ACTIVE'}
-            usageCount={state.gameState.usedWords.length}
+            usageCount={state.gameState.usedWords?.length || 0}
             totalPlayers={state.gameState.players.length}
             flashExtend={state.timerFlash}
             currentPlayerName={state.gameState.players[state.gameState.currentPlayerIndex]?.name}
@@ -71,7 +71,7 @@ export default function BombPartyLayout({
           <DraggablePanel initialOffset={{ x: 0, y: -120 }}>
             <WordInput
               trigram={state.gameState.currentTrigram}
-              usedWords={state.gameState.usedWords}
+              usedWords={state.gameState.usedWords || []}
               onSubmit={onWordSubmit}
               isActive={state.gameState.phase === 'TURN_ACTIVE' && !!isCurrentPlayerTurn()}
               engine={engine}
@@ -81,19 +81,13 @@ export default function BombPartyLayout({
             />
           </DraggablePanel>
 
-          <div className="absolute top-6 left-6 flex gap-2">
+          <div className="absolute top-6 left-6">
             <button
               onClick={onBackToMenu}
               className="px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-all duration-200"
             >
               {t('bombParty.backToMenu')}
             </button>
-            <Link
-              to="/bomb-party/stats"
-              className="px-4 py-2 bg-cyan-800/80 backdrop-blur-md border border-cyan-600 rounded-lg text-cyan-300 hover:text-white hover:border-cyan-500 transition-all duration-200"
-            >
-              📊 Stats
-            </Link>
           </div>
 
           {gameMode === 'multiplayer' && <Chat />}

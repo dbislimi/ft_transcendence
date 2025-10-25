@@ -34,20 +34,21 @@ export default function Connection() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch("http://localhost:3001/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
+        const data = await response.json();
         const userData = {
-          id: "1",
-          name: email.split('@')[0],
+          id: data.user?.id || "1",
+          name: data.user?.name || email.split('@')[0],
           email: email
         };
         
-        login(userData);
+        login(userData, data.token);
         navigate("/");
       } else {
         alert("Identifiants invalides");

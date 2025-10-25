@@ -125,7 +125,7 @@ export default function PlayerCircle({ players, currentPlayerIndex, radiusBoost 
                   <span title={t('bombParty.hud.fastTurn')} className="text-yellow-300">⚡</span>
                 )}
                 {player.pendingEffects?.doubleChance && !isEliminated && (
-                  <span title="Double chance" className="text-cyan-300">♢</span>
+                  <span title={t('bombParty.bonus.doubleChance.name')} className="text-cyan-300">♢</span>
                 )}
               </div>
               <div className="text-xs px-2 py-1 rounded-full bg-slate-600/50 text-slate-400">

@@ -56,7 +56,7 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
       return;
     }
 
-    if (!trimmedWord.toLowerCase().includes(trigram.toLowerCase())) {
+    if (trigram && !trimmedWord.toLowerCase().includes(trigram.toLowerCase())) {
       setError(t('bombParty.input.errors.noTrigram', { trigram }));
       return;
     }
@@ -133,7 +133,7 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
             {t('bombParty.input.instruction')}
           </p>
           <p className="text-cyan-400 font-mono text-lg">
-            "{trigram.toUpperCase()}"
+            "{(trigram || '...').toUpperCase()}"
           </p>
           {/* Informations du trigramme */}
           {trigramInfo && (

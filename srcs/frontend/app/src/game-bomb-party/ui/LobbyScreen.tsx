@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../../Components/SpaceBackground";
 import BackgroundSurface from "../../Components/BackgroundSurface";
+import LobbyList from "./LobbyList";
+import { useBombPartyStore } from "../../store/useBombPartyStore";
 
 interface LobbyMeta {
 	name: string;
@@ -15,11 +17,13 @@ interface LobbyScreenProps {
 	onJoin: (name: string, password?: string) => void;
 	onBack?: () => void;
 	isAuthenticated?: boolean;
+	client?: any;
 }
 
-export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated = false }: LobbyScreenProps) {
+export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated = false, client }: LobbyScreenProps) {
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<"create" | "join">("create");
+	const { connection } = useBombPartyStore();
 
 	// Create state
 	const [name, setName] = useState("");
@@ -27,9 +31,6 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 	const [password, setPassword] = useState("");
 	const [maxPlayers, setMaxPlayers] = useState(4);
 
-	// Join state
-	const [joinName, setJoinName] = useState("");
-	const [joinPassword, setJoinPassword] = useState("");
 
 	return (
 		<BackgroundSurface game="bombparty">
@@ -41,6 +42,19 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							{t("bombParty.lobby.title")}
 						</h1>
 						<div className="flex items-center gap-2">
+							{/* Indicateur de connexion */}
+							<div className="flex items-center gap-2">
+								<div className={`w-2 h-2 rounded-full ${
+									connection.state === 'connected' ? 'bg-green-400' :
+									connection.state === 'connecting' ? 'bg-yellow-400' :
+									'bg-red-400'
+								}`}></div>
+								<span className="text-xs text-slate-400">
+									{connection.state === 'connected' ? t('bombParty.lobby.connected') :
+									 connection.state === 'connecting' ? t('bombParty.lobby.connecting') :
+									 t('bombParty.lobby.disconnected')}
+								</span>
+							</div>
 						{onBack && (
 							<button
 								type="button"
@@ -53,6 +67,13 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						)}
 						</div>
 					</div>
+
+					{/* Affichage des erreurs */}
+					{connection.lastError && (
+						<div className="mb-4 p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-300 text-sm">
+							{connection.lastError}
+						</div>
+					)}
 
 					<div className="flex gap-2 mb-4">
 						<button
@@ -120,20 +141,19 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						<button
 							type="button"
 							onClick={() => {
-								console.log('[Frontend-LobbyScreen] Création lobby avec maxPlayers:', maxPlayers);
 								onCreate({ name, isPrivate, password: isPrivate ? password : undefined, maxPlayers });
 							}}
-							disabled={!name.trim() || !isAuthenticated}
+							disabled={!name.trim() || connection.state !== 'connected' || !connection.playerId}
 								className={`w-full py-3 px-6 font-semibold rounded-lg transition-all duration-200 ${
-									name.trim() && isAuthenticated
+									name.trim() && connection.state === 'connected' && connection.playerId
 										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
 										: "bg-slate-600 text-slate-400 cursor-not-allowed"
 								}`}
 							>
-								{!isAuthenticated ? (
+								{connection.state !== 'connected' || !connection.playerId ? (
 									<div className="flex items-center justify-center gap-2">
 										<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-										{t("bombParty.lobby.connecting")}
+										{connection.state === 'connecting' ? t("bombParty.lobby.connecting") : t("bombParty.lobby.connectionRequired")}
 									</div>
 								) : (
 									t("bombParty.lobby.create")
@@ -141,42 +161,11 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							</button>
 						</div>
 					) : (
-						<div className="space-y-4">
-							<div>
-								<label className="block text-slate-300 text-sm mb-1">{t("bombParty.lobby.lobbyId")}</label>
-								<input
-									value={joinName}
-									onChange={(e) => setJoinName(e.target.value)}
-									placeholder={t("bombParty.lobby.lobbyIdPlaceholder")}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								/>
-								<p className="text-xs text-slate-400 mt-1">
-									{t("bombParty.lobby.lobbyIdHelp")}
-								</p>
-							</div>
-							<div>
-								<label className="block text-slate-300 text-sm mb-1">{t("bombParty.lobby.lobbyId")}</label>
-								<input
-									type="password"
-									value={joinPassword}
-									onChange={(e) => setJoinPassword(e.target.value)}
-									placeholder={t("bombParty.lobby.passwordPlaceholder")}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								/>
-							</div>
-							<button
-								type="button"
-								onClick={() => onJoin(joinName, joinPassword || undefined)}
-								disabled={!joinName.trim() || !isAuthenticated}
-								className={`w-full py-3 px-6 font-semibold rounded-lg transition-all duration-200 ${
-									joinName.trim() && isAuthenticated
-										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
-										: "bg-slate-600 text-slate-400 cursor-not-allowed"
-								}`}
-							>
-								{!isAuthenticated ? t("bombParty.lobby.connecting") : t("bombParty.lobby.join")}
-							</button>
-						</div>
+						<LobbyList 
+							onJoinLobby={onJoin}
+							isAuthenticated={isAuthenticated}
+							client={client}
+						/>
 					)}
 				</div>
 			</div>

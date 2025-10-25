@@ -5,7 +5,7 @@ import type {
   BonusKey, 
   TurnStartedEvent,
   GameStateSyncEvent
-} from './types';
+} from './types.ts';
 import {
   getInitialState,
   createGamePlayers,
@@ -14,7 +14,7 @@ import {
   getWinner,
   getCurrentPlayer,
   getAlivePlayersCount
-} from './engine';
+} from './engine/index.ts';
 import {
   startCountdown,
   startTurn,
@@ -22,16 +22,16 @@ import {
   nextPlayer,
   isTurnExpired,
   checkAndEndExpiredTurn
-} from './engine';
+} from './engine/index.ts';
 import {
   submitWord,
   giveRandomBonus
-} from './engine';
+} from './engine/index.ts';
 import {
   getTurnDurationForCurrentPlayer,
   activateBonus
-} from './engine';
-import { getRandomTrigram } from './trigramSelector';
+} from './engine/index.ts';
+import { getRandomTrigram } from './trigramSelector.ts';
 
 export class BombPartyEngine {
   private state: GameState;
@@ -61,6 +61,7 @@ export class BombPartyEngine {
   }
 
   startTurn(): void {
+    console.log('[BombParty DEBUG] startTurn() CALLED');
     this.currentTrigramUsageCount = 1;
     this.doubleChanceConsumedThisTurn = false;
 
@@ -69,18 +70,14 @@ export class BombPartyEngine {
       () => this.getNewTrigram(),
       () => this.getTurnDurationForCurrentPlayer()
     );
+    
+    console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentTrigram=${this.state.currentTrigram}, currentPlayerIndex=${this.state.currentPlayerIndex}`);
   }
 
-  /**
-   * Vérifie si le tour actuel est expiré
-   */
   isTurnExpired(): boolean {
     return isTurnExpired(this.state);
   }
 
-  /**
-   * Force la fin du tour si expiré
-   */
   checkAndEndExpiredTurn(): boolean {
     return checkAndEndExpiredTurn(this.state, () => this.resolveTurn(false, true));
   }
@@ -91,9 +88,6 @@ export class BombPartyEngine {
     return newTrigram;
   }
 
-  /**
-   * Soumet un mot pour validation
-   */
   submitWord(word: string, msTaken: number): { 
     ok: boolean; 
     reason?: string; 
@@ -118,9 +112,6 @@ export class BombPartyEngine {
     };
   }
 
-  /**
-   * Résout le tour actuel (succès ou échec)
-   */
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
     resolveTurn(
       this.state,
@@ -137,9 +128,6 @@ export class BombPartyEngine {
     nextPlayer(this.state);
   }
 
-  /**
-   * Active un bonus pour un joueur
-   */
   activateBonus(playerId: string, bonusKey: BonusKey): { ok: boolean; meta?: any } {
     return activateBonus(this.state, playerId, bonusKey);
   }
@@ -189,9 +177,6 @@ export class BombPartyEngine {
     return getWinner(this.state);
   }
 
-  /**
-   * Statistiques finales pour la base de données
-   */
   getFinalStats(): Array<{
     playerId: string;
     wordsSubmitted: number;
@@ -211,9 +196,6 @@ export class BombPartyEngine {
     });
   }
 
-  /**
-   * Génère l'événement de début de tour
-   */
   getTurnStartedEvent(): TurnStartedEvent {
     return {
       t: 'turn_started',
@@ -223,19 +205,13 @@ export class BombPartyEngine {
     };
   }
 
-  /**
-   * Génère l'événement de synchronisation d'état
-   */
-  getGameStateSyncEvent(): GameStateSyncEvent {
+  getStateSyncEvent(): GameStateSyncEvent {
     return {
       t: 'game_state',
       gameState: this.getState()
     };
   }
 
-  /**
-   * Reset le moteur pour une nouvelle partie
-   */
   reset(): void {
     this.state = getInitialState();
     this.lastTrigram = '';

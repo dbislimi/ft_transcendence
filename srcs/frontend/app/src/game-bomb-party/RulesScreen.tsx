@@ -1,13 +1,15 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
 
 interface RulesScreenProps {
 	onContinue: (gameMode: 'local' | 'multiplayer', playersCount?: number) => void;
+	onBack?: () => void;
 }
 
-export default function RulesScreen({ onContinue }: RulesScreenProps) {
+export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 	const { t } = useTranslation();
 	const [selectedMode, setSelectedMode] = React.useState<'local' | 'multiplayer' | null>(null);
 	const [localPlayers, setLocalPlayers] = React.useState(2);
@@ -28,10 +30,34 @@ export default function RulesScreen({ onContinue }: RulesScreenProps) {
 		<BackgroundSurface game="bombparty">
 		<SpaceBackground />
 			<div className="min-h-screen flex items-center justify-center p-6">
-				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl">
-					<h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-4">
-						{t("bombParty.rules.title")}
-					</h1>
+				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl relative">
+					{/* Header avec boutons */}
+					<div className="flex items-center justify-between mb-6">
+						<h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+							{t("bombParty.rules.title")}
+						</h1>
+						<div className="flex items-center gap-2">
+							{/* Bouton Stats - Design sobre et cohérent */}
+							<Link
+								to="/bomb-party/stats"
+								className="px-4 py-2 rounded-lg border border-cyan-400 bg-cyan-400/10 text-cyan-300 hover:bg-cyan-400/20 hover:text-cyan-200 transition-all duration-200"
+							>
+								Statistics
+							</Link>
+							{/* Bouton Retour - Même style que le lobby */}
+							{onBack && (
+								<button
+									type="button"
+									onClick={onBack}
+									className="px-3 py-1 rounded border border-slate-600 text-slate-300 hover:text-white"
+									aria-label="Retour"
+								>
+									{t("common.back")}
+								</button>
+							)}
+						</div>
+					</div>
+
 					<div className="text-amber-300 text-sm mb-3">
 						{t("bombParty.rules.languageNotice")}
 					</div>

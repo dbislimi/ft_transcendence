@@ -7,7 +7,8 @@ services:
       - ./backend/app:/usr/app
       - /usr/app/node_modules
     ports:
-      - 3000:3000
+      - "3001:3001"
+      # - "3000:3000"
     restart: unless-stopped
   front:
     build: ./frontend

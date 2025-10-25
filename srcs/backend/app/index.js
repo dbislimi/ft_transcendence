@@ -12,7 +12,7 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
 	if (err) {
 		console.error("Erreur d'ouverture de la base :", err.message);
 	} else {
-		console.log("Connecté à la base SQLite");
+		console.log("Connected to SQLite database");
 	}
 });
 
@@ -110,7 +110,7 @@ db.serialize(() => {
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_user_id ON bp_trigram_stats (user_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_trigram ON bp_trigram_stats (trigram);`);
 
-	console.log("Tables Bomb Party et statistiques initialisées");
+	console.log("Bomb Party tables and statistics initialized");
 });
 
 export default db;

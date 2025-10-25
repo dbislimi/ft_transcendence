@@ -40,6 +40,7 @@ export interface RoomInfo {
   name: string;
   players: number;
   maxPlayers: number;
+  isPrivate: boolean;
   isStarted: boolean;
   createdAt: number;
 }

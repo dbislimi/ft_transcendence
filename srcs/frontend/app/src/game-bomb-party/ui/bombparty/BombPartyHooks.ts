@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BombPartyEngine } from '../../core/engine';
 import { TurnTimer } from '../../core/timer';
 import { BombPartyClient } from '../../../services/ws/bombPartyClient';
 import { bombPartyStatsService } from '../../../services/bombPartyStatsService';
+import { useBombPartyStore } from '../../../store/useBombPartyStore';
 import type { GameConfig, BonusKey } from '../../core/types';
 
 export interface BombPartyHooksState {
@@ -70,6 +71,24 @@ export function useBombPartyHooks(user: any) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
 
+  const roomIdRef = useRef<string | null>(null);
+  const playerIdRef = useRef<string | null>(null);
+  const countdownIntervalRef = useRef<number | null>(null);
+
+  useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
+  useEffect(() => { playerIdRef.current = playerId; }, [playerId]);
+
+  useEffect(() => {
+    if (roomId) {
+      client.sendMessage({ event: 'bp:room:subscribe', payload: { roomId } });
+    }
+    return () => {
+      if (roomId) {
+        client.sendMessage({ event: 'bp:room:unsubscribe', payload: { roomId } });
+      }
+    };
+  }, [client, roomId]);
+
   const state: BombPartyHooksState = {
     gamePhase,
     gameMode,
@@ -115,15 +134,25 @@ export function useBombPartyHooks(user: any) {
   const handleRulesContinue = useCallback(() => setGamePhase('LOBBY'), []);
 
   const handleLobbyCreate = useCallback((meta: { name: string; isPrivate: boolean; password?: string; maxPlayers: number; }) => {
-    console.log('[Frontend-BombPartyPage] handleLobbyCreate reçu meta.maxPlayers:', meta.maxPlayers);
-    console.log('[Frontend-BombPartyPage] playerId actuel:', playerId);
+    console.log('[Frontend-BombPartyPage] handleLobbyCreate received meta.maxPlayers:', meta.maxPlayers);
+    console.log('[Frontend-BombPartyPage] current playerId:', playerId);
+    
+    if (!playerId || isAuthenticating) {
+      console.error('[BombParty] Cannot create lobby: not authenticated');
+      return;
+    }
     
     client.createLobby(meta.name, meta.isPrivate, meta.password, meta.maxPlayers);
-  }, [client, playerId]);
+  }, [client, playerId, isAuthenticating]);
 
   const handleLobbyJoin = useCallback((roomId: string, password?: string) => {
+    if (!playerId || isAuthenticating) {
+      console.error('[BombParty] Cannot join lobby: not authenticated');
+      return;
+    }
+    
     client.joinLobby(roomId, password);
-  }, [client]);
+  }, [client, playerId, isAuthenticating]);
 
   const handleBackFromLobby = useCallback(() => setGamePhase('RULES'), []);
 
@@ -140,7 +169,7 @@ export function useBombPartyHooks(user: any) {
   }, [client, roomId]);
 
   const startGame = useCallback((config: GameConfig) => {
-    console.log('startGame appelé avec config:', config);
+    console.log('startGame called with config:', config);
     
     setGameStartTime(Date.now());
     
@@ -151,20 +180,38 @@ export function useBombPartyHooks(user: any) {
       setCountdown(0);
     } else {
       if (!roomId) {
-        console.log('Pas de roomId pour démarrer le jeu');
+        console.log('No roomId to start game');
         return;
       }
-      console.log('Envoi bp:lobby:start au serveur');
+      console.log('Sending bp:lobby:start to server');
       client.startGame(roomId);
     }
   }, [client, roomId, gameMode, engine]);
 
-  const handleStartGame = useCallback(() => {
-    console.log('handleStartGame appelé');
-    startGame({ livesPerPlayer: 3, turnDurationMs: 15000, playersCount: lobbyPlayers.length });
-  }, [startGame, lobbyPlayers.length]);
-
-  const handleWordSubmit = useCallback((word: string) => {
+    const handleStartGame = useCallback(() => {
+      console.log('[BombParty] Game start requested', {
+        roomId,
+        isHost,
+        playersCount: lobbyPlayers.length,
+        players: lobbyPlayers
+      });
+      
+      if (!roomId) {
+        console.error('[BombParty] Cannot start: no roomId');
+        return;
+      }
+      if (!isHost) {
+        console.error('[BombParty] Cannot start: not host');
+        return;
+      }
+      if (lobbyPlayers.length < 2) {
+        console.error('[BombParty] Cannot start: not enough players');
+        return;
+      }
+      
+      console.log('[BombParty] Sending start to server');
+      client.startGame(roomId);
+    }, [client, roomId, isHost, lobbyPlayers.length]);  const handleWordSubmit = useCallback((word: string) => {
     setWordJustSubmitted(true);
     setTurnInProgress(true);
     
@@ -176,12 +223,10 @@ export function useBombPartyHooks(user: any) {
       const result = engine.submitWord(word, msTaken);
       
       if (result.ok) {
-        console.log('Mot valide accepté, passage au tour suivant');
         engine.resolveTurn(true, false);
         const newState = engine.getState();
         setGameState(newState);
         
-        console.log('Après mot valide - Phase:', newState.phase, 'isGameOver:', engine.isGameOver());
         
         if (!engine.isGameOver()) {
           setTimeout(() => {
@@ -192,7 +237,6 @@ export function useBombPartyHooks(user: any) {
           }, 500);
         }
       } else {
-        console.log('Mot invalide, vérifier double chance:', result.consumedDoubleChance);
         if (result.consumedDoubleChance) {
           setTurnInProgress(false);
           setWordJustSubmitted(false);
@@ -201,7 +245,6 @@ export function useBombPartyHooks(user: any) {
           const newState = engine.getState();
           setGameState(newState);
           
-          console.log('Après mot invalide - Phase:', newState.phase, 'isGameOver:', engine.isGameOver());
           
           if (!engine.isGameOver()) {
             setTimeout(() => {
@@ -313,31 +356,44 @@ export function useBombPartyHooks(user: any) {
       bombPartyStatsService.saveGameStats(stats).catch(error => {
         console.error('Erreur sauvegarde statistiques:', error);
       });
+      
+      const redirectTimer = setTimeout(() => {
+        console.log("[BombParty] Game ended, redirecting to home screen");
+        alert("Game ended. Returning to home screen...");
+        setGamePhase('RULES');
+      }, 5000);
+      
+      return () => clearTimeout(redirectTimer);
     }
-  }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords]);
+  }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords, setGamePhase]);
 
   useEffect(() => {
-    const handleConnected = () => {
-      console.log('[BombParty] ✅ WebSocket connecté, démarrage authentification...');
-      if (user?.name) {
-        console.log('[BombParty] Authentification avec le nom:', user.name);
-        client.authenticate(user.name);
-      } else {
-        const guestName = `Guest_${Math.floor(Math.random() * 1000)}`;
-        console.log('[BombParty] Utilisateur non connecté, utilisation du nom:', guestName);
-        client.authenticate(guestName);
-      }
+    const connect = () => {
+      console.log('[BombPartyHooks] Attempting WebSocket connection');
+      client.connect();
     };
-
-    const handleAuthSuccess = (payload: any) => {
-      console.log('[BombParty] Authentification réussie:', payload);
+        const connectionTimer = setTimeout(connect, 100);
+    
+    const handleConnected = () => {
+      // Reset authentication state on new connection
+      setIsAuthenticating(true);
+      setPlayerId(null);
+      
+      const guestId = Math.floor(Math.random() * 1000);
+      const playerName = user?.name || `Guest_${guestId}`;
+      
+      console.log('[BombPartyHooks] Authentification avec le nom:', playerName);
+      client.authenticate(playerName);
+    };    const handleAuthSuccess = (payload: any) => {
+      console.log('[BombPartyHooks] Authentication successful, playerId:', payload.playerId);
       clearTimeout(authTimeout);
       setPlayerId(payload.playerId);
       setIsAuthenticating(false);
     };
 
     const handleConnectionError = () => {
-      console.error('[BombParty] Erreur de connexion WebSocket');
+      console.error('[BombPartyHooks] WebSocket connection error');
+      setPlayerId(null);
       setIsAuthenticating(false);
     };
 
@@ -349,69 +405,103 @@ export function useBombPartyHooks(user: any) {
     };
 
     const handleLobbyJoined = (payload: any) => {
+      console.log('[BombParty] Lobby rejoint:', payload);
+      
+      const curPlayerId = playerIdRef.current;
+      const curRoomId = roomIdRef.current;
+      
+      const isAlreadyInRoom = curRoomId === payload.roomId;
+      const isMyJoin = payload.playerId === curPlayerId;
+      
+      console.log('[BombParty] handleLobbyJoined debug:', {
+        isAlreadyInRoom,
+        isMyJoin,
+        currentRoomId: curRoomId,
+        payloadRoomId: payload.roomId,
+        myPlayerId: curPlayerId,
+        payloadPlayerId: payload.playerId
+      });
+      
       setRoomId(payload.roomId);
       setLobbyMaxPlayers(payload.maxPlayers || 4);
       setLobbyPlayers(payload.players || []);
-      setIsHost(false);
+      
+      if (isMyJoin) {
+        if (payload.players && payload.players.length > 0 && curPlayerId) {
+          const firstPlayer = payload.players[0];
+          const amIHost = firstPlayer.id === curPlayerId;
+          console.log('[BombParty] Mise a jour du statut hote (mon join):', {
+            playerId: curPlayerId,
+            firstPlayerId: firstPlayer.id,
+            amIHost
+          });
+          setIsHost(amIHost);
+        }
+      } else {
+        console.log('[BombParty] Message concernant un autre joueur, conservation de mon statut isHost');
+      }
+      
       setGamePhase('PLAYERS');
     };
 
     const handlePlayerJoined = (payload: any) => {
-      console.log('👋 Joueur rejoint:', payload);
-      setLobbyPlayers(payload.players || []);
+      console.log('[BombParty] Joueur rejoint, nouveau state:', payload);
+      const curRoomId = roomIdRef.current;
+      const curPlayerId = playerIdRef.current;
+      
+      if (payload.roomId === curRoomId) {
+        setLobbyPlayers(payload.players || []);
+        setLobbyMaxPlayers(payload.maxPlayers || 4);
+        
+        const firstPlayer = payload.players?.[0];
+        if (firstPlayer && curPlayerId) {
+          const isHostPlayer = firstPlayer.id === curPlayerId;
+          console.log('[BombParty] Verification hote:', {
+            playerId: curPlayerId,
+            firstPlayerId: firstPlayer.id,
+            isHost: isHostPlayer
+          });
+          setIsHost(isHostPlayer);
+        }
+      }
     };
 
     const handlePlayerLeft = (payload: any) => {
       setLobbyPlayers(payload.players || []);
     };
 
-    const handleGameState = (payload: any) => {
-      console.log('handleGameState reçu:', payload);
-      console.log('État du jeu:', {
-        phase: payload.gameState.phase,
-        currentPlayerIndex: payload.gameState.currentPlayerIndex,
-        players: payload.gameState.players.map((p: any) => ({ id: p.id, name: p.name })),
-        currentTrigram: payload.gameState.currentTrigram,
-        baseTurnSeconds: payload.gameState.baseTurnSeconds
+    const handleRoomState = (payload: any) => {
+      console.log("[BombParty] Room state received:", {
+        roomId: payload.roomId,
+        currentRoomId: roomId,
+        players: payload.players,
+        currentPlayerId: playerId
       });
       
-      setGameState(payload.gameState);
-      
-      if (payload.gameState.phase !== 'GAME_OVER') {
-        setGamePhase('GAME');
+      if (payload.roomId && payload.roomId !== roomId) {
+        setRoomId(payload.roomId);
       }
-      setCountdown(0);
       
-      setWordJustSubmitted(false);
-      setTurnInProgress(false);
-      
-      if (payload.gameState.phase === 'TURN_ACTIVE') {
-        const turnDuration = payload.gameState.turnDurationMs || (payload.gameState.baseTurnSeconds * 1000);
-        console.log('🎯 [BombParty] Démarrage du timer multijoueur:', turnDuration, 'ms');
-        console.log('🎯 [BombParty] Tour commencé à:', payload.gameState.turnStartedAt);
+      if (!roomId || payload.roomId === roomId) {
+        setLobbyPlayers(payload.players || []);
+        setLobbyMaxPlayers(payload.maxPlayers || 4);
         
-        // Calculate remaining time based on server timestamp
-        const serverTurnStart = payload.gameState.turnStartedAt;
-        const now = Date.now();
-        const elapsed = now - serverTurnStart;
-        const remaining = Math.max(0, turnDuration - elapsed);
-        
-        console.log('🎯 [BombParty] Temps écoulé:', elapsed, 'ms, Temps restant:', remaining, 'ms');
-        
-        if (remaining > 0) {
-          timer.startTurn(remaining);
-          setTurnStartTime(performance.now());
-          setTimerGracePeriod(true);
-          setTimeout(() => setTimerGracePeriod(false), 5000);
-        } else {
-          console.log('🎯 [BombParty] Timer déjà expiré côté serveur');
-          timer.stop();
+        const firstPlayer = payload.players?.[0];
+        if (firstPlayer && playerId) {
+          const isHostPlayer = firstPlayer.id === playerId;
+          console.log("[BombParty] Checking host status:", {
+            playerId,
+            firstPlayerId: firstPlayer.id,
+            isNowHost: isHostPlayer,
+            currentRoomId: roomId,
+            receivedRoomId: payload.roomId
+          });
+          setIsHost(isHostPlayer);
         }
       }
     };
 
     const handleGameEnd = (payload: any) => {
-      console.log('🏁 [BombParty] Fin de partie reçue:', payload);
       
       setGameState(prevState => ({
         ...prevState,
@@ -424,14 +514,9 @@ export function useBombPartyHooks(user: any) {
     };
 
     const handleWordResult = (payload: any) => {
-      console.log('📝 [BombParty] Résultat mot reçu:', payload);
       
       if (payload.valid) {
-        console.log('✅ [BombParty] Mot valide:', payload.word);
-        // Le mot est valide, l'état du jeu sera mis à jour par handleGameState
       } else {
-        console.log('❌ [BombParty] Mot invalide:', payload.word);
-        // Le mot est invalide, l'état du jeu sera mis à jour par handleGameState
       }
       
       setWordJustSubmitted(false);
@@ -439,37 +524,152 @@ export function useBombPartyHooks(user: any) {
     };
 
     const authTimeout = setTimeout(() => {
-      console.warn('[BombParty] Timeout d\'authentification, mais continue quand meme');
-      // Don't set isAuthenticating to false to allow lobby creation
-      // setIsAuthenticating(false);
+      console.warn('[BombParty] Authentication timeout - resetting connection');
+      setPlayerId(null);
+      setIsAuthenticating(false);
+      client.authenticate(user?.name || `Guest_${Math.floor(Math.random() * 1000)}`);
     }, 5000);
 
     const unsubscribeAuth = client.on('bp:auth:success', handleAuthSuccess);
     const unsubscribeCreated = client.on('bp:lobby:created', handleLobbyCreated);
     const unsubscribeJoined = client.on('bp:lobby:joined', handleLobbyJoined);
     const unsubscribePlayerJoined = client.on('bp:lobby:player_joined', handlePlayerJoined);
+    const unsubscribeRoomState = client.on('bp:room:state', handleRoomState);
     const unsubscribePlayerLeft = client.on('bp:lobby:player_left', handlePlayerLeft);
-    const unsubscribeGameState = client.on('bp:game:state', handleGameState);
+    
+    // Handle lobby list updates
+    const handleLobbyListUpdate = (payload: any) => {
+      console.log('[BombPartyHooks] Lobby list updated, rooms:', payload?.rooms?.length);
+      if (payload?.rooms) {
+        const store = useBombPartyStore.getState();
+        store.setLobbies(payload.rooms);
+      }
+    };
+    const unsubscribeLobbyList = client.on('bp:lobby:list' as any, handleLobbyListUpdate);
+    const unsubscribeLobbyListUpdated = client.on('bp:lobby:list_updated' as any, handleLobbyListUpdate);
+    
+    const unsubscribeGameCountdown = client.on("bp:game:countdown", (payload: any) => {
+      console.log("[BombParty Debug] Received bp:game:countdown:", payload);
+      const curRoom = roomIdRef.current;
+      if (!payload?.roomId || payload.roomId !== curRoom) return;
+
+      const startTime = payload.startTime ?? Date.now();
+      const duration = payload.countdownDuration ?? 3000;
+      const update = () => {
+        const now = Date.now();
+        const remainingMs = Math.max(0, startTime + duration - now);
+        const remainingSeconds = Math.ceil(remainingMs / 1000);
+        setCountdown(remainingSeconds);
+      };
+
+      setGamePhase("GAME");
+      update();
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+
+      const countdownInterval = setInterval(() => {
+        update();
+        if (Date.now() >= startTime + duration) {
+          clearInterval(countdownInterval);
+          setCountdown(0);
+        }
+      }, 100) as unknown as number;
+      countdownIntervalRef.current = countdownInterval;
+    });
+
+    const unsubscribeGameStart = client.on("bp:game:start", (payload: any) => {
+      console.log("[BombParty Debug] Received bp:game:start:", payload);
+      const curRoom = roomIdRef.current;
+      if (payload.roomId === curRoom) {
+        console.log("[BombParty] Game starting for room", payload.roomId);
+        setGamePhase("GAME");
+        setCountdown(0);
+        setGameStartTime(Date.now());
+      }
+    });
+
+    const unsubscribeGameState = client.on("bp:game:state", (payload: any) => {
+      const curRoom = roomIdRef.current;
+      const curPlayerId = playerIdRef.current;
+      
+      if (!payload?.roomId || payload.roomId !== curRoom) {
+        console.log("[BombParty] Ignoring game state for different room", { currentRoomId: curRoom, payloadRoomId: payload?.roomId });
+        return;
+      }
+
+      console.log("[BombParty] Game state update:", {
+        phase: payload.gameState.phase,
+        playerId: curPlayerId,
+        currentPlayerId: payload.gameState.currentPlayerId,
+        players: payload.gameState.players?.map((p: any) => ({ id: p.id, name: p.name, lives: p.lives, isEliminated: p.isEliminated })) || [],
+        currentTrigram: payload.gameState.currentTrigram,
+        usedWords: payload.gameState.usedWords,
+        hasUsedWords: !!payload.gameState.usedWords
+      });
+
+      setGameState(payload.gameState);
+
+      if (payload.gameState.phase === "TURN_ACTIVE") {
+        setGamePhase("GAME");
+        setCountdown(0);
+        setWordJustSubmitted(false);
+        setTurnInProgress(false);
+        const turnDuration = payload.gameState.turnDurationMs || (payload.gameState.baseTurnSeconds * 1000);
+
+        const serverTurnStart = payload.gameState.turnStartedAt;
+        const now = Date.now();
+        const elapsed = now - serverTurnStart;
+        const remaining = Math.max(0, turnDuration - elapsed);
+
+        if (remaining > 0) {
+          timer.startTurn(remaining);
+          setTurnStartTime(performance.now());
+          setTimerGracePeriod(true);
+          setTimeout(() => setTimerGracePeriod(false), 5000);
+        } else {
+          timer.stop();
+        }
+      }
+    });
+    
     const unsubscribeWordResult = client.on('bp:game:word_result', handleWordResult);
     const unsubscribeGameEnd = client.on('bp:game:end', handleGameEnd);
-    console.log('🎧 [BombParty] Enregistrement listener pour événement connected');
     const unsubscribeConnected = client.on('connected', handleConnected);
     const unsubscribeError = client.on('error', handleConnectionError);
 
     return () => {
       clearTimeout(authTimeout);
+      clearTimeout(connectionTimer); // Nettoyer le timer de connexion
+      
+      // Nettoyer la connexion WebSocket
+      console.log('[BombPartyHooks] Nettoyage du client WebSocket');
+      client.disconnect();
+      
+      // Nettoyer les intervalles
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+      
+      // Nettoyer les abonnements
       unsubscribeAuth();
       unsubscribeCreated();
       unsubscribeJoined();
       unsubscribePlayerJoined();
+      unsubscribeLobbyList();
+      unsubscribeLobbyListUpdated();
       unsubscribePlayerLeft();
+      unsubscribeGameCountdown();
+      unsubscribeGameStart();
       unsubscribeGameState();
       unsubscribeWordResult();
       unsubscribeGameEnd();
       unsubscribeConnected();
       unsubscribeError();
     };
-  }, [client, timer]);
+  }, [client, timer, user]);
 
   return {
     state,

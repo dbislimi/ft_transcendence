@@ -1,9 +1,3 @@
-/*
-  Types partager pour le module Bomb Party
-  Utiliser par le frontend et le backend
- */
-
-
 export const STREAK_FOR_BONUS = 3;
 export const DEFAULT_LIVES = 3;
 export const DEFAULT_TURN_DURATION = 15000;

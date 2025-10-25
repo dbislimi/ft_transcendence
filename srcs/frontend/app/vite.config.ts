@@ -14,4 +14,13 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: {
+      '/bombparty/ws': {
+        target: 'ws://localhost:3001',
+        ws: true,
+        changeOrigin: true
+      }
+    }
+  }
 })

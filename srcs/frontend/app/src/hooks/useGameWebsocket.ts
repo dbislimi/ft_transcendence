@@ -12,7 +12,7 @@ export function useGameWebsocket(
 	}, [onMessage]);
 
 	useEffect(() => {
-		const ws = new WebSocket(`ws://localhost:3002/${api}/ws`);
+		const ws = new WebSocket(`ws://localhost:3001/${api}/ws`);
 		wsRef.current = ws;
 		ws.onopen = () => console.log(`[ws:${api}] opened`);
 		ws.onclose = () => console.log(`[ws:${api}] closed`);

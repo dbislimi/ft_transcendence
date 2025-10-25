@@ -9,7 +9,7 @@ import {
   type RankingEntry,
   StatsModel,
   StatsPersistence
-} from './stats/index.js';
+} from './stats/index.ts';
 
 export class BombPartyStatsManager {
   private persistence: StatsPersistence;

@@ -72,7 +72,6 @@ export class BombPartyEngine {
     // Init
     this.currentTrigramUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
-    console.log('Nouveau système de trigrammes: nouveau trigramme à chaque tour');
   }
 
   startCountdown(): void {
@@ -81,7 +80,6 @@ export class BombPartyEngine {
 
   startTurn(): void {
     if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
-      console.log('Joueur actuel éliminé, passage au suivant');
       this.nextPlayer();
       if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
         this.state.phase = 'GAME_OVER';
@@ -103,7 +101,6 @@ export class BombPartyEngine {
     if (curId && this.state.pendingFastForNextPlayerId === curId) {
       this.state.pendingFastForNextPlayerId = undefined;
     }
-    console.log('🔄 Tour démarré pour:', this.state.players[this.state.currentPlayerIndex]?.name, 'Trigramme:', this.state.currentTrigram);
   }
 
   private getNewTrigram(): string {
@@ -122,11 +119,8 @@ export class BombPartyEngine {
   }
 
   submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-    console.log('🔍 Validation du mot:', word, 'pour le trigramme:', this.state.currentTrigram);
     const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
-    console.log('📋 Résultat de validation:', validation);
     if (validation.ok) {
-      console.log('Mot valide accepté:', word);
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
@@ -142,7 +136,6 @@ export class BombPartyEngine {
       this.state.phase = 'RESOLVE';
       return { ok: true };
     } else {
-      console.log('Mot invalide rejeté:', word, 'Raison:', validation.reason);
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
         word,
@@ -161,7 +154,6 @@ export class BombPartyEngine {
   }
 
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
-    console.log('🔄 Résolution du tour - Mot valide:', wordValid, 'Temps expiré:', timeExpired);
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
       console.error('Erreur: Aucun joueur ou index invalide');
       return;
@@ -178,7 +170,6 @@ export class BombPartyEngine {
       currentPlayer.streak = 0;
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
       if (currentPlayer.lives === 0) {
-        console.log('💀 Joueur éliminé:', currentPlayer.name);
         currentPlayer.isEliminated = true;
       }
     }

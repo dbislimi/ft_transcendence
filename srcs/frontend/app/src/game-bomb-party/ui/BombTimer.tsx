@@ -28,6 +28,9 @@ export default function BombTimer({
 
   const isDanger = false;
   const timeDisplay = formatTime(remainingMs);
+  
+  // Protection contre trigram undefined
+  const displayTrigram = trigram || '...';
 
   if (!isActive || remainingMs <= 0) {
     return (
@@ -39,7 +42,7 @@ export default function BombTimer({
         
         {/* Trigramme */}
         <div className="text-5xl font-bold tracking-wider text-slate-400">
-          {trigram.toUpperCase()}
+          {displayTrigram.toUpperCase()}
         </div>
         
         {/* Compteur d'utilisation du trigramme */}

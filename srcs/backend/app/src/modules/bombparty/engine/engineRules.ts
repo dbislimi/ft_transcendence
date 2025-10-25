@@ -1,7 +1,7 @@
 import type { GameState, ValidationResult, BonusKey } from '../types';
-import { validateWithDictionary } from '../validator';
-import { getRandomTrigram } from '../trigramSelector';
-import { STREAK_FOR_BONUS } from './engineState';
+import { validateWithDictionary } from '../validator.ts';
+import { getRandomTrigram } from '../trigramSelector.ts';
+import { STREAK_FOR_BONUS } from './engineState.ts';
 
 export function submitWord(
   state: GameState,

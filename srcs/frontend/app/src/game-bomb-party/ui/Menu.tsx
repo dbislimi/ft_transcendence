@@ -5,9 +5,10 @@ import SpaceBackground from '../../Components/SpaceBackground';
 
 interface MenuProps {
   onStart: (config: GameConfig) => void;
+  onBack?: () => void;
 }
 
-export default function Menu({ onStart }: MenuProps) {
+export default function Menu({ onStart, onBack }: MenuProps) {
   const { t } = useTranslation();
   const [playersCount, setPlayersCount] = useState<number>(2);
 
@@ -24,7 +25,18 @@ export default function Menu({ onStart }: MenuProps) {
     <>
       <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen p-6">
-        <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl">
+        <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl relative">
+          {/* Bouton retour en haut à gauche */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute top-4 left-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-300 hover:text-white transition-all duration-200 flex items-center gap-2"
+            >
+              <span>←</span>
+              <span>Retour</span>
+            </button>
+          )}
+
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-4">

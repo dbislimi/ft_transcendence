@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTurnTimer } from '../core/timer';
 import { useAuth } from '../../contexts/AuthContext';
 import RulesScreen from '../RulesScreen';
@@ -11,6 +12,7 @@ import {
 
 export default function BombPartyPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     state,
     actions,
@@ -80,14 +82,19 @@ export default function BombPartyPage() {
     actions.setInfoOpen(!state.infoOpen);
   };
 
+  const handleBackFromRules = () => {
+    navigate('/');
+  };
+
   if (state.gamePhase === 'RULES') {
-    return <RulesScreen onContinue={handlers.handleModeSelect} />;
+    return <RulesScreen onContinue={handlers.handleModeSelect} onBack={handleBackFromRules} />;
   }
 
   if (state.gamePhase === 'LOBBY' || state.gamePhase === 'PLAYERS') {
     return (
       <BombPartyLobbyView
         state={state}
+        client={client}
         onLobbyCreate={handlers.handleLobbyCreate}
         onLobbyJoin={handlers.handleLobbyJoin}
         onBackFromLobby={handlers.handleBackFromLobby}

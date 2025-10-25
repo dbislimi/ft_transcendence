@@ -71,11 +71,29 @@
         "create": "Crear",
         "join": "Unirse",
         "connecting": "Conectando...",
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "connectionRequired": "Conexión requerida",
         "lobbyId": "ID del lobby",
         "playersCount": "Número de jugadores",
         "lobbyIdPlaceholder": "Pega el ID del lobby aquí...",
         "lobbyIdHelp": "Pide el ID del lobby al creador",
-        "passwordPlaceholder": "Contraseña (si el lobby es privado)"
+        "passwordPlaceholder": "Contraseña (si el lobby es privado)",
+        "availableLobbies": "Salas disponibles",
+        "noLobbies": "No hay salas disponibles",
+        "noLobbiesDesc": "¡Crea una nueva sala para empezar a jugar!",
+        "refresh": "Actualizar",
+        "joinPrivate": "Unirse a una sala privada",
+        "privatePasswordDesc": "Esta sala está protegida con contraseña. Por favor, ingrésala para unirte.",
+        "enterPassword": "Ingresa la contraseña",
+        "cancel": "Cancelar",
+        "inProgress": "En curso",
+        "full": "Lleno",
+        "waiting": "Esperando",
+        "justNow": "Justo ahora",
+        "minutesAgo": "Hace {minutes} min",
+        "hoursAgo": "Hace {hours}h",
+        "daysAgo": "Hace {days}d"
       },
     "debug": { "show": "Mostrar debug", "hide": "Ocultar debug" },
     "chat": {
@@ -177,22 +195,77 @@
     },
     "backToMenu": "Volver al menú",
     "stats": {
-      "date": "Fecha",
-      "position": "Posición",
-      "words": "Palabras",
-      "livesRemaining": "Vidas restantes",
-      "duration": "Duración",
-      "result": "Resultado",
-      "trigram": "Trigrama",
-      "averageTime": "Tiempo promedio",
-      "rank": "Rango",
-      "player": "Jugador",
-      "wins": "Victorias",
-      "games": "Partidas",
-      "winRate": "Tasa de victoria",
-      "bestStreak": "Mejor racha",
-      "history": "Historial de partidas",
-      "error": "Error"
+      "title": "Estadísticas de Bomb Party",
+      "subtitle": "Descubre tu rendimiento y compárate con otros jugadores",
+      "subtitleGuest": "Consulta el ranking de los mejores jugadores",
+      "loading": "Cargando estadísticas...",
+      "error": "Error",
+      "retry": "Reintentar",
+      "back": "Volver",
+      "loginPrompt": "Inicia sesión para más estadísticas",
+      "loginPromptDesc": "Crea una cuenta para seguir tu rendimiento personal, historial de partidas y trigramas favoritos.",
+      "reconnectPrompt": "Vuelve a conectarte para ver tus estadísticas personales",
+      "tabs": {
+        "overview": "Resumen",
+        "history": "Historial",
+        "trigrams": "Trigramas",
+        "ranking": "Clasificación"
+      },
+      "overview": {
+        "title": "Resumen",
+        "matchStats": "Estadísticas de partidas",
+        "totalMatches": "Partidas jugadas",
+        "totalWins": "Victorias",
+        "winRate": "Tasa de victoria",
+        "bestStreak": "Mejor racha",
+        "wordStats": "Estadísticas de palabras",
+        "totalWordsSubmitted": "Palabras enviadas",
+        "totalValidWords": "Palabras válidas",
+        "accuracy": "Precisión",
+        "averageResponseTime": "Tiempo de respuesta promedio",
+        "otherStats": "Otras estadísticas",
+        "totalPlayTime": "Tiempo total de juego",
+        "favoriteTrigramTitle": "Trigrama favorito",
+        "favoriteTrigramDesc": "Tu trigrama más jugado",
+        "none": "Ninguno"
+      },
+      "history": {
+        "title": "Historial de partidas",
+        "date": "Fecha",
+        "position": "Posición",
+        "words": "Palabras",
+        "livesRemaining": "Vidas restantes",
+        "duration": "Duración",
+        "result": "Resultado",
+        "victory": "Victoria",
+        "defeat": "Derrota",
+        "empty": "No hay partidas jugadas",
+        "emptyDesc": "Tus partidas aparecerán aquí una vez que juegues."
+      },
+      "trigrams": {
+        "title": "Estadísticas por trigrama",
+        "trigram": "Trigrama",
+        "attempts": "Intentos",
+        "successRate": "Tasa de éxito",
+        "averageTime": "Tiempo promedio",
+        "empty": "No hay datos de trigramas",
+        "emptyDesc": "Las estadísticas de tus trigramas aparecerán aquí."
+      },
+      "ranking": {
+        "title": "Clasificación global",
+        "rank": "Rango",
+        "player": "Jugador",
+        "wins": "Victorias",
+        "games": "Partidas",
+        "winRate": "Tasa de victoria",
+        "bestStreak": "Mejor racha",
+        "you": "(Tú)",
+        "empty": "No hay jugadores en la clasificación",
+        "emptyDesc": "¡Sé el primero en aparecer en la clasificación!"
+      },
+      "charts": {
+        "trigramDistribution": "Distribución de trigramas"
+      }
     }
   },
   "profile": {
@@ -220,6 +293,10 @@
       "themes": "Temas",
       "accessibility": "Accesibilidad",
       "performance": "Rendimiento"
+    },
+    "categories": {
+      "general": "Fondos",
+      "fortnite": "Fortnite"
     },
     "items": {
       "available": "disponibles"

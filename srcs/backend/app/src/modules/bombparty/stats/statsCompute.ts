@@ -1,4 +1,4 @@
-import type { UserStats, MatchData, TrigramStats } from './statsModel';
+import type { UserStats, MatchData, TrigramStats } from './statsModel.ts';
 
 export function computeUpdatedUserStats(
   existingStats: any,

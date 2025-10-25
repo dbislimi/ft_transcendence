@@ -180,7 +180,36 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
     
     // Fonds neutres
     'windows95': 'neutral-light',
-    'bit-cloud': 'neutral-dark'
+    'bit-cloud': 'neutral-dark',
+    
+    'fortnite-halloween_01_fortnitemares_2017': 'dark-halloween',
+    'fortnite-halloween_02_fortnitemares_2018': 'dark-halloween',
+    'fortnite-halloween_03_cube_queen': 'dark-halloween',
+    'fortnite-halloween_04_fortnitemares_2024': 'dark-halloween',
+    
+    'fortnite-noel_01_winterfest_2017': 'dark-snow',
+    'fortnite-noel_02_winterfest_2019': 'dark-snow',
+    
+    'fortnite-season_00_pre_season': 'dark-blue',
+    'fortnite-season_04': 'dark-blue',
+    'fortnite-season_05_no_rift': 'dark-blue',
+    'fortnite-season_06': 'dark-halloween',
+    'fortnite-season_07': 'dark-snow',
+    'fortnite-season_08': 'dark-blue',
+    
+    'fortnite-chapter_03_season_02': 'dark-blue',
+    'fortnite-chapter_04_season_03': 'light-nature',
+    'fortnite-chapter_04_season_og': 'dark-blue',
+    
+    'fortnite-event_avatar_elements': 'light-nature',
+    'fortnite-event_find_the_force': 'dark-blue',
+    'fortnite-event_star_wars_day_2024': 'dark-blue',
+    'fortnite-event_galactic_battle': 'dark-blue',
+    'fortnite-event_the_big_bang': 'dark-blue',
+    'fortnite-event_mecha_team_leader': 'dark-blue',
+    
+    // Fortnite - Lieux
+    'fortnite-location_loot_lake': 'light-nature'
   };
 
   const schemeKey = backgroundMappings[backgroundId] || 'neutral-dark';
@@ -234,11 +263,26 @@ export function applyColorScheme(scheme: ColorScheme): void {
   root.style.setProperty('--color-background', scheme.background);
   root.style.setProperty('--color-card', scheme.card);
   
+  // Ajouter les versions RGB pour la transparence
+  root.style.setProperty('--color-button-rgb', hexToRgb(scheme.button));
+  root.style.setProperty('--color-button-hover-rgb', hexToRgb(scheme.buttonHover));
+  root.style.setProperty('--color-secondary-rgb', hexToRgb(scheme.secondary));
+  
   document.body.className = document.body.className
     .split(' ')
     .filter(cls => !cls.startsWith('color-scheme-'))
     .concat([`color-scheme-${scheme.primary.replace('#', '')}`])
     .join(' ');
+}
+
+/**
+ * Convertit une couleur hexadécimale en valeurs RGB séparées
+ */
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result 
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '30, 64, 175';
 }
 
 

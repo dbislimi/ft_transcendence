@@ -12,13 +12,21 @@ interface ShopModalProps {
 export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
   const { t } = useTranslation();
   const { currentBackground, setBackground, availableBackgrounds, isLoading } = useGlobalBackground();
+  const [selectedCategory, setSelectedCategory] = React.useState<'general' | 'fortnite'>('general');
 
   if (!isOpen) return null;
 
   const handleBackgroundChange = (backgroundId: string) => {
-    console.log('🛒 [Shop] Changement d\'arrière-plan vers:', backgroundId);
+    console.log('[Shop] Changing background to:', backgroundId);
     setBackground(backgroundId);
   };
+
+  const filteredBackgrounds = availableBackgrounds.filter(bg => {
+    if (selectedCategory === 'fortnite') {
+      return bg.id.includes('fortnite') || bg.name.toLowerCase().includes('fortnite');
+    }
+    return !bg.id.includes('fortnite') && !bg.name.toLowerCase().includes('fortnite');
+  });
 
   return (
     <div 
@@ -48,14 +56,36 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
           <div className="flex-1 p-6 overflow-y-auto">
             {/* Section Arrière-plans */}
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold section-title-aesthetic">{t('shop.sections.backgrounds') || 'Arrière-plans'}</h3>
+                {/* Onglets de catégories */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setSelectedCategory('general')}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        selectedCategory === 'general'
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
+                      }`}
+                    >
+                      {t('shop.categories.general') || 'Arrière-plans'}
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('fortnite')}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        selectedCategory === 'fortnite'
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
+                      }`}
+                    >
+                      {t('shop.categories.fortnite') || 'Fortnite'}
+                    </button>
+                  </div>
                   <span className="text-sm text-gray-400">
-                    {availableBackgrounds.length} {t('shop.items.available') || 'disponibles'}
+                    {filteredBackgrounds.length} {t('shop.items.available') || 'disponibles'}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {availableBackgrounds.map((bg) => (
+                  {filteredBackgrounds.map((bg) => (
                     <button
                       key={bg.id}
                       onClick={(e) => {

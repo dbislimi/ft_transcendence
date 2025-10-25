@@ -22,7 +22,7 @@ interface TrigramAttempt {
 }
 
 class BombPartyStatsService {
-  private baseUrl = 'http://localhost:3000/api/bomb-party';
+  private baseUrl = 'http://localhost:3001/api/bomb-party';
   private trigramAttempts: TrigramAttempt[] = [];
 
   /**
@@ -171,10 +171,20 @@ class BombPartyStatsService {
   }
 
   /**
-   * Récupère le classement global
+   * Récupère le classement global (accessible sans authentification)
    */
   async getGlobalRanking(limit = 50) {
-    return this.fetchWithAuth(`${this.baseUrl}/ranking?limit=${limit}`);
+    const response = await fetch(`${this.baseUrl}/ranking?limit=${limit}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
   }
 }
 

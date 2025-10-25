@@ -9,7 +9,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (userData: User) => void;
+  login: (userData: User, token?: string) => void;
   logout: () => void;
 }
 
@@ -44,16 +44,20 @@ useEffect(() => {
     }
   }, []);
 
-  const login = (userData: User) => {
+  const login = (userData: User, token?: string) => {
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem('token', token);
+    }
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   const value: AuthContextType = {

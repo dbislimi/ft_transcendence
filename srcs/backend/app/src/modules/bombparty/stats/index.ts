@@ -1,3 +1,3 @@
-export * from './statsModel';
-export * from './statsCompute';
-export * from './statsPersistence';
+export * from './statsModel.ts';
+export * from './statsCompute.ts';
+export * from './statsPersistence.ts';

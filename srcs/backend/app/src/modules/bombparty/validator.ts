@@ -1,4 +1,4 @@
-import type { ValidationResult } from './GameEngine.js';
+import type { ValidationResult } from './GameEngine.js.ts';
 import trigramWordsData from './data/trigram_words.json' with { type: 'json' };
 
 const trigramMap = trigramWordsData as Record<string, string[]>;
@@ -6,7 +6,7 @@ const trigramMap = trigramWordsData as Record<string, string[]>;
 function normalizeText(text: string): string {
   return text
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[00-\u036f]/g, '')
     .toLowerCase();
 }
 
@@ -47,9 +47,6 @@ export function validateWithDictionary(word: string, trigram: string, usedWords:
   return { ok: true };
 }
 
-/**
- * Validation locale sans dictionnaire (pour tests rapides)
- */
 export function validateLocal(word: string, trigram: string, usedWords: string[]): ValidationResult {
   const normalizedWord = normalizeText(word);
   const normalizedTrigram = normalizeText(trigram);
@@ -75,9 +72,6 @@ export function validateLocal(word: string, trigram: string, usedWords: string[]
   return { ok: true };
 }
 
-/**
- * Suggestions de mots pour un trigramme donné
- */
 export function getWordSuggestions(trigram: string, maxSuggestions: number = 5): string[] {
   const normalizedTrigram = normalizeText(trigram);
   const list = trigramMap[normalizedTrigram] || [];
@@ -91,21 +85,13 @@ export function getWordSuggestions(trigram: string, maxSuggestions: number = 5):
     .map(item => item.original);
 }
 
-/**
- * Debug du dictionnaire
- */
 export function debugDictionary(): void {
-  
   const testTrigrams = ['the', 'ing', 'ion', 'est', 'tri'];
   testTrigrams.forEach(trigram => {
     const suggestions = getWordSuggestions(trigram, 3);
   });
-  
 }
 
-/**
- * Normalise le texte pour le jeu
- */
 export function normalizeTextForGame(text: string): string {
   return normalizeText(text);
 }

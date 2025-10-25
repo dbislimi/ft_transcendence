@@ -1,18 +1,24 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { StatsTabType } from './BombPartyStatsTypes';
 
 interface BombPartyStatsFiltersProps {
   activeTab: StatsTabType;
   onTabChange: (tab: StatsTabType) => void;
+  isAuthenticated?: boolean;
 }
 
-export function BombPartyStatsFilters({ activeTab, onTabChange }: BombPartyStatsFiltersProps) {
-  const tabs = [
-    { key: 'overview' as const, label: 'Vue d\'ensemble', icon: '📈' },
-    { key: 'history' as const, label: 'Historique', icon: '📜' },
-    { key: 'trigrams' as const, label: 'Trigrammes', icon: '🔤' },
-    { key: 'ranking' as const, label: 'Classement', icon: '🏆' }
+export function BombPartyStatsFilters({ activeTab, onTabChange, isAuthenticated = true }: BombPartyStatsFiltersProps) {
+  const { t } = useTranslation();
+  
+  const allTabs = [
+    { key: 'overview' as const, label: t('bombParty.stats.tabs.overview'), icon: '📈', requiresAuth: true },
+    { key: 'history' as const, label: t('bombParty.stats.tabs.history'), icon: '📜', requiresAuth: true },
+    { key: 'trigrams' as const, label: t('bombParty.stats.tabs.trigrams'), icon: '🔤', requiresAuth: true },
+    { key: 'ranking' as const, label: t('bombParty.stats.tabs.ranking'), icon: '🏆', requiresAuth: false }
   ];
+
+  const tabs = isAuthenticated ? allTabs : allTabs.filter(tab => !tab.requiresAuth);
 
   return (
     <div className="flex space-x-1 mb-8 bg-slate-800 p-1 rounded-lg">

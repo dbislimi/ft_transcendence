@@ -94,22 +94,77 @@
     },
     "backToMenu": "العودة إلى القائمة",
     "stats": {
-      "date": "التاريخ",
-      "position": "الموضع",
-      "words": "الكلمات",
-      "livesRemaining": "الأرواح المتبقية",
-      "duration": "المدة",
-      "result": "النتيجة",
-      "trigram": "الثلاثي",
-      "averageTime": "متوسط الوقت",
-      "rank": "الرتبة",
-      "player": "اللاعب",
-      "wins": "الانتصارات",
-      "games": "الألعاب",
-      "winRate": "معدل الفوز",
-      "bestStreak": "أفضل سلسلة",
-      "history": "تاريخ الألعاب",
-      "error": "خطأ"
+      "title": "إحصائيات Bomb Party",
+      "subtitle": "اكتشف أداءك وقارن نفسك مع اللاعبين الآخرين",
+      "subtitleGuest": "تحقق من تصنيف أفضل اللاعبين",
+      "loading": "جاري تحميل الإحصائيات...",
+      "error": "خطأ",
+      "retry": "إعادة المحاولة",
+      "back": "رجوع",
+      "loginPrompt": "سجل الدخول للمزيد من الإحصائيات",
+      "loginPromptDesc": "أنشئ حسابًا لتتبع أدائك الشخصي وتاريخ مبارياتك والثلاثيات المفضلة لديك.",
+      "reconnectPrompt": "أعد الاتصال لرؤية إحصائياتك الشخصية",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "history": "التاريخ",
+        "trigrams": "الثلاثيات",
+        "ranking": "التصنيف"
+      },
+      "overview": {
+        "title": "نظرة عامة",
+        "matchStats": "إحصائيات المباريات",
+        "totalMatches": "المباريات المُلعوبة",
+        "totalWins": "الانتصارات",
+        "winRate": "معدل الفوز",
+        "bestStreak": "أفضل سلسلة",
+        "wordStats": "إحصائيات الكلمات",
+        "totalWordsSubmitted": "الكلمات المُرسلة",
+        "totalValidWords": "الكلمات الصحيحة",
+        "accuracy": "الدقة",
+        "averageResponseTime": "متوسط وقت الاستجابة",
+        "otherStats": "إحصائيات أخرى",
+        "totalPlayTime": "إجمالي وقت اللعب",
+        "favoriteTrigramTitle": "الثلاثي المفضل",
+        "favoriteTrigramDesc": "الثلاثي الأكثر لعبًا لديك",
+        "none": "لا يوجد"
+      },
+      "history": {
+        "title": "تاريخ المباريات",
+        "date": "التاريخ",
+        "position": "الموضع",
+        "words": "الكلمات",
+        "livesRemaining": "الأرواح المتبقية",
+        "duration": "المدة",
+        "result": "النتيجة",
+        "victory": "انتصار",
+        "defeat": "هزيمة",
+        "empty": "لم يتم لعب أي مباريات",
+        "emptyDesc": "ستظهر مبارياتك هنا بمجرد أن تلعب."
+      },
+      "trigrams": {
+        "title": "إحصائيات الثلاثيات",
+        "trigram": "الثلاثي",
+        "attempts": "المحاولات",
+        "successRate": "معدل النجاح",
+        "averageTime": "متوسط الوقت",
+        "empty": "لا توجد بيانات للثلاثيات",
+        "emptyDesc": "ستظهر إحصائيات ثلاثياتك هنا."
+      },
+      "ranking": {
+        "title": "التصنيف العالمي",
+        "rank": "الرتبة",
+        "player": "اللاعب",
+        "wins": "الانتصارات",
+        "games": "الألعاب",
+        "winRate": "معدل الفوز",
+        "bestStreak": "أفضل سلسلة",
+        "you": "(أنت)",
+        "empty": "لا يوجد لاعبون في التصنيف",
+        "emptyDesc": "كن أول من يظهر في التصنيف!"
+      },
+      "charts": {
+        "trigramDistribution": "توزيع الثلاثيات"
+      }
     },
     "lobby": {
       "title": "الردهة",
@@ -122,11 +177,29 @@
       "create": "إنشاء",
       "join": "انضمام",
       "connecting": "جاري الاتصال...",
+      "connected": "متصل",
+      "disconnected": "غير متصل",
+      "connectionRequired": "الاتصال مطلوب",
       "lobbyId": "معرف الردهة",
       "playersCount": "عدد اللاعبين",
       "lobbyIdPlaceholder": "الصق معرف الردهة هنا...",
       "lobbyIdHelp": "اطلب معرف الردهة من المنشئ",
-      "passwordPlaceholder": "كلمة المرور (إذا كانت الردهة خاصة)"
+      "passwordPlaceholder": "كلمة المرور (إذا كانت الردهة خاصة)",
+      "availableLobbies": "الردهات المتاحة",
+      "noLobbies": "لا توجد ردهات متاحة",
+      "noLobbiesDesc": "أنشئ ردهة جديدة لبدء اللعب!",
+      "refresh": "تحديث",
+      "joinPrivate": "الانضمام إلى ردهة خاصة",
+      "privatePasswordDesc": "هذه الردهة محمية بكلمة مرور. يرجى إدخالها للانضمام.",
+      "enterPassword": "أدخل كلمة المرور",
+      "cancel": "إلغاء",
+      "inProgress": "قيد التقدم",
+      "full": "ممتلئة",
+      "waiting": "في الانتظار",
+      "justNow": "الآن",
+      "minutesAgo": "منذ {minutes} دقيقة",
+      "hoursAgo": "منذ {hours} ساعة",
+      "daysAgo": "منذ {days} يوم"
     },
     "debug": { "show": "إظهار التصحيح", "hide": "إخفاء التصحيح" },
     "chat": {
@@ -226,7 +299,21 @@
     "closeAria": "إغلاق نافذة الملف الشخصي"
   },
   "shop": {
-    "title": "المتجر"
+    "title": "المتجر",
+    "sections": {
+      "backgrounds": "الخلفيات",
+      "themes": "السمات",
+      "accessibility": "إمكانية الوصول",
+      "performance": "الأداء"
+    },
+    "categories": {
+      "general": "الخلفيات",
+      "fortnite": "Fortnite"
+    },
+    "items": {
+      "available": "متاح"
+    },
+    "equipped": "مجهز"
   },
   "common": { 
     "back": "رجوع", 

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { backgroundCatalog, getBackgroundById, type BackgroundItem } from '../backgrounds/catalog';
+import { allBackgrounds, getBackgroundById, type BackgroundItem } from '../backgrounds/catalog';
 import { analyzeBackground, applyColorScheme, type ColorScheme } from '../utils/colorAdaptation';
 
 interface GlobalBackgroundContextValue {
@@ -42,7 +42,7 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     });
 
     const analysis = analyzeBackground(background.id, background.url || undefined);
-    console.log('🎨 [Color] Analyse du fond:', analysis);
+    console.log('[Color] Background analysis:', analysis);
     
     applyColorScheme(analysis.recommendedScheme);
     setCurrentColorScheme(analysis.recommendedScheme);
@@ -72,56 +72,56 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     try {
       localStorage.setItem(STORAGE_KEY, currentBackgroundId);
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde de l\'arrière-plan:', error);
+      console.error('Error saving background:', error);
     }
   }, [currentBackgroundId]);
 
   const setBackground = useCallback(async (id: string) => {
-    console.log('[Background] setBackground appelé avec ID:', id);
+    console.log('[Background] setBackground called with ID:', id);
     const background = getBackgroundById(id);
     if (!background) {
-      console.warn('[Background] ID non trouvé:', id);
-      console.log('[Background] Catalog disponible:', backgroundCatalog.map(bg => bg.id));
+      console.warn('[Background] ID not found:', id);
+      console.log('[Background] Available catalog:', allBackgrounds.map(bg => bg.id));
       return;
     }
 
-      console.log('[Background] Background trouvé:', background);
+      console.log('[Background] Background found:', background);
     setIsLoading(true);
     
     try {
       if (background.url && background.type === 'image') {
-        console.log('[Background] Préchargement de l\'image:', background.url);
+        console.log('[Background] Preloading image:', background.url);
         const img = new Image();
         await new Promise((resolve, reject) => {
           img.onload = () => {
-            console.log('[Background] Image préchargée avec succès');
+            console.log('[Background] Image preloaded successfully');
             resolve(true);
           };
           img.onerror = (error) => {
-            console.error('[Background] Erreur de préchargement:', error);
+            console.error('[Background] Preload error:', error);
             reject(error);
           };
           img.src = background.url!;
         });
       }
       
-      console.log('[Background] Mise à jour de currentBackgroundId vers:', id);
+      console.log('[Background] Updating currentBackgroundId to:', id);
       setCurrentBackgroundId(id);
     } catch (error) {
-      console.error('[Background] Erreur lors du chargement:', error);
+      console.error('[Background] Error loading:', error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const currentBackground = useMemo(() => {
-    return getBackgroundById(currentBackgroundId) || backgroundCatalog[0];
+    return getBackgroundById(currentBackgroundId) || allBackgrounds[0];
   }, [currentBackgroundId]);
 
   const value: GlobalBackgroundContextValue = {
     currentBackground,
     setBackground,
-    availableBackgrounds: backgroundCatalog,
+    availableBackgrounds: allBackgrounds,
     isLoading,
     currentColorScheme,
   };

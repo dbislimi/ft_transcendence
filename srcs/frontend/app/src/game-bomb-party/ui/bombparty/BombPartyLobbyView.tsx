@@ -5,6 +5,7 @@ import type { BombPartyHooksState } from './BombPartyHooks';
 
 interface BombPartyLobbyViewProps {
   state: BombPartyHooksState;
+  client: any;
   onLobbyCreate: (meta: { name: string; isPrivate: boolean; password?: string; maxPlayers: number; }) => void;
   onLobbyJoin: (roomId: string, password?: string) => void;
   onBackFromLobby: () => void;
@@ -14,6 +15,7 @@ interface BombPartyLobbyViewProps {
 
 export default function BombPartyLobbyView({
   state,
+  client,
   onLobbyCreate,
   onLobbyJoin,
   onBackFromLobby,
@@ -26,7 +28,8 @@ export default function BombPartyLobbyView({
         onCreate={onLobbyCreate} 
         onJoin={onLobbyJoin} 
         onBack={onBackFromLobby} 
-        isAuthenticated={true} // A fix quand le log user sera 
+        isAuthenticated={true}
+        client={client}
       />
     );
   }

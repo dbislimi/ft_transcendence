@@ -15,9 +15,6 @@ interface HistoryQuery {
   offset?: string;
 }
 
-/**
- * Plugin Fastify pour les routes de statistiques Bomb Party
- */
 const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
   fastify: FastifyInstance,
   options
@@ -27,9 +24,6 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
   const statsManager = new BombPartyStatsManager(db);
   
 
-  /**
-   * Middleware d'authentification
-   */
   const authenticateToken = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const authHeader = request.headers.authorization;
@@ -42,14 +36,10 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
       
       (request as any).userId = decoded.id;
     } catch (error) {
-      return reply.code(401).send({ error: "Token invalide ou expiré" });
+      return reply.code(401).send({ error: "Invalid or expired token" });
     }
   };
 
-  /**
-   * GET /api/bomb-party/stats/:userId
-   * Récupère les statistiques d'un utilisateur
-   */
   fastify.get<{ Params: StatsParams }>(
     "/api/bomb-party/stats/:userId",
     { preHandler: authenticateToken },
@@ -59,7 +49,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         const requestingUserId = (request as any).userId;
 
         if (parseInt(userId) !== requestingUserId) {
-          return reply.code(403).send({ error: "Accès non autorisé" });
+          return reply.code(403).send({ error: "Access denied" });
         }
 
         const result = await statsManager.getUserStats(parseInt(userId));
@@ -73,16 +63,12 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("[Stats API] Erreur récupération stats:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error fetching stats:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );
 
-  /**
-   * GET /api/bomb-party/history/:userId
-   * Récupère l'historique des parties d'un utilisateur
-   */
   fastify.get<{ Params: StatsParams; Querystring: HistoryQuery }>(
     "/api/bomb-party/history/:userId",
     { preHandler: authenticateToken },
@@ -93,7 +79,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         const requestingUserId = (request as any).userId;
 
         if (parseInt(userId) !== requestingUserId) {
-          return reply.code(403).send({ error: "Accès non autorisé" });
+          return reply.code(403).send({ error: "Access denied" });
         }
 
         const result = await statsManager.getUserMatchHistory(
@@ -111,16 +97,12 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("[Stats API] Erreur récupération historique:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error fetching history:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );
 
-  /**
-   * GET /api/bomb-party/trigram-stats/:userId
-   * Récupère les statistiques de trigrammes d'un utilisateur
-   */
   fastify.get<{ Params: StatsParams; Querystring: { limit?: string } }>(
     "/api/bomb-party/trigram-stats/:userId",
     { preHandler: authenticateToken },
@@ -131,7 +113,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         const requestingUserId = (request as any).userId;
 
         if (parseInt(userId) !== requestingUserId) {
-          return reply.code(403).send({ error: "Accès non autorisé" });
+          return reply.code(403).send({ error: "Access denied" });
         }
 
         const result = await statsManager.getUserTrigramStats(
@@ -148,16 +130,12 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("[Stats API] Erreur récupération trigram stats:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error fetching trigram stats:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );
 
-  /**
-   * GET /api/bomb-party/ranking
-   * Récupère le classement global des joueurs
-   */
   fastify.get<{ Querystring: { limit?: string } }>(
     "/api/bomb-party/ranking",
     async (request, reply) => {
@@ -175,16 +153,12 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           data: result.data
         });
       } catch (error) {
-        console.error("[Stats API] Erreur récupération classement:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error fetching leaderboard:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );
 
-  /**
-   * POST /api/bomb-party/stats/update
-   * Met à jour les statistiques après une partie (appelé par le système de jeu)
-   */
   fastify.post(
     "/api/bomb-party/stats/update",
     { preHandler: authenticateToken },
@@ -227,24 +201,20 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         });
 
         if (!historyResult.success) {
-          console.error("[Stats API] Erreur ajout historique:", historyResult.error);
+          console.error("[Stats API] Error adding history:", historyResult.error);
         }
 
         return reply.send({
           success: true,
-          message: "Statistiques mises à jour avec succès"
+          message: "Statistics updated successfully"
         });
       } catch (error) {
-        console.error("[Stats API] Erreur mise à jour stats:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error updating stats:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );
 
-  /**
-   * POST /api/bomb-party/trigram-stats/update
-   * Met à jour les statistiques de trigrammes (appelé pendant le jeu)
-   */
   fastify.post(
     "/api/bomb-party/trigram-stats/update",
     { preHandler: authenticateToken },
@@ -270,11 +240,11 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
 
         return reply.send({
           success: true,
-          message: "Statistiques de trigramme mises à jour"
+          message: "Trigram statistics updated"
         });
       } catch (error) {
-        console.error("[Stats API] Erreur mise à jour trigram stats:", error);
-        return reply.code(500).send({ error: "Erreur serveur" });
+        console.error("[Stats API] Error updating trigram stats:", error);
+        return reply.code(500).send({ error: "Server error" });
       }
     }
   );

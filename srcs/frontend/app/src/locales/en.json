@@ -71,11 +71,29 @@
         "create": "Create",
         "join": "Join",
         "connecting": "Connecting...",
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "connectionRequired": "Connection required",
         "lobbyId": "Lobby ID",
         "playersCount": "Number of players",
         "lobbyIdPlaceholder": "Paste lobby ID here...",
         "lobbyIdHelp": "Ask the lobby creator for the ID",
-        "passwordPlaceholder": "Password (if lobby is private)"
+        "passwordPlaceholder": "Password (if lobby is private)",
+        "availableLobbies": "Available Lobbies",
+        "noLobbies": "No lobby available",
+        "noLobbiesDesc": "Create a new lobby to start playing!",
+        "refresh": "Refresh",
+        "joinPrivate": "Join a private lobby",
+        "privatePasswordDesc": "This lobby is password-protected. Please enter the password to join.",
+        "enterPassword": "Enter the password",
+        "cancel": "Cancel",
+        "inProgress": "In progress",
+        "full": "Full",
+        "waiting": "Waiting",
+        "justNow": "Just now",
+        "minutesAgo": "{minutes} min ago",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
       },
     "debug": { "show": "Show debug", "hide": "Hide debug" },
     "chat": {
@@ -178,22 +196,77 @@
     },
     "backToMenu": "Back to Menu",
     "stats": {
-      "date": "Date",
-      "position": "Position",
-      "words": "Words",
-      "livesRemaining": "Lives remaining",
-      "duration": "Duration",
-      "result": "Result",
-      "trigram": "Trigram",
-      "averageTime": "Average time",
-      "rank": "Rank",
-      "player": "Player",
-      "wins": "Wins",
-      "games": "Games",
-      "winRate": "Win rate",
-      "bestStreak": "Best streak",
-      "history": "Game history",
-      "error": "Error"
+      "title": "Bomb Party Statistics",
+      "subtitle": "Discover your performance and compare yourself with other players",
+      "subtitleGuest": "Check the ranking of the best players",
+      "loading": "Loading statistics...",
+      "error": "Error",
+      "retry": "Retry",
+      "back": "Back",
+      "loginPrompt": "Log in for more statistics",
+      "loginPromptDesc": "Create an account to track your personal performance, game history and favorite trigrams.",
+      "reconnectPrompt": "Reconnect to see your personal statistics",
+      "tabs": {
+        "overview": "Overview",
+        "history": "History",
+        "trigrams": "Trigrams",
+        "ranking": "Ranking"
+      },
+      "overview": {
+        "title": "Overview",
+        "matchStats": "Match statistics",
+        "totalMatches": "Games played",
+        "totalWins": "Victories",
+        "winRate": "Win rate",
+        "bestStreak": "Best streak",
+        "wordStats": "Word statistics",
+        "totalWordsSubmitted": "Words submitted",
+        "totalValidWords": "Valid words",
+        "accuracy": "Accuracy",
+        "averageResponseTime": "Average response time",
+        "otherStats": "Other statistics",
+        "totalPlayTime": "Total playtime",
+        "favoriteTrigramTitle": "Favorite trigram",
+        "favoriteTrigramDesc": "Your most played trigram",
+        "none": "None"
+      },
+      "history": {
+        "title": "Match history",
+        "date": "Date",
+        "position": "Position",
+        "words": "Words",
+        "livesRemaining": "Lives remaining",
+        "duration": "Duration",
+        "result": "Result",
+        "victory": "Victory",
+        "defeat": "Defeat",
+        "empty": "No games played",
+        "emptyDesc": "Your games will appear here once you play."
+      },
+      "trigrams": {
+        "title": "Trigram statistics",
+        "trigram": "Trigram",
+        "attempts": "Attempts",
+        "successRate": "Success rate",
+        "averageTime": "Average time",
+        "empty": "No trigram data",
+        "emptyDesc": "Your trigram statistics will appear here."
+      },
+      "ranking": {
+        "title": "Global ranking",
+        "rank": "Rank",
+        "player": "Player",
+        "wins": "Wins",
+        "games": "Games",
+        "winRate": "Win rate",
+        "bestStreak": "Best streak",
+        "you": "(You)",
+        "empty": "No players in ranking",
+        "emptyDesc": "Be the first to appear in the ranking!"
+      },
+      "charts": {
+        "trigramDistribution": "Trigram distribution"
+      }
     }
   }
   ,
@@ -222,6 +295,10 @@
       "themes": "Themes",
       "accessibility": "Accessibility",
       "performance": "Performance"
+    },
+    "categories": {
+      "general": "Backgrounds",
+      "fortnite": "Fortnite"
     },
     "items": {
       "available": "available"

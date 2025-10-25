@@ -123,10 +123,6 @@
   filter: contrast(200%);
 }
 
-.form {
-  max-width: 400px;
-}
-
 html, body {
   height: 100%;
 }
@@ -155,14 +151,6 @@ html, body {
   50% {
     transform: translateY(-20px) rotate(180deg);
   }
-}
-
-.animate-shooting-star {
-  animation: shooting-star 8s linear infinite;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
 }
 
 /* ===== TAILLE DE POLICE DYNAMIQUE ===== */
@@ -200,49 +188,8 @@ html {
   filter: brightness(var(--text-brightness));
 }
 
-.text-adaptive {
-  color: var(--color-text);
-}
-
-.text-adaptive-secondary {
-  color: var(--color-text-secondary);
-}
-
-.bg-adaptive {
-  background-color: var(--color-background);
-}
-
-.bg-adaptive-card {
-  background-color: var(--color-card);
-}
-
-.border-adaptive {
-  border-color: var(--color-border);
-}
-
 .accent-adaptive {
   color: var(--color-accent);
-}
-
-
-.home-card-adaptive {
-  background: linear-gradient(135deg, var(--color-card), var(--color-background));
-  border: 2px solid var(--color-border);
-  color: var(--color-text);
-  backdrop-filter: blur(10px);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.home-card-adaptive:hover {
-  border-color: var(--color-accent);
-  box-shadow: 
-    0 0 30px var(--color-accent),
-    0 0 0 1px var(--color-accent),
-    0 8px 32px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
 }
 
 .nav-btn-aesthetic {
@@ -280,16 +227,18 @@ html {
 }
 
 .action-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-button-rgb, 30, 64, 175), 0.4), 
+    rgba(var(--color-secondary-rgb, 30, 41, 59), 0.4)) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3);
   box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px);
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(15px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -301,14 +250,16 @@ html {
 }
 
 .action-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-button-hover-rgb, 29, 78, 216), 0.6), 
+    rgba(var(--color-button-rgb, 30, 64, 175), 0.6)) !important;
   border-color: var(--color-accent) !important;
   box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 8px 25px rgba(0, 0, 0, 0.3),
     0 0 20px var(--color-accent),
     0 0 0 1px var(--color-accent) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--color-accent), 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .close-btn-aesthetic {
@@ -344,19 +295,6 @@ html {
     0 0 0 1px var(--color-accent) !important;
   transform: translateY(-2px) scale(1.02);
   text-shadow: 0 0 10px var(--color-accent);
-}
-
-.home-title-adaptive {
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px var(--color-accent);
-  filter: drop-shadow(0 0 20px var(--color-accent));
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  position: relative;
-  animation: titleShimmer 3s ease-in-out infinite;
 }
 
 @keyframes titleShimmer {
@@ -396,24 +334,6 @@ html {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Typographie esthetique avancee */
-.text-aesthetic-primary {
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 600;
-  letter-spacing: 0.025em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.text-aesthetic-secondary {
-  color: var(--color-text-secondary);
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
 .text-aesthetic-accent {
   background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
   background-clip: text;
@@ -424,29 +344,6 @@ html {
   text-shadow: 0 0 20px var(--color-accent);
 }
 
-.text-aesthetic-glow {
-  color: var(--color-text);
-  text-shadow: 
-    0 0 10px var(--color-accent),
-    0 0 20px var(--color-accent),
-    0 0 30px var(--color-accent);
-  font-weight: 600;
-}
-
-.text-aesthetic-gradient {
-  background: linear-gradient(45deg, var(--color-primary), var(--color-accent), var(--color-secondary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease-in-out infinite;
-  font-weight: 700;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
 
 /* Effets de texte pour les boutons */
 .btn-text-aesthetic {
@@ -500,16 +397,6 @@ html {
   font-weight: 500;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Effets pour les badges */
-.badge-aesthetic {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
-  color: var(--color-text);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Classes pour differents niveaux de contraste */
@@ -622,51 +509,6 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color var(--animation-duration), color var(--animation-duration);
-}
-
-/* Cartes et conteneurs */
-.theme-card {
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.theme-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Header avec theme */
-.theme-header {
-  background: var(--bg-header);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* Textes avec theme */
-.text-theme-primary { color: var(--text-primary); }
-.text-theme-secondary { color: var(--text-secondary); }
-.text-theme-muted { color: var(--text-muted); }
-
-/* Inputs avec theme */
-.input-theme {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  transition: all var(--animation-duration);
-}
-
-.input-theme:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Modales avec theme */
-.modal-theme {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
 }
 
 /* Override des classes Tailwind pour le theme */

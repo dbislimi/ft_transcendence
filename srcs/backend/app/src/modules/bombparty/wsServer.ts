@@ -12,8 +12,8 @@ export interface WSConnection {
 
 export class BombPartyWSServer {
   private connections = new Map<WebSocket, WSConnection>();
-  private readonly PING_INTERVAL = 15000;
-  private readonly PONG_TIMEOUT = 7000;
+  private readonly PING_INTERVAL = 30000;
+  private readonly PONG_TIMEOUT = 45000;
 
   constructor() {
     this.startHeartbeatInterval();
@@ -34,7 +34,7 @@ export class BombPartyWSServer {
           socket.ping();
           connection.lastPong = now;
         } catch (error) {
-          console.error('[BombParty] Erreur ping:', error);
+          console.error('[BombParty] Ping error:', error);
           this.closeConnection(socket, 'PING_ERROR');
         }
       }
@@ -79,7 +79,7 @@ export class BombPartyWSServer {
     });
 
     socket.on('error', (error) => {
-      console.error('[BombParty] Erreur WebSocket:', error);
+      console.error('[BombParty] WebSocket error:', error);
       this.connections.delete(socket);
     });
   }
@@ -120,7 +120,7 @@ export class BombPartyWSServer {
         socket.send(JSON.stringify(message));
       }
     } catch (err) {
-      console.error('[BombParty] Erreur envoi message:', err);
+      console.error('[BombParty] Error sending message:', err);
     }
   }
 
@@ -130,7 +130,13 @@ export class BombPartyWSServer {
         socket.send(JSON.stringify(message));
       }
     } catch (err) {
-      console.error('[BombParty] Erreur envoi message:', err);
+      console.error('[BombParty] Error sending message:', err);
+    }
+  }
+
+  broadcastToAll(message: any): void {
+    for (const [socket] of this.connections) {
+      this.sendMessage(socket, message);
     }
   }
 

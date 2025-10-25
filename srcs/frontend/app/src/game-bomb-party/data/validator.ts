@@ -18,19 +18,19 @@ const englishLexicon: Set<string> = new Set(
 		.map(w => normalizeText(w))
 );
 
-console.log('📚 English lexicon loaded from trigram_words.json:', englishLexicon.size, 'words');
-console.log('🔤 Trigram entries:', Object.keys(trigramMap).length);
+console.log('[Dict] English lexicon loaded from trigram_words.json:', englishLexicon.size, 'words');
+console.log('[Dict] Trigram entries:', Object.keys(trigramMap).length);
 
 export function debugDictionary() {
-	console.log('🔍 === DICTIONARY DEBUG (EN) ===');
-	console.log('📚 Lexicon size:', englishLexicon.size);
-	console.log('🔤 Trigram keys:', Object.keys(trigramMap).slice(0, 10));
+	console.log('[Dict] === DICTIONARY DEBUG (EN) ===');
+	console.log('[Dict] Lexicon size:', englishLexicon.size);
+	console.log('[Dict] Trigram keys:', Object.keys(trigramMap).slice(0, 10));
 	const testTrigrams = ['the', 'ing', 'ion', 'est', 'tri'];
 	testTrigrams.forEach(trigram => {
 		const suggestions = getWordSuggestions(trigram, 3);
-		console.log(`🔤 Suggestions for "${trigram}":`, suggestions);
+		console.log(`[Dict] Suggestions for "${trigram}":`, suggestions);
 	});
-	console.log('🔍 === END DEBUG ===');
+	console.log('[Dict] === END DEBUG ===');
 }
 
 export function validateWithDictionary(word: string, trigram: string, usedWords: string[]): ValidationResult {

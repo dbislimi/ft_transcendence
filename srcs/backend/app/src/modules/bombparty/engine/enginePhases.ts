@@ -1,11 +1,13 @@
 import type { GameState } from '../types';
-import { getAlivePlayers, isGameOver } from './engineState';
+import { getAlivePlayers, isGameOver } from './engineState.ts';
 
 export function startCountdown(state: GameState): void {
   state.phase = 'COUNTDOWN';
 }
 
 export function startTurn(state: GameState, getNewTrigram: () => string, getTurnDuration: () => number): void {
+  console.log('[BombParty DEBUG] startTurn() engine/enginePhases.ts CALLED');
+  
   if (state.players[state.currentPlayerIndex]?.isEliminated) {
     nextPlayer(state);
     if (state.players[state.currentPlayerIndex]?.isEliminated) {
@@ -27,6 +29,8 @@ export function startTurn(state: GameState, getNewTrigram: () => string, getTurn
   if (currentId && state.pendingFastForNextPlayerId === currentId) {
     state.pendingFastForNextPlayerId = undefined;
   }
+  
+  console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentTrigram="${state.currentTrigram}", currentPlayerIndex=${state.currentPlayerIndex}, currentPlayerId="${state.currentPlayerId}"`);
 }
 
 export function resolveTurn(
@@ -37,13 +41,13 @@ export function resolveTurn(
   startTurnFn: () => void
 ): void {
   if (state.players.length === 0 || state.currentPlayerIndex >= state.players.length) {
-    console.error('[BombParty] Erreur: Aucun joueur ou index invalide');
+    console.error('[BombParty] Error: No player or invalid index');
     return;
   }
 
   const currentPlayer = state.players[state.currentPlayerIndex];
   if (!currentPlayer) {
-    console.error('[BombParty] Erreur: Joueur actuel non trouvé');
+    console.error('[BombParty] Error: Current player not found');
     return;
   }
 
@@ -78,13 +82,13 @@ export function nextPlayer(state: GameState): void {
     attempts++;
     
     if (attempts > maxAttempts) {
-      console.error('[BombParty] Erreur: Impossible de trouver le prochain joueur');
+      console.error('[BombParty] Error: Cannot find next player');
       break;
     }
   } while (state.players[state.currentPlayerIndex]?.isEliminated);
 
   if (!state.players[state.currentPlayerIndex]) {
-    console.error('[BombParty] Erreur: Aucun joueur valide trouvé');
+    console.error('[BombParty] Error: No valid player found');
     state.phase = 'GAME_OVER';
   }
 }

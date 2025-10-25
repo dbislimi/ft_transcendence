@@ -100,6 +100,10 @@
     },
     "lobby": {
       "title": "Salon",
+      "connected": "Connecté",
+      "connecting": "Connexion...",
+      "disconnected": "Déconnecté",
+      "connectionRequired": "Connexion requise",
       "createTab": "Créer",
       "joinTab": "Rejoindre",
       "name": "Nom",
@@ -108,12 +112,26 @@
       "passwordOpt": "Mot de passe (optionnel)",
       "create": "Créer",
       "join": "Rejoindre",
-      "connecting": "Connexion en cours...",
       "lobbyId": "ID du lobby",
       "playersCount": "Nombre de joueurs",
       "lobbyIdPlaceholder": "Collez l'ID du lobby ici...",
       "lobbyIdHelp": "Demandez l'ID du lobby au créateur",
-      "passwordPlaceholder": "Mot de passe (si le lobby est privé)"
+      "passwordPlaceholder": "Mot de passe (si le lobby est privé)",
+      "availableLobbies": "Salons disponibles",
+      "noLobbies": "Aucun salon disponible",
+      "noLobbiesDesc": "Créez un nouveau salon pour commencer à jouer !",
+      "refresh": "Actualiser",
+      "joinPrivate": "Rejoindre un salon privé",
+      "privatePasswordDesc": "Ce salon est protégé par un mot de passe. Veuillez le saisir pour rejoindre.",
+      "enterPassword": "Saisissez le mot de passe",
+      "cancel": "Annuler",
+      "inProgress": "En cours",
+      "full": "Plein",
+      "waiting": "En attente",
+      "justNow": "À l'instant",
+      "minutesAgo": "Il y a {minutes} min",
+      "hoursAgo": "Il y a {hours}h",
+      "daysAgo": "Il y a {days}j"
     },
     "players": {
       "title": "Joueurs en attente",
@@ -184,22 +202,77 @@
     },
     "backToMenu": "Retour au menu",
     "stats": {
-      "date": "Date",
-      "position": "Position",
-      "words": "Mots",
-      "livesRemaining": "Vies restantes",
-      "duration": "Durée",
-      "result": "Résultat",
-      "trigram": "Trigramme",
-      "averageTime": "Temps moyen",
-      "rank": "Rang",
-      "player": "Joueur",
-      "wins": "Victoires",
-      "games": "Parties",
-      "winRate": "Taux de victoire",
-      "bestStreak": "Meilleur streak",
-      "history": "Historique des parties",
-      "error": "Erreur"
+      "title": "Statistiques Bomb Party",
+      "subtitle": "Découvrez vos performances et comparez-vous aux autres joueurs",
+      "subtitleGuest": "Consultez le classement des meilleurs joueurs",
+      "loading": "Chargement des statistiques...",
+      "error": "Erreur",
+      "retry": "Réessayer",
+      "back": "Retour",
+      "loginPrompt": "Connectez-vous pour plus de statistiques",
+      "loginPromptDesc": "Créez un compte pour suivre vos performances personnelles, votre historique de parties et vos trigrammes préférés.",
+      "reconnectPrompt": "Reconnectez-vous pour voir vos statistiques personnelles",
+      "tabs": {
+        "overview": "Vue d'ensemble",
+        "history": "Historique",
+        "trigrams": "Trigrammes",
+        "ranking": "Classement"
+      },
+      "overview": {
+        "title": "Vue d'ensemble",
+        "matchStats": "Statistiques des parties",
+        "totalMatches": "Parties jouées",
+        "totalWins": "Victoires",
+        "winRate": "Taux de victoire",
+        "bestStreak": "Meilleur streak",
+        "wordStats": "Statistiques des mots",
+        "totalWordsSubmitted": "Mots soumis",
+        "totalValidWords": "Mots valides",
+        "accuracy": "Précision",
+        "averageResponseTime": "Temps de réponse moyen",
+        "otherStats": "Autres statistiques",
+        "totalPlayTime": "Temps de jeu total",
+        "favoriteTrigramTitle": "Trigramme préféré",
+        "favoriteTrigramDesc": "Votre trigramme le plus joué",
+        "none": "Aucun"
+      },
+      "history": {
+        "title": "Historique des parties",
+        "date": "Date",
+        "position": "Position",
+        "words": "Mots",
+        "livesRemaining": "Vies restantes",
+        "duration": "Durée",
+        "result": "Résultat",
+        "victory": "Victoire",
+        "defeat": "Défaite",
+        "empty": "Aucune partie jouée",
+        "emptyDesc": "Vos parties apparaîtront ici une fois que vous aurez joué."
+      },
+      "trigrams": {
+        "title": "Statistiques par trigramme",
+        "trigram": "Trigramme",
+        "attempts": "Tentatives",
+        "successRate": "Taux de réussite",
+        "averageTime": "Temps moyen",
+        "empty": "Aucune donnée de trigramme",
+        "emptyDesc": "Les statistiques de vos trigrammes apparaîtront ici."
+      },
+      "ranking": {
+        "title": "Classement global",
+        "rank": "Rang",
+        "player": "Joueur",
+        "wins": "Victoires",
+        "games": "Parties",
+        "winRate": "Taux de victoire",
+        "bestStreak": "Meilleur streak",
+        "you": "(Vous)",
+        "empty": "Aucun joueur classé",
+        "emptyDesc": "Le classement apparaîtra après les premières parties."
+      },
+      "charts": {
+        "trigramDistribution": "Répartition des trigrammes"
+      }
     }
   },
   "profile": {
@@ -301,6 +374,10 @@
       "themes": "Thèmes",
       "accessibility": "Accessibilité",
       "performance": "Performance"
+    },
+    "categories": {
+      "general": "Arrière-plans",
+      "fortnite": "Fortnite"
     },
     "items": {
       "available": "disponibles"

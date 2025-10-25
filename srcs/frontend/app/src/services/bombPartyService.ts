@@ -1,4 +1,5 @@
 import { useBombPartyStore } from '../store/useBombPartyStore';
+import { wsCoordinator } from './ws/WebSocketCoordinator';
 
 export interface BombPartyMessage {
   t?: string;
@@ -27,8 +28,12 @@ export class BombPartyService {
   private heartbeatInterval: number | null = null;
   private lastPong = Date.now();
   private readonly PONG_TIMEOUT = 10000;
+  private connectionId: string;
+  private registeredWithCoordinator: boolean = false;
 
   constructor() {
+    this.connectionId = `bps_${Math.random().toString(36).substring(2, 10)}`;
+    console.log(`[BombPartyService] Initialization [${this.connectionId}]`);
     this.connect();
   }
 
@@ -36,14 +41,29 @@ export class BombPartyService {
     const store = useBombPartyStore.getState();
     store.setConnectionState('connecting');
     
+    this.registeredWithCoordinator = wsCoordinator.registerConnection(
+      this.connectionId,
+      'bombPartyService',
+      1
+    );
+    
+    if (!this.registeredWithCoordinator) {
+      console.log(`[BombPartyService] Not authorized by coordinator, connection cancelled [${this.connectionId}]`);
+      store.setConnectionState('disconnected');
+      return;
+    }
+    
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/bombparty/ws`;
+      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const wsUrl = isDev 
+        ? `ws://localhost:3001/bombparty/ws`
+        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/bombparty/ws`;
       
+      console.log(`[BombPartyService] Connecting to: ${wsUrl} [${this.connectionId}]`);
       this.ws = new WebSocket(wsUrl);
       this.setupEventHandlers();
     } catch (error) {
-      console.error('[BombParty] Connection error:', error);
+      console.error(`[BombPartyService] Connection error [${this.connectionId}]:`, error);
       this.handleConnectionError();
     }
   }
@@ -52,31 +72,41 @@ export class BombPartyService {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      console.log('[BombParty] Connected');
+      console.log(`[BombPartyService] Connected [${this.connectionId}]`);
       const store = useBombPartyStore.getState();
       store.setConnectionState('connected');
       store.setReconnectAttempts(0);
       this.reconnectAttempts = 0;
       this.startHeartbeat();
+      this.authenticate('Player_' + Math.random().toString(36).substr(2, 9));
     };
 
     this.ws.onmessage = (event) => {
+      if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
+        console.log(`[BombPartyService] Not priority, closing connection [${this.connectionId}]`);
+        this.disconnect();
+        return;
+      }
+      
       try {
         const message: BombPartyMessage = JSON.parse(event.data);
+        if (message.event !== 'bp:ping' && message.event !== 'bp:pong') {
+          console.log(`[BombPartyService] Message received [${this.connectionId}]:`, { event: message.event });
+        }
         this.handleMessage(message);
       } catch (error) {
-        console.error('[BombParty] Message parse error:', error);
+        console.error(`[BombPartyService] Error parsing message [${this.connectionId}]:`, error);
       }
     };
 
     this.ws.onclose = (event) => {
-      console.log('[BombParty] Disconnected:', event.code, event.reason);
+      console.log(`[BombPartyService] Disconnected [${this.connectionId}]:`, event.code, event.reason);
       this.stopHeartbeat();
       this.handleDisconnection();
     };
 
     this.ws.onerror = (error) => {
-      console.error('[BombParty] WebSocket error:', error);
+      console.error(`[BombPartyService] WebSocket error [${this.connectionId}]:`, error);
       this.handleConnectionError();
     };
   }
@@ -90,7 +120,7 @@ export class BombPartyService {
       return;
     }
 
-    if (message.t === 'pong') {
+    if (message.event === 'bp:pong') {
       this.lastPong = Date.now();
       return;
     }
@@ -103,6 +133,7 @@ export class BombPartyService {
       case 'bp:auth:success':
         store.setPlayerId(message.payload.playerId);
         store.setIsAuthenticating(false);
+        this.requestLobbyList();
         break;
 
       case 'bp:lobby:created':
@@ -124,9 +155,56 @@ export class BombPartyService {
         break;
 
       case 'bp:lobby:list':
+        store.setLobbies(message.payload.rooms);
+        break;
+
+      case 'bp:lobby:list_updated':
+        store.setLobbies(message.payload.rooms);
         break;
 
       case 'bp:lobby:details':
+        break;
+        
+      case 'bp:room:state':
+        console.log('[BombParty] Room state updated:', message.payload);
+        if (store.connection.roomId === message.payload.roomId) {
+          store.setLobbyPlayers(message.payload.players);
+          store.setLobbyMaxPlayers(message.payload.maxPlayers);
+        }
+        this.requestLobbyList();
+        break;
+        
+      case 'bp:room:closed':
+        console.log('[BombParty] Room closed:', message.payload);
+        store.setRoomId(null);
+        store.setLobbyPlayers([]);
+        store.setIsHost(false);
+        store.setLastError('Room closed by host');
+        break;
+        
+      case 'bp:error':
+        console.error('[BombParty] Server error:', message.payload);
+        const errorCode = message.payload.code;
+        let errorMessage = 'An error occurred';
+        
+        switch (errorCode) {
+          case 'ROOM_FULL':
+            errorMessage = 'Room is full';
+            break;
+          case 'BAD_PASSWORD':
+            errorMessage = 'Incorrect password';
+            break;
+          case 'ROOM_NOT_FOUND':
+            errorMessage = 'Room not found';
+            break;
+          case 'NOT_AUTH':
+            errorMessage = 'You must be connected';
+            break;
+          default:
+            errorMessage = message.payload.message || errorMessage;
+        }
+        
+        store.setLastError(errorMessage);
         break;
 
       case 'bp:game:state':
@@ -159,13 +237,23 @@ export class BombPartyService {
   }
 
   private startHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+    
     this.heartbeatInterval = setInterval(() => {
+      if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
+        console.log(`[BombPartyService] Not priority during heartbeat, closing [${this.connectionId}]`);
+        this.disconnect();
+        return;
+      }
+      
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ t: 'ping' }));
+        this.ws.send(JSON.stringify({ event: 'bp:ping' }));
         
         setTimeout(() => {
           if (Date.now() - this.lastPong > this.PONG_TIMEOUT) {
-            console.warn('[BombParty] Pong timeout, reconnecting...');
+            console.warn(`[BombPartyService] Pong timeout, reconnecting... [${this.connectionId}]`);
             this.handleConnectionError();
           }
         }, 5000);
@@ -183,6 +271,11 @@ export class BombPartyService {
   private handleDisconnection(): void {
     const store = useBombPartyStore.getState();
     store.setConnectionState('disconnected');
+    
+    if (this.registeredWithCoordinator) {
+      wsCoordinator.unregisterConnection(this.connectionId);
+      this.registeredWithCoordinator = false;
+    }
     
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.scheduleReconnect();
@@ -202,6 +295,11 @@ export class BombPartyService {
     
     this.stopHeartbeat();
     
+    if (this.registeredWithCoordinator) {
+      wsCoordinator.unregisterConnection(this.connectionId);
+      this.registeredWithCoordinator = false;
+    }
+    
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.scheduleReconnect();
     }
@@ -220,6 +318,7 @@ export class BombPartyService {
 
   authenticate(playerName: string): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log(`[BombPartyService] Authentication for [${playerName}] [${this.connectionId}]`);
       this.ws.send(JSON.stringify({
         event: 'bp:auth',
         payload: { playerName }
@@ -228,20 +327,44 @@ export class BombPartyService {
   }
 
   createRoom(name: string, isPrivate: boolean, password?: string, maxPlayers?: number): void {
+    const store = useBombPartyStore.getState();
+    
     if (this.ws?.readyState === WebSocket.OPEN) {
+      if (!store.connection.playerId) {
+        console.error(`[BombPartyService] Cannot create room: not authenticated [${this.connectionId}]`);
+        store.setLastError('You must be connected to create a room');
+        return;
+      }
+      
+      console.log(`[BombPartyService] Create room [${this.connectionId}]:`, { name, isPrivate, maxPlayers });
       this.ws.send(JSON.stringify({
         event: 'bp:lobby:create',
         payload: { name, isPrivate, password, maxPlayers }
       }));
+    } else {
+      console.error(`[BombPartyService] Cannot create room: WebSocket not open [${this.connectionId}]`);
+      store.setLastError('Connection lost. Please refresh the page.');
     }
   }
 
   joinRoom(roomId: string, password?: string): void {
+    const store = useBombPartyStore.getState();
+    
     if (this.ws?.readyState === WebSocket.OPEN) {
+      if (!store.connection.playerId) {
+        console.error(`[BombPartyService] Cannot join: not authenticated [${this.connectionId}]`);
+        store.setLastError('You must be connected to join a room');
+        return;
+      }
+      
+      console.log(`[BombPartyService] Join room [${this.connectionId}]:`, roomId, password ? '(with password)' : '(public)');
       this.ws.send(JSON.stringify({
         event: 'bp:lobby:join',
         payload: { roomId, password }
       }));
+    } else {
+      console.error(`[BombPartyService] Cannot join: WebSocket not open [${this.connectionId}]`);
+      store.setLastError('Connection lost. Please refresh the page.');
     }
   }
 
@@ -251,6 +374,26 @@ export class BombPartyService {
       this.ws.send(JSON.stringify({
         event: 'bp:lobby:leave',
         payload: { roomId: store.connection.roomId }
+      }));
+    }
+  }
+
+  subscribeToRoom(roomId: string): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log('[BombParty] Subscribing to room:', roomId);
+      this.ws.send(JSON.stringify({
+        event: 'bp:room:subscribe',
+        payload: { roomId }
+      }));
+    }
+  }
+
+  unsubscribeFromRoom(roomId: string): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log('[BombParty] Unsubscribing from room:', roomId);
+      this.ws.send(JSON.stringify({
+        event: 'bp:room:unsubscribe',
+        payload: { roomId }
       }));
     }
   }
@@ -285,7 +428,20 @@ export class BombPartyService {
     }
   }
 
+  requestLobbyList(): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log(`[BombPartyService] Request lobby list [${this.connectionId}]`);
+      this.ws.send(JSON.stringify({
+        event: 'bp:lobby:list',
+        payload: {}
+      }));
+    } else {
+      console.log(`[BombPartyService] Cannot request list: WebSocket not open [${this.connectionId}]`);
+    }
+  }
+
   disconnect(): void {
+    console.log(`[BombPartyService] Explicit disconnection [${this.connectionId}]`);
     this.stopHeartbeat();
     
     if (this.reconnectTimeout) {
@@ -293,8 +449,20 @@ export class BombPartyService {
       this.reconnectTimeout = null;
     }
     
+    if (this.registeredWithCoordinator) {
+      wsCoordinator.unregisterConnection(this.connectionId);
+      this.registeredWithCoordinator = false;
+    }
+    
     if (this.ws) {
-      this.ws.close();
+      try {
+        this.ws.onclose = null;
+        this.ws.onerror = null;
+        this.ws.onmessage = null;
+        this.ws.close();
+      } catch (err) {
+        console.warn(`[BombPartyService] Error closing WebSocket [${this.connectionId}]:`, err);
+      }
       this.ws = null;
     }
   }

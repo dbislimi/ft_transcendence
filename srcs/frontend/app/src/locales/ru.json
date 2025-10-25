@@ -71,11 +71,29 @@
       "create": "Создать",
       "join": "Войти",
       "connecting": "Подключение...",
+      "connected": "Подключено",
+      "disconnected": "Отключено",
+      "connectionRequired": "Требуется подключение",
       "lobbyId": "ID лобби",
       "playersCount": "Количество игроков",
       "lobbyIdPlaceholder": "Вставьте ID лобби сюда...",
       "lobbyIdHelp": "Попросите ID лобби у создателя",
-      "passwordPlaceholder": "Пароль (если лобби приватное)"
+      "passwordPlaceholder": "Пароль (если лобби приватное)",
+      "availableLobbies": "Доступные лобби",
+      "noLobbies": "Нет доступных лобби",
+      "noLobbiesDesc": "Создайте новое лобби, чтобы начать играть!",
+      "refresh": "Обновить",
+      "joinPrivate": "Присоединиться к приватному лобби",
+      "privatePasswordDesc": "Это лобби защищено паролем. Пожалуйста, введите пароль для входа.",
+      "enterPassword": "Введите пароль",
+      "cancel": "Отмена",
+      "inProgress": "В процессе",
+      "full": "Полно",
+      "waiting": "Ожидание",
+      "justNow": "Только что",
+      "minutesAgo": "{minutes} мин назад",
+      "hoursAgo": "{hours}ч назад",
+      "daysAgo": "{days}д назад"
     },
     "debug": { "show": "Показать отладку", "hide": "Скрыть отладку" },
     "chat": {
@@ -177,22 +195,77 @@
     },
     "backToMenu": "Вернуться в меню",
     "stats": {
-      "date": "Дата",
-      "position": "Позиция",
-      "words": "Слова",
-      "livesRemaining": "Оставшиеся жизни",
-      "duration": "Продолжительность",
-      "result": "Результат",
-      "trigram": "Триграмма",
-      "averageTime": "Среднее время",
-      "rank": "Ранг",
-      "player": "Игрок",
-      "wins": "Победы",
-      "games": "Игры",
-      "winRate": "Процент побед",
-      "bestStreak": "Лучшая серия",
-      "history": "История игр",
-      "error": "Ошибка"
+      "title": "Статистика Bomb Party",
+      "subtitle": "Узнайте свои результаты и сравните себя с другими игроками",
+      "subtitleGuest": "Посмотрите рейтинг лучших игроков",
+      "loading": "Загрузка статистики...",
+      "error": "Ошибка",
+      "retry": "Повторить",
+      "back": "Назад",
+      "loginPrompt": "Войдите для просмотра дополнительной статистики",
+      "loginPromptDesc": "Создайте аккаунт, чтобы отслеживать личные результаты, историю игр и любимые триграммы.",
+      "reconnectPrompt": "Переподключитесь, чтобы увидеть личную статистику",
+      "tabs": {
+        "overview": "Обзор",
+        "history": "История",
+        "trigrams": "Триграммы",
+        "ranking": "Рейтинг"
+      },
+      "overview": {
+        "title": "Обзор",
+        "matchStats": "Статистика матчей",
+        "totalMatches": "Сыгранные игры",
+        "totalWins": "Победы",
+        "winRate": "Процент побед",
+        "bestStreak": "Лучшая серия",
+        "wordStats": "Статистика слов",
+        "totalWordsSubmitted": "Отправленные слова",
+        "totalValidWords": "Правильные слова",
+        "accuracy": "Точность",
+        "averageResponseTime": "Среднее время ответа",
+        "otherStats": "Другая статистика",
+        "totalPlayTime": "Общее время игры",
+        "favoriteTrigramTitle": "Любимая триграмма",
+        "favoriteTrigramDesc": "Ваша самая играемая триграмма",
+        "none": "Нет"
+      },
+      "history": {
+        "title": "История матчей",
+        "date": "Дата",
+        "position": "Позиция",
+        "words": "Слова",
+        "livesRemaining": "Оставшиеся жизни",
+        "duration": "Продолжительность",
+        "result": "Результат",
+        "victory": "Победа",
+        "defeat": "Поражение",
+        "empty": "Игр не сыграно",
+        "emptyDesc": "Ваши игры появятся здесь после того, как вы сыграете."
+      },
+      "trigrams": {
+        "title": "Статистика по триграммам",
+        "trigram": "Триграмма",
+        "attempts": "Попытки",
+        "successRate": "Процент успеха",
+        "averageTime": "Среднее время",
+        "empty": "Нет данных о триграммах",
+        "emptyDesc": "Статистика ваших триграмм появится здесь."
+      },
+      "ranking": {
+        "title": "Глобальный рейтинг",
+        "rank": "Ранг",
+        "player": "Игрок",
+        "wins": "Победы",
+        "games": "Игры",
+        "winRate": "Процент побед",
+        "bestStreak": "Лучшая серия",
+        "you": "(Вы)",
+        "empty": "Нет игроков в рейтинге",
+        "emptyDesc": "Станьте первым в рейтинге!"
+      },
+      "charts": {
+        "trigramDistribution": "Распределение триграмм"
+      }
     }
   },
   "profile": {
@@ -220,6 +293,10 @@
       "themes": "Темы",
       "accessibility": "Доступность",
       "performance": "Производительность"
+    },
+    "categories": {
+      "general": "Фоны",
+      "fortnite": "Fortnite"
     },
     "items": {
       "available": "доступно"

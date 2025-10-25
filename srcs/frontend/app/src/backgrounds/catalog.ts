@@ -1,5 +1,7 @@
 // backgrounds avec Vite global
 
+import { fortniteBackgrounds, type FortniteBackgroundItem } from './fortnite-catalog';
+
 const backgroundFiles = import.meta.glob('/img/background/*.{svg,webp,png,jpg,jpeg}', { 
   eager: true, 
   query: '?url',
@@ -123,9 +125,22 @@ function buildCatalog(): BackgroundItem[] {
 
 export const backgroundCatalog: BackgroundItem[] = buildCatalog();
 
-// Trouve un background par ID
+// Convertir les backgrounds Fortnite en BackgroundItem
+const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => ({
+  id: fb.id,
+  name: fb.name,
+  url: fb.url,
+  type: 'image' as const,
+  description: fb.description,
+  tags: fb.tags
+}));
+
+// Catalogue complet avec tous les backgrounds
+export const allBackgrounds: BackgroundItem[] = [...backgroundCatalog, ...fortniteBackgroundItems];
+
+// Trouve un background par ID (cherche dans tous les backgrounds)
 export function getBackgroundById(id: string): BackgroundItem | undefined {
-  return backgroundCatalog.find(bg => bg.id === id);
+  return allBackgrounds.find(bg => bg.id === id);
 }
 
 // Obtient l'URL d'un background par ID
@@ -135,13 +150,13 @@ export function getBackgroundUrl(id: string): string | null {
 }
 
 export function getBackgroundsByType(type: 'image' | 'svg' | 'default'): BackgroundItem[] {
-  return backgroundCatalog.filter(bg => bg.type === type);
+  return allBackgrounds.filter(bg => bg.type === type);
 }
 
 // Tag backgrounds
 export function searchBackgrounds(query: string): BackgroundItem[] {
   const lowerQuery = query.toLowerCase();
-  return backgroundCatalog.filter(bg => 
+  return allBackgrounds.filter(bg => 
     bg.name.toLowerCase().includes(lowerQuery) ||
     bg.description.toLowerCase().includes(lowerQuery) ||
     bg.tags?.some(tag => tag.includes(lowerQuery))
@@ -150,13 +165,15 @@ export function searchBackgrounds(query: string): BackgroundItem[] {
 
 export function logCatalog(): void {
   console.log('[Backgrounds] Catalog loaded:', {
-    total: backgroundCatalog.length,
+    total: allBackgrounds.length,
+    general: backgroundCatalog.length,
+    fortnite: fortniteBackgroundItems.length,
     types: {
       default: getBackgroundsByType('default').length,
       svg: getBackgroundsByType('svg').length,
       image: getBackgroundsByType('image').length
     },
-    items: backgroundCatalog.map(bg => ({
+    items: allBackgrounds.map(bg => ({
       id: bg.id,
       name: bg.name,
       type: bg.type

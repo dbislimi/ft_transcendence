@@ -1,28 +1,14 @@
-/**
- * Database module pour Bomb Party
- * 
- * Gère la persistance des parties et statistiques
- */
-
 interface Database {
   serialize(callback: () => void): void;
   run(sql: string, params?: any[], callback?: (this: any, err: any) => void): void;
   get(sql: string, params?: any[], callback?: (this: any, err: any, row?: any) => void): void;
   all(sql: string, params?: any[], callback?: (this: any, err: any, rows?: any[]) => void): void;
 }
-
-/**
- * Interface pour les résultats de base de données
- */
 export interface DBResult<T = any> {
   success: boolean;
   data?: T;
   error?: string;
 }
-
-/**
- * Gestionnaire de base de données pour Bomb Party
- */
 export class BombPartyDatabase {
   private db: Database;
 
@@ -31,9 +17,6 @@ export class BombPartyDatabase {
     this.initializeTables();
   }
 
-  /**
-   * Initialise les tables Bomb Party
-   */
   private initializeTables(): void {
     this.db.serialize(() => {
       this.db.run(`
@@ -73,9 +56,6 @@ export class BombPartyDatabase {
 
   }
 
-  /**
-   * Crée une nouvelle entrée de partie
-   */
   async createMatch(roomId: string): Promise<DBResult<number>> {
     return new Promise((resolve) => {
       const query = `
@@ -94,9 +74,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Met à jour le début d'une partie
-   */
   async startMatch(matchId: number): Promise<DBResult<void>> {
     return new Promise((resolve) => {
       const query = `
@@ -116,9 +93,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Termine une partie avec les résultats
-   */
   async endMatch(
     matchId: number, 
     winnerId: string | null, 
@@ -148,9 +122,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Ajoute un participant à une partie
-   */
   async addParticipant(
     matchId: number,
     playerId: string,
@@ -173,9 +144,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Met à jour les statistiques d'un participant
-   */
   async updateParticipantStats(
     matchId: number,
     playerId: string,
@@ -217,9 +185,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Récupère l'historique des parties d'un joueur
-   */
   async getPlayerHistory(playerId: string, limit: number = 10): Promise<DBResult<any[]>> {
     return new Promise((resolve) => {
       const query = `
@@ -255,9 +220,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Récupère les statistiques globales d'un joueur
-   */
   async getPlayerStats(playerId: string): Promise<DBResult<{
     totalGames: number;
     totalWins: number;
@@ -310,9 +272,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Récupère les détails d'une partie
-   */
   async getMatchDetails(matchId: number): Promise<DBResult<{
     match: any;
     participants: any[];
@@ -350,9 +309,6 @@ export class BombPartyDatabase {
     });
   }
 
-  /**
-   * Nettoie les anciennes parties (pour la maintenance)
-   */
   async cleanupOldMatches(daysOld: number = 30): Promise<DBResult<number>> {
     return new Promise((resolve) => {
       const query = `

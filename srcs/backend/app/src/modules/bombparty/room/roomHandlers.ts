@@ -1,4 +1,5 @@
-import { BombPartyEngine } from '../GameEngine';
+import { BombPartyEngine } from '../GameEngine.ts';
+import { v4 as uuidv4 } from 'uuid';
 import type { 
   Room, 
   PlayerConnection, 
@@ -10,7 +11,7 @@ import type {
   StartGameResult,
   GameInputResult,
   ActivateBonusResult
-} from './roomTypes';
+} from './roomTypes.ts';
 import { 
   broadcastToRoom, 
   getPlayersList, 
@@ -18,7 +19,7 @@ import {
   validateRoomCreation, 
   validateGameStart,
   cleanupEmptyRoom
-} from './roomUtils';
+} from './roomUtils.ts';
 
 export function handleCreateRoom(
   creatorId: string,
@@ -36,7 +37,7 @@ export function handleCreateRoom(
     return { success: false, error: validation.error };
   }
 
-  const roomId = require('uuid').v4();
+  const roomId = uuidv4();
   const room: Room = {
     id: roomId,
     name: roomName,
@@ -84,15 +85,28 @@ export function handleJoinRoom(
 
   const playersList = getPlayersList(room!);
 
+  // Notifier le nouveau joueur qu'il a rejoint
   broadcastToRoom(room, {
     event: 'bp:lobby:joined',
     payload: {
       roomId,
       playerId,
       players: playersList,
-      maxPlayers: room!.maxPlayers
+      maxPlayers: room!.maxPlayers,
+      isHost: false
     }
   }, [playerId]);
+
+  broadcastToRoom(room, {
+    event: 'bp:lobby:player_joined',
+    payload: {
+      roomId,
+      playerId,
+      playerName: player!.name,
+      players: playersList,
+      maxPlayers: room!.maxPlayers
+    }
+  }, []);
 
   return { success: true, players: playersList, maxPlayers: room!.maxPlayers };
 }
@@ -108,15 +122,15 @@ export function handleLeaveRoom(
   const room = rooms.get(roomId);
 
   if (!player) {
-    return { success: false, error: 'Joueur non trouvé' };
+    return { success: false, error: 'Player not found' };
   }
 
   if (!room) {
-    return { success: false, error: 'Salle non trouvée' };
+    return { success: false, error: 'Room not found' };
   }
 
   if (player.roomId !== roomId) {
-    return { success: false, error: 'Pas dans cette salle' };
+    return { success: false, error: 'Not in this room' };
   }
 
   room.players.delete(playerId);
@@ -146,9 +160,12 @@ export function handleStartGame(
   rooms: Map<string, Room>,
   roomEngines: Map<string, BombPartyEngine>
 ): StartGameResult {
+  console.log('[BombParty DEBUG] ========== handleStartGame() CALLED ==========');
+  console.log('[BombParty DEBUG] roomId:', roomId, 'playerId:', playerId);
+  
   const room = rooms.get(roomId);
   if (!room) {
-    return { success: false, error: 'Salle non trouvée' };
+    return { success: false, error: 'Room not found' };
   }
 
   const validation = validateGameStart(room, roomEngines.has(roomId));
@@ -164,24 +181,20 @@ export function handleStartGame(
   
   room.startedAt = Date.now();
 
-  broadcastToRoom(room, {
-    event: 'bp:game:state',
-    payload: {
-      roomId,
-      gameState: engine.getState()
-    }
-  });
+  // Don't broadcast incomplete state here - wait for startTurn() to initialize everything
+  // The first complete state will be sent after startTurn() completes
 
   setTimeout(() => {
     const gameEngine = roomEngines.get(roomId);
     if (gameEngine) {
       gameEngine.startCountdown();
-      broadcastGameState(roomId, roomEngines, rooms);
+      // Don't broadcast here - state is not ready yet
       
       setTimeout(() => {
         if (roomEngines.has(roomId)) {
           gameEngine.startTurn();
           broadcastTurnStarted(roomId, roomEngines, rooms);
+          // First broadcast with complete state happens here
           broadcastGameState(roomId, roomEngines, rooms);
         }
       }, 3000);
@@ -201,12 +214,12 @@ export function handleGameInput(
 ): GameInputResult {
   const engine = roomEngines.get(roomId);
   if (!engine) {
-    return { success: false, error: 'Partie non trouvée' };
+    return { success: false, error: 'Game not found' };
   }
 
   const currentPlayer = engine.getCurrentPlayer();
   if (!currentPlayer || currentPlayer.id !== playerId) {
-    return { success: false, error: 'Pas votre tour' };
+    return { success: false, error: 'Not your turn' };
   }
 
   const result = engine.submitWord(word, msTaken);
@@ -235,7 +248,7 @@ export function handleActivateBonus(
 ): ActivateBonusResult {
   const engine = roomEngines.get(roomId);
   if (!engine) {
-    return { success: false, error: 'Partie non trouvée' };
+    return { success: false, error: 'Game not found' };
   }
 
   const result = engine.activateBonus(playerId, bonusKey);
@@ -344,9 +357,14 @@ export function broadcastGameState(
   const room = rooms.get(roomId);
   if (!engine || !room) return;
 
-  const event = engine.getGameStateSyncEvent();
+  const gameState = engine.getState();
+  console.log(`[BombParty DEBUG] broadcastGameState -> currentTrigram=${gameState.currentTrigram}, currentPlayerIndex=${gameState.currentPlayerIndex}`);
+  
   broadcastToRoom(room, {
-    event: 'game_state',
-    payload: event
+    event: 'bp:game:state',
+    payload: {
+      roomId,
+      gameState: gameState
+    }
   });
 }

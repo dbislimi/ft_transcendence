@@ -1,5 +1,5 @@
 import type { GameState, BonusKey } from '../types';
-import { FAST_TURN_DURATION } from './engineState';
+import { FAST_TURN_DURATION } from './engineState.ts';
 
 export function getTurnDurationForCurrentPlayer(state: GameState): number {
   const base = state.baseTurnSeconds * 1000;

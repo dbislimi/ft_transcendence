@@ -19,67 +19,44 @@ interface PlayersScreenProps {
 
 export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onStart, onLeave }: PlayersScreenProps) {
   const { t } = useTranslation();
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(0);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
 
   const canStart = players.length >= 2 && isHost;
-  const shouldAutoStart = players.length >= 2 && !isCountingDown;
-
 
   useEffect(() => {
-    
-    if (players.length < maxPlayers && hasStartedRef.current) {
-      hasStartedRef.current = false;
-      setIsCountingDown(false);
-      setCountdown(0);
+    return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+    };
+  }, []);
+
+  const handleStart = () => {
+    console.log('[PlayersScreen] handleStart called', { canStart, isCountingDown, players: players.length, isHost, hasStarted: hasStartedRef.current });
+    if (!canStart || isCountingDown || hasStartedRef.current) {
+      console.log('[PlayersScreen] Start blocked:', { canStart, isCountingDown, hasStarted: hasStartedRef.current });
       return;
     }
     
-    if (players.length === maxPlayers && !hasStartedRef.current) {
-      hasStartedRef.current = true;
-      setIsCountingDown(true);
-      setCountdown(3);
-      
-      intervalRef.current = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
-            setIsCountingDown(false);
-            onStart();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    
-    return () => {
-      if (intervalRef.current && players.length < 2) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [players.length, onStart]);
-
-  const handleStart = () => {
-    if (!canStart) return;
-    
+    hasStartedRef.current = true;
+    console.log('[PlayersScreen] Starting countdown');
     setIsCountingDown(true);
     setCountdown(3);
-    const interval = setInterval(() => {
+    
+    intervalRef.current = window.setInterval(() => {
       setCountdown(prev => {
+        console.log('[PlayersScreen] Countdown:', prev);
         if (prev <= 1) {
-          clearInterval(interval);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           setIsCountingDown(false);
+          console.log('[PlayersScreen] Calling onStart()');
           onStart();
           return 0;
         }
@@ -144,17 +121,19 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
             </div>
           )}
 
-          {/* Compte à rebours */}
-          {countdown > 0 && (
-            <div className="mb-6 text-center">
-              <div className="text-6xl font-bold text-cyan-400 mb-2">{countdown}</div>
-              <div className="text-slate-300">{t("bombParty.players.startingIn")}</div>
-            </div>
-          )}
-
           {/* Boutons d'action */}
           <div className="flex gap-4">
-            {/* Le décompte automatique se charge de démarrer la partie quand il y a assez de joueurs */}
+            {/* Bouton Start pour l'hôte */}
+            {isHost && (
+              <button
+                onClick={handleStart}
+                disabled={!canStart || isCountingDown}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold rounded-lg hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCountingDown ? `${countdown}...` : t("bombParty.players.start")}
+              </button>
+            )}
+            
             <button
               onClick={onLeave}
               className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all duration-200"

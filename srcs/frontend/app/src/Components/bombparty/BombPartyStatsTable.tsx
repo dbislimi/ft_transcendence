@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MatchHistory, TrigramStats, RankingEntry, StatsTableType } from './BombPartyStatsTypes';
 
 interface BombPartyStatsTableProps {
@@ -8,6 +9,7 @@ interface BombPartyStatsTableProps {
 }
 
 export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTableProps) {
+  const { t } = useTranslation();
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -37,18 +39,18 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
     return (
       <div className="bg-slate-800 rounded-lg overflow-hidden">
         <div className="p-6 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400">📜 Historique des parties</h3>
+          <h3 className="text-lg font-semibold text-cyan-400">📜 {t('bombParty.stats.history.title')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-700">
               <tr>
-                <th className="px-4 py-3 text-left text-slate-300">Date</th>
-                <th className="px-4 py-3 text-left text-slate-300">Position</th>
-                <th className="px-4 py-3 text-left text-slate-300">Mots</th>
-                <th className="px-4 py-3 text-left text-slate-300">Vies restantes</th>
-                <th className="px-4 py-3 text-left text-slate-300">Durée</th>
-                <th className="px-4 py-3 text-left text-slate-300">Résultat</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.date')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.position')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.words')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.livesRemaining')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.duration')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.result')}</th>
               </tr>
             </thead>
             <tbody>
@@ -79,7 +81,7 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
                         ? 'bg-green-600 text-white' 
                         : 'bg-red-600 text-white'
                     }`}>
-                      {match.isWin ? 'Victoire' : 'Défaite'}
+                      {match.isWin ? t('bombParty.stats.history.victory') : t('bombParty.stats.history.defeat')}
                     </span>
                   </td>
                 </tr>
@@ -96,17 +98,17 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
     return (
       <div className="bg-slate-800 rounded-lg overflow-hidden">
         <div className="p-6 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400">🔤 Statistiques par trigramme</h3>
+          <h3 className="text-lg font-semibold text-cyan-400">🔤 {t('bombParty.stats.trigrams.title')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-700">
               <tr>
-                <th className="px-4 py-3 text-left text-slate-300">Trigramme</th>
-                <th className="px-4 py-3 text-left text-slate-300">Utilisé</th>
-                <th className="px-4 py-3 text-left text-slate-300">Taux de réussite</th>
-                <th className="px-4 py-3 text-left text-slate-300">Temps moyen</th>
-                <th className="px-4 py-3 text-left text-slate-300">Dernière utilisation</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.trigram')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.attempts')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.successRate')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.averageTime')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.date')}</th>
               </tr>
             </thead>
             <tbody>
@@ -147,18 +149,18 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
     return (
       <div className="bg-slate-800 rounded-lg overflow-hidden">
         <div className="p-6 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400">🏆 Classement global</h3>
+          <h3 className="text-lg font-semibold text-cyan-400">🏆 {t('bombParty.stats.ranking.title')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-700">
               <tr>
-                <th className="px-4 py-3 text-left text-slate-300">Rang</th>
-                <th className="px-4 py-3 text-left text-slate-300">Joueur</th>
-                <th className="px-4 py-3 text-left text-slate-300">Victoires</th>
-                <th className="px-4 py-3 text-left text-slate-300">Parties</th>
-                <th className="px-4 py-3 text-left text-slate-300">Taux de victoire</th>
-                <th className="px-4 py-3 text-left text-slate-300">Meilleur streak</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.rank')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.player')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.wins')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.games')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.winRate')}</th>
+                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.ranking.bestStreak')}</th>
               </tr>
             </thead>
             <tbody>
@@ -184,7 +186,7 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
                     <span className="text-slate-300">
                       {entry.userName}
                       {entry.userId.toString() === user?.id && (
-                        <span className="ml-2 text-cyan-400 text-xs">(Vous)</span>
+                        <span className="ml-2 text-cyan-400 text-xs">{t('bombParty.stats.ranking.you')}</span>
                       )}
                     </span>
                   </td>
