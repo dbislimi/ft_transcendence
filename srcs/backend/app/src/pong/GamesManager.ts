@@ -35,6 +35,13 @@ export default class GamesManager {
 			},
 			startCountdown: (game, clients) =>
 				this.startWithCountdown(game, clients),
+			cancelCountdown: (game) => {
+				const entry = this.countdowns.get(game);
+				if (entry) {
+					entry.cancelled = true;
+					this.countdowns.delete(game);
+				}
+			},
 			setRoom: (client, game) => this.setRoom(client, game),
 		});
 		this.joinTournament(client, id, passwd);
@@ -63,7 +70,7 @@ export default class GamesManager {
 		const { signal } = controller;
 
 		ws.on("close", () => controller.abort());
-		const trainingClient: Client = { name: "trainer", socket: ws };
+		const trainingClient: Client = { id: -1, name: "trainer", socket: ws };
 		const game = new Game({
 			p1: trainingClient,
 			botDiff: bot,
@@ -91,20 +98,20 @@ export default class GamesManager {
 		console.log("debug");
 		return { playerId: "train" };
 	}
-	startOffline(
-		client: Client,
-		diff: difficulty | null	): boolean {
+	startOffline(client: Client, diff: difficulty | null): boolean {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
 			onEnd: (c: Client, didWin: boolean, scores: number[]) => {
-				this.removeRoom(client);
+				this.removeRoom(c);
+				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
 							body: { is: "offline", didWin, scores },
 						})
 					);
+				}
 			},
 		});
 		this.setRoom(client, game);
@@ -117,12 +124,14 @@ export default class GamesManager {
 			this.waitingClient = null;
 			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				this.removeRoom(c);
-				c.socket?.send(
-					JSON.stringify({
-						event: "result",
-						body: { is: "quick", didWin, scores },
-					})
-				);
+				if (!c.quit) {
+					c.socket?.send(
+						JSON.stringify({
+							event: "result",
+							body: { is: "quick", didWin, scores },
+						})
+					);
+				}
 			};
 			const game = new Game({
 				p1: opponent,
@@ -202,6 +211,7 @@ export default class GamesManager {
 				this.removeRoom(client);
 			}
 		}
+		client.quit = false;
 		this.rooms.set(client, game);
 	}
 	getRoom(client: Client) {
@@ -219,9 +229,11 @@ export default class GamesManager {
 		}
 	}
 	stop_offline(client: Client) {
+		client.quit = true;
 		this.getRoom(client)?.disconnectPlayer(client);
 	}
 	stop_online(client: Client) {
+		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
 			if (!tournament) return;
@@ -230,5 +242,21 @@ export default class GamesManager {
 			this.removeFromQueue(client);
 			this.getRoom(client)?.disconnectPlayer(client);
 		}
+	}
+
+	playerReady(client: Client) {
+		if (!client.tournament) return;
+		const t = this.tournaments[client.tournament.tournamentId];
+		if (!t) return;
+		if (this.getRoom(client)) return;
+		t.playerReady(client);
+	}
+
+	handleRejoin(client: Client) {
+		if (!client.tournament) return;
+		const t = this.tournaments[client.tournament.tournamentId];
+		if (!t) return;
+		client.quit = false;
+		t.reconnect(client);
 	}
 }

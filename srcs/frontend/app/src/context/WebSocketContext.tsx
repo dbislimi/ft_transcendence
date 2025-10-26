@@ -24,8 +24,8 @@ interface WebSocketContextType {
 		text: string;
 		to?: number | null;
 	}) => void;
-	addPongListener: (fn: (ev: MessageEvent) => void) => void;
-	removePongListener: (fn: (ev: MessageEvent) => void) => void;
+	addPongListener: (fn: (data: any) => void) => void;
+	removePongListener: (fn: (data: any) => void) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -37,7 +37,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const chatWsRef = useRef<WebSocket | null>(null);
 	const pongWsRef = useRef<WebSocket | null>(null);
 	const friendsWsRef = useRef<WebSocket | null>(null);
-	const pongListenersRef = useRef(new Set<(ev: MessageEvent) => void>());
+	const pongListenersRef = useRef(
+		new Set<(data: any) => void>()
+	);
 
 	const { isAuthenticated, token } = useUser();
 
@@ -82,10 +84,19 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			setMessages((prev) => [...prev, data]);
 		};
 
-		// TODO: notification pour rejoindre un tournoi que tas quitte
 		pongWsRef.current.onmessage = (msg) => {
+			let parsed: any = null;
+			try {
+				parsed = JSON.parse(msg.data);
+			} catch (e) {
+				return;
+			}
 			for (const fn of pongListenersRef.current) {
-				fn(msg as MessageEvent);
+				try {
+					fn(parsed);
+				} catch (e) {
+					console.error("pong listener error:", e);
+				}
 			}
 		};
 
@@ -112,11 +123,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
-	const addPongListener = (fn: (ev: MessageEvent) => void) => {
+	const addPongListener = (fn: (data: any) => void) => {
 		pongListenersRef.current.add(fn);
 	};
 
-	const removePongListener = (fn: (ev: MessageEvent) => void) => {
+	const removePongListener = (fn: (data: any) => void) => {
 		pongListenersRef.current.delete(fn);
 	};
 

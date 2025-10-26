@@ -17,10 +17,15 @@ interface Tournament {
 	allowReconnect: boolean;
 }
 export interface Client {
+	id: number;
 	name: string;
 	socket?: WebSocket;
 	tournament?: Tournament;
 	inGameId?: 0 | 1;
+	winnerTimer?: ReturnType<typeof setTimeout>;
+	rejoinTimer?: ReturnType<typeof setTimeout>;
+
+	removalTimer?: ReturnType<typeof setTimeout>;
 }
 
 const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
@@ -48,10 +53,15 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 				let client = fastify.clients.get(decoded.id);
 				if (client) {
 					console.log("Changement de socket");
+					if (client.removalTimer) {
+						clearTimeout(client.removalTimer);
+						client.removalTimer = undefined;
+					}
 					client.socket = socket;
+					client.id = decoded.id;
 				} else {
 					console.log("Nouvelle connexion");
-					client = { name: decoded.name, socket };
+					client = { id: decoded.id, name: decoded.name, socket };
 					fastify.clients.set(decoded.id, client);
 				}
 				return client;

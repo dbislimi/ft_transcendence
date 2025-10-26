@@ -42,6 +42,7 @@ export default class Tournament {
 	leafs: Node[] = [];
 	root: Node | null = null;
 	rooms: WeakMap<Client, Game>;
+	private clientNode: WeakMap<Client, Node> = new WeakMap();
 	setRoom: (client: Client, game: Game) => void;
 	password: string | undefined;
 	nodeId: number = 0;
@@ -52,6 +53,8 @@ export default class Tournament {
 		clients: (Client | undefined)[]
 	) => void;
 
+	private cancelCountdown: (game: Game) => void;
+
 	constructor({
 		rooms,
 		id,
@@ -59,6 +62,7 @@ export default class Tournament {
 		password,
 		onEnd,
 		startCountdown,
+		cancelCountdown,
 		setRoom,
 	}: {
 		rooms: WeakMap<Client, Game>;
@@ -67,6 +71,7 @@ export default class Tournament {
 		password: string;
 		onEnd: () => void;
 		startCountdown: (game: Game, clients: (Client | undefined)[]) => void;
+		cancelCountdown: (game: Game) => void;
 		setRoom: (client: Client, game: Game) => void;
 	}) {
 		this.rooms = rooms;
@@ -75,6 +80,7 @@ export default class Tournament {
 		this.capacity = capacity;
 		this.onEnd = onEnd;
 		this.startCountdown = startCountdown;
+		this.cancelCountdown = cancelCountdown;
 		this.setRoom = setRoom;
 	}
 
@@ -98,7 +104,11 @@ export default class Tournament {
 		console.log("building nodes");
 		let depth = Math.ceil(Math.log2(this.players.length));
 		this.initialDepth = depth;
-		let nodes: Node[] = this.players.map((p) => new Node({ p: p }));
+		let nodes: Node[] = this.players.map((p, idx) => {
+			const n = new Node({ p: p });
+			this.clientNode.set(p, n);
+			return n;
+		});
 		this.leafs = nodes;
 		while (nodes.length > 1) {
 			let nextRound: Node[] = [];
@@ -130,6 +140,7 @@ export default class Tournament {
 			`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`
 		);
 		if (!player) return;
+
 		if (!parent) {
 			console.log("tournament winner");
 			player.socket?.send(JSON.stringify({ event: "tournament_win" }));
@@ -149,20 +160,42 @@ export default class Tournament {
 				onEnd: (client, didWin) => {
 					console.log("game onEnd");
 					this.rooms.delete(client);
-					client.socket?.send(
-						JSON.stringify({
-							event: "result",
-							body: { is: "tournament", didWin },
-						})
-					);
+					if (!client.quit) {
+						client.socket?.send(
+							JSON.stringify({
+								event: "result",
+								body: { is: "tournament", didWin },
+							})
+						);
+					}
 					if (didWin === true) {
 						parent.winner = client;
-						this.joinMatch(parent!);
+						if (client.winnerTimer)
+							clearTimeout(client.winnerTimer);
+						client.winnerTimer = setTimeout(() => {
+							if (parent.winner === client) {
+								client.winnerTimer = undefined;
+								this.joinMatch(parent!);
+							}
+						}, 15000);
 					} else parent.loser = client;
 				},
 			});
+			this.clientNode.set(parent.waiting!, parent);
+			this.clientNode.set(player, parent);
 			this.setRoom(player, parent.game);
 			this.setRoom(parent.waiting, parent.game);
+
+			const body = {
+				depth: parent.depth,
+				initialDepth: this.initialDepth,
+			};
+			for (const c of parent.game.clients) {
+				c?.socket?.send(
+					JSON.stringify({ event: "tournament_round", body })
+				);
+			}
+
 			this.startCountdown(parent.game, parent.game.clients);
 			parent.waiting = undefined;
 		} else {
@@ -181,26 +214,44 @@ export default class Tournament {
 	}
 
 	startTournament() {
-		this.buildBracket();
 		this.started = true;
+		this.buildBracket();
 		this.init();
 	}
 
 	reconnect(client: Client) {
 		const room: Game | undefined = this.rooms.get(client);
 		if (!room) return;
-		if (room.clients[0].socket && room.clients[1]?.socket) room.start();
+		if (room.clients[0].socket && room.clients[1]?.socket) {
+			room.send(JSON.stringify({event: "found"}));
+			room.start();
+		}
 	}
 	disconnect(client: Client) {
 		if (this.started === false) this.quitQueue(client);
 		else {
 			const game = this.rooms.get(client);
 			if (!game) return;
+
+			this.cancelCountdown(game);
 			if (client.tournament?.allowReconnect) {
 				client.tournament.allowReconnect = false;
+				client.socket?.send(
+					JSON.stringify({
+						event: "tournament_rejoin_prompt",
+						body: { tournamentId: this.id, timeout: 10 },
+					})
+				);
 				game.pause();
 				const opp = game.getOpp(client);
-				opp?.socket?.send(JSON.stringify({ event: "waiting" }));
+				opp?.socket?.send(JSON.stringify({ event: "searching" }));
+
+				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+				client.rejoinTimer = setTimeout(() => {
+					client.rejoinTimer = undefined;
+					game.disconnectPlayer(client);
+					client.tournament = undefined;
+				}, 10000);
 			} else {
 				game.disconnectPlayer(client);
 				client.tournament = undefined;
@@ -237,5 +288,11 @@ export default class Tournament {
 	}
 	isEmpty() {
 		return this.players.length === 0;
+	}
+
+	playerReady(client: Client) {
+		if (!this.root) return;
+		const node = this.clientNode.get(client);
+		if (node && node.parent?.waiting !== client) this.joinMatch(node);
 	}
 }

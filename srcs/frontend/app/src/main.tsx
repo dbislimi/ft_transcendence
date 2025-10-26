@@ -14,14 +14,16 @@ const router = createBrowserRouter([
 	{
 		element: <Layout />,
 		children: [
-			{ element: <ProtectedRoute/>, children: [
-				{ path: "/pong", element: <pages.Pong /> },
-				{ path: "/bomb-party", element: <pages.BombParty /> },
-				{ path: "/settings", element: <pages.Settings /> },
-				{ path: "/profile", element: <pages.Profile /> },
-				{ path: "/friends", element: <pages.Friends /> },
-				
-			] },
+			{
+				element: <ProtectedRoute />,
+				children: [
+					{ path: "/pong", element: <pages.Pong /> },
+					{ path: "/bomb-party", element: <pages.BombParty /> },
+					{ path: "/settings", element: <pages.Settings /> },
+					{ path: "/profile", element: <pages.Profile /> },
+					{ path: "/friends", element: <pages.Friends /> },
+				],
+			},
 			{ path: "/", element: <pages.Home /> },
 			{ path: "/Connection", element: <pages.Connection /> },
 			{ path: "/Confirmation", element: <pages.Confirmation /> },
@@ -37,12 +39,12 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
 	// <StrictMode>
-		<BackgroundProvider>
-			<UserProvider>
-				<WebSocketProvider>
-					<RouterProvider router={router} />
-				</WebSocketProvider>
-			</UserProvider>
-		</BackgroundProvider>
+	<BackgroundProvider>
+		<UserProvider>
+			<WebSocketProvider>
+				<RouterProvider router={router} />
+			</WebSocketProvider>
+		</UserProvider>
+	</BackgroundProvider>
 	// </StrictMode>
 );

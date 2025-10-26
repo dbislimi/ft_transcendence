@@ -10,10 +10,17 @@ interface Tournament {
 	allowReconnect: boolean;
 }
 export interface Client {
+	id: number;
 	name: string;
 	socket?: WebSocket;
 	tournament?: Tournament;
 	inGameId?: 0 | 1;
+
+	quit?: boolean;
+	winnerTimer?: ReturnType<typeof setTimeout>;
+
+	rejoinTimer?: ReturnType<typeof setTimeout>;
+	removalTimer?: ReturnType<typeof setTimeout>;
 }
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
@@ -26,6 +33,21 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		console.log("pong WS connected");
 		const client = fastify.getClient(req, socket);
 		if (!client) return socket.close();
+
+		if (client.rejoinTimer) {
+			console.log(
+				`Client ${client.name} reconnected while tournament rejoin timer active`
+			);
+			socket.send(
+				JSON.stringify({
+					event: "tournament_rejoin_prompt",
+					body: {
+						tournamentId: client.tournament?.tournamentId,
+						timeout: 10,
+					},
+				})
+			);
+		}
 		console.log("client:", client.name);
 		let local: boolean = false;
 		socket.on("message", (message) => {
@@ -36,9 +58,20 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				console.log("stop_offline called");
 				games.stop_offline(client);
 				local = false;
+			} else if (data.event === "rejoin_tournament") {
+				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+				console.log("rejoin_tournament from", client.name);
+				games.handleRejoin(client);
 			} else if (data.event === "stop_online") {
 				console.log("stop_online called");
 				games.stop_online(client);
+			} else if (data.event === "ready") {
+				if (client.winnerTimer) clearTimeout(client.winnerTimer);
+				console.log(
+					"client ready for next tournament round",
+					client.name
+				);
+				games.playerReady(client);
 			} else if (data.event === "start" && !games.getRoom(client)) {
 				// console.log(data.body.action);
 				switch (data.body.action) {
@@ -102,6 +135,23 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			console.log("close ", client.name);
 			client.socket = undefined;
 			games.stop_online(client);
+			if (client.tournament && client.tournament.allowReconnect) {
+				if (client.removalTimer) clearTimeout(client.removalTimer);
+				client.removalTimer = setTimeout(() => {
+					const c = fastify.clients.get(client.id);
+					if (c && !c.socket) {
+						console.log(
+							`Removing client ${c.name} (id=${client.id}) after reconnect timeout`
+						);
+						fastify.clients.delete(client.id);
+					}
+				}, 12000);
+			} else {
+				console.log(
+					`Removing client ${client.name} (id=${client.id}) on disconnect`
+				);
+				fastify.clients.delete(client.id);
+			}
 		});
 	});
 };

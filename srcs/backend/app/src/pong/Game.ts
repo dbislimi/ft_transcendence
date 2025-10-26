@@ -76,7 +76,7 @@ export default class Game {
 		console.log("disconnected");
 		this.stop(((id + 1) % 2) as 0 | 1);
 	}
-	private send(
+	send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {

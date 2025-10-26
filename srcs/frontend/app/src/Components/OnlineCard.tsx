@@ -37,8 +37,8 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 
 	useEffect(() => {
 		if (mode !== "Tournament" || variant !== "Join") return;
-		const handler = (e: MessageEvent) => {
-			const d = JSON.parse(e.data);
+		const handler = (d: any) => {
+			if (!d) return;
 			if (d.event === "tournaments") setTournaments(d.body);
 		};
 
