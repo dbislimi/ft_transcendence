@@ -215,8 +215,8 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                     <div className="space-y-4">
                       <input
                         type="range"
-                        min="0.5"
-                        max="2.0"
+                        min="0.2"
+                        max="3.0"
                         step="0.1"
                         value={settings.display.contrast}
                         onChange={(e) => handleContrastChange(parseFloat(e.target.value))}

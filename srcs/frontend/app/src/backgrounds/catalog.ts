@@ -33,9 +33,9 @@ function generateNameFromFilename(filename: string): string {
     'the_last_of_us': 'The Last of Us',
     'windows95': 'Windows 95',
     'bit_cloud': 'Bit Cloud',
-    'theft': 'Theft',
+    'Gta 5': 'Gta 5',
     'kitti': 'Kitti',
-    '1': 'Gradient 1',
+    '1': 'Interstellar',
     'pexels-padrinan-19670': 'Paysage Naturel',
     'pexels-umkreisel-app-956999': 'Ciel Étoilé'
   };
@@ -60,9 +60,9 @@ function generateDescription(name: string, filename: string): string {
     'The Last of Us': 'Post-apocalyptique',
     'Windows 95': 'Nostalgie',
     'Bit Cloud': 'Nuages pixelisés',
-    'Theft': 'Ambiance urbaine nocturne',
+    'Gta 5': 'Ambiance urbaine nocturne',
     'Kitti': 'Chaton',
-    'Gradient 1': 'Dégradé coloré moderne',
+    'Interstellar': 'Voyage à travers les étoiles', 
     'Paysage Naturel': 'Vue panoramique de la nature',
     'Ciel Étoilé': 'Nuit étoilée'
   };
@@ -105,7 +105,7 @@ function buildCatalog(): BackgroundItem[] {
     });
   }
 
-  // on l'adore ce Dylan
+  // Dylan Sah c'est pour toi
   const theme42Path = Object.keys(backgroundFiles).find(path => path.includes('42background'));
   if (theme42Path) {
     const theme42Url = backgroundFiles[theme42Path] as string;
@@ -125,7 +125,7 @@ function buildCatalog(): BackgroundItem[] {
 
 export const backgroundCatalog: BackgroundItem[] = buildCatalog();
 
-// Convertir les backgrounds Fortnite en BackgroundItem
+// convert les fortniteback en objets BackgroundItem
 const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => ({
   id: fb.id,
   name: fb.name,
@@ -135,15 +135,12 @@ const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => 
   tags: fb.tags
 }));
 
-// Catalogue complet avec tous les backgrounds
+// catalogue complet
 export const allBackgrounds: BackgroundItem[] = [...backgroundCatalog, ...fortniteBackgroundItems];
-
-// Trouve un background par ID (cherche dans tous les backgrounds)
 export function getBackgroundById(id: string): BackgroundItem | undefined {
   return allBackgrounds.find(bg => bg.id === id);
 }
 
-// Obtient l'URL d'un background par ID
 export function getBackgroundUrl(id: string): string | null {
   const bg = getBackgroundById(id);
   return bg?.url || null;

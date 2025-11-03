@@ -12,7 +12,6 @@ services:
       - "3001:3001"
     restart: unless-stopped
   
-  # Interface graphique pour la base de données SQLite
   adminer:
     image: adminer:latest
     container_name: db_admin

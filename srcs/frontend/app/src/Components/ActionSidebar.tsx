@@ -1,0 +1,1 @@
+// TODO Side bar navigator with icons and labels, highlight active tab, hide certain tabs if not authenticated

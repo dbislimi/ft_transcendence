@@ -144,26 +144,26 @@ export function getFortniteBackgroundsByCategory(category: FortniteBackgroundIte
   return fortniteBackgrounds.filter(bg => bg.category === category);
 }
 
-// Log pour debug
-export function logFortniteBackgrounds(): void {
-  console.log('[Fortnite Backgrounds] Loaded:', {
-    total: fortniteBackgrounds.length,
-    categories: {
-      halloween: getFortniteBackgroundsByCategory('halloween').length,
-      noel: getFortniteBackgroundsByCategory('noel').length,
-      season: getFortniteBackgroundsByCategory('season').length,
-      chapter: getFortniteBackgroundsByCategory('chapter').length,
-      event: getFortniteBackgroundsByCategory('event').length,
-      location: getFortniteBackgroundsByCategory('location').length
-    },
-    items: fortniteBackgrounds.map(bg => ({
-      id: bg.id,
-      name: bg.name,
-      category: bg.category
-    }))
-  });
-}
+// // Log pour debug
+// export function logFortniteBackgrounds(): void {
+//   console.log('[Fortnite Backgrounds] Loaded:', {
+//     total: fortniteBackgrounds.length,
+//     categories: {
+//       halloween: getFortniteBackgroundsByCategory('halloween').length,
+//       noel: getFortniteBackgroundsByCategory('noel').length,
+//       season: getFortniteBackgroundsByCategory('season').length,
+//       chapter: getFortniteBackgroundsByCategory('chapter').length,
+//       event: getFortniteBackgroundsByCategory('event').length,
+//       location: getFortniteBackgroundsByCategory('location').length
+//     },
+//     items: fortniteBackgrounds.map(bg => ({
+//       id: bg.id,
+//       name: bg.name,
+//       category: bg.category
+//     }))
+//   });
+// }
 
-if (import.meta.env.DEV) {
-  logFortniteBackgrounds();
-}
+// if (import.meta.env.DEV) {
+//   logFortniteBackgrounds();
+// }

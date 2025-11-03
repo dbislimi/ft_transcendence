@@ -61,10 +61,8 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                      match.position === 1 
-                        ? 'bg-green-600 text-white' 
-                        : match.position <= 3 
-                        ? 'bg-yellow-600 text-white'
+                      match.position === 1 ? 'bg-green-600 text-white' 
+                        : match.position <= 3 ? 'bg-yellow-600 text-white'
                         : 'bg-slate-600 text-slate-300'
                     }`}>
                       #{match.position}

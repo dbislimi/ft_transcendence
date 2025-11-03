@@ -168,7 +168,7 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
     'batman': 'dark-blue',
     'dark-souls': 'dark-halloween',
     'the-last-of-us': 'dark-halloween',
-    'theft': 'dark-blue',
+    'Gta 5': 'dark-blue',
     
     // Fonds clairs
     'forest': 'light-nature',
