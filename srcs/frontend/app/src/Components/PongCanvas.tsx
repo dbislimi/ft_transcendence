@@ -1,22 +1,15 @@
-import { useEffect, useRef } from "react";
-import { memo } from "react";
-import type { Players, Ball, Bonus } from "../pages/Pong";
-
-interface GameRefShape {
-	ball: Ball;
-	players: Players;
-	bonus: Bonus;
-}
+import { memo, useEffect, useRef } from "react";
+import type { RefObject } from "react";
+import type { GameState } from "../types/GameState";
 
 interface Props {
-	gameRef: React.RefObject<GameRefShape>;
+	gameRef: RefObject<GameState>;
 	scale: number;
 }
 
 function PongCanvas({ gameRef, scale }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
-	console.log("pong rendered");
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const fieldHeight = 100 * scale;
@@ -29,13 +22,13 @@ function PongCanvas({ gameRef, scale }: Props) {
 		if (!c) return;
 		const loop = () => {
 			if (!gameRef.current) return;
-			const { players, ball, bonus } = gameRef.current;
+			const { players, ball, bonuses } = gameRef.current;
 			const p1Size = players.p1.size * scale;
 			const p2Size = players.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.font = "300px Audiowide";
-			c.fillStyle = "black";
+			c.fillStyle = "white";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(
@@ -48,45 +41,21 @@ function PongCanvas({ gameRef, scale }: Props) {
 				(canvas.width * 3) / 4,
 				canvas.height / 2 + 30
 			);
-			c.fillStyle = "rgba(0,0,0,0.8)";
-			c.fillRect(0, 0, canvas.width, canvas.height);
-			for (const bonuses of bonus.bonuses) {
+			for (const bonus of bonuses.bonuses) {
 				c.beginPath();
 				c.arc(
 					100 * 4,
-					bonuses.y * 4,
-					bonuses.radius * scale,
+					bonus.y * 4,
+					bonus.radius * scale,
 					0,
 					2 * Math.PI,
 					false
 				);
-				
-				// Different colors based on bonus type
-				let color, shadowColor;
-				switch (bonuses.name) {
-					case "Bigger":
-						color = "rgba(0, 255, 0, 1)"; // Vert pour les bonus positifs
-						shadowColor = "rgba(0, 255, 0, 0.8)";
-						break;
-					case "Faster":
-						color = "rgba(0, 150, 255, 1)"; // Bleu pour la vitesse
-						shadowColor = "rgba(0, 150, 255, 0.8)";
-						break;
-					case "Smaller":
-						color = "rgba(255, 100, 100, 1)"; // Red for penalties
-						shadowColor = "rgba(255, 100, 100, 0.8)";
-						break;
-					default:
-						color = "rgba(255, 215, 0, 1)"; // Gold by default
-						shadowColor = "rgba(255, 215, 0, 0.8)";
-				}
-				
-				c.fillStyle = color;
-				c.shadowBlur = 15;
-				c.shadowColor = shadowColor;
+				c.fillStyle = "rgba(119, 45, 237, 1)";
 				c.fill();
-				c.shadowBlur = 0;
 			}
+			c.fillStyle = "rgba(0,0,0,0.8)";
+			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.font = "15px Audiowide";
 			c.fillStyle = "white";
 			c.textAlign = "center";

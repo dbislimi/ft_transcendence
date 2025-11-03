@@ -1,5 +1,10 @@
-import type { ValidationResult } from './GameEngine.js.ts';
-import trigramWordsData from './data/trigram_words.json' with { type: 'json' };
+import type { ValidationResult } from './types.ts';
+import fs from 'fs';
+
+// Load JSON via fs to avoid Node ESM import assertion requirement (import ... assert { type: 'json' })
+const trigramWordsData = JSON.parse(
+  fs.readFileSync(new URL('./data/trigram_words.json', import.meta.url), 'utf8')
+) as Record<string, string[]>;
 
 const trigramMap = trigramWordsData as Record<string, string[]>;
 

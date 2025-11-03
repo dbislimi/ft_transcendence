@@ -1,5 +1,9 @@
+import fs from 'fs';
 
-import trigramWordsData from './data/trigram_words.json' with { type: 'json' };
+// Load JSON via fs to avoid Node ESM import assertion requirement (import ... assert { type: 'json' })
+const trigramWordsData = JSON.parse(
+  fs.readFileSync(new URL('./data/trigram_words.json', import.meta.url), 'utf8')
+) as Record<string, string[]>;
 
 const trigramMap = trigramWordsData as Record<string, string[]>;
 const availableTrigrams = Object.keys(trigramMap);

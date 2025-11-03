@@ -43,7 +43,7 @@ export default function Form({ type }: Props) {
     const info: UserInfos = { name, email, password };
 
     try {
-      const response = await fetch('http://localhost:3000/register', {
+  const response = await fetch('http://localhost:3001/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(info),

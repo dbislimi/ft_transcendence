@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { PlayerProfile } from "../types/playerProfiles";
-import { fetchPlayerProfile } from "../api/player";
 
 export function usePlayerProfile(userId: string | null) {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
@@ -11,19 +10,51 @@ export function usePlayerProfile(userId: string | null) {
         let cancelled = false;
         async function run() {
             if (!userId)
-                return ;
+                return;
             setLoading(true);
             setError(null);
             try {
-                const data = await fetchPlayerProfile(userId);
-                if (!cancelled)
-                        setProfile(data);
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    throw new Error("No authentication token");
+                }
+
+                const response = await fetch(`http://localhost:3001/users/${userId}`, {
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch profile: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!cancelled) {
+                    // Map backend data to PlayerProfile type
+
+                    
+                    const mappedProfile: PlayerProfile = {
+                        id: String(data.id),
+                        username: data.username || data.name || data.display_name || 'Unknown',
+                        avatarUrl: data.avatar || data.avatarUrl || '/avatars/avatar1.png',
+                        createdAt: data.created_at || data.createdAt || new Date().toISOString(),
+                        totalPlayTimeMs: data.totalPlayTimeMs || 0,
+                        stats: {
+                            username: data.username || data.name || 'Unknown',
+                            wins: data.wins || 0,
+                            losses: data.losses || 0
+                        }
+                    };
+                    setProfile(mappedProfile);
+                }
             } catch (e: any) {
                 if (!cancelled)
                     setError(e?.message ?? "Failed to load profile");
             } finally {
                 if (!cancelled)
-                        setLoading(false);
+                    setLoading(false);
             }
         }
         run();
@@ -31,5 +62,6 @@ export function usePlayerProfile(userId: string | null) {
             cancelled = true;
         };
     }, [userId]);
+    
     return { profile, loading, error };
 }

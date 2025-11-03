@@ -20,9 +20,33 @@ db.serialize(() => {
 	db.run(`CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
+		display_name TEXT,
 		email TEXT NOT NULL UNIQUE,
-		password TEXT NOT NULL
+		password TEXT NOT NULL,
+		avatar TEXT,
+		wins INTEGER DEFAULT 0,
+		losses INTEGER DEFAULT 0,
+		online INTEGER DEFAULT 0,
+		twoFAEnabled INTEGER DEFAULT 0
 	);`);
+
+	// Ensure legacy databases get new columns (ALTER TABLE will fail if column exists, so ignore errors)
+	db.run(`ALTER TABLE users ADD COLUMN display_name TEXT;`, (err) => {});
+	db.run(`ALTER TABLE users ADD COLUMN avatar TEXT;`, (err) => {});
+	// add wins/losses columns if missing (legacy DBs)
+	db.run(`ALTER TABLE users ADD COLUMN wins INTEGER DEFAULT 0;`, (err) => {});
+	db.run(`ALTER TABLE users ADD COLUMN losses INTEGER DEFAULT 0;`, (err) => {});
+	db.run(`ALTER TABLE users ADD COLUMN online INTEGER DEFAULT 0;`, (err) => {});
+	db.run(`ALTER TABLE users ADD COLUMN twoFAEnabled INTEGER DEFAULT 0;`, (err) => {});
+
+	// Debug: show current users table columns
+	db.all("PRAGMA table_info('users');", (err, rows) => {
+		if (err) {
+			console.error('Erreur PRAGMA table_info users:', err);
+		} else {
+			console.log('users table columns:', rows.map(r => r.name));
+		}
+	});
 
 	// Tables Bomb Party
 	db.run(`

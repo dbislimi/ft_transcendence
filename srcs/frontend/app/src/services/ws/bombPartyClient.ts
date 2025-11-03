@@ -1,5 +1,6 @@
 import type { BonusKey } from '../../game-bomb-party/core/types';
 import { wsCoordinator } from './WebSocketCoordinator';
+import { devLog } from '../../utils/logger';
 
 type EventHandler = (payload: any) => void;
 
@@ -47,21 +48,65 @@ export class BombPartyClient {
   private connectionId: string = '';
   private isConnecting: boolean = false;
   private reconnectTimer: number | null = null;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
   private priority: number = 10;
   private registeredWithCoordinator: boolean = false;
+  private authenticated: boolean = false;
 
   constructor(options: BombPartyClientOptions = {}) {
-    console.log('[BombPartyClient] WebSocket client construction');
+    devLog.log('[BombPartyClient] WebSocket client construction');
     this.mock = options.mock ?? false;
     this.connectionId = `bpc_${Math.random().toString(36).substring(2, 10)}`;
     this.priority = options.priority ?? 20;
     
-    console.log(`[BombPartyClient] Instance created [${this.connectionId}] with priority ${this.priority}`);
+    devLog.log(`[BombPartyClient] Instance created [${this.connectionId}] with priority ${this.priority}`);
+  }
+
+  /**
+   * Vérifie si l'utilisateur est authentifié (a un token valide)
+   */
+  private isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    
+    try {
+      // Vérifier si le token est expiré
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiresAt = payload.exp * 1000;
+      return Date.now() < expiresAt;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Obtient l'URL WebSocket avec le token JWT
+   */
+  private getWebSocketUrl(): string {
+    const token = localStorage.getItem('token');
+    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
+    const baseUrl = wsUrl.replace(/^https?/, 'ws').replace(/^wss?/, 'ws');
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+    
+    // Ajouter le token en query param
+    const url = new URL(`${baseUrl}/bombparty/ws`);
+    url.searchParams.set('token', token);
+    return url.toString();
   }
 
   public connect() {
+    // Vérifier l'authentification avant de se connecter
+    if (!this.isAuthenticated()) {
+      devLog.warn(`[BombPartyClient] Not authenticated, skipping connection [${this.connectionId}]`);
+      return;
+    }
+
     if (this.isConnecting || (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN))) {
-      console.log(`[BombPartyClient] Connection already in progress or active, ignored [${this.connectionId}]`);
+      devLog.log(`[BombPartyClient] Connection already in progress or active, ignored [${this.connectionId}]`);
       return;
     }
     
@@ -72,56 +117,88 @@ export class BombPartyClient {
     );
     
     if (!this.registeredWithCoordinator) {
-      console.log(`[BombPartyClient] Not priority for now, waiting [${this.connectionId}]`);
+      devLog.log(`[BombPartyClient] Not priority for now, waiting [${this.connectionId}]`);
       return;
     }
     
     this.isConnecting = true;
-    console.log(`[BombPartyClient] WebSocket connection attempt... [${this.connectionId}]`);
+    devLog.log(`[BombPartyClient] WebSocket connection attempt... [${this.connectionId}]`);
     
     try {
-      this.ws = new WebSocket('ws://localhost:3001/bombparty/ws');
+      const wsUrl = this.getWebSocketUrl();
+      devLog.log(`[BombPartyClient] Connecting to: ${wsUrl.replace(/token=[^&]+/, 'token=***')}`);
+      this.ws = new WebSocket(wsUrl);
       
       this.ws.onopen = () => {
         this.isConnecting = false;
-        console.log(`[BombPartyClient] Connexion établie [${this.connectionId}]`);
+        this.reconnectAttempts = 0;
+        devLog.log(`[BombPartyClient] Connexion établie [${this.connectionId}]`);
         this._emit('connected', {});
       };
       
+      // Note: Les ping/pong natifs du protocole WebSocket sont gérés automatiquement par le navigateur
+      // On traite seulement les messages JSON 'bp:ping' dans onmessage ci-dessous
+      
       this.ws.onmessage = (event) => {
         if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
-          console.log(`[BombPartyClient] Not priority, message ignored [${this.connectionId}]`);
+          devLog.log(`[BombPartyClient] Not priority, message ignored [${this.connectionId}]`);
           return;
         }
         
         try {
           const data = JSON.parse(event.data);
-          if (data.event !== 'bp:ping' && data.event !== 'bp:pong') {
-            console.log('[BombPartyClient] Message received:', {
+          
+          // Répondre automatiquement aux ping
+          if (data.event === 'bp:ping') {
+            this.emit('bp:pong', {});
+            return;
+          }
+          
+          if (data.event !== 'bp:pong') {
+            devLog.log('[BombPartyClient] Message received:', {
               event: data.event,
               connectionId: this.connectionId
             });
           }
           this._emit(data.event, data.payload);
         } catch (err) {
-          console.error('[BombPartyClient] Error parsing message:', err);
+          devLog.error('[BombPartyClient] Error parsing message:', err);
         }
       };
       
       this.ws.onclose = (event) => {
         this.isConnecting = false;
-        console.log(`[BombPartyClient] Connection closed [${this.connectionId}], code: ${event.code}`);
+        devLog.log(`[BombPartyClient] Connection closed [${this.connectionId}], code: ${event.code}`);
         this._emit('disconnected', {});
+        
+        // Reconnexion exponentielle uniquement si authentifié
+        if (this.isAuthenticated() && event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000); // Max 30s
+          this.reconnectAttempts++;
+          devLog.log(`[BombPartyClient] Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+          
+          this.reconnectTimer = setTimeout(() => {
+            this.connect();
+          }, delay) as unknown as number;
+        } else {
+          this.reconnectAttempts = 0;
+        }
       };
       
       this.ws.onerror = (error) => {
         this.isConnecting = false;
-        console.error(`[BombPartyClient] WebSocket error [${this.connectionId}]:`, error);
+        devLog.error(`[BombPartyClient] WebSocket error [${this.connectionId}]:`, error);
         this._emit('error', { error: 'WebSocket error' });
       };
     } catch (err) {
       this.isConnecting = false;
-      console.error(`[BombPartyClient] Exception lors de la connexion [${this.connectionId}]:`, err);
+      devLog.error(`[BombPartyClient] Exception lors de la connexion [${this.connectionId}]:`, err);
+      
+      // Si erreur d'authentification, ne pas réessayer
+      if (err instanceof Error && err.message.includes('token')) {
+        devLog.warn(`[BombPartyClient] Authentication error, not retrying [${this.connectionId}]`);
+        return;
+      }
     }
   }
 
@@ -138,14 +215,14 @@ export class BombPartyClient {
     
     if (this.ws) {
       try {
-        console.log(`[BombPartyClient] WebSocket disconnection [${this.connectionId}]`);
+        devLog.log(`[BombPartyClient] WebSocket disconnection [${this.connectionId}]`);
         
         this.ws.onclose = null;
         this.ws.onerror = null;
         this.ws.onmessage = null;
         this.ws.close(1000, "Normal closure");
       } catch (err) {
-        console.warn(`[BombPartyClient] Error closing WebSocket [${this.connectionId}]:`, err);
+        devLog.warn(`[BombPartyClient] Error closing WebSocket [${this.connectionId}]:`, err);
       }
       
       this.ws = null;
@@ -177,22 +254,22 @@ export class BombPartyClient {
     };
   }
 
-  private authenticated: boolean = false;
   private currentPlayerName: string | null = null;
   private pendingMessages: Array<{event: string, payload: any}> = [];
 
   emit(event: BombPartyEvent, payload: any): void {
-    if (event !== 'bp:ping') {
-      console.log(`[BombPartyClient] Send message [${this.connectionId}]:`, event, 'WebSocket state:', this.ws?.readyState);
+    if (event !== 'bp:ping' && event !== 'bp:pong') {
+      devLog.log(`[BombPartyClient] Send message [${this.connectionId}]:`, event, 'WebSocket state:', this.ws?.readyState);
     }
     
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      if (event !== 'bp:ping') {
-        console.log(`[BombPartyClient] WebSocket not ready, queuing message [${this.connectionId}]:`, event);
+      if (event !== 'bp:ping' && event !== 'bp:pong') {
+        devLog.log(`[BombPartyClient] WebSocket not ready, queuing message [${this.connectionId}]:`, event);
         this.pendingMessages.push({ event, payload });
         
-        if (!this.isConnecting && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
-          console.log(`[BombPartyClient] Reconnection attempt to send message [${this.connectionId}]`);
+        // Ne pas tenter de reconnexion si non authentifié
+        if (this.isAuthenticated() && !this.isConnecting && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
+          devLog.log(`[BombPartyClient] Reconnection attempt to send message [${this.connectionId}]`);
           this.connect();
         }
       }
@@ -203,14 +280,19 @@ export class BombPartyClient {
       const message = JSON.stringify({ event, payload });
       this.ws.send(message);
     } catch (err) {
-      console.error(`[BombPartyClient] Error sending message [${this.connectionId}]:`, err);
+      devLog.error(`[BombPartyClient] Error sending message [${this.connectionId}]:`, err);
       
+      // Ne pas mettre en queue les messages non critiques si non authentifié
+      if (this.isAuthenticated()) {
       this.pendingMessages.push({ event, payload });
       this.disconnect();
       
       this.reconnectTimer = setTimeout(() => {
+          if (this.isAuthenticated()) {
         this.connect();
+          }
       }, 1000) as unknown as number;
+      }
     }
     
     // Mode mock pour les tests
@@ -229,18 +311,31 @@ export class BombPartyClient {
   }
 
   authenticate(playerName: string): void {
-    if (this.authenticated && this.currentPlayerName === playerName) {
-      console.log(`[BombPartyClient] Already authenticated as [${playerName}], ignored [${this.connectionId}]`);
+    // authenticated est le flag pour bp:auth:success, pas pour JWT
+    // On vérifie d'abord qu'on a un JWT valide via isAuthenticated()
+    if (!this.isAuthenticated()) {
+      devLog.warn(`[BombPartyClient] Cannot authenticate: no valid JWT token [${this.connectionId}]`);
       return;
     }
     
-    console.log(`[BombPartyClient] Send authentication for [${playerName}] [${this.connectionId}]`);
+    if (this.authenticated && this.currentPlayerName === playerName) {
+      devLog.log(`[BombPartyClient] Already authenticated as [${playerName}], ignored [${this.connectionId}]`);
+      return;
+    }
+    
+    devLog.log(`[BombPartyClient] Send authentication for [${playerName}] [${this.connectionId}]`);
     this.currentPlayerName = playerName;
     
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.log(`[BombPartyClient] WebSocket not connected during authentication, connecting... [${this.connectionId}]`);
+      devLog.log(`[BombPartyClient] WebSocket not connected during authentication, connecting... [${this.connectionId}]`);
       this.pendingMessages.push({ event: 'bp:auth', payload: { playerName } });
+      
+      // Se connecter seulement si authentifié avec JWT
+      if (this.isAuthenticated()) {
       this.connect();
+      } else {
+        devLog.warn(`[BombPartyClient] Cannot connect: not authenticated [${this.connectionId}]`);
+      }
       return;
     }
     
@@ -272,7 +367,7 @@ export class BombPartyClient {
   }
 
   sendMessage(message: { event: BombPartyEvent; payload: any }): void {
-    console.log('[BombPartyClient] sendMessage:', message, 'ready:', this.ws?.readyState);
+    devLog.log('[BombPartyClient] sendMessage:', message, 'ready:', this.ws?.readyState);
     this.emit(message.event, message.payload);
   }
 
@@ -287,7 +382,7 @@ export class BombPartyClient {
     const set = this.handlers.get(event);
     
     if (event !== 'bp:ping' && event !== 'bp:pong') {
-      console.log('[BombPartyClient] _emit:', {
+      devLog.log('[BombPartyClient] _emit:', {
         event,
         hasHandlers: !!set,
         handlersCount: set?.size || 0,
@@ -303,7 +398,7 @@ export class BombPartyClient {
       try {
         handler(payload);
       } catch (err) {
-        console.error('[BombPartyClient] Handler error:', {
+        devLog.error('[BombPartyClient] Handler error:', {
           event,
           error: err instanceof Error ? err.message : 'Unknown error',
           connectionId: this.connectionId
@@ -320,7 +415,7 @@ export class BombPartyClient {
       this._processPendingMessages();
     } else if (event === 'bp:auth:success') {
       this.authenticated = true;
-      console.log(`[BombPartyClient] Authentication successful [${this.connectionId}]`);
+      devLog.log(`[BombPartyClient] Authentication successful [${this.connectionId}]`);
       
       this._processPendingMessages();
     }
@@ -328,7 +423,7 @@ export class BombPartyClient {
   
   private _processPendingMessages() {
     if (this.pendingMessages.length > 0) {
-      console.log(`[BombPartyClient] Processing ${this.pendingMessages.length} pending messages [${this.connectionId}]`);
+      devLog.log(`[BombPartyClient] Processing ${this.pendingMessages.length} pending messages [${this.connectionId}]`);
       
       const messagesToSend = [...this.pendingMessages];
       this.pendingMessages = [];
@@ -341,9 +436,9 @@ export class BombPartyClient {
               payload: message.payload
             });
             this.ws.send(messageStr);
-            console.log(`[BombPartyClient] Queued message sent: ${message.event} [${this.connectionId}]`);
+            devLog.log(`[BombPartyClient] Queued message sent: ${message.event} [${this.connectionId}]`);
           } catch (err) {
-            console.error(`[BombPartyClient] Error sending queued message: ${message.event}`, err);
+            devLog.error(`[BombPartyClient] Error sending queued message: ${message.event}`, err);
           }
         }
       }

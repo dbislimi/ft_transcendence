@@ -1,14 +1,32 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
-import gameController from "./plugins/gameController.ts";
-import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
-import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
+import multipart from "@fastify/multipart";
+import fastifyFormbody from "@fastify/formbody";
+import fastifyStatic from "@fastify/static";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
+import "./types/fastify.d.ts";
+import wsController from "./plugins/websockets.ts";
+import dbPlugin from "../index.js";
+import authPlugin from "./plugins/auth.ts";
+import authHook from "./plugins/authHook.ts";
+import userPlugin from "./plugins/user.ts";
+import wsFriends from "./plugins/ws-friends.ts";
+import matchesPlugin from "./plugins/matches.ts";
+import friendsPlugin from "./plugins/friends.ts";
+import googleAuth from "./plugins/google.ts";
+import settingsPlugin from "./plugins/settings.ts";
+import twoFaPlugin from "./plugins/2fa.ts";
+import chatPlugin from "./plugins/chat.ts";
+import gameController from "./plugins/gameController.ts";
+import pongConfig from "./plugins/pongConfig.ts";
+import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
+import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
 	logger: {
@@ -18,145 +36,80 @@ const fastify = Fastify({
 	},
 });
 
-fastify.register(websocket);
-fastify.register(gameController);
-fastify.register(bombPartyWSHandlers);
+async function main() {
+	await fastify.register(cors, {
+		origin: "http://localhost:5173",
+		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+		exposedHeaders: ["Content-Length"],
+		credentials: true,
+		maxAge: 86400,
+		strictPreflight: true
+	});
 
-const JWT_SECRET = "super_secret_key";
+	// Register modular plugins
+	await fastify.register(wsController);
+	await fastify.register(fastifyFormbody);
+	await fastify.register(multipart);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+	// DB (sqlite instance exported from ../index.js)
+	// dbPlugin is the sqlite Database object (not a Fastify plugin), decorate fastify with it
+	fastify.decorate('db', dbPlugin as any);
 
-const db = (await import(path.join(__dirname, "..", "index.js"))).default;
+	// Ensure online statuses reset
+	await new Promise<void>((resolve, reject) => {
+		fastify.db.run("UPDATE users SET online = 0", (err: any) => {
+			if (err) {
+				fastify.log.error("Erreur lors du nettoyage des statuts en ligne:", err);
+				reject(err);
+			} else {
+				fastify.log.info("Statuts des utilisateurs remis à zéro au démarrage");
+				resolve();
+			}
+		});
+	});
 
+	// Friends WS
+	await fastify.register(wsFriends);
 
-await fastify.register(cors, {
-	origin: "http://localhost:5173",
-});
+	// Pong config endpoint
+	await fastify.register(pongConfig);
 
-console.log('[Stats] Enregistrement des routes de statistiques...');
-await fastify.register(bombPartyStatsRoutes);
-console.log('[Stats] Statistics routes registered');
+	// Auth, users, social
+	await fastify.register(authHook);
+	await fastify.register(authPlugin);
+	await fastify.register(googleAuth);
+	await fastify.register(userPlugin);
+	await fastify.register(settingsPlugin);
+	await fastify.register(matchesPlugin);
+	await fastify.register(friendsPlugin);
 
-fastify.get("/", async () => {
-	return { hello: "from docker" };
-});
+	// BombParty modules (keep existing functionality)
+	// gameController and chat are registered by wsController, avoid double-registration
+	await fastify.register(bombPartyWSHandlers);
 
-fastify.post("/register", async (request, reply) => {
-	const { name, email, password } = request.body as {
-		name: string;
-		email: string;
-		password: string;
-	};
+	console.log('[Stats] Enregistrement des routes de statistiques...');
+	await fastify.register(bombPartyStatsRoutes);
+	console.log('[Stats] Statistics routes registered');
 
-	const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-	if (!emailRegex.test(email)) {
-		return reply.code(400).send({ error: "Email invalide" });
-	}
+	// Serve static (for possible public assets)
+	await fastify.register(fastifyStatic, {
+		root: path.join(__dirname, "public"),
+		prefix: "/",
+	});
+
+	fastify.get('/', async () => ({ hello: 'from docker' }));
 
 	try {
-		const hashedPassword = await bcrypt.hash(password, 10);
-
-		db.run(
-			"INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-			[name, email, hashedPassword],
-			function (this: any, err: any) {
-				if (err) {
-				return reply
-					.code(500)
-					.send({ error: "User registration error" });
-				}
-				return reply.send({ success: true, id: this.lastID });
-			}
-		);
-	} catch {
-		return reply.code(500).send({ error: "Server error" });
+		const address = await fastify.listen({ port: 3001, host: '0.0.0.0' });
+		fastify.log.info(`Serveur lancé sur ${address}`);
+	} catch (err) {
+		fastify.log.error(err);
+		process.exit(1);
 	}
-});
+}
 
-fastify.post("/login", async (request, reply) => {
-	const { email, password } = request.body as {
-		email: string;
-		password: string;
-	};
-
-	db.get(
-		"SELECT * FROM users WHERE email = ?",
-	[email],
-	async (err: any, user: any) => {
-		if (err) {
-			return reply.code(500).send({ error: "Server error" });
-		}
-
-		if (!user) {
-			return reply
-				.code(401)
-				.send({ error: "User not found" });
-		}			const isPasswordValid = await bcrypt.compare(
-				password,
-				user.password
-			);
-			if (!isPasswordValid) {
-				return reply.code(401).send({ error: "Mot de passe invalide" });
-			}
-
-			const token = jwt.sign(
-				{ id: user.id, name: user.name },
-				JWT_SECRET,
-				{ expiresIn: "2h" }
-			);
-
-			return reply.send({ success: true, token, name: user.name });
-		}
-	);
-});
-
-fastify.get("/profile", async (request, reply) => {
-	try {
-		const authHeader = request.headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			return reply.code(401).send({ error: "Token manquant" });
-		}
-
-		const token = authHeader.split(" ")[1];
-		const decoded = jwt.verify(token, JWT_SECRET) as {
-			id: number;
-			name: string;
-		};
-
-		return reply.send({ message: `Hello ${decoded.name}` });
-	} catch {
-		return reply.code(401).send({ error: "Invalid or expired token" });
-	}
-});
-
-fastify.get("/me", async (request, reply) => {
-	try {
-		const authHeader = request.headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			return reply.code(401).send({ error: "Token manquant" });
-		}
-
-		const token = authHeader.split(" ")[1];
-		const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-
-		db.get(
-			"SELECT id, name, email, twoFAEnabled FROM users WHERE id = ?",
-			[decoded.id],
-			(err: any, user: any) => {
-				if (err || !user) {
-					return reply
-						.code(404)
-						.send({ error: "Utilisateur introuvable" });
-				}
-
-				return reply.send(user);
-			}
-		);
-	} catch {
-		return reply.code(401).send({ error: "Invalid or expired token" });
-	}
-});
+main();
 
 /*  ===============================================================================
     OLD WEBSOCKET HANDLER (COMMENTED OUT)
@@ -576,4 +529,4 @@ function cleanupConnection(connection: any) {
 }
 */
 
-fastify.listen({ port: 3001, host: "0.0.0.0" });
+// Removed duplicate listen; server is started inside main()

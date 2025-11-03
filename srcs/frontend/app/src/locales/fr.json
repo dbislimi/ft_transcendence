@@ -161,7 +161,14 @@
       "multiplayerModeDesc": "Jouer en ligne avec d'autres joueurs",
       "playersCount": "Nombre de joueurs",
       "players": "joueurs",
-      "startLocalGame": "Commencer le jeu local"
+      "startLocalGame": "Commencer le jeu local",
+      "multiplayerTypeSelection": "Type de partie multijoueur",
+      "tournamentMode": "Tournoi",
+      "tournamentModeDesc": "Participez à un tournoi avec plusieurs rounds",
+      "quickmatchMode": "Partie rapide",
+      "quickmatchModeDesc": "Jouez une partie rapide avec d'autres joueurs",
+      "startTournament": "Commencer le tournoi",
+      "startQuickmatch": "Commencer la partie rapide"
     },
     "game": {
       "countdown": "Démarrage dans",

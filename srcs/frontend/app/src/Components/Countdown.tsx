@@ -1,23 +1,50 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface CountdownProps {
-	seconds: number;
+	seconds?: number;
 	onComplete?: () => void;
+	value?: number | null;
 }
 
-export default function Countdown({ seconds, onComplete }: CountdownProps) {
-	const [value, setValue] = useState(seconds);
+export default function Countdown({
+	seconds = 0,
+	onComplete,
+	value: controlledValue,
+}: CountdownProps) {
+	const isControlled = typeof controlledValue === "number";
+	const [value, setValue] = useState(
+		isControlled ? controlledValue : seconds
+	);
 
 	useEffect(() => {
+		if (!isControlled) return;
+		// Mettre à jour la valeur quand elle change depuis l'extérieur
+		if (controlledValue !== null && controlledValue !== undefined) {
+			setValue(controlledValue);
+		}
+	}, [controlledValue, isControlled]);
+
+	useEffect(() => {
+		if (isControlled) {
+			// En mode contrôlé, on ne fait pas de countdown automatique
+			// La valeur est mise à jour par le serveur
+			return;
+		}
+		// Mode non-contrôlé (local) : faire le countdown automatique
 		if (value <= 0) return;
 		const id = setInterval(() => {
-			setValue((prev) => (prev > 0 ? prev - 1 : 0));
+			setValue((prev) => {
+				const next = prev > 0 ? prev - 1 : 0;
+				return next;
+			});
 		}, 1000);
 		return () => clearInterval(id);
-	}, [value]);
+	}, [isControlled, value]);
 
 	useEffect(() => {
-		if (value === 0) onComplete?.();
+		if (value === 0) {
+			onComplete?.();
+		}
 	}, [value, onComplete]);
 
 	if (value <= 0) return null;

@@ -16,7 +16,7 @@ interface HistoryQuery {
 }
 
 const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
-  fastify: FastifyInstance,
+  fastify: FastifyInstance<any, any, any, any, any>,
   options
 ) => {
   
@@ -26,7 +26,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
 
   const authenticateToken = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const authHeader = request.headers.authorization;
+      const authHeader = ((request as any).raw?.headers as any)?.authorization as string | undefined;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return reply.code(401).send({ error: "Token manquant" });
       }

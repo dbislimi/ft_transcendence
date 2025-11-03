@@ -1,86 +1,127 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
 import type WebSocket from "ws";
-import { v4 as uuidv4 } from "uuid";
-import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 
-const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
-	fastify: FastifyInstance,
-	options
-) => {
-	const games: GamesManager = new GamesManager();
-	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req) => {
-		const clientId = uuidv4();
-		let tournamentId: string | undefined = undefined;
+interface Tournament {
+	tournamentId: string;
+	allowReconnect: boolean;
+}
+export interface Client {
+	id: number;
+	name: string;
+	socket?: WebSocket;
+	tournament?: Tournament;
+	inGameId?: 0 | 1;
+
+	quit?: boolean;
+	winnerTimer?: ReturnType<typeof setTimeout>;
+
+	rejoinTimer?: ReturnType<typeof setTimeout>;
+	removalTimer?: ReturnType<typeof setTimeout>;
+}
+
+const gameController = async (fastify: any, options: any) => {
+	const games = new GamesManager();
+
+	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req: any) => {
+		console.log("pong WS connected");
+		let client = fastify.getClient(req, socket);
+		
+		// Si pas de client authentifié, créer un client temporaire pour le mode offline
+		if (!client) {
+			console.log("pong WS: No authenticated client, creating temporary client for offline mode");
+			const tempId = Math.floor(Math.random() * 1000000); // ID temporaire
+			client = {
+				id: tempId,
+				name: `Guest_${tempId}`,
+				socket
+			} as Client;
+			fastify.clients.set(tempId, client);
+		}
+
+		if (client.rejoinTimer) {
+			console.log(`Client ${client.name} reconnected while tournament rejoin timer active`);
+			socket.send(JSON.stringify({ event: "tournament_rejoin_prompt", body: { tournamentId: client.tournament?.tournamentId, timeout: 10 } }));
+		}
+		console.log("client:", client.name);
 		let local: boolean = false;
-		let status: boolean = false;
 		socket.on("message", (message) => {
 			const data = JSON.parse(message.toString());
+			console.log(`FROM: ${client.name}`);
 			console.log(data);
-			if (data.event === "stop") {
-				console.log("stop called");
-				if (!status) return;
-				console.log("debug0");
-				games.quit(socket, tournamentId);
-				tournamentId = undefined;
-				status = false;
+			if (data.event === "stop_offline") {
+				console.log("stop_offline called");
+				games.stop_offline(client);
 				local = false;
-			} else if (data.event === "start" && status === false) {
-				switch (data.body.action) {
+			} else if (data.event === "rejoin_tournament") {
+				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+				console.log("rejoin_tournament from", client.name);
+				games.handleRejoin(client);
+			} else if (data.event === "stop_online") {
+				console.log("stop_online called");
+				games.stop_online(client);
+			} else if (data.event === "ready") {
+				if (client.winnerTimer) clearTimeout(client.winnerTimer);
+				console.log("client ready for next tournament round", client.name);
+				games.playerReady(client);
+			} else if (data.event === "start") {
+				// Allow starting a new session even if a previous room exists by cleaning it up first
+				const action = data.body?.action as string | undefined;
+				switch (action) {
 					case "list_tournaments":
-						socket.send(
-							JSON.stringify({
-								event: "tournaments",
-								body: games.listTournaments(),
-							})
-						);
+						socket.send(JSON.stringify({ event: "tournaments", body: games.listTournaments() }));
 						return;
 					case "play_online":
-						games.startOnline(clientId, socket);
+						// Ensure any previous room/queue state is cleared before matchmaking
+						games.stop_online(client);
+						games.startOnline(client);
 						break;
 					case "play_offline":
-						local = games.startOffline(socket, data.body.diff);
+						// Clear any lingering online state before starting local/offline
+						games.stop_online(client);
+						local = games.startOffline(client, data.body.diff);
 						break;
 					case "trainbot":
 						games.trainBot(socket, data.body.diff, 1000);
 						break;
 					case "create_tournament":
-						games.createTournament(
-							socket,
-							data.body.id,
-							data.body.size,
-							data.body.passwd
-						);
-						tournamentId = data.body.id;
+						if (games.createTournament(client, data.body.id, data.body.size, data.body.passwd))
+							client.tournament = { tournamentId: data.body.id, allowReconnect: true };
 						break;
 					case "join_tournament":
-						games.joinTournament(
-							socket,
-							data.body.id,
-							data.body.passwd
-						);
-						tournamentId = data.body.id;
+						client.tournament = { tournamentId: data.body.id, allowReconnect: true };
+						games.joinTournament(client, data.body.id, data.body.passwd);
+						break;
+					default:
+						console.warn("Unknown start action:", action);
 						break;
 				}
-				status = true;
-			} else if (data.event === "play" && status === true) {
-				if (local === true)
-					games
-						.getRoom(socket)
-						?.move(data.body.type, data.body.dir, data.body.id);
-				else
-					games
-						.getRoom(socket)
-						?.move(data.body.type, data.body.dir, socket);
+			} else if (data.event === "play") {
+				const room = games.getRoom(client);
+				if (!room) return;
+				if (local === true) games.getRoom(client)?.move(data.body.type, data.body.dir, data.body.id);
+				else games.getRoom(client)?.move(data.body.type, data.body.dir, client.inGameId);
 			}
 		});
 		socket.on("close", () => {
-			console.log("close ", clientId);
-			if (!status) return;
-			games.quit(socket, tournamentId);
+			console.log("close ", client.name);
+			client.socket = undefined;
+			games.stop_online(client);
+			if (client.tournament && client.tournament.allowReconnect) {
+				if (client.removalTimer) clearTimeout(client.removalTimer);
+				client.removalTimer = setTimeout(() => {
+					const c = fastify.clients.get(client.id);
+					if (c && !c.socket) {
+						console.log(`Removing client ${c.name} (id=${client.id}) after reconnect timeout`);
+						fastify.clients.delete(client.id);
+					}
+				}, 12000);
+			} else {
+				console.log(`Removing client ${client.name} (id=${client.id}) on disconnect`);
+				fastify.clients.delete(client.id);
+			}
 		});
-	});
-};
+		});
+	};
 
-export default fp(gameController);
+	export default fp(gameController);

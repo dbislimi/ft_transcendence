@@ -20,6 +20,7 @@ const router = createBrowserRouter([
       { path: "/pong", element: <pages.Pong /> },
       { path: "/bomb-party", element: <pages.BombParty /> },
       { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
+      { path: "/profile", element: <pages.Profile /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
       { path: "/settings", element: <pages.Settings /> },

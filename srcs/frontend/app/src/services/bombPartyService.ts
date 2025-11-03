@@ -30,10 +30,21 @@ export class BombPartyService {
   private readonly PONG_TIMEOUT = 10000;
   private connectionId: string;
   private registeredWithCoordinator: boolean = false;
+  private isInitialized: boolean = false;
 
   constructor() {
     this.connectionId = `bps_${Math.random().toString(36).substring(2, 10)}`;
-    console.log(`[BombPartyService] Initialization [${this.connectionId}]`);
+    console.log(`[BombPartyService] Instance created [${this.connectionId}] (not connected yet)`);
+    // Don't connect automatically - wait for explicit init()
+  }
+
+  public init(): void {
+    if (this.isInitialized) {
+      console.log(`[BombPartyService] Already initialized [${this.connectionId}]`);
+      return;
+    }
+    console.log(`[BombPartyService] Manual initialization [${this.connectionId}]`);
+    this.isInitialized = true;
     this.connect();
   }
 

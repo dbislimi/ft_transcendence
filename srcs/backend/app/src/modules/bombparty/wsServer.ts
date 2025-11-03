@@ -1,19 +1,22 @@
 import WebSocket from 'ws';
 import { ErrorCode } from './types.ts';
 import type { TypedError } from './types.ts';
+import { bombPartyLogger } from './log.ts';
 
 export interface WSConnection {
   socket: WebSocket;
   playerId?: string;
   roomId?: string;
+  userId?: number; // JWT user ID
   lastPong: number;
   heartbeatInterval?: NodeJS.Timeout;
+  messageCounts?: Map<string, { count: number; resetAt: number }>; // Rate limiting per message type
 }
 
 export class BombPartyWSServer {
   private connections = new Map<WebSocket, WSConnection>();
-  private readonly PING_INTERVAL = 30000;
-  private readonly PONG_TIMEOUT = 45000;
+  private readonly PING_INTERVAL = 28000; // ~28s pour ping toutes les 25-30s
+  private readonly PONG_TIMEOUT = 10000; // 10s timeout comme spécifié
 
   constructor() {
     this.startHeartbeatInterval();
@@ -34,7 +37,7 @@ export class BombPartyWSServer {
           socket.ping();
           connection.lastPong = now;
         } catch (error) {
-          console.error('[BombParty] Ping error:', error);
+          bombPartyLogger.error({ error }, 'Ping error');
           this.closeConnection(socket, 'PING_ERROR');
         }
       }
@@ -50,19 +53,26 @@ export class BombPartyWSServer {
     
     for (const [socket, connection] of this.connections) {
       if (socket.readyState === WebSocket.OPEN) {
-        if (now - connection.lastPong > this.PONG_TIMEOUT) {
+        const timeSinceLastPong = now - connection.lastPong;
+        if (timeSinceLastPong > this.PONG_TIMEOUT) {
+          bombPartyLogger.warn({ 
+            playerId: connection.playerId, 
+            timeSinceLastPong 
+          }, 'Pong timeout, closing connection');
           this.closeConnection(socket, 'PONG_TIMEOUT');
         }
       }
     }
   }
 
-  registerConnection(socket: WebSocket, playerId?: string, roomId?: string): void {
+  registerConnection(socket: WebSocket, playerId?: string, roomId?: string, userId?: number): void {
     const connection: WSConnection = {
       socket,
       playerId,
       roomId,
-      lastPong: Date.now()
+      userId,
+      lastPong: Date.now(),
+      messageCounts: new Map()
     };
 
     this.connections.set(socket, connection);
@@ -79,23 +89,30 @@ export class BombPartyWSServer {
     });
 
     socket.on('error', (error) => {
-      console.error('[BombParty] WebSocket error:', error);
+      bombPartyLogger.error({ error }, 'WebSocket error');
       this.connections.delete(socket);
     });
   }
 
-  updateConnection(socket: WebSocket, playerId?: string, roomId?: string): void {
+  updateConnection(socket: WebSocket, playerId?: string, roomId?: string, userId?: number): void {
     const connection = this.connections.get(socket);
     if (connection) {
       connection.playerId = playerId;
       connection.roomId = roomId;
+      if (userId !== undefined) {
+        connection.userId = userId;
+      }
     }
   }
 
   closeConnection(socket: WebSocket, reason: string): void {
     const connection = this.connections.get(socket);
     if (connection) {
-      console.log(`[BombParty] Fermeture connexion: ${reason}`);
+      bombPartyLogger.info({ 
+        playerId: connection.playerId, 
+        roomId: connection.roomId, 
+        reason 
+      }, 'Closing connection');
       this.connections.delete(socket);
       
       if (connection.heartbeatInterval) {
@@ -103,7 +120,7 @@ export class BombPartyWSServer {
       }
       
       if (socket.readyState === WebSocket.OPEN) {
-        socket.close(1000, reason);
+        socket.close(1008, reason); // 1008 = Policy Violation
       }
     }
   }
@@ -120,7 +137,7 @@ export class BombPartyWSServer {
         socket.send(JSON.stringify(message));
       }
     } catch (err) {
-      console.error('[BombParty] Error sending message:', err);
+      bombPartyLogger.error({ error: err }, 'Error sending error message');
     }
   }
 
@@ -130,8 +147,53 @@ export class BombPartyWSServer {
         socket.send(JSON.stringify(message));
       }
     } catch (err) {
-      console.error('[BombParty] Error sending message:', err);
+      bombPartyLogger.error({ error: err }, 'Error sending message');
     }
+  }
+
+  /**
+   * Vérifie le rate limiting pour un type de message
+   * @param socket La connexion WebSocket
+   * @param messageType Le type de message (ex: 'bp:game:input', 'bp:chat:message')
+   * @param maxMessages Nombre maximum de messages autorisés
+   * @param windowMs Fenêtre de temps en ms (par défaut 2000ms = 2s)
+   * @returns true si le message est autorisé, false si rate limit dépassé
+   */
+  checkRateLimit(
+    socket: WebSocket, 
+    messageType: string, 
+    maxMessages: number = 10, 
+    windowMs: number = 2000
+  ): boolean {
+    const connection = this.connections.get(socket);
+    if (!connection) return false;
+
+    if (!connection.messageCounts) {
+      connection.messageCounts = new Map();
+    }
+
+    const now = Date.now();
+    const countInfo = connection.messageCounts.get(messageType);
+    
+    if (!countInfo || now >= countInfo.resetAt) {
+      // Nouvelle fenêtre ou fenêtre expirée
+      connection.messageCounts.set(messageType, { count: 1, resetAt: now + windowMs });
+      return true;
+    }
+
+    if (countInfo.count >= maxMessages) {
+      // Rate limit dépassé
+      bombPartyLogger.warn({ 
+        playerId: connection.playerId, 
+        messageType, 
+        count: countInfo.count 
+      }, 'Rate limit exceeded');
+      return false;
+    }
+
+    // Incrémenter le compteur
+    countInfo.count++;
+    return true;
   }
 
   broadcastToAll(message: any): void {

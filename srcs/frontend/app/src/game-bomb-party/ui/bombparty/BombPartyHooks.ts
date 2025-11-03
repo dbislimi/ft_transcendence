@@ -300,7 +300,7 @@ export function useBombPartyHooks(user: any) {
     setGameMode('local');
   }, [engine, timer, client, roomId]);
 
-  const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1) => {
+  const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1, multiplayerType?: 'tournament' | 'quickmatch') => {
     setGameMode(mode);
     if (mode === 'local') {
       engine.reset();
@@ -313,6 +313,9 @@ export function useBombPartyHooks(user: any) {
       
       setTurnStartTime(performance.now());
     } else {
+      // Mode multijoueur - on va vers le lobby
+      // Le type de partie (tournament/quickmatch) sera géré dans le lobby
+      console.log('[BombParty] Mode multijoueur sélectionné, type:', multiplayerType);
       setGamePhase('LOBBY');
     }
   }, [engine, timer]);

@@ -6,7 +6,7 @@ interface Options {
 
 export default async function fetchData<T>(api: string, options: Options = {method: 'GET'}): Promise<T>{
 	try {
-		const response: Response = await fetch('http://localhost:3000/' + api, options);
+		const response: Response = await fetch('http://localhost:3001/' + api, options);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}

@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import WebSocket from 'ws';
+import jwt from 'jsonwebtoken';
 import { BombPartyRoomManager } from './RoomManager.ts';
 import { BombPartyWSServer } from './wsServer.ts';
 import { 
@@ -9,6 +10,9 @@ import {
 } from './validation.ts';
 import { ErrorCode } from './types.ts';
 import { v4 as uuidv4 } from 'uuid';
+import { bombPartyLogger } from './log.ts';
+
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 interface WSSession {
   playerId?: string;
@@ -17,7 +21,7 @@ interface WSSession {
   authenticated: boolean;
 }
 
-export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
+export default async function bombPartyWSHandlers(fastify: FastifyInstance<any, any, any, any, any>) {
   const roomManager = new BombPartyRoomManager();
   const wsServer = new BombPartyWSServer();
 
@@ -37,7 +41,55 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
       authenticated: false
     };
 
-    wsServer.registerConnection(socket);
+    // Vérifier le JWT dès l'upgrade
+    let userId: number | undefined;
+    let userAuthenticated = false;
+    
+    try {
+      // Essayer de récupérer le token depuis query string ou headers
+      let token: string | undefined;
+      
+      if (request.query && typeof request.query.token === 'string') {
+        token = request.query.token;
+      } else if (request.headers && request.headers.authorization) {
+        const authHeader = request.headers.authorization as string;
+        if (authHeader.startsWith('Bearer ')) {
+          token = authHeader.split(' ')[1];
+        }
+      } else if (request.url && typeof request.url === 'string') {
+        try {
+          const url = new URL(`http://localhost${request.url}`);
+          token = url.searchParams.get('token') || undefined;
+        } catch (e) {
+          // Ignorer les erreurs de parsing d'URL
+        }
+      }
+
+      if (token && JWT_SECRET) {
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string };
+          userId = decoded.id;
+          userAuthenticated = true;
+          bombPartyLogger.info({ userId }, 'WebSocket connection authenticated');
+        } catch (jwtError) {
+          // Token invalide ou expiré
+          bombPartyLogger.warn({ error: jwtError instanceof Error ? jwtError.message : String(jwtError) }, 'JWT verification failed on WS upgrade');
+          socket.close(1008, 'Authentication failed');
+          return;
+        }
+      } else {
+        // Pas de token fourni - refuser la connexion
+        bombPartyLogger.warn('No token provided on WS upgrade');
+        socket.close(1008, 'Authentication required');
+        return;
+      }
+    } catch (error) {
+      bombPartyLogger.error({ error }, 'Error during WS authentication');
+      socket.close(1008, 'Authentication error');
+      return;
+    }
+
+    wsServer.registerConnection(socket, undefined, undefined, userId);
 
 
     function sendError(error: string, code: ErrorCode = ErrorCode.STATE_ERROR): void {
@@ -74,7 +126,25 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
     socket.on('message', (data: Buffer) => {
       try {
         const rawMessage = JSON.parse(data.toString());
-        console.log(`[BombParty] Message received: ${rawMessage.event}`, rawMessage);
+        
+        // Rate limiting par type de message
+        const messageType = rawMessage.event || 'unknown';
+        const rateLimitConfig: Record<string, { max: number; window: number }> = {
+          'bp:game:input': { max: 15, window: 2000 }, // Plus permissif pour les inputs
+          'bp:chat:message': { max: 10, window: 2000 },
+          'bp:lobby:update': { max: 10, window: 2000 },
+          'bp:bonus:activate': { max: 5, window: 2000 }, // Moins permissif pour les bonus
+        };
+        
+        const config = rateLimitConfig[messageType] || { max: 10, window: 2000 };
+        if (!wsServer.checkRateLimit(socket, messageType, config.max, config.window)) {
+          // Rate limit dépassé - ignorer silencieusement
+          return;
+        }
+        
+        if (messageType !== 'bp:ping' && messageType !== 'bp:pong') {
+          bombPartyLogger.info({ event: messageType, userId }, 'Message received');
+        }
 
         if (rawMessage.event === 'bp:auth') {
           const validation = validateAuthMessage(rawMessage);
@@ -99,6 +169,11 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
 
         const validation = validateClientMessage(rawMessage);
         if (!validation.success) {
+          bombPartyLogger.warn({ 
+            userId, 
+            event: rawMessage.event, 
+            error: validation.error 
+          }, 'Validation error');
           sendError(validation.error || 'Invalid message', validation.code || ErrorCode.VALIDATION_ERROR);
           return;
         }
@@ -140,7 +215,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
             break;
 
           case 'bp:room:subscribe':
-            console.log(`[BombParty] Room subscribe ignored (not implemented): roomId=${message.payload?.roomId}`);
+            bombPartyLogger.info({ playerId, roomId: message.payload?.roomId }, 'Room subscribe ignored (not implemented)');
             break;
 
           default:
@@ -148,7 +223,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
         }
 
       } catch (error) {
-        console.error('[BombParty] Error processing message:', error);
+        bombPartyLogger.error({ userId, error }, 'Error processing message');
         sendError('Error processing message', ErrorCode.STATE_ERROR);
       }
     });
@@ -246,7 +321,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
     }
     function handleLobbyList(playerId: string, payload: any): void {
       const publicRooms = roomManager.getPublicRooms();
-      console.log(`[BombParty] Sending lobby list: ${publicRooms.length} public rooms`, publicRooms.map(r => ({ id: r.id, name: r.name, players: r.players })));
+      bombPartyLogger.info({ playerId, roomCount: publicRooms.length }, 'Sending lobby list');
       
       sendMessage({
         event: 'bp:lobby:list',
@@ -272,14 +347,14 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
     }
 
     function handleLobbyStart(playerId: string, payload: any): void {
-      console.log(`[BombParty] handleLobbyStart called: playerId=${playerId}, roomId=${payload.roomId}`);
+      bombPartyLogger.info({ playerId, roomId: payload.roomId }, 'handleLobbyStart called');
       const result = roomManager.startGame(playerId, payload.roomId);
 
       if (!result.success) {
-        console.log(`[BombParty] Start error: ${result.error}`);
+        bombPartyLogger.warn({ playerId, roomId: payload.roomId, error: result.error }, 'Start error');
         sendError(result.error || 'Error starting game', ErrorCode.STATE_ERROR);
       } else {
-        console.log(`[BombParty] Start successful for roomId=${payload.roomId}`);
+        bombPartyLogger.info({ playerId, roomId: payload.roomId }, 'Start successful');
       }
     }
 
@@ -315,7 +390,7 @@ export default async function bombPartyWSHandlers(fastify: FastifyInstance) {
     });
 
     socket.on('error', (error: Error) => {
-      console.error('[BombParty] WebSocket error:', error);
+      bombPartyLogger.error({ userId, error }, 'WebSocket error');
     });
 
     sendMessage({

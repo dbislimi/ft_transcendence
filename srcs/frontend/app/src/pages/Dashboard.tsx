@@ -13,7 +13,7 @@ export default function Dashboard() {
       return;
     }
 
-    fetch("http://localhost:3000/profile", {
+  fetch("http://localhost:3001/profile", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

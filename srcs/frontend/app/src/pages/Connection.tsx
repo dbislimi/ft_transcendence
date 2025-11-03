@@ -42,12 +42,22 @@ export default function Connection() {
 
       if (response.ok) {
         const data = await response.json();
+
+        // If server indicates 2FA is required, store the temporary id and redirect to the 2FA page
+        if (data.require2fa) {
+          if (data.userId) {
+            localStorage.setItem("for2FaUserId", String(data.userId));
+          }
+          navigate("/auth");
+          return;
+        }
+
         const userData = {
           id: data.user?.id || "1",
-          name: data.user?.name || email.split('@')[0],
-          email: email
+          name: data.user?.name || email.split("@")[0],
+          email: email,
         };
-        
+
         login(userData, data.token);
         navigate("/");
       } else {

@@ -1,6 +1,6 @@
 import Board from "./Board.ts";
 
-const MAX_BALL_SPEED = 200;
+const MAX_BALL_SPEED = 200; // Limite arbitraire, à ajuster selon le gameplay
 
 export default class Ball {
 	private ballRadius: number;

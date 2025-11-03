@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTurnTimer } from '../core/timer';
 import { useAuth } from '../../contexts/AuthContext';
 import RulesScreen from '../RulesScreen';
+import { bombPartyService } from '../../services/bombPartyService';
 import { 
   useBombPartyHooks, 
   BombPartyLayout, 
@@ -13,6 +14,13 @@ import {
 export default function BombPartyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Initialize BombParty service on mount (only when entering BombParty page)
+  useEffect(() => {
+    console.log('[BombPartyPage] Mounting - initializing service');
+    bombPartyService.init();
+  }, []);
+
   const {
     state,
     actions,
