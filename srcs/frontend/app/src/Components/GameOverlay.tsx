@@ -29,8 +29,7 @@ export default function GameOverlay({
 		if (d === 1) return "Finale";
 		if (d === 2) return "Demi-finale";
 		if (d === 3) return "Quart de finale";
-		if (d !== undefined) return `${2 ** d}ème de finale`;
-		return null;
+		return `${2 ** d}ème de finale`;
 	};
 
 	const roundLabel = renderRoundLabel();
