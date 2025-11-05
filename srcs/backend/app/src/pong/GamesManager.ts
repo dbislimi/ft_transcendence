@@ -20,7 +20,11 @@ export default class GamesManager {
 	): boolean {
 		if (this.tournaments[id]) {
 			client.socket?.send(
-				JSON.stringify({ event: "error", msg: "tournamentId" })
+				JSON.stringify({
+					event: "error",
+					to: "pong",
+					msg: "tournamentId",
+				})
 			);
 			return false;
 		}
@@ -108,6 +112,7 @@ export default class GamesManager {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
+							to: "pong",
 							body: { is: "offline", didWin, scores },
 						})
 					);
@@ -128,6 +133,7 @@ export default class GamesManager {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
+							to: "pong",
 							body: { is: "quick", didWin, scores },
 						})
 					);
@@ -143,7 +149,7 @@ export default class GamesManager {
 			this.startWithCountdown(game, [opponent, client]);
 			return;
 		}
-		client.socket?.send(JSON.stringify({ event: "searching" }));
+		client.socket?.send(JSON.stringify({ event: "searching", to: "pong" }));
 		this.waitingClient = client;
 	}
 	removeFromQueue(client: Client) {
@@ -153,18 +159,35 @@ export default class GamesManager {
 		}
 	}
 	private broadcastPlayersInfo(game: Game, clients: (Client | undefined)[]) {
+		const anyClient = clients.find((c) => !!c);
+		const mode: "quick" | "tournament" = anyClient?.tournament
+			? "tournament"
+			: "quick";
+		let tournamentRound:
+			| { depth: number; initialDepth: number }
+			| undefined = undefined;
+		if (mode === "tournament" && anyClient?.tournament) {
+			const t = this.tournaments[anyClient.tournament.tournamentId];
+			if (t) {
+				const ctx = t.getRoundContextForGame(game);
+				if (ctx) tournamentRound = ctx;
+			}
+		}
+
 		for (const client of clients) {
 			if (!client?.socket) continue;
 			const opponent = game.getOpp(client)?.name ?? null;
-			client.socket.send(
-				JSON.stringify({
-					event: "players",
-					body: {
-						opponent,
-						side: client.inGameId ?? null,
-					},
-				})
-			);
+			const payload = {
+				event: "found" as const,
+				to: "pong",
+				body: {
+					mode,
+					opponent,
+					side: client.inGameId ?? null,
+					...(tournamentRound ? { tournamentRound } : undefined),
+				},
+			};
+			client.socket.send(JSON.stringify(payload));
 		}
 	}
 	private async startWithCountdown(
@@ -197,6 +220,7 @@ export default class GamesManager {
 	) {
 		const payload = JSON.stringify({
 			event: "countdown",
+			to: "pong",
 			body: { remaining },
 		});
 		for (const client of clients) client?.socket?.send(payload);

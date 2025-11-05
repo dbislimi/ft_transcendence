@@ -24,8 +24,8 @@ interface WebSocketContextType {
 		text: string;
 		to?: number | null;
 	}) => void;
-	addPongListener: (fn: (data: any) => void) => void;
-	removePongListener: (fn: (data: any) => void) => void;
+	addPongRoute: (route: string, fn: (data: any) => void) => void;
+	removePongRoute: (route: string, fn: (data: any) => void) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -37,9 +37,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const chatWsRef = useRef<WebSocket | null>(null);
 	const pongWsRef = useRef<WebSocket | null>(null);
 	const friendsWsRef = useRef<WebSocket | null>(null);
-	const pongListenersRef = useRef(
-		new Set<(data: any) => void>()
-	);
+	const pongRoutesRef = useRef(new Map<string, (data: any) => void>());
 
 	const { isAuthenticated, token } = useUser();
 
@@ -91,12 +89,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			} catch (e) {
 				return;
 			}
-			for (const fn of pongListenersRef.current) {
-				try {
-					fn(parsed);
-				} catch (e) {
-					console.error("pong listener error:", e);
-				}
+			console.log('received: ', parsed);
+			const to: string | undefined =
+				typeof parsed?.to === "string" ? parsed.to : undefined;
+			if (!to) return;
+			const handler = pongRoutesRef.current.get(to);
+			if (!handler) return;
+			try {
+				handler(parsed);
+			} catch (e) {
+				console.error("pong route handler error:", e);
 			}
 		};
 
@@ -123,12 +125,13 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
-	const addPongListener = (fn: (data: any) => void) => {
-		pongListenersRef.current.add(fn);
+	const addPongRoute = (route: string, fn: (data: any) => void) => {
+		pongRoutesRef.current.set(route, fn);
 	};
 
-	const removePongListener = (fn: (data: any) => void) => {
-		pongListenersRef.current.delete(fn);
+	const removePongRoute = (route: string, fn: (data: any) => void) => {
+		const current = pongRoutesRef.current.get(route);
+		if (current && current === fn) pongRoutesRef.current.delete(route);
 	};
 
 	return (
@@ -137,8 +140,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				pongWsRef,
 				messages,
 				sendMessage,
-				addPongListener,
-				removePongListener,
+				addPongRoute,
+				removePongRoute,
 			}}
 		>
 			{children}

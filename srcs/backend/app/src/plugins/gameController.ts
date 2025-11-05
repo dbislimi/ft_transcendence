@@ -41,6 +41,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			socket.send(
 				JSON.stringify({
 					event: "tournament_rejoin_prompt",
+					to: "tournament_rejoin_prompt",
 					body: {
 						tournamentId: client.tournament?.tournamentId,
 						timeout: 10,
@@ -60,8 +61,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				local = false;
 			} else if (data.event === "rejoin_tournament") {
 				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+				client.rejoinTimer = undefined;
 				console.log("rejoin_tournament from", client.name);
 				games.handleRejoin(client);
+			} else if (data.event === "dismiss_rejoin_prompt") {
+				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+				client.rejoinTimer = undefined;
+				console.log("dismiss_rejoin_prompt from", client.name);
+				games.stop_online(client);
 			} else if (data.event === "stop_online") {
 				console.log("stop_online called");
 				games.stop_online(client);
@@ -73,12 +80,23 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				);
 				games.playerReady(client);
 			} else if (data.event === "start" && !games.getRoom(client)) {
+				if (client.rejoinTimer) {
+					socket.send(
+						JSON.stringify({
+							event: "error",
+							to: "pong",
+							msg: "rejoin_active",
+						})
+					);
+					return;
+				}
 				// console.log(data.body.action);
 				switch (data.body.action) {
 					case "list_tournaments":
 						socket.send(
 							JSON.stringify({
 								event: "tournaments",
+								to: "online_card",
 								body: games.listTournaments(),
 							})
 						);
@@ -133,9 +151,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		});
 		socket.on("close", () => {
 			console.log("close ", client.name);
-			client.socket = undefined;
 			games.stop_online(client);
-			if (client.tournament && client.tournament.allowReconnect) {
+			client.socket = undefined;
+			if (client.rejoinTimer) {
 				if (client.removalTimer) clearTimeout(client.removalTimer);
 				client.removalTimer = setTimeout(() => {
 					const c = fastify.clients.get(client.id);

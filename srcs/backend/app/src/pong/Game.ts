@@ -1,4 +1,3 @@
-import type WebSocket from "ws";
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
 import type { Client } from "../plugins/gameController.ts";
@@ -43,7 +42,6 @@ export default class Game {
 			p2.inGameId = 1;
 			this.clients = [p1, p2];
 			this.clientsId.set(p2, 1);
-			this.send(JSON.stringify({ event: "found" }));
 			return;
 		}
 		this.clients = [p1, undefined];
@@ -66,7 +64,6 @@ export default class Game {
 		this.clients[1] = p;
 		p.inGameId = 1;
 		this.clientsId.set(p, 1);
-		this.send(JSON.stringify({ event: "found" }));
 	}
 
 	disconnectPlayer(p: Client) {
@@ -164,20 +161,10 @@ export default class Game {
 		this.board.setBallPos(x, y);
 	}
 
-	private gameLoop(): void {
-		const now = performance.now();
-		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
-		const MAX_DELTA = 0.1;
-		deltaTime = Math.min(deltaTime, MAX_DELTA);
-		this.prevTime = now;
-
-		if (this.winner !== undefined) {
-			this.stop(this.winner);
-			return;
-		}
-		this.board.update(deltaTime);
-		const data = {
+	getData() {
+		return {
 			event: "data",
+			to: "pong",
 			body: {
 				ball: {
 					...this.board.getBallData(),
@@ -190,8 +177,21 @@ export default class Game {
 				},
 			},
 		};
-		this.send(JSON.stringify(data));
+	}
+	private gameLoop(): void {
+		const now = performance.now();
+		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
+		const MAX_DELTA = 0.1;
+		deltaTime = Math.min(deltaTime, MAX_DELTA);
+		this.prevTime = now;
 
+		if (this.winner !== undefined) {
+			this.stop(this.winner);
+			return;
+		}
+		this.board.update(deltaTime);
+		const data = this.getData();
+		this.send(JSON.stringify(data));
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);

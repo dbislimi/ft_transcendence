@@ -6,20 +6,22 @@ interface Props {
 	play: boolean;
 	sessionType?: "offline" | "online" | null;
 	tournamentRound?: TournamentRound;
+	isTournament?: boolean;
 }
 
 export default function GameOverlay({
 	play,
 	sessionType,
 	tournamentRound,
+	isTournament,
 }: Props) {
 	if (!play) return null;
 
-	const isTournament = !!tournamentRound;
+	const isTournamentMode = isTournament || !!tournamentRound;
 	const modeLabel =
 		sessionType === "offline"
 			? "Hors-ligne"
-			: isTournament
+			: isTournamentMode
 			? "Tournoi"
 			: "En ligne";
 
@@ -40,7 +42,7 @@ export default function GameOverlay({
 			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
 				<div className="font-semibold">Mode</div>
 				<div className="mt-1">{modeLabel}</div>
-				{isTournament && roundLabel && (
+				{isTournamentMode && roundLabel && (
 					<div className="mt-2 text-xs text-slate-200">
 						{roundLabel}
 					</div>

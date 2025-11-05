@@ -4,6 +4,7 @@ import SpaceBackground from "../Components/SpaceBackground";
 import GameOverlay from "../Components/GameOverlay";
 import GameOverOverlay from "../Components/GameOverOverlay";
 import Countdown from "../Components/Countdown";
+import SearchingOverlay from "../Components/SearchingOverlay";
 import WaitingOverlay from "../Components/WaitingOverlay";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
@@ -69,8 +70,12 @@ export default function Pong() {
 	const [labels, setLabels] = useState<PlayerLabels>(() =>
 		getDefaultLabels()
 	);
-	const [waiting, setWaiting] = useState(false);
+	const [searching, setSearching] = useState(false);
+	const [waiting, setWaiting] = useState<{ opponentName: string } | null>(
+		null
+	);
 	const trainingRef = useRef(false);
+	const isTournamentRef = useRef(false);
 	const tournamentRoundRef = useRef<{
 		depth?: number;
 		initialDepth?: number;
@@ -89,6 +94,7 @@ export default function Pong() {
 		tournamentRound?: { depth?: number; initialDepth?: number } | null;
 		finalTournamentWin?: boolean;
 		type?: string;
+		opponent?: string;
 	} | null;
 
 	const [gameOver, setGameOver] = useState<GameOverState>(null);
@@ -117,15 +123,19 @@ export default function Pong() {
 		resetLabels();
 		tournamentRoundRef.current = null;
 		setPlay(false);
+		setWaiting(null);
 	}, [resetGameState, resetLabels, setControlsReady]);
 
-	const localStart = useCallback(() => {
-		resetGameState();
-		resetLabels();
-		setControlsReady(false);
-		setWaiting(false);
-		setPlay(true);
-	}, [resetGameState, setControlsReady]);
+	const localStart = useCallback(
+		(opts?: { labels?: PlayerLabels }) => {
+			resetGameState();
+			if (opts?.labels) setLabels(opts.labels);
+			setControlsReady(false);
+			setSearching(false);
+			setPlay(true);
+		},
+		[resetGameState, setControlsReady]
+	);
 
 	const onMessage = useCallback(
 		(data: any) => {
@@ -134,7 +144,16 @@ export default function Pong() {
 			switch (data.event) {
 				case "searching": {
 					console.log("searching");
-					setWaiting(true);
+					const tr = data.body?.tournamentRound;
+					if (tr && typeof tr.depth === "number") {
+						const depth = Number(tr.depth);
+						const initialDepth =
+							typeof tr.initialDepth === "number"
+								? tr.initialDepth
+								: undefined;
+						tournamentRoundRef.current = { depth, initialDepth };
+					}
+					setSearching(true);
 					setCountdownState(null);
 					setControlsReady(false);
 					setPlay(false);
@@ -143,37 +162,55 @@ export default function Pong() {
 				case "found": {
 					console.log("found");
 					trainingRef.current = false;
-					localStart();
-					break;
-				}
-				case "players": {
+					setWaiting(null);
+					const tr = data.body?.tournamentRound;
+					if (tr && typeof tr.depth === "number") {
+						const depth = Number(tr.depth);
+						const initialDepth =
+							typeof tr.initialDepth === "number"
+								? tr.initialDepth
+								: undefined;
+						tournamentRoundRef.current = { depth, initialDepth };
+					}
 					const opponentLabel = data.body?.opponent;
-					setLabels((prev) => ({
-						...prev,
+					const nextLabels: PlayerLabels = {
+						self: defaultSelfLabel,
 						opponent:
 							typeof opponentLabel === "string" &&
 							opponentLabel.trim().length
 								? opponentLabel
-								: prev.opponent,
-					}));
+								: PLAYER_LABELS.opponent,
+					};
+					localStart({ labels: nextLabels });
+					break;
+				}
+				case "waiting": {
+					const opponentName = data.who;
+					if (
+						typeof opponentName === "string" &&
+						opponentName.trim().length
+					) {
+						setWaiting({ opponentName });
+					}
 					break;
 				}
 				case "countdown": {
 					const remaining = data.body?.remaining;
 					if (typeof remaining === "number") {
-						if (remaining > 0)
+						if (remaining > 0) {
 							setCountdownState({
 								mode: "remote",
 								value: remaining,
 							});
-						else setCountdownState(null);
+						} else setCountdownState(null);
 					}
 					setControlsReady(false);
+					setWaiting(null);
 					break;
 				}
 				case "data":
-					if (!play) break;
 					setControlsReady(true);
+					setWaiting(null);
 					gameRef.current.ball = data.body.ball;
 					gameRef.current.players = data.body.players;
 					gameRef.current.bonuses = data.body.bonuses;
@@ -182,48 +219,72 @@ export default function Pong() {
 					const type: string = data.body.is;
 					const didWin: boolean = data.body.didWin;
 					const scores: number[] = data.body.scores;
+					const opponentFromResult: string | undefined =
+						data.body?.opponent;
+					const tr = data.body?.tournamentRound;
+					if (tr && typeof tr.depth === "number") {
+						const depth = Number(tr.depth);
+						const initialDepth =
+							typeof tr.initialDepth === "number"
+								? tr.initialDepth
+								: undefined;
+						tournamentRoundRef.current = { depth, initialDepth };
+					}
 					if (trainingRef.current) {
 						trainingRef.current = false;
+						setControlsReady(false);
+						setCountdownState(null);
+						setWaiting(null);
+						setPlay(false);
+						setSearching(true);
+						break;
 					} else {
+						const isTournamentFinalWin =
+							type === "tournament" &&
+							didWin === true &&
+							!!tournamentRoundRef.current &&
+							Number(tournamentRoundRef.current.depth) === 1;
 						setGameOver({
 							didWin,
 							scores,
 							tournamentRound: tournamentRoundRef.current,
+							finalTournamentWin:
+								isTournamentFinalWin || undefined,
 							type,
+							opponent: opponentFromResult,
 						});
 					}
 					setControlsReady(false);
 					setCountdownState(null);
-					//setPlay(false);
-					break;
-				}
-				case "tournament_win": {
-					setControlsReady(false);
-					setCountdownState(null);
-					setGameOver({
-						didWin: true,
-						scores: data.body?.scores ?? [],
-						finalTournamentWin: true,
-					});
-
-					tournamentRoundRef.current = null;
-
-					break;
-				}
-				case "tournament_round": {
-					const depth = data.body?.depth;
-					const initialDepth = data.body?.initialDepth;
-					if (typeof depth === "number") {
-						tournamentRoundRef.current = { depth, initialDepth };
+					setWaiting(null);
+					setSearching(false);
+					if (type === "tournament") {
+						const nextLabels: PlayerLabels | undefined =
+							opponentFromResult
+								? {
+										self: defaultSelfLabel,
+										opponent: opponentFromResult,
+								  }
+								: undefined;
+						localStart(
+							nextLabels ? { labels: nextLabels } : undefined
+						);
 					}
 					break;
 				}
-
 				case "error":
 					if (data.msg === "tournamentId")
 						window.alert(
 							"Le nom de tournoi est deja utilisé. Choisissez-en un autre"
 						);
+					else if (data.msg === "rejoin_active") {
+						window.alert(
+							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du délai."
+						);
+						setSearching(false);
+						setPlay(false);
+						setCountdownState(null);
+					}
 					break;
 			}
 		},
@@ -237,14 +298,14 @@ export default function Pong() {
 		]
 	);
 
-	const { pongWsRef, addPongListener, removePongListener } = useWebSocket();
+	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 
 	useEffect(() => {
-		addPongListener(onMessage);
+		addPongRoute("pong", onMessage);
 		return () => {
-			removePongListener(onMessage);
+			removePongRoute("pong", onMessage);
 		};
-	}, [addPongListener, removePongListener, onMessage]);
+	}, [addPongRoute, removePongRoute, onMessage]);
 
 	const stop = useCallback(
 		(forceOnline: boolean = false) => {
@@ -269,12 +330,22 @@ export default function Pong() {
 		stop(true);
 		setParams(mode ? { mode } : null);
 		sessionTypeRef.current = mode as "offline" | "online" | null;
+		isTournamentRef.current = false;
 	}, [mode, stop, setParams]);
 
 	const handleOnQuitGameover = useCallback(() => {
 		setGameOver(null);
+		if (
+			gameOver &&
+			gameOver.tournamentRound &&
+			gameOver.didWin &&
+			!gameOver.finalTournamentWin
+		) {
+			stop(true);
+			return;
+		}
 		localStop();
-	}, [localStop]);
+	}, [localStop, gameOver]);
 
 	const sendStartEvent = useCallback(
 		(body: Record<string, unknown>) => {
@@ -310,7 +381,7 @@ export default function Pong() {
 
 		setGameOver(null);
 		pongWsRef.current?.send(JSON.stringify({ event: "ready" }));
-		setWaiting(true);
+		setSearching(true);
 		setPlay(false);
 		setControlsReady(false);
 		setCountdownState(null);
@@ -349,6 +420,7 @@ export default function Pong() {
 			if (selectedMode === "Tournament") {
 				setParams({ mode: "online", id });
 				sessionTypeRef.current = "online";
+				isTournamentRef.current = true;
 				sendStartEvent({
 					action: `${matchType.toLowerCase()}_tournament`,
 					id,
@@ -358,6 +430,7 @@ export default function Pong() {
 			} else {
 				setParams({ mode: "online" });
 				sessionTypeRef.current = "online";
+				isTournamentRef.current = false;
 				sendStartEvent({ action: "play_online" });
 			}
 			resetLabels();
@@ -423,9 +496,10 @@ export default function Pong() {
 		<div className="relative w-screen h-screen flex items-center justify-center">
 			<SpaceBackground />
 			<GameOverlay
-				play={play || waiting}
+				play={play || searching}
 				sessionType={sessionTypeRef.current}
 				tournamentRound={tournamentRoundRef.current}
+				isTournament={isTournamentRef.current}
 			/>
 			<GameOverOverlay
 				gameOver={gameOver}
@@ -433,6 +507,9 @@ export default function Pong() {
 				onReplay={handleReplayFromOverlay}
 				onContinue={handleContinueFromOverlay}
 			/>
+			{waiting && play && (
+				<WaitingOverlay opponentName={waiting.opponentName} />
+			)}
 			{play && (
 				<div className="absolute top-4 left-4 z-50">
 					<BackToMenuButton onClick={handleBackToMenu} />
@@ -452,27 +529,28 @@ export default function Pong() {
 					onConfirm={handleOfflineConfirm}
 				/>
 			)}
-			{mode === "online" && !play && !waiting && (
+			{mode === "online" && !play && !searching && (
 				<OnlineCard
 					onCancel={() => {
 						setParams(null);
 						sessionTypeRef.current = null;
+						isTournamentRef.current = false;
 					}}
 					onConfirm={handleOnlineConfirm}
 				/>
 			)}
-			{waiting && (
-				<WaitingOverlay
+			{searching && (
+				<SearchingOverlay
 					training={trainingRef.current}
 					onQuit={() => {
 						stop();
 						setParams({ mode: "online" });
-						setWaiting(false);
+						setSearching(false);
 					}}
 					onQuitTraining={() => {
 						stop();
 						trainingRef.current = false;
-						setWaiting(true);
+						setSearching(true);
 					}}
 					onTrain={(diff) => {
 						trainingRef.current = true;

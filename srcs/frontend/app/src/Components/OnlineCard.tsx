@@ -33,16 +33,16 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	const [priv, setPriv] = useState(false);
 	const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
-	const { pongWsRef, addPongListener, removePongListener } = useWebSocket();
+    const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 
 	useEffect(() => {
 		if (mode !== "Tournament" || variant !== "Join") return;
-		const handler = (d: any) => {
+        const handler = (d: any) => {
 			if (!d) return;
 			if (d.event === "tournaments") setTournaments(d.body);
 		};
 
-		addPongListener(handler);
+        addPongRoute("online_card", handler);
 
 		const ask = () => {
 			if (pongWsRef.current?.readyState === WebSocket.OPEN)
@@ -57,9 +57,9 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 		const id = setInterval(ask, 3000);
 		return () => {
 			clearInterval(id);
-			removePongListener(handler);
+            removePongRoute("online_card", handler);
 		};
-	}, [mode, variant, addPongListener, removePongListener, pongWsRef]);
+    }, [mode, variant, addPongRoute, removePongRoute, pongWsRef]);
 
 	const disable =
 		variant === "Create"
