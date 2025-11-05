@@ -117,7 +117,6 @@ export default class Tournament {
 			parent.waiting = undefined;
 			this.notifyRoundWinAndAdvance(winner, parent);
 		} else {
-	
 			if (!parent.loser) {
 				parent.loser = quitter;
 				return;
@@ -139,7 +138,6 @@ export default class Tournament {
 		if (game && game.clients[1] === undefined)
 			game.disconnectPlayer(winner);
 		const depth = parent.depth;
-		const initialDepth = this.initialDepth;
 		const loserName = parent.loser?.name;
 		this.clientNode.set(winner, parent);
 		winner.socket?.send(
@@ -151,14 +149,11 @@ export default class Tournament {
 					didWin: true,
 					scores,
 					...(loserName ? { opponent: loserName } : {}),
-					...(typeof depth === "number" &&
-					typeof initialDepth === "number"
-						? { tournamentRound: { depth, initialDepth } }
-						: {}),
+					...(depth !== undefined ? { tournamentDepth: depth } : {}),
 				},
 			})
 		);
-		const delay = typeof depth === "number" && depth === 1 ? 0 : 15000;
+		const delay = depth !== undefined && depth === 1 ? 0 : 15000;
 		if (winner.winnerTimer) clearTimeout(winner.winnerTimer);
 		winner.winnerTimer = setTimeout(() => {
 			if (parent.winner === winner) {
@@ -251,7 +246,6 @@ export default class Tournament {
 					this.rooms.delete(client);
 					if (!client.quit) {
 						const depth = parent.depth;
-						const initialDepth = this.initialDepth;
 						const opponentName = parent.game?.getOpp(client)?.name;
 						client.socket?.send(
 							JSON.stringify({
@@ -264,14 +258,8 @@ export default class Tournament {
 									...(opponentName
 										? { opponent: opponentName }
 										: {}),
-									...(typeof depth === "number" &&
-									typeof initialDepth === "number"
-										? {
-												tournamentRound: {
-													depth,
-													initialDepth,
-												},
-										  }
+									...(depth !== undefined
+										? { tournamentDepth: depth }
 										: {}),
 								},
 							})
@@ -281,9 +269,7 @@ export default class Tournament {
 						parent.winner = client;
 						const depth = parent.depth;
 						const delay =
-							typeof depth === "number" && depth === 1
-								? 0
-								: 15000;
+							depth !== undefined && depth === 1 ? 0 : 15000;
 						if (client.winnerTimer)
 							clearTimeout(client.winnerTimer);
 						client.winnerTimer = setTimeout(() => {
@@ -317,29 +303,19 @@ export default class Tournament {
 						event: "searching",
 						to: "pong",
 						body:
-							typeof parent.depth === "number" &&
-							typeof this.initialDepth === "number"
-								? {
-										tournamentRound: {
-											depth: parent.depth,
-											initialDepth: this.initialDepth,
-										},
-								  }
+							parent.depth !== undefined
+								? { tournamentDepth: parent.depth }
 								: undefined,
 					})
 				);
 		}
 	}
 
-	getRoundContextForGame(
-		game: Game
-	): { depth: number; initialDepth: number } | undefined {
+	getRoundContextForGame(game: Game): { depth: number } | undefined {
 		const node = this.gameNode.get(game);
 		if (!node) return undefined;
 		const depth = node.depth;
-		const initialDepth = this.initialDepth;
-		if (typeof depth === "number" && typeof initialDepth === "number")
-			return { depth, initialDepth };
+		if (depth !== undefined) return { depth };
 		return undefined;
 	}
 	init() {

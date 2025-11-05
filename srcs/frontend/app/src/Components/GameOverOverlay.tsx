@@ -1,12 +1,10 @@
 import React from "react";
 
-type TournamentRound = { depth?: number; initialDepth?: number } | null;
-
 interface Props {
 	gameOver: {
 		didWin: boolean;
 		scores: number[];
-		tournamentRound?: TournamentRound;
+		tournamentDepth?: number | null;
 		finalTournamentWin?: boolean;
 		type?: string;
 		opponent?: string;
@@ -24,7 +22,7 @@ export default function GameOverOverlay({
 }: Props) {
 	if (!gameOver) return null;
 
-	const { didWin, scores, tournamentRound, finalTournamentWin, opponent } =
+	const { didWin, scores, tournamentDepth, finalTournamentWin, opponent } =
 		gameOver;
 
 	const title = finalTournamentWin
@@ -33,7 +31,7 @@ export default function GameOverOverlay({
 		? "Victoire !"
 		: "Défaite";
 	console.log("scores: ", scores);
-	const isTournament = !!tournamentRound;
+	const isTournament = tournamentDepth != null;
 	const isTournamentRoundWin = isTournament && didWin && !finalTournamentWin;
 	const isTournamentDefeat = isTournament && !didWin;
 

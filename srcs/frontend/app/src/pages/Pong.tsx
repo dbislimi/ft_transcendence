@@ -76,10 +76,13 @@ export default function Pong() {
 	);
 	const trainingRef = useRef(false);
 	const isTournamentRef = useRef(false);
-	const tournamentRoundRef = useRef<{
-		depth?: number;
-		initialDepth?: number;
-	} | null>(null);
+	const tournamentDepthRef = useRef<number | null>(null);
+
+	const applyTournamentRound = useCallback((body: any) => {
+		if (!body) return;
+		const depth: number | undefined = body.tournamentDepth;
+		if (depth) tournamentDepthRef.current = depth;
+	}, []);
 
 	const autoContinueTimeoutRef = useRef<number | null>(null);
 	const { mode, setParams } = usePongParams();
@@ -91,7 +94,7 @@ export default function Pong() {
 	type GameOverState = {
 		didWin: boolean;
 		scores: number[];
-		tournamentRound?: { depth?: number; initialDepth?: number } | null;
+		tournamentDepth?: number | null;
 		finalTournamentWin?: boolean;
 		type?: string;
 		opponent?: string;
@@ -121,7 +124,7 @@ export default function Pong() {
 		setCountdownState(null);
 		setControlsReady(false);
 		resetLabels();
-		tournamentRoundRef.current = null;
+		tournamentDepthRef.current = null;
 		setPlay(false);
 		setWaiting(null);
 	}, [resetGameState, resetLabels, setControlsReady]);
@@ -144,15 +147,7 @@ export default function Pong() {
 			switch (data.event) {
 				case "searching": {
 					console.log("searching");
-					const tr = data.body?.tournamentRound;
-					if (tr && typeof tr.depth === "number") {
-						const depth = Number(tr.depth);
-						const initialDepth =
-							typeof tr.initialDepth === "number"
-								? tr.initialDepth
-								: undefined;
-						tournamentRoundRef.current = { depth, initialDepth };
-					}
+					applyTournamentRound(data.body);
 					setSearching(true);
 					setCountdownState(null);
 					setControlsReady(false);
@@ -163,15 +158,7 @@ export default function Pong() {
 					console.log("found");
 					trainingRef.current = false;
 					setWaiting(null);
-					const tr = data.body?.tournamentRound;
-					if (tr && typeof tr.depth === "number") {
-						const depth = Number(tr.depth);
-						const initialDepth =
-							typeof tr.initialDepth === "number"
-								? tr.initialDepth
-								: undefined;
-						tournamentRoundRef.current = { depth, initialDepth };
-					}
+					applyTournamentRound(data.body);
 					const opponentLabel = data.body?.opponent;
 					const nextLabels: PlayerLabels = {
 						self: defaultSelfLabel,
@@ -221,15 +208,7 @@ export default function Pong() {
 					const scores: number[] = data.body.scores;
 					const opponentFromResult: string | undefined =
 						data.body?.opponent;
-					const tr = data.body?.tournamentRound;
-					if (tr && typeof tr.depth === "number") {
-						const depth = Number(tr.depth);
-						const initialDepth =
-							typeof tr.initialDepth === "number"
-								? tr.initialDepth
-								: undefined;
-						tournamentRoundRef.current = { depth, initialDepth };
-					}
+					applyTournamentRound(data.body);
 					if (trainingRef.current) {
 						trainingRef.current = false;
 						setControlsReady(false);
@@ -242,12 +221,12 @@ export default function Pong() {
 						const isTournamentFinalWin =
 							type === "tournament" &&
 							didWin === true &&
-							!!tournamentRoundRef.current &&
-							Number(tournamentRoundRef.current.depth) === 1;
+							tournamentDepthRef.current != null &&
+							Number(tournamentDepthRef.current) === 1;
 						setGameOver({
 							didWin,
 							scores,
-							tournamentRound: tournamentRoundRef.current,
+							tournamentDepth: tournamentDepthRef.current,
 							finalTournamentWin:
 								isTournamentFinalWin || undefined,
 							type,
@@ -337,7 +316,7 @@ export default function Pong() {
 		setGameOver(null);
 		if (
 			gameOver &&
-			gameOver.tournamentRound &&
+			gameOver.tournamentDepth != null &&
 			gameOver.didWin &&
 			!gameOver.finalTournamentWin
 		) {
@@ -390,7 +369,7 @@ export default function Pong() {
 	useEffect(() => {
 		if (
 			gameOver &&
-			gameOver.tournamentRound &&
+			gameOver.tournamentDepth != null &&
 			!gameOver.finalTournamentWin &&
 			gameOver.didWin
 		) {
@@ -498,7 +477,7 @@ export default function Pong() {
 			<GameOverlay
 				play={play || searching}
 				sessionType={sessionTypeRef.current}
-				tournamentRound={tournamentRoundRef.current}
+				tournamentDepth={tournamentDepthRef.current}
 				isTournament={isTournamentRef.current}
 			/>
 			<GameOverOverlay

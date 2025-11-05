@@ -163,14 +163,12 @@ export default class GamesManager {
 		const mode: "quick" | "tournament" = anyClient?.tournament
 			? "tournament"
 			: "quick";
-		let tournamentRound:
-			| { depth: number; initialDepth: number }
-			| undefined = undefined;
+		let tournamentDepth: number | undefined = undefined;
 		if (mode === "tournament" && anyClient?.tournament) {
 			const t = this.tournaments[anyClient.tournament.tournamentId];
 			if (t) {
 				const ctx = t.getRoundContextForGame(game);
-				if (ctx) tournamentRound = ctx;
+				if (ctx) tournamentDepth = ctx.depth;
 			}
 		}
 
@@ -184,7 +182,9 @@ export default class GamesManager {
 					mode,
 					opponent,
 					side: client.inGameId ?? null,
-					...(tournamentRound ? { tournamentRound } : undefined),
+					...(tournamentDepth !== undefined
+						? { tournamentDepth }
+						: undefined),
 				},
 			};
 			client.socket.send(JSON.stringify(payload));
