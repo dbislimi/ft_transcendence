@@ -30,6 +30,14 @@ db.serialize(() => {
 		twoFAEnabled INTEGER DEFAULT 0
 	);`);
 
+	db.run(`CREATE TABLE IF NOT EXISTS messages (
+  		id INTEGER PRIMARY KEY AUTOINCREMENT,
+  		fromId INTEGER NOT NULL,
+  		toId INTEGER,
+  		text TEXT NOT NULL,
+  		date TEXT NOT NULL
+	);`);
+
 	// Ensure legacy databases get new columns (ALTER TABLE will fail if column exists, so ignore errors)
 	db.run(`ALTER TABLE users ADD COLUMN display_name TEXT;`, (err) => {});
 	db.run(`ALTER TABLE users ADD COLUMN avatar TEXT;`, (err) => {});

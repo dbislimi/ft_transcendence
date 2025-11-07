@@ -1,6 +1,10 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 interface Client {
   id: number;
@@ -11,7 +15,6 @@ interface Client {
 export default fp(async function Chat(fastify: FastifyInstance<any, any, any, any, any>) {
   const clients: Client[] = [];
 
-
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -21,7 +24,7 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
           if (err) reject(err);
           else resolve(!!row);
         }
-      );
+      ); 
     });
   }
 
@@ -46,6 +49,7 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
         email: string;
       };
 
+      console.log("ON VA VOIR C QUOI", decoded);
       const client: Client = { id: decoded.id, name: decoded.name, socket };
       clients.push(client);
       fastify.log.info(` ${client.name} connecté`);
@@ -54,7 +58,7 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
       socket.on("message", async (raw: Buffer) => {
         try {
           const data = JSON.parse(raw.toString());
-
+          console.log("AHHHHHHHHHHHHHHHHHHHHH");
           if (data.type === "message") {
             const msg = {
               from: client.id,
@@ -63,7 +67,7 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
               text: data.text,
               date: new Date().toISOString(),
             };
-
+            
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
               [msg.from, msg.to, msg.text, msg.date]
