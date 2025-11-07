@@ -27,7 +27,8 @@ export default function Home() {
 	}, []);
 
 	const { t } = useTranslation();
-	const { user, isAuthenticated } = useUser();
+	const { user, token } = useUser();
+	const isAuthenticated = !!token && !!user;
 	const [isLoaded, setIsLoaded] = useState(false);
 	const [openPicker, setOpenPicker] = useState(false);
 
@@ -64,7 +65,7 @@ export default function Home() {
 								<div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
 									<span className="text-2xl">👋</span>
 									<p className="text-green-300 text-lg font-medium">
-										Bienvenue, {user.name} !
+										Bienvenue, {user.display_name} !
 									</p>
 								</div>
 							</div>
@@ -89,7 +90,7 @@ export default function Home() {
 						<div
 							className={`grid gap-8 max-w-5xl mx-auto ${
 								isAuthenticated
-									? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+									? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
 									: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
 							}`}
 						>
@@ -147,6 +148,27 @@ export default function Home() {
 							{isAuthenticated && (
 								<>
 									<ActionButton
+										to="/profile"
+										color="blue"
+										icon={
+											<svg
+												className="w-6 h-6 text-blue-400"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+												/>
+											</svg>
+										}
+										title="Mon profil"
+										subtitle="Gérer mon compte"
+									/>
+									<ActionButton
 										to="/pong"
 										color="purple"
 										icon={
@@ -171,7 +193,7 @@ export default function Home() {
 										color="cyan"
 										icon={
 											<span className="text-cyan-400 text-xl">
-												🖼️
+													🖼️
 											</span>
 										}
 										title="Boutique"
@@ -183,7 +205,7 @@ export default function Home() {
 										color="pink"
 										icon={
 											<span className="text-pink-400 text-xl">
-												💣
+													💣
 											</span>
 										}
 										title="Bomb Party"
