@@ -2,7 +2,6 @@ import fp from "fastify-plugin";
 import WebSocket from "ws";
 import jwt from "jsonwebtoken";
 import type { FastifyPluginAsync } from "fastify";
-import GamesManager from "../pong/GamesManager.ts";
 import websocket from "@fastify/websocket";
 import gameController from "./gameController.ts";
 import chat from "./chat.ts";
@@ -39,6 +38,14 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 	}
 	console.log("JWT OK");
 	fastify.decorate("clients", new Map<number, Client>());
+	fastify.decorate("findClientByName", (name: string): Client | null => {
+		for (const client of fastify.clients.values())
+			if (client.name === name) return client;
+		return null;
+	});
+	fastify.decorate("findClientById", (id: number): Client | null => {
+		return fastify.clients.get(id) || null;
+	});
 	fastify.decorate(
 		"getClient",
 		(req: any, socket: WebSocket): Client | null => {

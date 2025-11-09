@@ -1,31 +1,56 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function TournamentRejoinPrompt(): JSX.Element | null {
 	const { addPongRoute, removePongRoute, pongWsRef } = useWebSocket();
 	const [visible, setVisible] = useState(false);
 	const [remaining, setRemaining] = useState<number | null>(null);
 	const timerRef = useRef<number | null>(null);
+	const { notify } = useNotifications();
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		const listener = (data: any) => {
 			if (!data) return;
 			if (data?.event === "tournament_rejoin_prompt") {
-				const timeout = Number(data.body?.timeout ?? 10);
-				setRemaining(timeout);
-				setVisible(true);
-				if (timerRef.current) {
-					window.clearTimeout(timerRef.current);
-					timerRef.current = null;
-				}
-
-				timerRef.current = window.setTimeout(() => {
-					setVisible(false);
-					setRemaining(0);
-					timerRef.current = null;
-				}, timeout * 1000) as unknown as number;
+				const timeoutSec = Number(data.body?.timeout ?? 10);
+				notify({
+					variant: "info",
+					title: "Tournoi en cours",
+					message:
+						"Vous avez quitté une manche. Rejoindre avant expiration.",
+					duration: timeoutSec * 1000,
+					actions: [
+						{
+							label: "Rejoindre",
+							primary: true,
+							onPress: () => {
+								navigate("/pong?mode=online");
+								pongWsRef.current?.send(
+									JSON.stringify({
+										event: "rejoin",
+										body: { type: "tournament" },
+									})
+								);
+							},
+						},
+						{
+							label: "Ignorer",
+							onPress: () => {
+								pongWsRef.current?.send(
+									JSON.stringify({
+										event: "rejoin",
+										body: { type: "dismiss" },
+									})
+								);
+							},
+						},
+					],
+				});
+				setRemaining(timeoutSec);
+				setVisible(false);
 			}
 		};
 		addPongRoute("tournament_rejoin_prompt", listener);
@@ -71,7 +96,12 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 
 	const onJoin = () => {
 		navigate("/pong?mode=online");
-		pongWsRef.current?.send(JSON.stringify({ event: "rejoin_tournament" }));
+		pongWsRef.current?.send(
+			JSON.stringify({
+				event: "rejoin",
+				body: { type: "tournament" },
+			})
+		);
 		setVisible(false);
 		if (timerRef.current) {
 			window.clearTimeout(timerRef.current);
@@ -81,7 +111,10 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 
 	const onDismiss = () => {
 		pongWsRef.current?.send(
-			JSON.stringify({ event: "dismiss_rejoin_prompt" })
+			JSON.stringify({
+				event: "rejoin",
+				body: { type: "dismiss" },
+			})
 		);
 		setVisible(false);
 		if (timerRef.current) {

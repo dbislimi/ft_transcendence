@@ -2,7 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import ChatWidget from "./Chat";
 import BackgroundSurface from "./BackgroundSurface";
-import TournamentRejoinPrompt from "./TournamentRejoinPrompt";
+import Notifications from "./Notifications";
 
 export default function Layout() {
 	// const location = useLocation();
@@ -20,7 +20,7 @@ export default function Layout() {
 					<Outlet />
 				</main>
 			</BackgroundSurface>
-			<TournamentRejoinPrompt />
+			<Notifications />
 			{/* {!hiddenRoutes.includes(location.pathname) && <ChatWidget />} */}
 		</>
 	);

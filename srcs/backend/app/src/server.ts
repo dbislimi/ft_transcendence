@@ -6,7 +6,6 @@ import fastifyStatic from "@fastify/static";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
-import "./types/fastify.d.ts";
 import wsController from "./plugins/websockets.ts";
 import dbPlugin from "../index.js";
 import authPlugin from "./plugins/auth.ts";

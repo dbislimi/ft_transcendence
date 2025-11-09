@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Chat from "../Components/Chat";
 import SpaceBackground from "../Components/SpaceBackground";
 import GameOverlay from "../Components/GameOverlay";
 import GameOverOverlay from "../Components/GameOverOverlay";
 import Countdown from "../Components/Countdown";
 import SearchingOverlay from "../Components/SearchingOverlay";
 import WaitingOverlay from "../Components/WaitingOverlay";
+import { ReadyButton } from "../Components/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
 import usePongParams from "../hooks/usePongParams";
@@ -17,12 +17,7 @@ import PongGameArea from "../Components/PongGameArea";
 import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
 import { useUser } from "../context/UserContext";
-import { useNavigate } from "react-router-dom";
-
-type CountdownState =
-	| { mode: "remote"; value: number }
-	| { mode: "local"; seconds: number }
-	| null;
+import { useGameSession } from "../context/GameSessionContext";
 
 type PlayerLabels = {
 	self: string;
@@ -30,6 +25,30 @@ type PlayerLabels = {
 };
 
 type Difficulty = "easy" | "medium" | "hard";
+
+type GameOverData = {
+	didWin: boolean;
+	scores: number[];
+	tournamentDepth?: number | null;
+	finalTournamentWin?: boolean;
+	type?: string;
+	opponent?: string;
+};
+
+type Ui =
+	| { kind: "menu" }
+	| { kind: "search" }
+	| { kind: "training" }
+	| { kind: "play" }
+	| { kind: "wait"; opponentName: string }
+	| {
+			kind: "ready";
+			remaining: number;
+			selfReady: boolean;
+			opponentReady: boolean;
+	  }
+	| { kind: "countdown"; value: number }
+	| { kind: "result"; gameOver: GameOverData };
 
 const PLAYER_LABELS = {
 	self: "You",
@@ -48,161 +67,110 @@ const initGameState = (): GameState => ({
 });
 
 export default function Pong() {
-	console.log("PONG");
 	const { user } = useUser();
-
-	console.log("user: ", user);
-	const defaultSelfLabel = useMemo(
-		() => (user?.name ? `${user.name} (You)` : PLAYER_LABELS.self),
-		[user]
-	);
-	const getDefaultLabels = useCallback(
-		(): PlayerLabels => ({
-			self: defaultSelfLabel,
-			opponent: PLAYER_LABELS.opponent,
-		}),
-		[defaultSelfLabel]
-	);
-	const [play, setPlay] = useState(false);
-	const [countdownState, setCountdownState] = useState<CountdownState>(null);
-
-	const lastOfflineDiffRef = useRef<Difficulty | null>(null);
-	const [labels, setLabels] = useState<PlayerLabels>(() =>
-		getDefaultLabels()
-	);
-	const [searching, setSearching] = useState(false);
-	const [waiting, setWaiting] = useState<{ opponentName: string } | null>(
-		null
-	);
-	const trainingRef = useRef(false);
-	const isTournamentRef = useRef(false);
-	const tournamentDepthRef = useRef<number | null>(null);
-
-	const applyTournamentRound = useCallback((body: any) => {
-		if (!body) return;
-		const depth: number | undefined = body.tournamentDepth;
-		if (depth) tournamentDepthRef.current = depth;
-	}, []);
-
-	const autoContinueTimeoutRef = useRef<number | null>(null);
+	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
+	const { session, setSession, clearSession } = useGameSession();
 	const { mode, setParams } = usePongParams();
 
-	const sessionTypeRef = useRef<"offline" | "online" | null>(null);
-
+	const trainingRef = useRef(false);
+	const trainingLabelsRef = useRef<PlayerLabels | null>(null);
 	const lastStartPayloadRef = useRef<Record<string, unknown> | null>(null);
-
-	type GameOverState = {
-		didWin: boolean;
-		scores: number[];
-		tournamentDepth?: number | null;
-		finalTournamentWin?: boolean;
-		type?: string;
-		opponent?: string;
-	} | null;
-
-	const [gameOver, setGameOver] = useState<GameOverState>(null);
-
+	const activeSessionRef = useRef(false);
 	const gameRef = useRef<GameState>(initGameState());
-	const offlinePayloadRef = useRef<{ diff: Difficulty | null } | null>(null);
 	const controlsReadyRef = useRef(false);
+	const sessionMetaRef = useRef<{
+		sessionType: "offline" | "online" | null;
+		isTournament: boolean;
+		tournamentDepth: number | null;
+	}>({ sessionType: null, isTournament: false, tournamentDepth: null });
+
+	const [view, setView] = useState<Ui>({ kind: "menu" });
+
+	const labels = useMemo((): PlayerLabels => {
+		if (view.kind === "training" && trainingLabelsRef.current)
+			return trainingLabelsRef.current;
+		if (session?.labels) return session.labels;
+		const defaultSelf = user?.name
+			? `${user.name} (You)`
+			: PLAYER_LABELS.self;
+		return { self: defaultSelf, opponent: PLAYER_LABELS.opponent };
+	}, [session, user, view.kind]);
+
 	const setControlsReady = useCallback((next: boolean) => {
 		controlsReadyRef.current = next;
 	}, []);
 	const isControlsReady = useCallback(() => controlsReadyRef.current, []);
-
 	const resetGameState = useCallback(() => {
 		gameRef.current = initGameState();
 	}, []);
 
-	const resetLabels = useCallback(() => {
-		setLabels(getDefaultLabels());
-	}, [getDefaultLabels]);
+	const applyTournamentRound = useCallback((body: any) => {
+		if (!body) return;
+		const depth: number | undefined = body.tournamentDepth;
+		if (depth) sessionMetaRef.current.tournamentDepth = depth;
+	}, []);
 
 	const localStop = useCallback(() => {
 		resetGameState();
-		offlinePayloadRef.current = null;
-		setCountdownState(null);
 		setControlsReady(false);
-		resetLabels();
-		tournamentDepthRef.current = null;
-		setPlay(false);
-		setWaiting(null);
-	}, [resetGameState, resetLabels, setControlsReady]);
-
-	const localStart = useCallback(
-		(opts?: { labels?: PlayerLabels }) => {
-			resetGameState();
-			if (opts?.labels) setLabels(opts.labels);
-			setControlsReady(false);
-			setSearching(false);
-			setPlay(true);
-		},
-		[resetGameState, setControlsReady]
-	);
+		sessionMetaRef.current.tournamentDepth = null;
+		sessionMetaRef.current.isTournament = false;
+		activeSessionRef.current = false;
+		clearSession();
+	}, [resetGameState, setControlsReady, clearSession]);
 
 	const onMessage = useCallback(
 		(data: any) => {
-			if (!data) return;
-			console.log(`data: ${data.event}`);
+			if (!data || !activeSessionRef.current) return;
+			let remaining;
 			switch (data.event) {
-				case "searching": {
-					console.log("searching");
+				case "searching":
 					applyTournamentRound(data.body);
-					setSearching(true);
-					setCountdownState(null);
-					setControlsReady(false);
-					setPlay(false);
+					setView({ kind: "search" });
 					break;
-				}
-				case "found": {
-					console.log("found");
-					trainingRef.current = false;
-					setWaiting(null);
-					applyTournamentRound(data.body);
-					const opponentLabel = data.body?.opponent;
-					const nextLabels: PlayerLabels = {
-						self: defaultSelfLabel,
-						opponent:
-							typeof opponentLabel === "string" &&
-							opponentLabel.trim().length
-								? opponentLabel
-								: PLAYER_LABELS.opponent,
-					};
-					localStart({ labels: nextLabels });
-					break;
-				}
-				case "waiting": {
+				case "waiting":
 					const opponentName = data.who;
+					trainingRef.current = false;
+					trainingLabelsRef.current = null;
+					resetGameState();
+					setControlsReady(false);
 					if (
 						typeof opponentName === "string" &&
 						opponentName.trim().length
-					) {
-						setWaiting({ opponentName });
-					}
+					)
+						setView({ kind: "wait", opponentName });
 					break;
-				}
-				case "countdown": {
-					const remaining = data.body?.remaining;
+				case "ready_phase":
+					remaining = data.body?.remaining;
+					const selfReady = data.body?.selfReady ?? false;
+					const opponentReady = data.body?.opponentReady ?? false;
+					trainingRef.current = false;
+					trainingLabelsRef.current = null;
+					resetGameState();
 					if (typeof remaining === "number") {
-						if (remaining > 0) {
-							setCountdownState({
-								mode: "remote",
-								value: remaining,
-							});
-						} else setCountdownState(null);
+						setView({
+							kind: "ready",
+							remaining,
+							selfReady,
+							opponentReady,
+						});
 					}
-					setControlsReady(false);
-					setWaiting(null);
 					break;
-				}
+				case "countdown":
+					remaining = data.body?.remaining;
+					if (typeof remaining === "number" && !trainingRef.current) {
+						if (remaining > 0)
+							setView({ kind: "countdown", value: remaining });
+						else setView({ kind: "play" });
+					}
+					break;
 				case "data":
 					setControlsReady(true);
-					setWaiting(null);
 					gameRef.current.ball = data.body.ball;
 					gameRef.current.players = data.body.players;
 					gameRef.current.bonuses = data.body.bonuses;
 					break;
-				case "result": {
+				case "result":
 					const type: string = data.body.is;
 					const didWin: boolean = data.body.didWin;
 					const scores: number[] = data.body.scores;
@@ -211,46 +179,33 @@ export default function Pong() {
 					applyTournamentRound(data.body);
 					if (trainingRef.current) {
 						trainingRef.current = false;
+						trainingLabelsRef.current = null;
+						resetGameState();
 						setControlsReady(false);
-						setCountdownState(null);
-						setWaiting(null);
-						setPlay(false);
-						setSearching(true);
+						setView({ kind: "search" });
 						break;
-					} else {
-						const isTournamentFinalWin =
-							type === "tournament" &&
-							didWin === true &&
-							tournamentDepthRef.current != null &&
-							Number(tournamentDepthRef.current) === 1;
-						setGameOver({
+					}
+					activeSessionRef.current = false;
+					const td = sessionMetaRef.current.tournamentDepth;
+					const isTournamentFinalWin =
+						type === "tournament" &&
+						didWin === true &&
+						td != null &&
+						Number(td) === 1;
+					setView({
+						kind: "result",
+						gameOver: {
 							didWin,
 							scores,
-							tournamentDepth: tournamentDepthRef.current,
+							tournamentDepth: td,
 							finalTournamentWin:
 								isTournamentFinalWin || undefined,
 							type,
 							opponent: opponentFromResult,
-						});
-					}
-					setControlsReady(false);
-					setCountdownState(null);
-					setWaiting(null);
-					setSearching(false);
-					if (type === "tournament") {
-						const nextLabels: PlayerLabels | undefined =
-							opponentFromResult
-								? {
-										self: defaultSelfLabel,
-										opponent: opponentFromResult,
-								  }
-								: undefined;
-						localStart(
-							nextLabels ? { labels: nextLabels } : undefined
-						);
-					}
+						},
+					});
+					clearSession();
 					break;
-				}
 				case "error":
 					if (data.msg === "tournamentId")
 						window.alert(
@@ -260,133 +215,180 @@ export default function Pong() {
 						window.alert(
 							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du délai."
 						);
-						setSearching(false);
-						setPlay(false);
-						setCountdownState(null);
+						setView({ kind: "menu" });
 					}
 					break;
 			}
 		},
-		[
-			play,
-			resetLabels,
-			setControlsReady,
-			labels.opponent,
-			defaultSelfLabel,
-			setPlay,
-		]
+		[applyTournamentRound, clearSession]
 	);
-
-	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 
 	useEffect(() => {
 		addPongRoute("pong", onMessage);
-		return () => {
-			removePongRoute("pong", onMessage);
-		};
+		return () => removePongRoute("pong", onMessage);
 	}, [addPongRoute, removePongRoute, onMessage]);
+
+	useEffect(() => {
+		if (!session) return;
+		if (
+			["play", "ready", "countdown", "result", "wait"].includes(view.kind)
+		)
+			return;
+		resetGameState();
+		setControlsReady(false);
+		activeSessionRef.current = true;
+		setParams({
+			mode: session.sessionType === "offline" ? "offline" : "online",
+		});
+	}, [session, view.kind, setParams, resetGameState, setControlsReady]);
+
+	useEffect(() => {
+		if (!mode && view.kind !== "menu") stop();
+	}, [mode, view.kind]);
+
+	useEffect(() => {
+		return () =>
+			pongWsRef?.current?.send(
+				JSON.stringify({
+					event: "stop",
+					body: { type: "online" },
+				})
+			);
+	}, []);
+
+	const gameOverData = view.kind === "result" ? view.gameOver : null;
 
 	const stop = useCallback(
 		(forceOnline: boolean = false) => {
-			console.log(
-				`training=${trainingRef.current}, mode=${sessionTypeRef.current}, forceOnline=${forceOnline}`
-			);
-			const stop =
+			const stopType =
 				forceOnline ||
 				(!trainingRef.current &&
-					!(sessionTypeRef.current === "offline"))
-					? "stop_online"
-					: "stop_offline";
-			console.log(`stop: ${stop}`);
-			pongWsRef?.current?.send(JSON.stringify({ event: stop }));
+					!(sessionMetaRef.current.sessionType === "offline"))
+					? "online"
+					: "offline";
+			pongWsRef?.current?.send(
+				JSON.stringify({
+					event: "stop",
+					body: { type: stopType },
+				})
+			);
 			localStop();
 		},
 		[localStop, pongWsRef]
 	);
 
+	const sendStartEvent = useCallback(
+		(body: Record<string, unknown>) => {
+			if (!trainingRef.current) lastStartPayloadRef.current = body;
+			activeSessionRef.current = true;
+			pongWsRef.current?.send(JSON.stringify({ event: "start", body }));
+		},
+		[pongWsRef]
+	);
+
 	const handleBackToMenu = useCallback(() => {
-		setGameOver(null);
 		stop(true);
 		setParams(mode ? { mode } : null);
-		sessionTypeRef.current = mode as "offline" | "online" | null;
-		isTournamentRef.current = false;
-	}, [mode, stop, setParams]);
+		sessionMetaRef.current.sessionType = mode as
+			| "offline"
+			| "online"
+			| null;
+		sessionMetaRef.current.isTournament = false;
+		activeSessionRef.current = false;
+		resetGameState();
+		clearSession();
+		setView({ kind: "menu" });
+	}, [mode, stop, setParams, clearSession, resetGameState]);
 
 	const handleOnQuitGameover = useCallback(() => {
-		setGameOver(null);
+		resetGameState();
+		clearSession();
 		if (
-			gameOver &&
-			gameOver.tournamentDepth != null &&
-			gameOver.didWin &&
-			!gameOver.finalTournamentWin
+			gameOverData &&
+			gameOverData.tournamentDepth != null &&
+			gameOverData.didWin &&
+			!gameOverData.finalTournamentWin
 		) {
 			stop(true);
 			return;
 		}
 		localStop();
-	}, [localStop, gameOver]);
+		setView({ kind: "menu" });
+	}, [localStop, gameOverData, stop, resetGameState, clearSession]);
 
-	const sendStartEvent = useCallback(
-		(body: Record<string, unknown>) => {
-			if (!trainingRef.current) {
-				lastStartPayloadRef.current = body;
-			}
-			pongWsRef.current?.send(
-				JSON.stringify({
-					event: "start",
-					body,
-				})
-			);
-		},
-		[pongWsRef]
-	);
+	const handlePlayerReady = useCallback(() => {
+		pongWsRef.current?.send(
+			JSON.stringify({
+				event: "ready",
+				body: { type: "player" },
+			})
+		);
+	}, [pongWsRef]);
 
 	const handleReplayFromOverlay = useCallback(() => {
-		const payload = lastStartPayloadRef.current;
-		setGameOver(null);
-		if (payload) {
-			sendStartEvent(payload as Record<string, unknown>);
-			localStart();
+		const payload = lastStartPayloadRef.current as {
+			action?: string;
+			diff?: Difficulty | null;
+			[k: string]: unknown;
+		} | null;
+		resetGameState();
+		if (payload && payload.action) {
+			if (payload.action === "play_offline") {
+				const diff = payload.diff ?? null;
+				const offlineLabels: PlayerLabels = diff
+					? {
+							self: user?.name
+								? `${user.name} (You)`
+								: PLAYER_LABELS.self,
+							opponent: `Bot (${
+								diff.charAt(0).toUpperCase() + diff.slice(1)
+							})`,
+					  }
+					: { self: "Player 1", opponent: "Player 2" };
+				setSession({
+					sessionType: "offline",
+					opponent: offlineLabels.opponent,
+					self: offlineLabels.self,
+					side: null,
+					labels: offlineLabels,
+				});
+				resetGameState();
+				setControlsReady(false);
+				activeSessionRef.current = true;
+				sendStartEvent({ action: "play_offline", diff });
+				return;
+			}
+			sendStartEvent(payload);
 			return;
 		}
 		localStop();
-	}, [sendStartEvent]);
+	}, [
+		sendStartEvent,
+		resetGameState,
+		setControlsReady,
+		localStop,
+		user,
+		setSession,
+	]);
 
 	const handleContinueFromOverlay = useCallback(() => {
-		if (autoContinueTimeoutRef.current) {
-			clearTimeout(autoContinueTimeoutRef.current);
-			autoContinueTimeoutRef.current = null;
-		}
-
-		setGameOver(null);
+		activeSessionRef.current = true;
 		pongWsRef.current?.send(JSON.stringify({ event: "ready" }));
-		setSearching(true);
-		setPlay(false);
-		setControlsReady(false);
-		setCountdownState(null);
 	}, [pongWsRef]);
 
-	useEffect(() => {
-		if (
-			gameOver &&
-			gameOver.tournamentDepth != null &&
-			!gameOver.finalTournamentWin &&
-			gameOver.didWin
-		) {
-			const id = window.setTimeout(() => {
-				handleContinueFromOverlay();
-				autoContinueTimeoutRef.current = null;
-			}, 5000);
-			autoContinueTimeoutRef.current = id;
-			return () => {
-				if (autoContinueTimeoutRef.current) {
-					clearTimeout(autoContinueTimeoutRef.current);
-					autoContinueTimeoutRef.current = null;
-				}
-			};
-		}
-		return;
-	}, [gameOver, handleContinueFromOverlay]);
+	const handleQuitTraining = useCallback(() => {
+		pongWsRef.current?.send(
+			JSON.stringify({
+				event: "stop",
+				body: { type: "offline" },
+			})
+		);
+		trainingRef.current = false;
+		trainingLabelsRef.current = null;
+		setView({ kind: "search" });
+		resetGameState();
+		setControlsReady(false);
+	}, [pongWsRef, resetGameState, setControlsReady]);
 
 	const handleOnlineConfirm = useCallback(
 		(
@@ -396,167 +398,170 @@ export default function Pong() {
 			id: string,
 			passwd: string
 		) => {
+			setParams({ mode: "online" });
+			sessionMetaRef.current.sessionType = "online";
+			sessionMetaRef.current.isTournament = selectedMode === "Tournament";
 			if (selectedMode === "Tournament") {
-				setParams({ mode: "online", id });
-				sessionTypeRef.current = "online";
-				isTournamentRef.current = true;
-				sendStartEvent({
-					action: `${matchType.toLowerCase()}_tournament`,
-					id,
-					size,
-					passwd,
-				});
+				pongWsRef.current?.send(
+					JSON.stringify({
+						event: "tournament",
+						body: {
+							action: matchType.toLowerCase(),
+							id,
+							size,
+							passwd,
+						},
+					})
+				);
 			} else {
-				setParams({ mode: "online" });
-				sessionTypeRef.current = "online";
-				isTournamentRef.current = false;
 				sendStartEvent({ action: "play_online" });
 			}
-			resetLabels();
 		},
-		[sendStartEvent, resetLabels, setParams]
+		[sendStartEvent, setParams, pongWsRef]
 	);
 
 	const handleOfflineConfirm = useCallback(
 		({ gamemode, botDiff }: OfflineConfig) => {
 			setParams({ mode: "offline" });
-			sessionTypeRef.current = "offline";
-			if (gamemode === "solo") {
-				offlinePayloadRef.current = { diff: botDiff };
-				setLabels({
-					self: defaultSelfLabel,
-					opponent: `Bot (${
-						botDiff.charAt(0).toUpperCase() + botDiff.slice(1)
-					})`,
-				});
-			} else {
-				offlinePayloadRef.current = { diff: null };
-				setLabels({
-					self: "Player 1",
-					opponent: "Player 2",
-				});
-			}
-			localStart();
-			setCountdownState({ mode: "local", seconds: 1 });
-		},
-		[defaultSelfLabel, setParams]
-	);
+			sessionMetaRef.current.sessionType = "offline";
 
-	const handleOfflineCountdown = useCallback(() => {
-		const payload = offlinePayloadRef.current;
-		const diff = payload ? payload.diff : null;
-		lastOfflineDiffRef.current = diff ?? null;
-		sendStartEvent({
-			action: "play_offline",
-			diff,
-		});
-		offlinePayloadRef.current = null;
-		setCountdownState(null);
-	}, [sendStartEvent]);
+			const diff = gamemode === "solo" ? botDiff : null;
+			const offlineLabels: PlayerLabels = diff
+				? {
+						self: user?.name
+							? `${user.name} (You)`
+							: PLAYER_LABELS.self,
+						opponent: `Bot (${
+							diff.charAt(0).toUpperCase() + diff.slice(1)
+						})`,
+				  }
+				: { self: "Player 1", opponent: "Player 2" };
+			setSession({
+				sessionType: "offline",
+				opponent: offlineLabels.opponent,
+				self: offlineLabels.self,
+				side: null,
+				labels: offlineLabels,
+			});
+			resetGameState();
+			setControlsReady(false);
+			activeSessionRef.current = true;
+			sendStartEvent({ action: "play_offline", diff });
+		},
+		[
+			setParams,
+			user,
+			setSession,
+			resetGameState,
+			setControlsReady,
+			sendStartEvent,
+		]
+	);
 
 	usePongControls({
 		isEnabled: isControlsReady,
 		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
 	});
 
-	useEffect(() => {
-		if (!mode) {
-			if (play) stop();
-		}
-	}, [mode, play, stop]);
-
-	useEffect(() => {
-		return () => {
-			pongWsRef?.current?.send(JSON.stringify({ event: "stop_online" }));
-		};
-	}, []);
-
+	const isSearching = view.kind === "search";
+	const isTraining = view.kind === "training";
+	const showGameField = [
+		"play",
+		"ready",
+		"countdown",
+		"result",
+		"wait",
+		"training",
+	].includes(view.kind);
+	const waitingView = view.kind === "wait" ? view : null;
+	const readyView = view.kind === "ready" ? view : null;
+	const countdownView = view.kind === "countdown" ? view : null;
 	return (
 		<div className="relative w-screen h-screen flex items-center justify-center">
 			<SpaceBackground />
 			<GameOverlay
-				play={play || searching}
-				sessionType={sessionTypeRef.current}
-				tournamentDepth={tournamentDepthRef.current}
-				isTournament={isTournamentRef.current}
+				play={showGameField || isSearching || isTraining}
+				sessionType={sessionMetaRef.current.sessionType}
+				tournamentDepth={sessionMetaRef.current.tournamentDepth}
+				isTournament={sessionMetaRef.current.isTournament}
 			/>
 			<GameOverOverlay
-				gameOver={gameOver}
+				gameOver={gameOverData}
 				onQuit={handleOnQuitGameover}
 				onReplay={handleReplayFromOverlay}
 				onContinue={handleContinueFromOverlay}
 			/>
-			{waiting && play && (
-				<WaitingOverlay opponentName={waiting.opponentName} />
+			{waitingView && showGameField && (
+				<WaitingOverlay opponentName={waitingView.opponentName} />
 			)}
-			{play && (
+			{(isSearching || isTraining) && (
 				<div className="absolute top-4 left-4 z-50">
 					<BackToMenuButton onClick={handleBackToMenu} />
 				</div>
 			)}
-			{!play && !mode && (
+			{view.kind === "menu" && !mode && (
 				<PongModeSelection
 					onSelect={(nextMode) => setParams({ mode: nextMode })}
 				/>
 			)}
-			{mode === "offline" && !play && (
+			{mode === "offline" && view.kind === "menu" && (
 				<OfflineCard
 					onCancel={() => {
 						setParams(null);
-						sessionTypeRef.current = null;
+						sessionMetaRef.current.sessionType = null;
 					}}
 					onConfirm={handleOfflineConfirm}
 				/>
 			)}
-			{mode === "online" && !play && !searching && (
+			{mode === "online" && view.kind === "menu" && (
 				<OnlineCard
 					onCancel={() => {
 						setParams(null);
-						sessionTypeRef.current = null;
-						isTournamentRef.current = false;
+						sessionMetaRef.current.sessionType = null;
+						sessionMetaRef.current.isTournament = false;
 					}}
 					onConfirm={handleOnlineConfirm}
 				/>
 			)}
-			{searching && (
+			{(isSearching || isTraining) && (
 				<SearchingOverlay
-					training={trainingRef.current}
+					training={isTraining}
 					onQuit={() => {
 						stop();
+						clearSession();
 						setParams({ mode: "online" });
-						setSearching(false);
+						setView({ kind: "menu" });
 					}}
-					onQuitTraining={() => {
-						stop();
-						trainingRef.current = false;
-						setSearching(true);
-					}}
-					onTrain={(diff) => {
+					onQuitTraining={handleQuitTraining}
+					onTrain={(diff: Difficulty) => {
 						trainingRef.current = true;
-						sendStartEvent({ action: "play_offline", diff });
-						setLabels({
-							self: defaultSelfLabel,
+						setView({ kind: "training" });
+						sendStartEvent({
+							action: "play_offline",
+							diff,
+							skipCountdown: true,
+						});
+						trainingLabelsRef.current = {
+							self: user?.name
+								? `${user.name} (You)`
+								: PLAYER_LABELS.self,
 							opponent: `Bot (${
 								diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
-						});
-						setPlay(true);
+						};
 					}}
 				/>
 			)}
-
-			{countdownState &&
-				(countdownState.mode === "remote"
-					? countdownState.value && (
-							<Countdown value={countdownState.value} />
-					  )
-					: countdownState.seconds && (
-							<Countdown
-								seconds={countdownState.seconds}
-								onComplete={handleOfflineCountdown}
-							/>
-					  ))}
-			{play && (
+			{readyView && (
+				<ReadyButton
+					remaining={readyView.remaining}
+					selfReady={readyView.selfReady}
+					opponentReady={readyView.opponentReady}
+					onReady={handlePlayerReady}
+				/>
+			)}
+			{countdownView && <Countdown value={countdownView.value} />}
+			{showGameField && (
 				<PongGameArea labels={labels} gameRef={gameRef} scale={SCALE} />
 			)}
 		</div>

@@ -8,6 +8,8 @@ import Layout from "./Components/Layout";
 import { BackgroundProvider } from "./contexts/BackgroundContext";
 import { WebSocketProvider } from "./context/WebSocketContext";
 import { UserProvider } from "./context/UserContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { GameSessionProvider } from "./context/GameSessionContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -42,7 +44,11 @@ createRoot(document.getElementById("root")!).render(
 	<BackgroundProvider>
 		<UserProvider>
 			<WebSocketProvider>
-				<RouterProvider router={router} />
+				<NotificationProvider>
+					<GameSessionProvider>
+						<RouterProvider router={router} />
+					</GameSessionProvider>
+				</NotificationProvider>
 			</WebSocketProvider>
 		</UserProvider>
 	</BackgroundProvider>
