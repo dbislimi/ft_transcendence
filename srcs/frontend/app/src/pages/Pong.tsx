@@ -162,10 +162,10 @@ export default function Pong() {
 							setCountdownState({
 								mode: "remote",
 								value: remaining,
-							});
-						} else {
-							// Countdown terminé, démarrer le jeu
-							setCountdownState(null);
+						});
+					} else {
+						// countdown termine, demarrer le jeu
+						setCountdownState(null);
 							if (!play) {
 								localStart();
 							}
@@ -408,8 +408,8 @@ export default function Pong() {
 					opponent: "Player 2",
 				});
 			}
-			// Ne pas démarrer localement, attendre le countdown du serveur
-			// Envoyer directement la commande play_offline
+			// ne pas demarrer localement, attendre le countdown du serveur
+			// envoyer directement la commande play_offline
 			const payload = offlinePayloadRef.current;
 			const diff = payload ? payload.diff : null;
 			lastOfflineDiffRef.current = diff ?? null;
@@ -422,11 +422,11 @@ export default function Pong() {
 		[defaultSelfLabel, setParams, sendStartEvent]
 	);
 
-	// handleOfflineCountdown n'est plus nécessaire car on envoie directement play_offline
-	// depuis handleOfflineConfirm. On garde la fonction au cas où mais elle ne sera pas utilisée.
+	// handleOfflineCountdown n'est plus necessaire car on envoie directement play_offline
+	// depuis handleOfflineConfirm. on garde la fonction au cas ou mais elle ne sera pas utilisee.
 	const handleOfflineCountdown = useCallback(() => {
-		// Cette fonction n'est plus utilisée car on envoie directement depuis handleOfflineConfirm
-		// mais on la garde pour éviter les erreurs de référence
+		// cette fonction n'est plus utilisee car on envoie directement depuis handleOfflineConfirm
+		// mais on la garde pour eviter les erreurs de reference
 		const payload = offlinePayloadRef.current;
 		if (payload) {
 			const diff = payload.diff ?? null;
@@ -445,7 +445,7 @@ export default function Pong() {
 		send: (payload) => wsRef.current?.send(JSON.stringify(payload)),
 	});
 
-	// Failsafe : si le countdown reste bloqué à 1, démarrer le jeu après 2 secondes
+	// failsafe : si le countdown reste bloque a 1, demarrer le jeu apres 2 secondes
 	useEffect(() => {
 		if (
 			countdownState &&

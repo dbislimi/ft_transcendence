@@ -5,7 +5,7 @@ export function startCountdown(state: GameState): void {
   state.phase = 'COUNTDOWN';
 }
 
-export function startTurn(state: GameState, getNewTrigram: () => string, getTurnDuration: () => number): void {
+export function startTurn(state: GameState, getNewSyllable: () => string, getTurnDuration: () => number): void {
   console.log('[BombParty DEBUG] startTurn() engine/enginePhases.ts CALLED');
   
   if (state.players[state.currentPlayerIndex]?.isEliminated) {
@@ -16,7 +16,7 @@ export function startTurn(state: GameState, getNewTrigram: () => string, getTurn
     }
   }
 
-  state.currentTrigram = getNewTrigram();
+  state.currentSyllable = getNewSyllable();
   state.phase = 'TURN_ACTIVE';
 
   const duration = getTurnDuration();
@@ -30,7 +30,7 @@ export function startTurn(state: GameState, getNewTrigram: () => string, getTurn
     state.pendingFastForNextPlayerId = undefined;
   }
   
-  console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentTrigram="${state.currentTrigram}", currentPlayerIndex=${state.currentPlayerIndex}, currentPlayerId="${state.currentPlayerId}"`);
+  console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentSyllable="${state.currentSyllable}", currentPlayerIndex=${state.currentPlayerIndex}, currentPlayerId="${state.currentPlayerId}"`);
 }
 
 export function resolveTurn(

@@ -9,27 +9,183 @@ const logger = pino({
       translateTime: 'SYS:standard',
       ignore: 'pid,hostname'
     }
-  } : undefined
+  } : undefined,
+  formatters: {
+    level: (label) => {
+      return { level: label };
+    }
+  }
 });
 
 export const bombPartyLogger = logger.child({ module: 'bombparty' });
 
-export function logWSConnection(playerId: string, action: 'connect' | 'disconnect' | 'reconnect'): void {
-  bombPartyLogger.info({ playerId, action }, 'WebSocket connection event');
+interface LogContext {
+  roomId?: string;
+  playerId?: string;
+  matchId?: number;
+  tournamentId?: string;
+  userId?: number;
+  [key: string]: any;
 }
 
-export function logGameEvent(roomId: string, event: string, playerId?: string, data?: any): void {
-  bombPartyLogger.info({ roomId, event, playerId, data }, 'Game event');
+/**
+ * Crée un logger avec contexte pour corrélation
+ */
+function createContextLogger(context: LogContext) {
+  return bombPartyLogger.child(context);
 }
 
-export function logGameError(roomId: string, error: string, playerId?: string, data?: any): void {
-  bombPartyLogger.error({ roomId, error, playerId, data }, 'Game error');
+/**
+ * Mesure la latence d'une opération
+ */
+export function measureLatency<T>(
+  operation: () => T | Promise<T>,
+  context: LogContext,
+  operationName: string
+): T | Promise<T> {
+  const startTime = Date.now();
+  const contextLogger = createContextLogger(context);
+  
+  try {
+    const result = operation();
+    
+    if (result instanceof Promise) {
+      return result
+        .then((value) => {
+          const latency = Date.now() - startTime;
+          contextLogger.info({ latency, operation: operationName }, 'Operation completed');
+          return value;
+        })
+        .catch((error) => {
+          const latency = Date.now() - startTime;
+          contextLogger.error({ latency, operation: operationName, error: error.message }, 'Operation failed');
+          throw error;
+        });
+    } else {
+      const latency = Date.now() - startTime;
+      contextLogger.info({ latency, operation: operationName }, 'Operation completed');
+      return result;
+    }
+  } catch (error: any) {
+    const latency = Date.now() - startTime;
+    contextLogger.error({ latency, operation: operationName, error: error.message }, 'Operation failed');
+    throw error;
+  }
 }
 
-export function logValidationError(playerId: string, error: string, input?: any): void {
-  bombPartyLogger.warn({ playerId, error, input }, 'Validation error');
+export function logWSConnection(playerId: string, action: 'connect' | 'disconnect' | 'reconnect', userId?: number): void {
+  const context: LogContext = { playerId };
+  if (userId) context.userId = userId;
+  
+  createContextLogger(context).info({ action }, 'WebSocket connection event');
 }
 
-export function logTurnEvent(roomId: string, playerId: string, event: 'start' | 'end' | 'expired', duration?: number): void {
-  bombPartyLogger.info({ roomId, playerId, event, duration }, 'Turn event');
+export function logGameEvent(roomId: string, event: string, playerId?: string, data?: any, matchId?: number): void {
+  const context: LogContext = { roomId };
+  if (playerId) context.playerId = playerId;
+  if (matchId) context.matchId = matchId;
+  
+  createContextLogger(context).info({ event, data }, 'Game event');
+}
+
+export function logGameError(roomId: string, error: string, playerId?: string, data?: any, matchId?: number): void {
+  const context: LogContext = { roomId };
+  if (playerId) context.playerId = playerId;
+  if (matchId) context.matchId = matchId;
+  
+  createContextLogger(context).error({ error, data }, 'Game error');
+}
+
+export function logValidationError(playerId: string, error: string, input?: any, roomId?: string): void {
+  const context: LogContext = { playerId };
+  if (roomId) context.roomId = roomId;
+  
+  createContextLogger(context).warn({ error, input }, 'Validation error');
+}
+
+export function logTurnEvent(
+  roomId: string,
+  playerId: string,
+  event: 'start' | 'end' | 'expired',
+  duration?: number,
+  matchId?: number
+): void {
+  const context: LogContext = { roomId, playerId };
+  if (matchId) context.matchId = matchId;
+  
+  createContextLogger(context).info({ event, duration }, 'Turn event');
+}
+
+/**
+ * Journalise une tentative de triche
+ */
+export function logCheatAttempt(
+  playerId: string,
+  roomId: string,
+  cheatType: 'invalid_word' | 'timing_anomaly' | 'duplicate_submission' | 'rate_limit_exceeded',
+  details?: any,
+  matchId?: number
+): void {
+  const context: LogContext = { roomId, playerId };
+  if (matchId) context.matchId = matchId;
+  
+  createContextLogger(context).warn({ cheatType, details }, 'Cheat attempt detected');
+}
+
+/**
+ * Journalise une latence réseau
+ */
+export function logNetworkLatency(
+  playerId: string,
+  roomId: string,
+  latency: number,
+  operation: string,
+  matchId?: number
+): void {
+  const context: LogContext = { roomId, playerId };
+  if (matchId) context.matchId = matchId;
+  
+  const level = latency > 1000 ? 'warn' : 'info';
+  createContextLogger(context)[level]({ latency, operation }, 'Network latency');
+}
+
+/**
+ * Journalise une erreur avec contexte complet
+ */
+export function logError(
+  error: Error | string,
+  context: LogContext,
+  level: 'error' | 'fatal' = 'error'
+): void {
+  const errorMessage = error instanceof Error ? error.message : error;
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  
+  createContextLogger(context)[level]({ error: errorMessage, stack: errorStack }, 'Error occurred');
+}
+
+/**
+ * Journalise une métrique de performance
+ */
+export function logMetric(
+  metricName: string,
+  value: number,
+  context: LogContext,
+  unit?: string
+): void {
+  createContextLogger(context).info({ metric: metricName, value, unit }, 'Performance metric');
+}
+
+/**
+ * Journalise un événement de tournoi
+ */
+export function logTournamentEvent(
+  tournamentId: string,
+  event: string,
+  playerId?: string,
+  data?: any
+): void {
+  const context: LogContext = { tournamentId };
+  if (playerId) context.playerId = playerId;
+  
+  createContextLogger(context).info({ event, data }, 'Tournament event');
 }

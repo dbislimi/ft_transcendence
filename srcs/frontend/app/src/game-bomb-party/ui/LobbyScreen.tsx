@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import SpaceBackground from "../../Components/SpaceBackground";
 import BackgroundSurface from "../../Components/BackgroundSurface";
 import LobbyList from "./LobbyList";
+import PlayersCountDropdown from "./PlayersCountDropdown";
 import { useBombPartyStore } from "../../store/useBombPartyStore";
 
 interface LobbyMeta {
@@ -79,14 +80,22 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						<button
 							type="button"
 							onClick={() => setTab("create")}
-							className={`px-4 py-2 rounded-lg border ${tab === "create" ? "border-cyan-400 text-cyan-300" : "border-slate-600 text-slate-400"}`}
+							className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+								tab === "create" 
+									? "border-cyan-400 text-cyan-300 bg-cyan-400/10" 
+									: "border-slate-600 text-slate-400 hover:border-slate-500"
+							}`}
 						>
 							{t("bombParty.lobby.createTab")}
 						</button>
 						<button
 							type="button"
 							onClick={() => setTab("join")}
-							className={`px-4 py-2 rounded-lg border ${tab === "join" ? "border-cyan-400 text-cyan-300" : "border-slate-600 text-slate-400"}`}
+							className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+								tab === "join" 
+									? "border-cyan-400 text-cyan-300 bg-cyan-400/10" 
+									: "border-slate-600 text-slate-400 hover:border-slate-500"
+							}`}
 						>
 							{t("bombParty.lobby.joinTab")}
 						</button>
@@ -99,33 +108,24 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 								<input
 									value={name}
 									onChange={(e) => setName(e.target.value)}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white focus:outline-none focus:border-cyan-400 transition-colors"
 								/>
 							</div>
-							<div>
-								<label className="block text-slate-300 text-sm mb-2">{t("bombParty.lobby.playersCount")}</label>
-								<select
-									value={maxPlayers}
-									onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								>
-									<option value={2}>2 joueurs</option>
-									<option value={3}>3 joueurs</option>
-									<option value={4}>4 joueurs</option>
-									<option value={6}>6 joueurs</option>
-									<option value={8}>8 joueurs</option>
-									<option value={10}>10 joueurs</option>
-									<option value={12}>12 joueurs</option>
-								</select>
-							</div>
+							<PlayersCountDropdown
+								value={maxPlayers}
+								onChange={setMaxPlayers}
+								options={[2, 3, 4, 6, 8, 10, 12]}
+								label={t("bombParty.lobby.playersCount")}
+							/>
 							<div className="flex items-center gap-2">
 								<input
 									id="isPrivate"
 									type="checkbox"
 									checked={isPrivate}
 									onChange={(e) => setIsPrivate(e.target.checked)}
+									className="w-4 h-4 rounded border-slate-600 bg-slate-700/60 text-cyan-500 focus:ring-cyan-400"
 								/>
-								<label htmlFor="isPrivate" className="text-slate-300">{t("bombParty.lobby.private")}</label>
+								<label htmlFor="isPrivate" className="text-slate-300 cursor-pointer">{t("bombParty.lobby.private")}</label>
 							</div>
 							{isPrivate && (
 								<div>
@@ -134,7 +134,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 										type="password"
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white focus:outline-none focus:border-cyan-400 transition-colors"
 									/>
 								</div>
 							)}
@@ -146,7 +146,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							disabled={!name.trim() || connection.state !== 'connected' || !connection.playerId}
 								className={`w-full py-3 px-6 font-semibold rounded-lg transition-all duration-200 ${
 									name.trim() && connection.state === 'connected' && connection.playerId
-										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
+										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl"
 										: "bg-slate-600 text-slate-400 cursor-not-allowed"
 								}`}
 							>

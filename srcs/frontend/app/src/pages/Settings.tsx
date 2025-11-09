@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
+import AccountSettingsModal from "../Components/AccountSettingsModal";
 
 
 const PlaceholderModal = ({ 
@@ -142,7 +143,7 @@ export default function Settings() {
                   {t('settings.home.description') || 'Retour à l\'accueil'}
                 </h3>
                 <p className="text-sm description-aesthetic">
-                  Retourner à la page principale
+                  {t('settings.home.subtitle') || 'Retourner à la page principale'}
                 </p>
               </div>
             </Link>
@@ -167,11 +168,9 @@ export default function Settings() {
       )}
       
       {activeModal === 'account' && (
-        <PlaceholderModal
+        <AccountSettingsModal
           isOpen={true}
           onClose={closeModal}
-          title={t('settings.account.title') || 'Réglages de compte'}
-          description={t('settings.account.description') || 'Gestion du profil et de la sécurité'}
         />
       )}
       

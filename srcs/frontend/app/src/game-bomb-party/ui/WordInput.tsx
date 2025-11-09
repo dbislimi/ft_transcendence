@@ -4,7 +4,7 @@ import { getWordSuggestions } from '../data/validator';
 import type { PlayerBonuses, BonusKey } from '../core/types';
 
 interface WordInputProps {
-  trigram: string;
+  syllable: string;
   usedWords: string[];
   onSubmit: (word: string) => void;
   isActive: boolean;
@@ -14,12 +14,12 @@ interface WordInputProps {
   hasDoubleChance?: boolean;
 }
 
-export default function WordInput({ trigram, usedWords, onSubmit, isActive, engine, bonuses, onActivateBonus, hasDoubleChance }: WordInputProps) {
+export default function WordInput({ syllable, usedWords, onSubmit, isActive, engine, bonuses, onActivateBonus, hasDoubleChance }: WordInputProps) {
   const { t } = useTranslation();
   const [word, setWord] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [trigramInfo, setTrigramInfo] = useState<{ availableWords: number; totalWords: number } | null>(null);
+  const [syllableInfo, setSyllableInfo] = useState<{ availableWords: number; totalWords: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [cooldown, setCooldown] = useState(false);
   const [processingKey, setProcessingKey] = useState<BonusKey | null>(null);
@@ -31,19 +31,19 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
   }, [isActive]);
 
   useEffect(() => {
-    if (trigram && trigram.length >= 3) {
+    if (syllable && syllable.length >= 2) {
       if (engine && engine.getWordSuggestions) {
         const newSuggestions = engine.getWordSuggestions(5);
-        const info = engine.getCurrentTrigramInfo();
+        const info = engine.getCurrentSyllableInfo();
         setSuggestions(newSuggestions);
-        setTrigramInfo(info);
+        setSyllableInfo(info);
       } else {
-        const newSuggestions = getWordSuggestions(trigram, 5);
+        const newSuggestions = getWordSuggestions(syllable, 5);
         setSuggestions(newSuggestions);
-        setTrigramInfo(null);
+        setSyllableInfo(null);
       }
     }
-  }, [trigram, engine]);
+  }, [syllable, engine]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +56,8 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
       return;
     }
 
-    if (trigram && !trimmedWord.toLowerCase().includes(trigram.toLowerCase())) {
-      setError(t('bombParty.input.errors.noTrigram', { trigram }));
+    if (syllable && !trimmedWord.toLowerCase().includes(syllable.toLowerCase())) {
+      setError(t('bombParty.input.errors.noTrigram', { trigram: syllable }));
       return;
     }
 
@@ -84,7 +84,35 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
     const ok = onActivateBonus(key);
     setCooldown(true);
     setTimeout(() => setCooldown(false), 500);
-    setTimeout(() => setProcessingKey(null), 200);
+    setTimeout(() => setProcessingKey(null), 600);
+  };
+
+  const bonusStyles: Record<BonusKey, { gradient: string; glow: string; hover: string }> = {
+    inversion: { 
+      gradient: 'from-purple-500/20 to-indigo-500/20', 
+      glow: 'shadow-purple-500/50',
+      hover: 'hover:from-purple-500/30 hover:to-indigo-500/30 hover:shadow-purple-500/70'
+    },
+    plus5sec: { 
+      gradient: 'from-green-500/20 to-emerald-500/20', 
+      glow: 'shadow-green-500/50',
+      hover: 'hover:from-green-500/30 hover:to-emerald-500/30 hover:shadow-green-500/70'
+    },
+    vitesseEclair: { 
+      gradient: 'from-yellow-500/20 to-orange-500/20', 
+      glow: 'shadow-yellow-500/50',
+      hover: 'hover:from-yellow-500/30 hover:to-orange-500/30 hover:shadow-yellow-500/70'
+    },
+    doubleChance: { 
+      gradient: 'from-blue-500/20 to-cyan-500/20', 
+      glow: 'shadow-blue-500/50',
+      hover: 'hover:from-blue-500/30 hover:to-cyan-500/30 hover:shadow-blue-500/70'
+    },
+    extraLife: { 
+      gradient: 'from-pink-500/20 to-rose-500/20', 
+      glow: 'shadow-pink-500/50',
+      hover: 'hover:from-pink-500/30 hover:to-rose-500/30 hover:shadow-pink-500/70'
+    },
   };
 
   const BonusBar = () => {
@@ -100,6 +128,9 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
         {items.map((it) => {
           const count = (bonuses as any)?.[it.key] ?? 0;
           const disabled = cooldown || count <= 0 || !isActive;
+          const styles = bonusStyles[it.key];
+          const isProcessing = processingKey === it.key;
+          
           return (
             <button
               key={it.key}
@@ -107,12 +138,42 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
               onClick={() => tryActivate(it.key)}
               disabled={disabled}
               title={`${t(it.nameKey)} — ${t(it.descKey)}`}
-              className={`relative w-10 h-10 rounded-lg border text-xl flex items-center justify-center transition disabled:opacity-40 ${processingKey === it.key ? 'animate-pulse' : ''} ${disabled ? 'border-slate-600 text-slate-400' : 'border-cyan-500/50 hover:border-cyan-400'}`}
+              className={`relative w-12 h-12 rounded-xl border-2 text-2xl flex items-center justify-center transition-all duration-300 transform ${
+                disabled 
+                  ? 'border-slate-600 text-slate-400 opacity-40 cursor-not-allowed' 
+                  : `border-cyan-400/50 bg-gradient-to-br ${styles.gradient} ${styles.hover} ${styles.glow} cursor-pointer hover:scale-110 active:scale-95`
+              } ${
+                isProcessing ? 'animate-bonus-activate scale-125' : ''
+              }`}
             >
-              <span>{it.icon}</span>
-              <span className="absolute -top-1 -right-1 text-[10px] bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                {count}
+              {/* Effet de lueur au hover */}
+              {!disabled && (
+                <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${styles.gradient} opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm -z-10`}></div>
+              )}
+              
+              {/* Icône avec animation */}
+              <span className={`relative z-10 transform transition-transform duration-300 ${
+                isProcessing ? 'animate-spin-bonus' : ''
+              }`}>
+                {it.icon}
               </span>
+              
+              {/* Badge de compteur */}
+              {count > 0 && (
+                <span className={`absolute -top-1 -right-1 text-[10px] font-bold bg-gradient-to-br ${styles.gradient} text-white rounded-full w-6 h-6 flex items-center justify-center border-2 border-white/30 shadow-lg transform transition-all duration-300 ${
+                  !disabled ? 'hover:scale-125' : ''
+                }`}>
+                  {count}
+                </span>
+              )}
+              
+              {/* Effet de particules lors de l'activation */}
+              {isProcessing && (
+                <>
+                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-ping`}></div>
+                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-ping`} style={{ animationDelay: '150ms' }}></div>
+                </>
+              )}
             </button>
           );
         })}
@@ -133,12 +194,12 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
             {t('bombParty.input.instruction')}
           </p>
           <p className="text-cyan-400 font-mono text-lg">
-            "{(trigram || '...').toUpperCase()}"
+            "{(syllable || '...').toUpperCase()}"
           </p>
-          {/* Informations du trigramme */}
-          {trigramInfo && (
+          {/* Informations de la syllabe */}
+          {syllableInfo && (
             <div className="mt-2 text-xs text-slate-400">
-              {trigramInfo.availableWords} mots disponibles sur {trigramInfo.totalWords}
+              {syllableInfo.availableWords} mots disponibles sur {syllableInfo.totalWords}
             </div>
           )}
         </div>
@@ -163,11 +224,43 @@ export default function WordInput({ trigram, usedWords, onSubmit, isActive, engi
 
           {/* Bonus bar */}
           <div className="flex justify-between items-center">
-            <div className="text-slate-400 text-xs">
-              {hasDoubleChance ? '♢ ' + t('bombParty.bonus.doubleChance.name') : null}
+            <div className={`text-sm font-medium transition-all duration-300 ${
+              hasDoubleChance 
+                ? 'text-blue-400 animate-pulse flex items-center gap-2' 
+                : 'text-slate-400'
+            }`}>
+              {hasDoubleChance && (
+                <>
+                  <span className="text-lg animate-spin-slow">♢</span>
+                  <span>{t('bombParty.bonus.doubleChance.name')}</span>
+                </>
+              )}
             </div>
             <BonusBar />
           </div>
+          
+          <style>{`
+            @keyframes spin-bonus {
+              0% { transform: rotate(0deg) scale(1); }
+              50% { transform: rotate(180deg) scale(1.2); }
+              100% { transform: rotate(360deg) scale(1); }
+            }
+            @keyframes bonus-activate {
+              0%, 100% { transform: scale(1); }
+              25% { transform: scale(1.3) rotate(5deg); }
+              50% { transform: scale(1.2) rotate(-5deg); }
+              75% { transform: scale(1.25) rotate(3deg); }
+            }
+            .animate-spin-bonus {
+              animation: spin-bonus 0.6s ease-in-out;
+            }
+            .animate-bonus-activate {
+              animation: bonus-activate 0.6s ease-out;
+            }
+            .animate-spin-slow {
+              animation: spin 3s linear infinite;
+            }
+          `}</style>
 
           {/* Bouton de soumission */}
           <button

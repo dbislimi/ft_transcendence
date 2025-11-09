@@ -62,9 +62,9 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       displayName = body.display_name;
     }
 
-  // Allow names with accents, spaces, apostrophes and hyphens (e.g. "Jean-Luc", "Élodie Dupré").
-  // Relaxed to allow multiple words and uppercase letters after spaces as in real names.
-  // Allow names starting with either uppercase or lowercase, keep accents/spaces/apostrophes/hyphens
+  // allow names with accents, spaces, apostrophes and hyphens (e.g. "Jean-Luc", "Élodie Dupré").
+  // relaxed to allow multiple words and uppercase letters after spaces as in real names.
+  // allow names starting with either uppercase or lowercase, keep accents/spaces/apostrophes/hyphens
   const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   // Allow letters, digits, hyphens and underscores in display names (common usernames)

@@ -71,7 +71,7 @@ export default class Game {
 		this.clientsId.set(p, 1);
 		this.send(JSON.stringify({ event: "found" }));
 
-		// Événement enrichi: informer les joueurs de l'adversaire
+		// evenement enrichi: informer les joueurs de l'adversaire
 		const p1 = this.clients[0];
 		const p2 = this.clients[1];
 		if (p1 && p1.socket) {
@@ -138,7 +138,7 @@ export default class Game {
 			return;
 		}
 
-		// Événement enrichi: envoyer le résultat détaillé
+		// evenement enrichi: envoyer le resultat detaille
 		const resultData = {
 			event: "result",
 			body: {
@@ -147,7 +147,7 @@ export default class Game {
 			},
 		};
 
-		// Envoyer le résultat à chaque joueur avec son statut de victoire
+		// envoyer le resultat a chaque joueur avec son statut de victoire
 		if (this.clients[0] && this.clients[0].socket) {
 			const didWin = this.clients[0].inGameId === winner;
 			this.clients[0].socket.send(
@@ -161,7 +161,7 @@ export default class Game {
 			);
 		}
 
-		// Appeler le callback onEnd si défini (pour compatibilité)
+		// appeler le callback onEnd si defini (pour compatibilite)
 		if (!this.onEnd) return;
 		this.onEnd(
 			this.clients[0],

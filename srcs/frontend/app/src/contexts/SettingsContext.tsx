@@ -1,7 +1,5 @@
-/**
- * Context global des réglages de l'application
- * Gère tous les paramètres utilisateur avec persistance localStorage
- */
+// context global des reglages de l'application
+// gere tous les parametres utilisateur avec persistance localStorage
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +16,7 @@ export interface DisplaySettings {
   fontSize: FontSize;
   animations: boolean;
   energySaver: boolean;
+  autoChangeBackground: boolean; // Change automatiquement le background selon le thème
 }
 
 export interface GameSettings {
@@ -39,6 +38,9 @@ export interface AccountSettings {
   };
   security: {
     twoFactorEnabled: boolean;
+  };
+  preferences: {
+    showBackgroundPreview: boolean; // Afficher les aperçus des backgrounds sélectionnés
   };
 }
 
@@ -65,6 +67,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     fontSize: 'medium',
     animations: true,
     energySaver: false,
+    autoChangeBackground: true, // Par défaut, le background change automatiquement
   },
   game: {
     controls: {
@@ -84,6 +87,9 @@ const DEFAULT_SETTINGS: AppSettings = {
     },
     security: {
       twoFactorEnabled: false,
+    },
+    preferences: {
+      showBackgroundPreview: true, // Par défaut, afficher les aperçus
     },
   },
   advanced: {

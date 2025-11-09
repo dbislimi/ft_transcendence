@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTurnTimer } from '../core/timer';
 import { useAuth } from '../../contexts/AuthContext';
 import RulesScreen from '../RulesScreen';
@@ -8,18 +8,47 @@ import {
   useBombPartyHooks, 
   BombPartyLayout, 
   BombPartyLobbyView, 
-  BombPartyUI 
+  BombPartyUI
 } from './bombparty';
+import { useBombPartyStore } from '../../store/useBombPartyStore';
 
 export default function BombPartyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // no player-name modal at page level; handled inside tournament view only
 
-  // Initialize BombParty service on mount (only when entering BombParty page)
+  // initialise le service bombparty au montage (seulement quand on entre dans la page bombparty)
   useEffect(() => {
     console.log('[BombPartyPage] Mounting - initializing service');
     bombPartyService.init();
   }, []);
+
+  // Auto-join room if room parameter is present (from tournament match)
+  useEffect(() => {
+    const roomIdFromUrl = searchParams.get('room');
+    if (roomIdFromUrl) {
+      console.log('[BombPartyPage] Room parameter detected, attempting to join:', roomIdFromUrl);
+      const connection = useBombPartyStore.getState().connection;
+      
+      // Wait for connection to be ready, then join
+      const tryJoin = () => {
+        const conn = useBombPartyStore.getState().connection;
+        if (conn.state === 'connected' && conn.playerId) {
+          console.log('[BombPartyPage] Connection ready, subscribing to room:', roomIdFromUrl);
+          bombPartyService.joinRoom(roomIdFromUrl);
+        } else {
+          console.log('[BombPartyPage] Waiting for connection...', conn.state);
+          setTimeout(tryJoin, 500);
+        }
+      };
+      
+      tryJoin();
+    }
+  }, [searchParams]);
+  
+  // Player name modal handled in BombPartyTournamentView
 
   const {
     state,
@@ -33,7 +62,14 @@ export default function BombPartyPage() {
   const isMultiplayerTimerActive = state.gameState.phase === 'TURN_ACTIVE' && state.gameMode === 'multiplayer';
   const multiplayerRemainingMs = useTurnTimer(timer, isMultiplayerTimerActive);
   
-  const localRemainingMs = state.gameMode === 'local' && state.gameState.phase === 'TURN_ACTIVE' ? Math.max(0, (state.gameState.turnEndsAt || 0) - performance.now()) : 0;
+  // Mode local : utiliser turnEndsAt si disponible, sinon calculer depuis turnStartedAt
+  const localRemainingMs = state.gameMode === 'local' && state.gameState.phase === 'TURN_ACTIVE' 
+    ? (state.gameState.turnEndsAt 
+        ? Math.max(0, state.gameState.turnEndsAt - Date.now())
+        : (state.gameState.turnStartedAt && state.gameState.turnDurationMs
+            ? Math.max(0, (state.gameState.turnStartedAt + state.gameState.turnDurationMs) - Date.now())
+            : 0))
+    : 0;
 
   const remainingMs = state.gameMode === 'local' ? localRemainingMs : multiplayerRemainingMs;
   
@@ -49,7 +85,7 @@ export default function BombPartyPage() {
   }, [state.gameMode, state.gameState.phase]);
 
   useEffect(() => {
-    const timeSinceTurnStart = performance.now() - state.turnStartTime;
+    const timeSinceTurnStart = Date.now() - state.turnStartTime;
     const isTimerExpired = state.gameState.phase === 'TURN_ACTIVE' && remainingMs <= 0 && !state.wordJustSubmitted && !state.turnInProgress && !state.timerGracePeriod && timeSinceTurnStart > 1000;
     
     if (isTimerExpired) {
@@ -66,7 +102,7 @@ export default function BombPartyPage() {
 
         if (!engine.isGameOver()) {
           setTimeout(() => {
-            actions.setTurnStartTime(performance.now());
+            actions.setTurnStartTime(Date.now());
             actions.setGameState(engine.getState());
             actions.setTurnInProgress(false);
             actions.setWordJustSubmitted(false);
@@ -95,7 +131,13 @@ export default function BombPartyPage() {
   };
 
   if (state.gamePhase === 'RULES') {
-    return <RulesScreen onContinue={handlers.handleModeSelect} onBack={handleBackFromRules} />;
+    return (
+      <RulesScreen 
+        onContinue={handlers.handleModeSelect} 
+        onBack={handleBackFromRules}
+        initialMultiplayerType={state.multiplayerType} // Passer le type multijoueur pour revenir au bon écran
+      />
+    );
   }
 
   if (state.gamePhase === 'LOBBY' || state.gamePhase === 'PLAYERS') {
@@ -128,6 +170,7 @@ export default function BombPartyPage() {
         onBackToMenu={handlers.handleBackToMenu}
         onPlayerClick={handlePlayerClick}
         onInfoToggle={handleInfoToggle}
+        onCloseBonusNotification={handlers.handleCloseBonusNotification}
         gameMode={state.gameMode}
       />
     </>

@@ -1,38 +1,53 @@
 import type { ValidationResult } from './types.ts';
-import fs from 'fs';
+import { normalizeText } from './syllableExtractor.ts';
+import { wordExistsInDictionary, wordExistsInDictionarySync, getWordSuggestions as getSyllableWordSuggestions, getWordSuggestionsSync as getSyllableWordSuggestionsSync } from './syllableSelector.ts';
 
-// Load JSON via fs to avoid Node ESM import assertion requirement (import ... assert { type: 'json' })
-const trigramWordsData = JSON.parse(
-  fs.readFileSync(new URL('./data/trigram_words.json', import.meta.url), 'utf8')
-) as Record<string, string[]>;
-
-const trigramMap = trigramWordsData as Record<string, string[]>;
-
-function normalizeText(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[00-\u036f]/g, '')
-    .toLowerCase();
-}
-
-const englishLexicon: Set<string> = new Set(
-  Object.values(trigramMap)
-    .flat()
-    .filter(Boolean)
-    .map(w => normalizeText(w))
-);
-
-
-export function validateWithDictionary(word: string, trigram: string, usedWords: string[]): ValidationResult {
+// valide un mot avec le dictionnaire francais
+// verifie que le mot contient la syllabe demandee ET existe dans le dictionnaire
+export async function validateWithDictionary(word: string, syllable: string, usedWords: string[]): Promise<ValidationResult> {
   const normalizedWord = normalizeText(word);
-  const normalizedTrigram = normalizeText(trigram);
+  const normalizedSyllable = normalizeText(syllable);
 
   if (normalizedWord.length < 3) {
     return { ok: false, reason: 'too_short' };
   }
 
-  if (!normalizedWord.includes(normalizedTrigram)) {
-    return { ok: false, reason: 'no_trigram' };
+  if (!normalizedWord.includes(normalizedSyllable)) {
+    return { ok: false, reason: 'no_syllable' };
+  }
+
+  const normalizedUsedWords = usedWords.map(u => normalizeText(u));
+  if (normalizedUsedWords.includes(normalizedWord)) {
+    return { ok: false, reason: 'duplicate' };
+  }
+
+  // accepte les lettres francaises (avec accents normalises) et les tirets
+  const validCharsRegex = /^[a-z\-]+$/;
+  if (!validCharsRegex.test(normalizedWord)) {
+    return { ok: false, reason: 'invalid_chars' };
+  }
+
+  // verifie que le mot existe dans le dictionnaire francais (avec lazy loading)
+  const exists = await wordExistsInDictionary(normalizedWord);
+  if (!exists) {
+    return { ok: false, reason: 'not_in_dictionary' };
+  }
+
+  return { ok: true };
+}
+
+// Version synchrone pour compatibilité (utilise le Set en mémoire)
+// À utiliser uniquement pour des validations rapides, pas pour la validation finale
+export function validateWithDictionarySync(word: string, syllable: string, usedWords: string[]): ValidationResult {
+  const normalizedWord = normalizeText(word);
+  const normalizedSyllable = normalizeText(syllable);
+
+  if (normalizedWord.length < 3) {
+    return { ok: false, reason: 'too_short' };
+  }
+
+  if (!normalizedWord.includes(normalizedSyllable)) {
+    return { ok: false, reason: 'no_syllable' };
   }
 
   const normalizedUsedWords = usedWords.map(u => normalizeText(u));
@@ -45,23 +60,25 @@ export function validateWithDictionary(word: string, trigram: string, usedWords:
     return { ok: false, reason: 'invalid_chars' };
   }
 
-  if (!englishLexicon.has(normalizedWord)) {
-    return { ok: false };
+  // Utilise wordExistsInDictionarySync pour compatibilité
+  if (!wordExistsInDictionarySync(normalizedWord)) {
+    return { ok: false, reason: 'not_in_dictionary' };
   }
 
   return { ok: true };
 }
 
-export function validateLocal(word: string, trigram: string, usedWords: string[]): ValidationResult {
+// validation locale sans dictionnaire (pour tests rapides)
+export function validateLocal(word: string, syllable: string, usedWords: string[]): ValidationResult {
   const normalizedWord = normalizeText(word);
-  const normalizedTrigram = normalizeText(trigram);
+  const normalizedSyllable = normalizeText(syllable);
 
   if (normalizedWord.length < 3) {
     return { ok: false, reason: 'too_short' };
   }
 
-  if (!normalizedWord.includes(normalizedTrigram)) {
-    return { ok: false, reason: 'no_trigram' };
+  if (!normalizedWord.includes(normalizedSyllable)) {
+    return { ok: false, reason: 'no_syllable' };
   }
 
   const normalizedUsedWords = usedWords.map(used => normalizeText(used));
@@ -77,24 +94,22 @@ export function validateLocal(word: string, trigram: string, usedWords: string[]
   return { ok: true };
 }
 
-export function getWordSuggestions(trigram: string, maxSuggestions: number = 5): string[] {
-  const normalizedTrigram = normalizeText(trigram);
-  const list = trigramMap[normalizedTrigram] || [];
-  
-  return list
-    .filter((w: string) => typeof w === 'string' && w.length >= 3)
-    .map(w => ({ original: w, normalized: normalizeText(w) }))
-    .filter(item => item.normalized.includes(normalizedTrigram))
-    .sort((a, b) => a.normalized.localeCompare(b.normalized))
-    .slice(0, maxSuggestions)
-    .map(item => item.original);
+// obtient des suggestions de mots pour une syllabe
+export async function getWordSuggestions(syllable: string, maxSuggestions: number = 5): Promise<string[]> {
+  return await getSyllableWordSuggestions(syllable, maxSuggestions);
 }
 
-export function debugDictionary(): void {
-  const testTrigrams = ['the', 'ing', 'ion', 'est', 'tri'];
-  testTrigrams.forEach(trigram => {
-    const suggestions = getWordSuggestions(trigram, 3);
-  });
+// Version synchrone pour compatibilité
+export function getWordSuggestionsSync(syllable: string, maxSuggestions: number = 5): string[] {
+  return getSyllableWordSuggestionsSync(syllable, maxSuggestions);
+}
+
+export async function debugDictionary(): Promise<void> {
+  const testSyllables = ['maison', 'bon', 'jour', 'eau', 'terre'];
+  for (const syllable of testSyllables) {
+    const suggestions = await getWordSuggestions(syllable, 3);
+    console.log(`Syllabe "${syllable}": ${suggestions.length} suggestions`);
+  }
 }
 
 export function normalizeTextForGame(text: string): string {

@@ -184,18 +184,39 @@ export function handleStartGame(
   // Don't broadcast incomplete state here - wait for startTurn() to initialize everything
   // The first complete state will be sent after startTurn() completes
 
+  // Envoyer l'événement bp:game:countdown pour démarrer le compte à rebours
+  const countdownStartTime = Date.now();
+  const countdownDuration = 3000; // 3 secondes
+  
+  broadcastToRoom(room, {
+    event: 'bp:game:countdown',
+    payload: {
+      roomId,
+      startTime: countdownStartTime,
+      countdownDuration
+    }
+  });
+
   setTimeout(() => {
     const gameEngine = roomEngines.get(roomId);
-    if (gameEngine) {
+    const currentRoom = rooms.get(roomId);
+    if (gameEngine && currentRoom) {
       gameEngine.startCountdown();
-      // Don't broadcast here - state is not ready yet
+      
+      // Envoyer l'événement bp:game:start pour indiquer que le jeu démarre
+      broadcastToRoom(currentRoom, {
+        event: 'bp:game:start',
+        payload: {
+          roomId
+        }
+      });
       
       setTimeout(() => {
         if (roomEngines.has(roomId)) {
           gameEngine.startTurn();
           broadcastTurnStarted(roomId, roomEngines, rooms);
-          // First broadcast with complete state happens here
-          broadcastGameState(roomId, roomEngines, rooms);
+          // First broadcast with complete state happens here (forceFull = true)
+          broadcastGameState(roomId, roomEngines, rooms, true);
         }
       }, 3000);
     }
@@ -224,17 +245,22 @@ export function handleGameInput(
 
   const result = engine.submitWord(word, msTaken);
   
-  if (result.ok || result.consumedDoubleChance) {
-    if (result.ok) {
-      engine.resolveTurn(true, false);
-      broadcastTurnStarted(roomId, roomEngines, rooms);
-    }
+  if (result.ok) {
+    // mot valide : resoudre le tour et passer au suivant
+    engine.resolveTurn(true, false);
+    broadcastTurnStarted(roomId, roomEngines, rooms);
+    broadcastGameState(roomId, roomEngines, rooms);
+  } else if (result.consumedDoubleChance) {
+    // double chance consommee : ne pas resoudre le tour, le joueur peut reessayer
+    // ne pas appeler resolveTurn ni broadcastTurnStarted
+    // juste mettre a jour l'etat pour informer que le bonus a ete consomme
+    broadcastGameState(roomId, roomEngines, rooms);
   } else {
+    // mot invalide sans double chance : resoudre le tour et passer au suivant
     engine.resolveTurn(false, false);
     broadcastTurnStarted(roomId, roomEngines, rooms);
+    broadcastGameState(roomId, roomEngines, rooms);
   }
-
-  broadcastGameState(roomId, roomEngines, rooms);
 
   return { success: true };
 }
@@ -286,17 +312,32 @@ export function handlePlayerDisconnect(
     const engine = roomEngines.get(player.roomId);
     
     if (room) {
+      const wasCurrentPlayer = engine?.getCurrentPlayer()?.id === playerId;
       room.players.delete(playerId);
       
-      cleanupEmptyRoom(room, player.roomId, rooms, roomEngines);
-      
-      if (room.players.size > 0 && engine && engine.getCurrentPlayer()?.id === playerId) {
+      // Si c'était le joueur actuel et qu'il reste des joueurs, résoudre le tour
+      if (room.players.size > 0 && engine && wasCurrentPlayer) {
+        // Résoudre le tour comme échoué (timeout)
         engine.resolveTurn(false, true);
         broadcastGameState(player.roomId, roomEngines, rooms);
         
+        // Vérifier si la partie est terminée
         if (engine.isGameOver()) {
           handleGameEnd(player.roomId, roomEngines, rooms);
+        } else {
+          // Si la partie continue, s'assurer qu'il y a encore des joueurs vivants
+          const aliveCount = engine.getAlivePlayersCount();
+          if (aliveCount < 2) {
+            // Plus assez de joueurs, terminer la partie
+            handleGameEnd(player.roomId, roomEngines, rooms);
+          }
         }
+      } else if (room.players.size === 0) {
+        // Plus de joueurs dans la room, nettoyer complètement
+        cleanupEmptyRoom(room, player.roomId, rooms, roomEngines);
+      } else if (engine && !wasCurrentPlayer) {
+        // Le joueur déconnecté n'était pas le joueur actuel, juste mettre à jour l'état
+        broadcastGameState(player.roomId, roomEngines, rooms);
       }
     }
   }
@@ -328,8 +369,15 @@ export function handleGameEnd(
 
   broadcastToRoom(room, endMessage);
 
+  // Nettoyage explicite du roomEngine et de l'état pour éviter les fuites mémoire
   roomEngines.delete(roomId);
   room.startedAt = undefined;
+  room.lastGameState = undefined; // Nettoyer l'état précédent
+  
+  // Réinitialiser l'état de la room pour permettre une nouvelle partie
+  if (room.players.size === 0) {
+    rooms.delete(roomId);
+  }
 }
 
 export function broadcastTurnStarted(
@@ -342,29 +390,138 @@ export function broadcastTurnStarted(
   if (!engine || !room) return;
 
   const event = engine.getTurnStartedEvent();
+  // Utiliser le préfixe bp: pour la cohérence avec les autres événements
   broadcastToRoom(room, {
-    event: 'turn_started',
-    payload: event
+    event: 'bp:turn:started',
+    payload: {
+      roomId,
+      ...event
+    }
   });
+}
+
+// Calcule les différences entre deux états de jeu pour créer un delta
+function calculateStateDelta(prevState: any, currentState: any): any {
+  if (!prevState) {
+    // Premier état, envoyer tout
+    return { full: true, gameState: currentState };
+  }
+
+  const delta: any = { full: false };
+  
+  // Comparer les champs principaux
+  if (prevState.phase !== currentState.phase) {
+    delta.phase = currentState.phase;
+  }
+  
+  if (prevState.currentPlayerIndex !== currentState.currentPlayerIndex) {
+    delta.currentPlayerIndex = currentState.currentPlayerIndex;
+    delta.currentPlayerId = currentState.currentPlayerId;
+  }
+  
+  if (prevState.currentSyllable !== currentState.currentSyllable) {
+    delta.currentSyllable = currentState.currentSyllable;
+  }
+  
+  // Comparer les joueurs (vies, élimination, streak, bonus)
+  if (prevState.players.length !== currentState.players.length) {
+    delta.players = currentState.players;
+  } else {
+    const playerDeltas: any[] = [];
+    let hasPlayerChanges = false;
+    
+    for (let i = 0; i < currentState.players.length; i++) {
+      const prev = prevState.players[i];
+      const curr = currentState.players[i];
+      
+      if (!prev || 
+          prev.lives !== curr.lives ||
+          prev.isEliminated !== curr.isEliminated ||
+          prev.streak !== curr.streak ||
+          JSON.stringify(prev.bonuses) !== JSON.stringify(curr.bonuses)) {
+        playerDeltas.push({ index: i, player: curr });
+        hasPlayerChanges = true;
+      }
+    }
+    
+    if (hasPlayerChanges) {
+      delta.players = playerDeltas;
+    }
+  }
+  
+  // Comparer les mots utilisés
+  if (prevState.usedWords.length !== currentState.usedWords.length) {
+    delta.usedWords = currentState.usedWords;
+    delta.newWords = currentState.usedWords.slice(prevState.usedWords.length);
+  }
+  
+  // Comparer l'historique
+  if (prevState.history.length !== currentState.history.length) {
+    delta.history = currentState.history.slice(prevState.history.length);
+  }
+  
+  // Comparer les timers
+  if (prevState.turnStartedAt !== currentState.turnStartedAt) {
+    delta.turnStartedAt = currentState.turnStartedAt;
+  }
+  
+  if (prevState.turnDurationMs !== currentState.turnDurationMs) {
+    delta.turnDurationMs = currentState.turnDurationMs;
+  }
+  
+  // Si trop de changements, envoyer l'état complet
+  const deltaKeys = Object.keys(delta).filter(k => k !== 'full');
+  if (deltaKeys.length > 5) {
+    return { full: true, gameState: currentState };
+  }
+  
+  return delta;
 }
 
 export function broadcastGameState(
   roomId: string,
   roomEngines: Map<string, BombPartyEngine>,
-  rooms: Map<string, Room>
+  rooms: Map<string, Room>,
+  forceFull: boolean = false
 ): void {
   const engine = roomEngines.get(roomId);
   const room = rooms.get(roomId);
   if (!engine || !room) return;
 
-  const gameState = engine.getState();
-  console.log(`[BombParty DEBUG] broadcastGameState -> currentTrigram=${gameState.currentTrigram}, currentPlayerIndex=${gameState.currentPlayerIndex}`);
+  const currentState = engine.getState();
+  const prevState = room.lastGameState;
+  
+  // Calculer le delta ou envoyer l'état complet
+  let payload: any;
+  if (forceFull || !prevState) {
+    // Premier état ou forcer l'état complet
+    payload = {
+      roomId,
+      gameState: currentState,
+      full: true
+    };
+  } else {
+    // Envoyer seulement les changements
+    const delta = calculateStateDelta(prevState, currentState);
+    payload = {
+      roomId,
+      delta,
+      full: delta.full || false
+    };
+    
+    // Si c'est un delta complet, inclure l'état pour compatibilité
+    if (delta.full) {
+      payload.gameState = currentState;
+    }
+  }
+  
+  // Stocker l'état actuel pour la prochaine comparaison
+  room.lastGameState = JSON.parse(JSON.stringify(currentState));
+  
+  console.log(`[BombParty DEBUG] broadcastGameState -> currentSyllable=${currentState.currentSyllable}, delta=${!forceFull && prevState ? 'yes' : 'no'}`);
   
   broadcastToRoom(room, {
     event: 'bp:game:state',
-    payload: {
-      roomId,
-      gameState: gameState
-    }
+    payload
   });
 }

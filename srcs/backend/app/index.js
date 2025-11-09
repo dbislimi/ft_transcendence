@@ -125,14 +125,29 @@ db.serialize(() => {
 	`);
 
 	// Index pour les performances
+	// Index simples
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_room_id ON bp_matches (room_id);`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_winner_id ON bp_matches (winner_id);`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_created_at ON bp_matches (created_at);`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_ended_at ON bp_matches (ended_at);`);
+	
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
+	// Index composite pour requêtes fréquentes
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_player ON bp_participants (match_id, player_id);`);
+	
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_user_stats_user_id ON bp_user_stats (user_id);`);
+	
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_user_id ON bp_match_history (user_id);`);
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_match_id ON bp_match_history (match_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_played_at ON bp_match_history (played_at);`);
+	// Index composite pour requêtes fréquentes
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_user_played ON bp_match_history (user_id, played_at DESC);`);
+	
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_user_id ON bp_trigram_stats (user_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_trigram ON bp_trigram_stats (trigram);`);
+	// Index composite pour requêtes fréquentes
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_trigram_stats_user_trigram ON bp_trigram_stats (user_id, trigram);`);
 
 	console.log("Bomb Party tables and statistics initialized");
 });

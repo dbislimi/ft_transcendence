@@ -3,14 +3,15 @@
     "signin": "Inscription", 
     "settings": "Réglages", 
     "profile": "Profil", 
-    "home": "Accueil" 
+    "home": "Accueil",
+    "logout": "Déconnexion"
   },
   "home": { 
     "connectBtn": "Connexion", 
     "registrationBtn": "Inscription", 
     "gameBtn": "Jeu", 
     "aboutBtn": "À propos de nous", 
-    "subtitle": "Le pong de la famille",
+    "subtitle": "Bienvenue",
     "welcome": "Bienvenue, {{name}} !",
     "connectDesc": "Accéder à ton compte",
     "registrationDesc": "Rejoindre l'aventure",
@@ -45,10 +46,10 @@
     "linkedin": "LinkedIn",
     "portfolio": "Portfolio",
     "descriptions": {
-      "thomas": "Développeur passionné par les technologies web modernes et l'innovation. Spécialisé dans le développement full-stack avec une approche créative et méthodique.",
-      "bilal": "Expert en développement backend et en architecture logicielle. Passionné par la performance et la scalabilité des applications.",
-      "dylan": "Développeur frontend créatif avec un œil pour le design et l'expérience utilisateur. Spécialisé dans les interfaces modernes et réactives.",
-      "dren": "Développeur polyvalent avec une expertise en DevOps et en développement d'applications robustes. Passionné par l'automatisation et l'efficacité."
+      "thomas": "A réalisé le deuxième jeu et le frontend du site (pages, navigation, intégrations). Supervise l'architecture temps réel et transforme les idées en features fiables.",
+      "bilal": "A développé le chat en temps réel et l'inscription avec Google (OAuth). Garant de la sécurité et de la performance côté backend.",
+      "dylan": "A conçu toute l'expérience utilisateur (UX/UI) : interfaces réactives, animations, accessibilité et cohérence visuelle.",
+      "dren": "S'est occupé de tout le jeu Pong avec son IA et a posé les bases du projet (structure, tooling, CI/CD) pour des déploiements maîtrisés."
     }
   },
   "bombParty": {
@@ -77,11 +78,27 @@
     },
     "bonus": {
       "title": "Bonus",
-      "inversion": { "name": "Inversion", "desc": "Inverse l'ordre des tours." },
-      "plus5sec": { "name": "+5 secondes", "desc": "Ajoute 5 s au timer en cours." },
-      "vitesseEclair": { "name": "Vitesse éclair", "desc": "Le prochain joueur n'a que 3 s." },
-      "doubleChance": { "name": "Double chance", "desc": "Deux essais à ton prochain tour." },
-      "extraLife": { "name": "Vie supplémentaire", "desc": "Gagne une vie (max 9)." }
+      "activatedBy": "{{player}} a activé",
+      "inversion": {
+        "name": "Inversion",
+        "desc": "Inverse le sens du tour"
+      },
+      "plus5sec": {
+        "name": "+5 secondes",
+        "desc": "Ajoute 5 secondes au temps restant"
+      },
+      "vitesseEclair": {
+        "name": "Vitesse éclair",
+        "desc": "Le prochain joueur aura un tour rapide"
+      },
+      "doubleChance": {
+        "name": "Double chance",
+        "desc": "Permet de réessayer si le mot est invalide"
+      },
+      "extraLife": {
+        "name": "Vie supplémentaire",
+        "desc": "Ajoute une vie"
+      }
     },
     "menu": {
       "title": "Bomb Party",
@@ -132,6 +149,17 @@
       "minutesAgo": "Il y a {minutes} min",
       "hoursAgo": "Il y a {hours}h",
       "daysAgo": "Il y a {days}j"
+    },
+    "playerNameModal": {
+      "title": "Choisissez votre nom de joueur",
+      "description": "Entrez un nom d'utilisateur pour commencer à jouer à Bomb Party",
+      "placeholder": "Nom du joueur",
+      "submit": "Commencer à jouer",
+      "validation": {
+        "tooShort": "Le nom doit contenir au moins 2 caractères",
+        "tooLong": "Le nom doit contenir au maximum 20 caractères",
+        "invalidChars": "Seuls les lettres, chiffres, espaces et tirets sont autorisés"
+      }
     },
     "players": {
       "title": "Joueurs en attente",
@@ -208,6 +236,66 @@
       "gameFinished": "Partie terminée !"
     },
     "backToMenu": "Retour au menu",
+    "tournament": {
+      "title": "Tournoi BombParty",
+      "createTab": "Créer un tournoi",
+      "joinTab": "Rejoindre un tournoi",
+      "capacity": "Capacité (nombre de joueurs)",
+      "create": "Créer le tournoi",
+      "available": "Tournois disponibles",
+      "noTournaments": "Aucun tournoi disponible",
+      "noTournamentsDesc": "Créez-en un ou attendez qu'un autre joueur en crée un",
+      "players": "joueurs",
+      "tournament": "Tournoi",
+      "inProgress": "En cours",
+      "finished": "Terminé",
+      "waiting": "En attente",
+  "bracketTitle": "Bracket du Tournoi",
+      "lobby": {
+        "title": "Lobby du Tournoi",
+        "playersRegistered": "Joueurs inscrits",
+        "waitingForPlayers": "En attente de {count} joueur(s)...",
+        "startingSoon": "Le tournoi va démarrer bientôt !",
+        "starting": "Démarrage du tournoi...",
+        "registeredPlayers": "Joueurs inscrits",
+        "noPlayers": "Aucun joueur inscrit",
+        "ready": "Prêt",
+        "waiting": "En attente...",
+        "players": "Joueurs"
+      },
+      "statusBar": {
+        "inProgress": "Tournoi en cours",
+        "round": "Tour {current} / {total}",
+        "viewBracket": "Voir le bracket",
+        "leave": "Quitter le tournoi",
+        "confirmLeave": "Êtes-vous sûr de vouloir quitter le tournoi ?"
+      },
+      "bracket": {
+        "final": "Finale",
+        "round": "Tour {round}",
+        "noMatches": "Aucun match disponible",
+        "noMatchesInRound": "Aucun match dans ce tour"
+      },
+      "match": {
+        "round": "Tour",
+        "waiting": "En attente",
+        "inProgress": "En cours",
+        "finished": "Terminé",
+        "tbd": "TBD",
+        "winner": "Gagnant",
+        "join": "Rejoindre le match",
+        "total": "Matchs",
+        "you": "Vous",
+        "confirm": "Confirmer prêt",
+        "cancel": "Annuler",
+        "waitingOpponent": "En attente de l'adversaire...",
+        "ready": "Prêt",
+        "notReady": "Pas prêt",
+        "vs": "VS"
+      },
+      "winner": "Le gagnant est :",
+      "backToMenu": "Retour au menu"
+    },
     "stats": {
       "title": "Statistiques Bomb Party",
       "subtitle": "Découvrez vos performances et comparez-vous aux autres joueurs",
@@ -304,7 +392,8 @@
     "back": "Retour", 
     "backAria": "Revenir en arrière",
     "goBackHome": "Retour à l'accueil",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer"
   },
   "accessibility": { 
     "languageSwitcher": "Sélecteur de langue" 
@@ -356,22 +445,48 @@
       "energySaverDesc": "Réduit les effets visuels pour économiser la batterie",
       "autoSave": "Les modifications sont sauvegardées automatiquement",
       "close": "Fermer",
-      "description": "Thème, contraste, langue, arrière-plan, animations"
+      "description": "Thème, contraste, langue, arrière-plan, animations",
+      "lightMode": "☀️ Mode Clair",
+      "darkMode": "🌙 Mode Sombre",
+      "equipped": "Équipé",
+      "backgroundTip": "💡 Astuce : Choisissez un arrière-plan pour le mode clair et un pour le mode sombre. L'arrière-plan changera automatiquement lorsque vous basculerez entre les modes.",
+      "performanceTitle": "Performance et animations",
+      "autoChangeBackground": "Changement automatique de fond",
+      "autoChangeBackgroundDesc": "Change automatiquement le fond d'écran lorsque vous basculez entre les modes clair et sombre"
     },
     "game": {
       "title": "Jeu",
       "description": "Contrôles et préférences"
     },
     "account": {
-      "title": "Compte",
-      "description": "Profil et sécurité"
+      "title": "Préférences de fond",
+      "description": "Aperçus des arrière-plans",
+      "profile": "Profil",
+      "security": "Sécurité",
+      "preferences": "Préférences",
+      "notAuthenticated": "Non connecté",
+      "notAuthenticatedDesc": "Connectez-vous pour accéder aux réglages de compte",
+      "notAuthenticatedSecurityDesc": "Connectez-vous pour accéder aux réglages de sécurité",
+      "userInfo": "Informations utilisateur",
+      "displayName": "Nom d'affichage",
+      "displayNamePlaceholder": "Votre nom",
+      "email": "Email",
+      "emailPlaceholder": "votre@email.com",
+      "twoFactor": "Authentification à deux facteurs",
+      "twoFactorDesc": "Ajoutez une couche de sécurité supplémentaire à votre compte",
+      "twoFactorInfo": "Recommandé pour une meilleure sécurité",
+      "backgroundPreview": "Aperçu des arrière-plans",
+      "backgroundPreviewDesc": "Aperçus des arrière-plans sélectionnés pour chaque mode",
+      "lightModeBackground": "Mode Clair",
+      "darkModeBackground": "Mode Sombre"
     },
     "advanced": {
       "title": "Avancés",
       "description": "Options techniques"
     },
     "home": {
-      "description": "Retour à l'accueil"
+      "description": "Retour à l'accueil",
+      "subtitle": "Retourner à la page principale"
     }
   },
   "shop": {
@@ -390,6 +505,7 @@
       "available": "disponibles"
     },
     "equipped": "Équipé",
+    "select": "Sélectionner",
     "contrast": {
       "title": "Contraste",
       "description": "Ajuste le contraste et la luminosité du texte",

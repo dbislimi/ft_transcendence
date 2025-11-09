@@ -37,7 +37,7 @@ export interface GameState {
   phase: GamePhase;
   players: Player[];
   currentPlayerIndex: number;
-  currentTrigram: string;
+  currentSyllable: string; // Uniformisé: était currentTrigram
   usedWords: string[];
   turnEndsAt: number;
   turnOrder: string[];
@@ -55,7 +55,7 @@ export interface GameState {
 
 export interface ValidationResult {
   ok: boolean;
-  reason?: 'too_short' | 'no_trigram' | 'duplicate' | 'invalid_chars';
+  reason?: 'too_short' | 'no_syllable' | 'duplicate' | 'invalid_chars'; // Uniformisé: était no_trigram
 }
 
 //  WebSocket Protocol Types 
@@ -213,4 +213,51 @@ export interface BPParticipant {
   max_streak: number;
   final_lives: number;
   is_eliminated: boolean;
+}
+
+//  Tournament Types 
+export type TournamentStatus = 'WAITING' | 'ROUND_IN_PROGRESS' | 'FINISHED' | 'CANCELLED';
+export type MatchStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED' | 'FORFEIT';
+
+export interface TournamentPlayer {
+  id: string;
+  name: string;
+  joinedAt: number;
+}
+
+export interface TournamentMatch {
+  matchId: string;
+  roomId?: string;
+  players: TournamentPlayer[];
+  winnerId?: string;
+  loserId?: string;
+  status: MatchStatus;
+  startedAt?: number;
+  endedAt?: number;
+}
+
+export interface TournamentRound {
+  roundNumber: number;
+  matches: TournamentMatch[];
+  status: 'PENDING' | 'IN_PROGRESS' | 'FINISHED';
+}
+
+export interface TournamentBracket {
+  rounds: TournamentRound[];
+  currentRound: number;
+  totalRounds: number;
+}
+
+export interface Tournament {
+  id: string;
+  capacity: number;
+  players: TournamentPlayer[];
+  bracket?: TournamentBracket;
+  status: TournamentStatus;
+  createdAt: number;
+  startedAt?: number;
+  finishedAt?: number;
+  winnerId?: string;
+  password?: string;
+  isPrivate: boolean;
 }

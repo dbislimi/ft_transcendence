@@ -43,7 +43,7 @@ export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
   currentPlayerId: string;
-  currentTrigram: string;
+  currentSyllable: string;
   usedWords: string[];
   turnStartedAt: number;
   turnDurationMs: number;
@@ -80,4 +80,14 @@ export interface TurnStartedEvent {
 export interface GameStateSyncEvent {
   t: 'game_state';
   gameState: GameState;
+}
+
+// types internes tournoi
+export interface TournamentPlayerConnection {
+  id: string;
+  name: string;
+  ws?: any;
+  isConnected: boolean;
+  disconnectTimer?: NodeJS.Timeout;
+  allowReconnect: boolean;
 }

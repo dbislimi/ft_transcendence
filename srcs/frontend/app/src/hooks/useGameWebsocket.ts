@@ -22,7 +22,7 @@ export function useGameWebsocket(
 		function doConnect(authToken: string | null) {
 			if (stopped || isConnecting) return;
 			
-			// Fermer la connexion précédente si elle existe
+			// ferme la connexion precedente si elle existe
 			if (ws && ws.readyState !== WebSocket.CLOSED) {
 				ws.close();
 				ws = null;
@@ -30,9 +30,9 @@ export function useGameWebsocket(
 			
 			isConnecting = true;
 			
-			// Déterminer l'URL du WebSocket en fonction de l'environnement
-			// En production ou sur réseau local, utiliser window.location.hostname
-			// Le backend écoute sur le port 3001
+			// determine l'url du websocket en fonction de l'environnement
+			// en production ou sur reseau local, utiliser window.location.hostname
+			// le backend ecoute sur le port 3001
 			const wsHost = window.location.hostname === 'localhost' 
 				? 'localhost:3001' 
 				: `${window.location.hostname}:3001`;
@@ -54,7 +54,7 @@ export function useGameWebsocket(
 				
 				ws.onclose = (event) => {
 					isConnecting = false;
-					// Ne pas logger les fermetures normales ou celles causées par le cleanup
+					// ne pas logger les fermetures normales ou celles causees par le cleanup
 					if (!stopped && event.code !== 1000) {
 						console.log(`[ws:${api}] closed (code: ${event.code})`);
 					}
@@ -76,18 +76,18 @@ export function useGameWebsocket(
 
 		console.log(`[ws:${api}] Auth check: authenticated=${isAuthenticated}, token=${token ? 'PRESENT' : 'MISSING'}`);
 		
-		// Pour le jeu Pong, permettre une tentative de connexion même sans token
-		// Le backend décidera s'il accepte ou non (mode offline peut nécessiter auth selon config)
+		// pour le jeu pong, permettre une tentative de connexion meme sans token
+		// le backend decidera s'il accepte ou non (mode offline peut necessiter auth selon config)
 		if (token) {
 			console.log(`[ws:${api}] Connecting with authentication`);
 			doConnect(token);
 		} else {
-			// Tenter une connexion sans token pour le mode offline
-			// Le backend peut fermer la connexion s'il nécessite l'auth
+			// tente une connexion sans token pour le mode offline
+			// le backend peut fermer la connexion s'il necessite l'auth
 			console.log(`[ws:${api}] Attempting connection without token (may be rejected by server)`);
 			doConnect(null);
 			
-			// Surveiller l'arrivée du token pour reconnecter avec auth si disponible
+			// surveille l'arrivee du token pour reconnecter avec auth si disponible
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;
@@ -104,7 +104,7 @@ export function useGameWebsocket(
 						poll = null;
 					}
 				} else if (attempts > 40) {
-					// Arrêter de surveiller après 20 secondes
+					// arrete de surveiller apres 20 secondes
 					if (poll) {
 						clearInterval(poll);
 						poll = null;

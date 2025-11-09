@@ -5,6 +5,7 @@ import PlayerCircle from '../PlayerCircle';
 import BombTimer from '../BombTimer';
 import WordInput from '../WordInput';
 import Countdown from '../Countdown';
+import BonusNotification from '../BonusNotification';
 import Chat from '../../../Components/Chat';
 import BombPartyInfoSidebar from '../../../Components/BombPartyInfoSidebar';
 import PlayerProfileModal from '../../../Components/PlayerProfileModal';
@@ -23,6 +24,7 @@ interface BombPartyLayoutProps {
   onBackToMenu: () => void;
   onPlayerClick: (id: string) => void;
   onInfoToggle: () => void;
+  onCloseBonusNotification: () => void;
   gameMode: 'local' | 'multiplayer';
 }
 
@@ -36,6 +38,7 @@ export default function BombPartyLayout({
   onBackToMenu,
   onPlayerClick,
   onInfoToggle,
+  onCloseBonusNotification,
   gameMode
 }: BombPartyLayoutProps) {
   const { t } = useTranslation();
@@ -59,7 +62,7 @@ export default function BombPartyLayout({
           />
 
           <BombTimer
-            trigram={state.gameState.currentTrigram}
+            syllable={state.gameState.currentSyllable}
             remainingMs={remainingMs}
             isActive={state.gameState.phase === 'TURN_ACTIVE'}
             usageCount={state.gameState.usedWords?.length || 0}
@@ -70,7 +73,7 @@ export default function BombPartyLayout({
 
           <DraggablePanel initialOffset={{ x: 0, y: -120 }}>
             <WordInput
-              trigram={state.gameState.currentTrigram}
+              syllable={state.gameState.currentSyllable}
               usedWords={state.gameState.usedWords || []}
               onSubmit={onWordSubmit}
               isActive={state.gameState.phase === 'TURN_ACTIVE' && !!isCurrentPlayerTurn()}
@@ -98,7 +101,9 @@ export default function BombPartyLayout({
               className="px-3 py-2 rounded-lg border border-slate-600 bg-slate-800/80 text-slate-300 hover:text-white hover:border-slate-500"
               aria-label={t('bombParty.info.openAria')}
             >
-              ℹ️
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </button>
           </div>
 
@@ -109,6 +114,15 @@ export default function BombPartyLayout({
           />
 
           <BombPartyInfoSidebar open={state.infoOpen} onClose={onInfoToggle} />
+          
+          {/* Notification de bonus */}
+          {state.bonusNotification && (
+            <BonusNotification
+              bonusKey={state.bonusNotification.bonusKey}
+              playerName={state.bonusNotification.playerName}
+              onClose={onCloseBonusNotification}
+            />
+          )}
         </div>
       </div>
     </BackgroundSurface>

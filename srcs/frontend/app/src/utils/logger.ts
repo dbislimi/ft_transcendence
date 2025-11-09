@@ -1,7 +1,5 @@
-/**
- * Helper pour les logs côté frontend
- * Logs uniquement en mode développement
- */
+// helper pour les logs cote frontend
+// logs uniquement en mode developpement
 
 const isDev = import.meta.env.DEV;
 

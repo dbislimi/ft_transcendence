@@ -63,6 +63,31 @@ export interface LobbyInfo {
   createdAt: number;
 }
 
+export interface TournamentInfo {
+  id: string;
+  capacity: number;
+  currentPlayers: number;
+  isPrivate: boolean;
+  status: 'WAITING' | 'IN_PROGRESS' | 'FINISHED';
+  createdAt: number;
+}
+
+export interface TournamentMatch {
+  id: string;
+  round: number;
+  player1?: { id: string; name: string };
+  player2?: { id: string; name: string };
+  winner?: { id: string; name: string };
+  status: 'WAITING' | 'IN_PROGRESS' | 'FINISHED';
+  roomId?: string;
+  readyPlayers?: string[]; // players who confirmed readiness
+}
+
+export interface TournamentBracket {
+  matches: TournamentMatch[];
+  rounds: number;
+}
+
 export interface ConnectionState {
   state: ConnectionStateType;
   playerId: string | null;
@@ -82,6 +107,19 @@ interface BombPartyStore {
   ui: UIState;
   connection: ConnectionState;
   lobbies: LobbyInfo[];
+  
+  // Tournament state
+  tournamentId: string | null;
+  tournaments: TournamentInfo[];
+  tournamentPlayers: Array<{ id: string; name: string }>;
+  tournamentCapacity: number;
+  tournamentStatus: 'WAITING' | 'IN_PROGRESS' | 'FINISHED' | null;
+  tournamentBracket: TournamentBracket | null;
+  tournamentCurrentRound: number | null;
+  tournamentWinner: { id: string; name: string } | null;
+  
+  // Player name modal state
+  playerNameModalOpen: boolean;
   
   // Actions
   setGamePhase: (phase: GamePhase) => void;
@@ -106,6 +144,20 @@ interface BombPartyStore {
   setIsAuthenticating: (isAuthenticating: boolean) => void;
   setReconnectAttempts: (attempts: number) => void;
   setLastError: (error: string | null) => void;
+  
+  // Tournament actions
+  setTournamentId: (tournamentId: string | null) => void;
+  setTournaments: (tournaments: TournamentInfo[]) => void;
+  setTournamentPlayers: (players: Array<{ id: string; name: string }>) => void;
+  setTournamentCapacity: (capacity: number) => void;
+  setTournamentStatus: (status: 'WAITING' | 'IN_PROGRESS' | 'FINISHED' | null) => void;
+  setTournamentBracket: (bracket: TournamentBracket | null) => void;
+  setTournamentCurrentRound: (round: number | null) => void;
+  setTournamentWinner: (winner: { id: string; name: string } | null) => void;
+  setTournamentMatchRoomId: (matchId: string, roomId: string) => void;
+  
+  // Player name modal actions
+  setPlayerNameModalOpen: (open: boolean) => void;
   
   // UI actions
   setWordJustSubmitted: (submitted: boolean) => void;
@@ -166,6 +218,19 @@ export const useBombPartyStore = create<BombPartyStore>()(
     ui: initialUIState,
     connection: initialConnectionState,
     lobbies: [],
+    
+    // Tournament initial state
+    tournamentId: null,
+    tournaments: [],
+    tournamentPlayers: [],
+    tournamentCapacity: 0,
+    tournamentStatus: null,
+    tournamentBracket: null,
+    tournamentCurrentRound: null,
+    tournamentWinner: null,
+    
+    // Player name modal initial state
+    playerNameModalOpen: false,
     
     // Game phase actions
     setGamePhase: (phase) => set({ gamePhase: phase }),
@@ -285,6 +350,28 @@ export const useBombPartyStore = create<BombPartyStore>()(
           console.warn('[useBombPartyStore] Erreur lors de la requête de la liste des lobbies:', err);
         }
       });
+    },
+    
+    // Tournament actions
+    setTournamentId: (tournamentId) => set({ tournamentId }),
+    setTournaments: (tournaments) => set({ tournaments }),
+    setTournamentPlayers: (tournamentPlayers) => set({ tournamentPlayers }),
+    setTournamentCapacity: (tournamentCapacity) => set({ tournamentCapacity }),
+    setTournamentStatus: (tournamentStatus) => set({ tournamentStatus }),
+    setTournamentBracket: (tournamentBracket) => set({ tournamentBracket }),
+    
+    // Player name modal actions
+    setPlayerNameModalOpen: (playerNameModalOpen) => set({ playerNameModalOpen }),
+    setTournamentCurrentRound: (tournamentCurrentRound) => set({ tournamentCurrentRound }),
+    setTournamentWinner: (tournamentWinner) => set({ tournamentWinner }),
+    setTournamentMatchRoomId: (matchId, roomId) => {
+      const bracket = get().tournamentBracket;
+      if (bracket) {
+        const updatedMatches = bracket.matches.map(match => 
+          match.id === matchId ? { ...match, roomId } : match
+        );
+        set({ tournamentBracket: { ...bracket, matches: updatedMatches } });
+      }
     },
     
     // Computed getters

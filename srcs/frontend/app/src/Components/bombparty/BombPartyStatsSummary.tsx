@@ -39,19 +39,21 @@ export function BombPartyStatsSummary({ userStats }: BombPartyStatsSummaryProps)
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.totalMatches')}:</span>
-            <span className="text-white font-semibold">{userStats.totalMatches}</span>
+            <span className="text-white font-semibold">{userStats.totalMatches ?? 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.totalWins')}:</span>
-            <span className="text-green-400 font-semibold">{userStats.totalWins}</span>
+            <span className="text-green-400 font-semibold">{userStats.totalWins ?? 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.winRate')}:</span>
-            <span className="text-green-400 font-semibold">{userStats.winRate.toFixed(1)}%</span>
+            <span className="text-green-400 font-semibold">
+              {userStats.winRate != null ? userStats.winRate.toFixed(1) : '0.0'}%
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.bestStreak')}:</span>
-            <span className="text-yellow-400 font-semibold">{userStats.bestStreak}</span>
+            <span className="text-yellow-400 font-semibold">{userStats.bestStreak ?? 0}</span>
           </div>
         </div>
       </div>
@@ -61,19 +63,23 @@ export function BombPartyStatsSummary({ userStats }: BombPartyStatsSummaryProps)
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.totalWordsSubmitted')}:</span>
-            <span className="text-white font-semibold">{userStats.totalWordsSubmitted}</span>
+            <span className="text-white font-semibold">{userStats.totalWordsSubmitted ?? 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.totalValidWords')}:</span>
-            <span className="text-green-400 font-semibold">{userStats.totalValidWords}</span>
+            <span className="text-green-400 font-semibold">{userStats.totalValidWords ?? 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.accuracy')}:</span>
-            <span className="text-green-400 font-semibold">{userStats.accuracy.toFixed(1)}%</span>
+            <span className="text-green-400 font-semibold">
+              {userStats.accuracy != null ? userStats.accuracy.toFixed(1) : '0.0'}%
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.averageResponseTime')}:</span>
-            <span className="text-blue-400 font-semibold">{(userStats.averageResponseTime / 1000).toFixed(1)}s</span>
+            <span className="text-blue-400 font-semibold">
+              {userStats.averageResponseTime != null ? (userStats.averageResponseTime / 1000).toFixed(1) : '0.0'}s
+            </span>
           </div>
         </div>
       </div>
@@ -83,7 +89,7 @@ export function BombPartyStatsSummary({ userStats }: BombPartyStatsSummaryProps)
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.totalPlayTime')}:</span>
-            <span className="text-white font-semibold">{formatDuration(userStats.totalPlayTime)}</span>
+            <span className="text-white font-semibold">{formatDuration(userStats.totalPlayTime ?? 0)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">{t('bombParty.stats.overview.favoriteTrigramTitle')}:</span>

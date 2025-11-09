@@ -30,8 +30,8 @@ describe('BombParty Validation', () => {
         event: 'bp:lobby:create'
       };
       const result = validateClientMessage(message);
-      // Le schéma accepte payload: z.any(), donc ce test pourrait passer
-      // Mais on vérifie au moins que la structure est correcte
+      // le schema accepte payload: z.any(), donc ce test pourrait passer
+      // mais on verifie au moins que la structure est correcte
       expect(result.success).toBe(true);
     });
   });

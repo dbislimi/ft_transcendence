@@ -34,7 +34,7 @@ export default function Home() {
           
           {/* Logo/Titre principal */}
           <div className="relative mb-12">
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-wider">
+            <h1 className="text-5xl md:text-7xl cyberpunk-title cyberpunk-glitch" data-text="TRANSCENDENCE">
               TRANSCENDENCE
             </h1>
           </div>
@@ -69,7 +69,7 @@ export default function Home() {
           
           {/* Grille des boutons améliorée */}
           <div className={`grid gap-8 max-w-5xl mx-auto ${
-            isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+            isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
           }`}>
             
             {/* Boutons de connexion et inscription seulement si non connecté */}
@@ -125,7 +125,9 @@ export default function Home() {
             {/* Bouton Boutique */}
             <button className="action-btn-aesthetic" onClick={() => setOpenShop(true)}>
               <div className="flex flex-col items-center gap-3">
-                <span className="text-2xl">🛒</span>
+                <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
                 <h3 className="text-lg font-semibold btn-text-aesthetic">
                   {t('shop.title')}
                 </h3>
@@ -138,7 +140,9 @@ export default function Home() {
             {/* Bouton Bomb Party */}
             <Link to={"/bomb-party"} className="action-btn-aesthetic">
               <div className="flex flex-col items-center gap-3">
-                <span className="text-2xl">💣</span>
+                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
                 <h3 className="text-lg font-semibold btn-text-aesthetic">
                   {t('home.bombPartyTitle')}
                 </h3>

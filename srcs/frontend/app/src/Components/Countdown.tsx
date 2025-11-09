@@ -18,7 +18,7 @@ export default function Countdown({
 
 	useEffect(() => {
 		if (!isControlled) return;
-		// Mettre à jour la valeur quand elle change depuis l'extérieur
+		// met a jour la valeur quand elle change depuis l'exterieur
 		if (controlledValue !== null && controlledValue !== undefined) {
 			setValue(controlledValue);
 		}
@@ -26,11 +26,11 @@ export default function Countdown({
 
 	useEffect(() => {
 		if (isControlled) {
-			// En mode contrôlé, on ne fait pas de countdown automatique
-			// La valeur est mise à jour par le serveur
+			// en mode controle, on ne fait pas de countdown automatique
+			// la valeur est mise a jour par le serveur
 			return;
 		}
-		// Mode non-contrôlé (local) : faire le countdown automatique
+		// mode non-controle (local) : faire le countdown automatique
 		if (value <= 0) return;
 		const id = setInterval(() => {
 			setValue((prev) => {

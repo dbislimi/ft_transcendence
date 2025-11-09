@@ -29,7 +29,8 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       return { ok: true };
       
     case 'plus5sec':
-      if (state.phase === 'TURN_ACTIVE') {
+      if (state.phase === 'TURN_ACTIVE' && state.turnStartedAt) {
+        // ajoute 5 secondes a la duree du tour
         state.turnDurationMs += 5000;
         player.bonuses.plus5sec -= 1;
         return { ok: true, meta: { extendMs: 5000 } };

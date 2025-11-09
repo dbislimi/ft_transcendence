@@ -7,36 +7,60 @@ import BackgroundSurface from "../Components/BackgroundSurface";
 interface RulesScreenProps {
 	onContinue: (gameMode: 'local' | 'multiplayer', playersCount?: number, multiplayerType?: 'tournament' | 'quickmatch') => void;
 	onBack?: () => void;
+	initialMultiplayerType?: 'tournament' | 'quickmatch' | null; // Pour revenir au choix multijoueur depuis le lobby
 }
 
-export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
+export default function RulesScreen({ onContinue, onBack, initialMultiplayerType }: RulesScreenProps) {
 	const { t } = useTranslation();
-	const [selectedMode, setSelectedMode] = React.useState<'local' | 'multiplayer' | null>(null);
-	const [selectedMultiplayerType, setSelectedMultiplayerType] = React.useState<'tournament' | 'quickmatch' | null>(null);
+	// Si initialMultiplayerType est défini, on affiche directement le choix multijoueur
+	const [selectedMode, setSelectedMode] = React.useState<'local' | 'multiplayer' | null>(
+		initialMultiplayerType ? 'multiplayer' : null
+	);
 	const [localPlayers, setLocalPlayers] = React.useState(2);
+	
+	// Réinitialiser selectedMode si initialMultiplayerType change
+	React.useEffect(() => {
+		if (initialMultiplayerType) {
+			setSelectedMode('multiplayer');
+		}
+	}, [initialMultiplayerType]);
 
 	const handleModeClick = (mode: 'local' | 'multiplayer') => {
 		setSelectedMode(mode);
-		if (mode === 'local') {
-			setSelectedMultiplayerType(null);
-		}
 	};
 
 	const handleMultiplayerTypeClick = (type: 'tournament' | 'quickmatch') => {
-		setSelectedMultiplayerType(type);
+		// passe directement au lobby sans etape intermediaire pour les deux modes
+		onContinue('multiplayer', undefined, type);
 	};
 
 	const handleContinue = () => {
 		if (selectedMode === 'local') {
 			onContinue(selectedMode, localPlayers);
-		} else if (selectedMode === 'multiplayer' && selectedMultiplayerType) {
-			onContinue(selectedMode, undefined, selectedMultiplayerType);
 		}
 	};
 
-	const handleBackFromMultiplayerType = () => {
-		setSelectedMultiplayerType(null);
-		setSelectedMode(null);
+	const handleBack = () => {
+		// Si on est dans la sélection du type multijoueur, revenir au choix du mode
+		if (selectedMode === 'multiplayer') {
+			setSelectedMode(null);
+			// Si on vient du lobby (initialMultiplayerType défini), réinitialiser aussi le type
+			// en appelant onContinue avec null pour réinitialiser l'état
+			if (initialMultiplayerType) {
+				// Réinitialiser le type multijoueur en passant null
+				onContinue('multiplayer', undefined, undefined);
+			}
+			return; // Important : ne pas appeler onBack dans ce cas
+		}
+		// Si on est dans la sélection du mode local, revenir au choix initial
+		if (selectedMode === 'local') {
+			setSelectedMode(null);
+			return; // Important : ne pas appeler onBack dans ce cas
+		}
+		// Sinon, utiliser le callback onBack pour revenir à la page précédente
+		if (onBack) {
+			onBack();
+		}
 	};
 
 	return (
@@ -58,10 +82,10 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 								Statistics
 							</Link>
 							{/* Bouton Retour - Même style que le lobby */}
-							{onBack && (
+							{(onBack || selectedMode !== null) && (
 								<button
 									type="button"
-									onClick={selectedMultiplayerType !== null ? handleBackFromMultiplayerType : onBack}
+									onClick={handleBack}
 									className="px-3 py-1 rounded border border-slate-600 text-slate-300 hover:text-white"
 									aria-label="Retour"
 								>
@@ -154,7 +178,7 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 					)}
 
 					{/* Sélection du type de partie multijoueur (Tournoi ou Partie rapide) */}
-					{selectedMode === 'multiplayer' && selectedMultiplayerType === null && (
+					{selectedMode === 'multiplayer' && (
 						<div className="mt-6 space-y-4">
 							<h3 className="text-xl font-semibold text-slate-200 mb-3">{t("bombParty.rules.multiplayerTypeSelection")}</h3>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,18 +202,6 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 						</div>
 					)}
 
-					{/* Bouton continuer pour le type multijoueur sélectionné */}
-					{selectedMode === 'multiplayer' && selectedMultiplayerType !== null && (
-						<button
-							type="button"
-							onClick={handleContinue}
-							className="w-full mt-6 py-3 px-6 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
-						>
-							{selectedMultiplayerType === 'tournament' 
-								? t("bombParty.rules.startTournament") 
-								: t("bombParty.rules.startQuickmatch")}
-						</button>
-					)}
 				</div>
 			</div>
 

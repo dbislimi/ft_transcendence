@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+// Imports SVG - chemins relatifs depuis le contexte
 import bg42 from '../../img/42background.svg?url';
 import bghalloween from '../../img/hallowenn_background.svg?url';
 import bgmatrix42 from '../../img/matrix_42_background.svg?url';

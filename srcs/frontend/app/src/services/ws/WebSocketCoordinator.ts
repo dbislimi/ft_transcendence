@@ -1,7 +1,5 @@
-/**
- * WebSocketCoordinator - Un utilitaire global pour coordonner les connexions WebSocket
- * et éviter les connexions multiples.
- */
+// websocketcoordinator - un utilitaire global pour coordonner les connexions websocket
+// et eviter les connexions multiples
 
 type ConnectionType = 'bombPartyClient' | 'bombPartyService' | 'other';
 
@@ -12,11 +10,9 @@ interface RegistrationInfo {
   priority: number;
 }
 
-/**
- * Classe singleton pour gérer les connexions WebSocket au serveur.
- * Permet de coordonner différentes parties de l'application qui utilisent
- * des connexions WebSocket au même endpoint.
- */
+// classe singleton pour gerer les connexions websocket au serveur
+// permet de coordonner differentes parties de l'application qui utilisent
+// des connexions websocket au meme endpoint
 class WebSocketCoordinator {
   private static instance: WebSocketCoordinator;
   private activeConnections: Map<string, RegistrationInfo> = new Map();
@@ -27,9 +23,7 @@ class WebSocketCoordinator {
     console.log('[WebSocketCoordinator] Initialisation');
   }
   
-  /**
-   * Obtenir l'instance unique du coordinateur
-   */
+  // obtient l'instance unique du coordinateur
   public static getInstance(): WebSocketCoordinator {
     if (!WebSocketCoordinator.instance) {
       WebSocketCoordinator.instance = new WebSocketCoordinator();
@@ -37,13 +31,11 @@ class WebSocketCoordinator {
     return WebSocketCoordinator.instance;
   }
   
-  /**
-   * Enregistrer une connexion WebSocket
-   * @param id Identifiant unique de la connexion
-   * @param type Type de connexion
-   * @param priority Priorité de la connexion (plus le nombre est élevé, plus la priorité est haute)
-   * @returns true si cette connexion est autorisée, false sinon
-   */
+  // enregistre une connexion websocket
+  // id: identifiant unique de la connexion
+  // type: type de connexion
+  // priority: priorite de la connexion (plus le nombre est eleve, plus la priorite est haute)
+  // returns: true si cette connexion est autorisee, false sinon
   public registerConnection(id: string, type: ConnectionType, priority: number = 1): boolean {
     console.log(`[WebSocketCoordinator] Enregistrement de la connexion [${id}] de type [${type}]`);
     
@@ -79,9 +71,7 @@ class WebSocketCoordinator {
     }
   }
   
-  /**
-   * Mettre à jour la connexion principale en fonction des priorités
-   */
+  // met a jour la connexion principale en fonction des priorites
   private updatePrimaryConnection(): void {
     if (this.activeConnections.size === 0) {
       this.primaryConnection = null;

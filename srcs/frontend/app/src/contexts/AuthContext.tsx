@@ -44,12 +44,12 @@ useEffect(() => {
     const savedToken = localStorage.getItem('token');
     console.log('[AuthContext] Init: user=', savedUser ? 'PRESENT' : 'MISSING', 'token=', savedToken ? 'PRESENT' : 'MISSING');
     
-    // Ne considérer l'utilisateur comme authentifié QUE si user ET token existent
+    // ne considerer l'utilisateur comme authentifie QUE si user ET token existent
     if (savedUser && savedToken) {
       try {
         const userData = JSON.parse(savedUser);
         
-        // Vérifier si le token n'est pas expiré
+        // verifie si le token n'est pas expire
         const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
         const expiresAt = tokenPayload.exp * 1000; // Convertir en millisecondes
         const now = Date.now();

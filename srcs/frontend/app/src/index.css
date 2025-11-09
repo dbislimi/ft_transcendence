@@ -24,12 +24,12 @@
   --bg-secondary: #f8fafc;
   --bg-tertiary: #e2e8f0;
   --bg-card: #ffffff;
-  --bg-header: rgba(248, 250, 252, 0.95);
+  --bg-header: rgba(226, 232, 240, 0.6);
   
-  /* Textes */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  /* Textes - couleurs plus sombres pour meilleur contraste */
+  --text-primary: #000000;
+  --text-secondary: #1e293b;
+  --text-muted: #334155;
   
   /* Bordures */
   --border-color: #cbd5e1;
@@ -53,6 +53,18 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Variables de couleur pour compatibilité */
+  --color-text: #000000;
+  --color-text-secondary: #1e293b;
+  --color-button: #3b82f6;
+  --color-button-hover: #2563eb;
+  --color-secondary: #1e40af;
+  --color-primary: #3b82f6;
+  --color-accent: #3b82f6;
+  --color-border: #cbd5e1;
+  --color-background: #ffffff;
+  --color-card: #ffffff;
 }
 
 /* ===== THeME SOMBRE ===== */
@@ -62,7 +74,7 @@
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
   --bg-card: #1e293b;
-  --bg-header: rgba(15, 23, 42, 0.95);
+  --bg-header: rgba(15, 23, 42, 0.7);
   
   /* Textes */
   --text-primary: #f8fafc;
@@ -91,6 +103,18 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  
+  /* Variables de couleur pour compatibilité */
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-button: #1e40af;
+  --color-button-hover: #1d4ed8;
+  --color-secondary: #1e293b;
+  --color-primary: #60a5fa;
+  --color-accent: #60a5fa;
+  --color-border: #475569;
+  --color-background: #0f172a;
+  --color-card: #1e293b;
 }
 
 /* Application des couleurs */
@@ -125,6 +149,7 @@
 
 html, body {
   height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @keyframes shooting-star {
@@ -198,10 +223,8 @@ html {
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -215,29 +238,33 @@ html {
   text-decoration: none;
 }
 
+/* Mode light - text-shadow adapté */
+:root:not(.dark) .nav-btn-aesthetic {
+  text-shadow: none;
+  color: #ffffff !important;
+}
+
+/* Mode dark - text-shadow normal */
+.dark .nav-btn-aesthetic {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .nav-btn-aesthetic:hover {
   background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 .action-btn-aesthetic {
-  background: linear-gradient(135deg, 
-    rgba(var(--color-button-rgb, 30, 64, 175), 0.4), 
-    rgba(var(--color-secondary-rgb, 30, 41, 59), 0.4)) !important;
+  background: var(--btn-primary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md) !important;
   backdrop-filter: blur(15px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -249,29 +276,33 @@ html {
   text-align: center;
 }
 
+/* Mode light - text-shadow adapté */
+:root:not(.dark) .action-btn-aesthetic {
+  text-shadow: none;
+  color: #ffffff !important;
+}
+
+/* Mode dark - text-shadow normal */
+.dark .action-btn-aesthetic {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .action-btn-aesthetic:hover {
-  background: linear-gradient(135deg, 
-    rgba(var(--color-button-hover-rgb, 29, 78, 216), 0.6), 
-    rgba(var(--color-button-rgb, 30, 64, 175), 0.6)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.3),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent), 0 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 .close-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: var(--btn-secondary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-sm) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -287,14 +318,11 @@ html {
 }
 
 .close-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-secondary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-md) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 @keyframes titleShimmer {
@@ -391,12 +419,22 @@ html {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Mode light - pas de text-shadow pour les descriptions */
+:root:not(.dark) .description-aesthetic {
+  text-shadow: none;
+}
+
 /* Effets pour les labels */
 .label-aesthetic {
   color: var(--color-text);
   font-weight: 500;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Mode light - pas de text-shadow pour les labels */
+:root:not(.dark) .label-aesthetic {
+  text-shadow: none;
 }
 
 /* Classes pour differents niveaux de contraste */
@@ -463,19 +501,20 @@ html {
 
 /* Styles pour les composants de reglages */
 .settings-modal {
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
+  color: var(--text-primary);
 }
 
 .settings-section {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   transition: all var(--animation-duration) var(--animation-timing);
 }
 
 .settings-section:hover {
-  border-color: rgba(148, 163, 184, 0.4);
-  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
 }
 
 .settings-toggle {
@@ -505,20 +544,115 @@ html {
 /* ===== APPLICATION DES VARIABLES DE THEME ===== */
 
 /* Corps de la page */
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--animation-duration), color var(--animation-duration);
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color var(--animation-duration), color var(--animation-duration);
 }
 
+/* Assurer que le root utilise aussi les variables */
+#root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* Override des classes Tailwind pour le theme */
 .bg-slate-800 { background-color: var(--bg-secondary) !important; }
 .bg-slate-700 { background-color: var(--bg-tertiary) !important; }
+.bg-slate-900 { background-color: var(--bg-primary) !important; }
+.bg-slate-600 { background-color: var(--bg-tertiary) !important; }
+.bg-gray-800 { background-color: var(--bg-secondary) !important; }
+.bg-gray-700 { background-color: var(--bg-tertiary) !important; }
+.bg-gray-100 { background-color: var(--bg-secondary) !important; }
 .text-white { color: var(--text-primary) !important; }
 .text-gray-300 { color: var(--text-secondary) !important; }
 .text-gray-400 { color: var(--text-muted) !important; }
+.text-gray-500 { color: var(--text-muted) !important; }
+.text-slate-300 { color: var(--text-secondary) !important; }
+.text-slate-400 { color: var(--text-muted) !important; }
+.text-slate-100 { color: var(--text-primary) !important; }
+.text-slate-200 { color: var(--text-secondary) !important; }
+
+/* Mode light - assurer que le texte blanc devient sombre */
+:root:not(.dark) .text-white {
+  color: #000000 !important;
+}
+
+:root:not(.dark) .text-slate-100 {
+  color: #000000 !important;
+}
 .border-gray-600 { border-color: var(--border-color) !important; }
 .border-gray-500 { border-color: var(--border-hover) !important; }
+.border-gray-300 { border-color: var(--border-color) !important; }
+.border-slate-600 { border-color: var(--border-color) !important; }
+.border-slate-500 { border-color: var(--border-hover) !important; }
+.border-slate-700 { border-color: var(--border-color) !important; }
+.border-purple-500 { border-color: var(--accent-secondary) !important; }
+
+/* Override pour les boutons Tailwind standards */
+button[class*="bg-blue"], button[class*="bg-cyan"], button[class*="bg-purple"], 
+button[class*="bg-green"], button[class*="bg-red"], button[class*="bg-yellow"] {
+  transition: all 0.3s ease;
+}
+
+/* Boutons avec gradients cyan/purple */
+button.bg-gradient-to-r.from-cyan-600.to-purple-600,
+.bg-gradient-to-r.from-cyan-600.to-purple-600 {
+  background: var(--btn-primary-bg) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-gradient-to-r.from-cyan-600.to-purple-600:hover,
+.bg-gradient-to-r.from-cyan-600.to-purple-600:hover {
+  background: var(--btn-primary-hover) !important;
+}
+
+/* Boutons avec bordures slate */
+button.border-slate-600,
+.border-slate-600 {
+  border-color: var(--border-color) !important;
+}
+
+button.border-slate-600:hover,
+.border-slate-600:hover {
+  border-color: var(--border-hover) !important;
+}
+
+/* Override pour les boutons avec classes Tailwind de couleur */
+button.bg-blue-600, .bg-blue-600 {
+  background-color: var(--accent-primary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-blue-600:hover, .bg-blue-600:hover {
+  background-color: var(--color-button-hover) !important;
+}
+
+button.bg-cyan-600, .bg-cyan-600 {
+  background-color: var(--accent-primary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-purple-600, .bg-purple-600 {
+  background-color: var(--accent-secondary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-green-600, .bg-green-600 {
+  background-color: var(--accent-success) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-red-600, .bg-red-600 {
+  background-color: var(--accent-error) !important;
+  color: var(--color-text) !important;
+}
 
 /* ===== BOUTONS ===== */
 
@@ -567,15 +701,19 @@ body {
 
 /* Boutons d'action esthetiques */
 .action-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  /* Background avec transparence pour voir le fond */
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.15), 
+    rgba(29, 78, 216, 0.15)
+  ) !important;
+  /* Fallback pour les thèmes */
+  background-color: rgba(30, 41, 59, 0.25) !important;
   color: var(--color-text) !important;
-  border: 2px solid var(--color-border) !important;
+  border: 2px solid rgba(148, 163, 184, 0.4) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-md) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -590,15 +728,55 @@ body {
   cursor: pointer;
 }
 
+/* Mode sombre - transparence adaptée */
+.dark .action-btn-aesthetic {
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.15), 
+    rgba(59, 130, 246, 0.15)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.25) !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* Mode clair - transparence adaptée */
+:root:not(.dark) .action-btn-aesthetic {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.12), 
+    rgba(29, 78, 216, 0.12)
+  ) !important;
+  background-color: rgba(248, 250, 252, 0.2) !important;
+  border-color: rgba(203, 213, 225, 0.4) !important;
+}
+
 .action-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  /* Hover avec un peu plus d'opacité mais toujours transparent */
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.25), 
+    rgba(29, 78, 216, 0.25)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.35) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
+}
+
+/* Mode sombre - hover */
+.dark .action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.22), 
+    rgba(59, 130, 246, 0.22)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.32) !important;
+}
+
+/* Mode clair - hover */
+:root:not(.dark) .action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.18), 
+    rgba(29, 78, 216, 0.18)
+  ) !important;
+  background-color: rgba(248, 250, 252, 0.28) !important;
 }
 
 /* Textes des boutons */
@@ -607,6 +785,11 @@ body {
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Mode light - pas de text-shadow pour les textes de boutons */
+:root:not(.dark) .btn-text-aesthetic {
+  text-shadow: none;
 }
 
 .description-aesthetic {
@@ -625,15 +808,13 @@ body {
 }
 
 .close-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: var(--btn-secondary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-sm) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -642,21 +823,18 @@ body {
   border-radius: 0.75rem;
   font-size: 0.875rem;
   min-width: 40px;
-  text-align: center;
-  display: inline-block;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 .close-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-secondary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-md) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 /* ===== SLIDER DE CONTRASTE ===== */
@@ -710,7 +888,287 @@ body {
 
 /* Classe par defaut pour l'arriere-plan */
 .bg-active-default {
+  background: var(--bg-primary);
+}
+
+/* Mode dark - arrière-plan par défaut */
+.dark .bg-active-default {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+}
+
+/* ===== EFFET CYBERPUNK (Style .cyber-button-big) ===== */
+
+/* Style cyberpunk inspiré de .cyber-button-big */
+.cyberpunk-title {
+  font-family: 'Arial Black', 'Arial Bold', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  position: relative;
+  display: inline-block;
+  padding: 1.5rem 3rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: rgba(0, 0, 0, 0.8);
+  border: 3px solid var(--color-button, #1e40af);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(30, 64, 175, 0.3),
+    inset 0 0 15px rgba(30, 64, 175, 0.05);
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+/* Effet de glitch au survol et animation - style cyberpunk.css */
+.cyberpunk-glitch {
+  position: relative;
+}
+
+.cyberpunk-glitch:hover,
+.cyberpunk-glitch {
+  animation: cyberpunk-glitch-anim 4s infinite;
+}
+
+@keyframes cyberpunk-glitch-anim {
+  0%, 90%, 100% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  90.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(-2px, 0);
+    filter: hue-rotate(0deg);
+  }
+  91% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 18px) 0,
+      100% 18px,
+      100% 100%,
+      22px 100%,
+      0 calc(100% - 22px)
+    );
+    transform: translate(2px, 2px);
+    filter: hue-rotate(90deg) invert(0.1);
+  }
+  91.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 22px) 0,
+      100% 22px,
+      100% 100%,
+      18px 100%,
+      0 calc(100% - 18px)
+    );
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg) invert(0.2);
+  }
+  92% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(3px, 0);
+    filter: hue-rotate(270deg) invert(0.1);
+  }
+  92.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(-3px, 0);
+    filter: hue-rotate(360deg);
+  }
+  93% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+/* Effet de double bordure avec glitch - ombre décalée pour effet glitch */
+.cyberpunk-title::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--color-button, #1e40af);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  z-index: -1;
+  opacity: 0;
+  animation: cyberpunk-glitch-text 4s infinite;
+  pointer-events: none;
+  text-shadow: 
+    2px 0 var(--color-button, #1e40af),
+    -2px 0 var(--color-button, #1e40af);
+}
+
+/* Animation pour l'effet de texte glitch (ombre décalée) */
+@keyframes cyberpunk-glitch-text {
+  0%, 90%, 100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  90.5% {
+    opacity: 0.8;
+    transform: translate(2px, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    color: var(--color-button, #1e40af);
+  }
+  91% {
+    opacity: 0.6;
+    transform: translate(-2px, 0);
+    clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    color: var(--color-button, #1e40af);
+  }
+  91.5% {
+    opacity: 0.4;
+    transform: translate(0, 2px);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    color: var(--color-button, #1e40af);
+  }
+  92% {
+    opacity: 0;
+    transform: translate(0);
+  }
+}
+
+/* Effet de lueur interne */
+.cyberpunk-title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(30, 64, 175, 0.08) 0%,
+    transparent 50%,
+    rgba(30, 64, 175, 0.08) 100%
+  );
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  z-index: -1;
+  animation: cyberpunk-inner-glow 3s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-inner-glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Mode clair - ajustement des couleurs */
+:root:not(.dark) .cyberpunk-title {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: var(--color-button, #3b82f6);
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(59, 130, 246, 0.3),
+    inset 0 0 15px rgba(59, 130, 246, 0.05);
+}
+
+:root:not(.dark) .cyberpunk-title::before {
+  background: var(--color-button, #3b82f6);
+}
+
+:root:not(.dark) .cyberpunk-title::after {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.08) 0%,
+    transparent 50%,
+    rgba(59, 130, 246, 0.08) 100%
+  );
+}
+
+/* Mode sombre - couleurs bleues comme les boutons */
+.dark .cyberpunk-title {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: var(--color-button, #1e40af);
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(30, 64, 175, 0.3),
+    inset 0 0 15px rgba(30, 64, 175, 0.05);
+}
+
+.dark .cyberpunk-title::before {
+  background: var(--color-button, #1e40af);
+}
+
+.dark .cyberpunk-title::after {
+  background: linear-gradient(135deg, 
+    rgba(30, 64, 175, 0.08) 0%,
+    transparent 50%,
+    rgba(30, 64, 175, 0.08) 100%
+  );
+}
+
+/* Mode light - arrière-plan par défaut */
+:root:not(.dark) .bg-active-default {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
 }
 
 /* Classes pour les arriere-plans avec images */

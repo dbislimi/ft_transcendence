@@ -1,6 +1,6 @@
 import type { GameState, ValidationResult, BonusKey } from '../types';
-import { validateWithDictionary } from '../validator.ts';
-import { getRandomTrigram } from '../trigramSelector.ts';
+import { validateWithDictionarySync } from '../validator.ts';
+import { getRandomSyllable } from '../syllableSelector.ts';
 import { STREAK_FOR_BONUS } from './engineState.ts';
 
 export function submitWord(
@@ -14,7 +14,7 @@ export function submitWord(
   reason?: string; 
   consumedDoubleChance?: boolean 
 } {
-  const validation = validateWithDictionary(word, state.currentTrigram, state.usedWords);
+  const validation = validateWithDictionarySync(word, state.currentSyllable, state.usedWords);
 
   const currentPlayer = state.players[state.currentPlayerIndex];
   if (!currentPlayer) {
@@ -49,17 +49,19 @@ export function submitWord(
       if (currentPlayer.pendingEffects) {
         currentPlayer.pendingEffects.doubleChance = false;
       }
+      // ne pas changer la phase : le joueur peut reessayer sur le meme tour
       return { ok: false, reason: validation.reason, consumedDoubleChance: true };
     }
 
+    // mot invalide sans double chance : passer a la phase RESOLVE
     state.phase = 'RESOLVE';
     return { ok: false, reason: validation.reason };
   }
 }
 
-export function getNewTrigram(lastTrigram: string): string {
-  const newTrigram = getRandomTrigram(lastTrigram);
-  return newTrigram;
+export function getNewSyllable(lastSyllable: string): string {
+  const newSyllable = getRandomSyllable(lastSyllable);
+  return newSyllable;
 }
 
 export function giveRandomBonus(state: GameState, playerId: string): void {

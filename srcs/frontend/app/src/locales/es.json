@@ -3,7 +3,8 @@
       "signin": "Registro", 
       "settings": "Ajustes",
       "profile": "Perfil",
-      "home": "Inicio"
+      "home": "Inicio",
+      "logout": "Cerrar sesión"
     },
     "home": { 
       "connectBtn": "Conexión", 
@@ -302,6 +303,7 @@
       "available": "disponibles"
     },
     "equipped": "Equipado",
+    "select": "Seleccionar",
     "contrast": {
       "title": "Contraste",
       "description": "Ajusta el contraste y brillo del texto",
@@ -359,29 +361,56 @@
       "energySaverDesc": "Reduce efectos visuales para ahorrar batería",
       "autoSave": "Los cambios se guardan automáticamente",
       "close": "Cerrar",
-      "description": "Tema, contraste, idioma, fondo, animaciones"
+      "description": "Tema, contraste, idioma, fondo, animaciones",
+      "lightMode": "☀️ Modo Claro",
+      "darkMode": "🌙 Modo Oscuro",
+      "equipped": "Equipado",
+      "backgroundTip": "💡 Consejo: Elige un fondo para el modo claro y otro para el modo oscuro. El fondo cambiará automáticamente cuando cambies entre modos.",
+      "performanceTitle": "Rendimiento y animaciones",
+      "autoChangeBackground": "Cambio automático de fondo",
+      "autoChangeBackgroundDesc": "Cambia automáticamente el fondo de pantalla al cambiar entre modos claro y oscuro"
     },
     "game": {
       "title": "Juego",
       "description": "Controles y preferencias"
     },
     "account": {
-      "title": "Cuenta",
-      "description": "Perfil y seguridad"
+      "title": "Preferencias de fondo",
+      "description": "Vista previa de fondos",
+      "profile": "Perfil",
+      "security": "Seguridad",
+      "preferences": "Preferencias",
+      "notAuthenticated": "No autenticado",
+      "notAuthenticatedDesc": "Inicia sesión para acceder a la configuración de la cuenta",
+      "notAuthenticatedSecurityDesc": "Inicia sesión para acceder a la configuración de seguridad",
+      "userInfo": "Información del usuario",
+      "displayName": "Nombre para mostrar",
+      "displayNamePlaceholder": "Tu nombre",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu@email.com",
+      "twoFactor": "Autenticación de dos factores",
+      "twoFactorDesc": "Añade una capa adicional de seguridad a tu cuenta",
+      "twoFactorInfo": "Recomendado para mayor seguridad",
+      "backgroundPreview": "Vista previa de fondos",
+      "backgroundPreviewDesc": "Vistas previas de los fondos seleccionados para cada modo",
+      "lightModeBackground": "Modo Claro",
+      "darkModeBackground": "Modo Oscuro"
     },
     "advanced": {
       "title": "Avanzado",
       "description": "Opciones técnicas"
     },
     "home": {
-      "description": "Volver al inicio"
+      "description": "Volver al inicio",
+      "subtitle": "Volver a la página principal"
     }
   },
   "common": { 
     "back": "Atrás", 
     "backAria": "Volver atrás",
     "goBackHome": "Volver al inicio",
-    "error": "Error"
+    "error": "Error",
+    "close": "Cerrar"
   },
   "accessibility": { "languageSwitcher": "Selector de idioma" },
   "ui": {

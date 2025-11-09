@@ -27,7 +27,7 @@ const gameController = async (fastify: any, options: any) => {
 		console.log("pong WS connected");
 		let client = fastify.getClient(req, socket);
 		
-		// Si pas de client authentifié, créer un client temporaire pour le mode offline
+		// si pas de client authentifie, creer un client temporaire pour le mode offline
 		if (!client) {
 			console.log("pong WS: No authenticated client, creating temporary client for offline mode");
 			const tempId = Math.floor(Math.random() * 1000000); // ID temporaire

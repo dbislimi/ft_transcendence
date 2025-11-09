@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings, type Theme, type ContrastLevel, type FontSize, type Language } from '../contexts/SettingsContext';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
@@ -17,8 +17,16 @@ interface DisplaySettingsModalProps {
 export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySettingsModalProps) {
   const { t } = useTranslation();
   const { settings, updateDisplaySettings } = useSettings();
-  const { currentBackground, setBackground, availableBackgrounds, isLoading } = useGlobalBackground();
+  const { currentBackground, setBackground, setBackgroundForTheme, availableBackgrounds, lightBackgrounds, darkBackgrounds, lightBackgroundId, darkBackgroundId, isLoading } = useGlobalBackground();
   const [activeSection, setActiveSection] = useState<string>('theme');
+  const [backgroundTab, setBackgroundTab] = useState<'light' | 'dark'>(settings.display.theme);
+  
+  // Synchroniser l'onglet avec le thème actuel quand on ouvre la section background
+  useEffect(() => {
+    if (activeSection === 'background') {
+      setBackgroundTab(settings.display.theme);
+    }
+  }, [activeSection, settings.display.theme]);
 
   if (!isOpen) return null;
 
@@ -70,9 +78,9 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
     updateDisplaySettings({ energySaver });
   };
 
-  const handleBackgroundChange = (backgroundId: string) => {
-    console.log('[Background] Changement vers:', backgroundId);
-    setBackground(backgroundId);
+  const handleBackgroundChange = (backgroundId: string, theme: 'light' | 'dark') => {
+    console.log('[Background] Changement vers:', backgroundId, 'pour le thème:', theme);
+    setBackgroundForTheme(backgroundId, theme);
   };
 
   return (
@@ -162,6 +170,29 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       <div className="w-12 h-8 bg-gradient-to-br from-gray-800 to-gray-900 rounded border shadow-sm"></div>
                       <span className="btn-text-aesthetic text-sm">{t('settings.display.themeDark') || 'Sombre'}</span>
                     </button>
+                  </div>
+                  
+                  {/* Option changement automatique de background */}
+                  <div className="mt-6 pt-6 border-t border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-medium text-white mb-2">
+                          {t('settings.display.autoChangeBackground') || 'Changement automatique de fond'}
+                        </h4>
+                        <p className="text-sm text-gray-400">
+                          {t('settings.display.autoChangeBackgroundDesc') || 'Change automatiquement le fond d\'écran lorsque vous basculez entre les modes clair et sombre'}
+                        </p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer ml-4">
+                        <input
+                          type="checkbox"
+                          checked={settings.display.autoChangeBackground}
+                          onChange={(e) => updateDisplaySettings({ autoChangeBackground: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -282,72 +313,103 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.background') || 'Arrière-plan'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
+                  {/* Onglets Clair/Sombre */}
+                  <div className="flex gap-2 mb-6 bg-gray-800/50 rounded-lg p-1">
+                    <button
+                      onClick={() => setBackgroundTab('light')}
+                      className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 ${
+                        backgroundTab === 'light'
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {t('settings.display.lightMode') || '☀️ Mode Clair'}
+                    </button>
+                    <button
+                      onClick={() => setBackgroundTab('dark')}
+                      className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 ${
+                        backgroundTab === 'dark'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {t('settings.display.darkMode') || '🌙 Mode Sombre'}
+                    </button>
+                  </div>
+
+                  {/* Liste des backgrounds selon l'onglet */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {availableBackgrounds.map((bg) => (
-                      <button
-                        key={bg.id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleBackgroundChange(bg.id);
-                        }}
-                        disabled={isLoading}
-                        className={`group relative rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                          currentBackground.id === bg.id
-                            ? 'border-blue-500 shadow-lg shadow-blue-500/25'
-                            : 'border-gray-600 hover:border-gray-500 hover:shadow-lg'
-                        }`}
-                      >
-                        <div className="aspect-video w-full relative">
-                          {bg.url ? (
-                            <div
-                              className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                              style={{ backgroundImage: `url(${bg.url})` }}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800">
-                              <span className="text-gray-400 text-xs">{bg.name}</span>
-                            </div>
-                          )}
+                    {(backgroundTab === 'light' ? lightBackgrounds : darkBackgrounds).map((bg) => {
+                      // Vérifier si ce background est actif pour le thème de l'onglet (pas le thème actuel)
+                      const isActive = backgroundTab === 'light' 
+                        ? lightBackgroundId === bg.id 
+                        : darkBackgroundId === bg.id;
+                      
+                      return (
+                        <button
+                          key={bg.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleBackgroundChange(bg.id, backgroundTab);
+                          }}
+                          disabled={isLoading}
+                          className={`group relative rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isActive
+                              ? 'border-blue-500 shadow-lg shadow-blue-500/25'
+                              : 'border-gray-600 hover:border-gray-500 hover:shadow-lg'
+                          }`}
+                        >
+                          <div className="aspect-video w-full relative">
+                            {bg.url ? (
+                              <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                                style={{ backgroundImage: `url(${bg.url})` }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800">
+                                <span className="text-gray-400 text-xs">{bg.name}</span>
+                              </div>
+                            )}
+                            
+                            {/* Overlay au hover */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                            
+                            {/* Indicateur de chargement */}
+                            {isLoading && isActive && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                          </div>
                           
-                          {/* Overlay au hover */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                          <div className="p-3 text-center bg-gray-800/90">
+                            <h5 className="text-white text-sm font-medium mb-1">{bg.name}</h5>
+                            <p className="text-gray-400 text-xs">{bg.description}</p>
+                          </div>
                           
-                          {/* Indicateur de chargement */}
-                          {isLoading && currentBackground.id === bg.id && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                            </div>
+                          {/* Badge "Equipé" */}
+                          {isActive && (
+                            <>
+                              <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div className="absolute bottom-3 left-3 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">
+                                {t('settings.display.equipped') || 'Équipé'}
+                              </div>
+                            </>
                           )}
-                        </div>
-                        
-                        <div className="p-3 text-center bg-gray-800/90">
-                          <h5 className="text-white text-sm font-medium mb-1">{bg.name}</h5>
-                          <p className="text-gray-400 text-xs">{bg.description}</p>
-                        </div>
-                        
-                        {/* Badge "Equipe" */}
-                        {currentBackground.id === bg.id && (
-                          <>
-                            <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="absolute bottom-3 left-3 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">
-                              Équipé
-                            </div>
-                          </>
-                        )}
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                   
                   {/* Info sur les arrière-plans */}
                   <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <p className="text-blue-300 text-sm">
-                      💡 <strong>Astuce :</strong> L'arrière-plan sélectionné s'applique à toute l'application. 
-                      Certains arrière-plans incluent des animations qui peuvent être désactivées dans la section Performance.
+                      {t('settings.display.backgroundTip') || '💡 Astuce : Choisissez un arrière-plan pour le mode clair et un pour le mode sombre. L\'arrière-plan changera automatiquement lorsque vous basculerez entre les modes.'}
                     </p>
                   </div>
                 </div>
@@ -357,7 +419,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
             {/* Section Performance */}
             {activeSection === 'performance' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.performance') || 'Performance et animations'}</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.performanceTitle') || t('settings.display.performance') || 'Performance et animations'}</h3>
                 
                 {/* Animations */}
                 <div className="settings-section rounded-xl p-6">

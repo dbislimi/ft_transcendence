@@ -6,6 +6,8 @@ export { default as Pong } from "./Pong";
 export { default as About } from "./About";
 export { default as BombParty } from "./BombParty";
 export { default as BombPartyStatsPage } from "./BombPartyStatsPage";
+export { default as StatsPage } from "./StatsPage";
+export { default as PongStatsPage } from "./PongStatsPage";
 export { default as Profile } from "./Profile";
 export { default as auth } from "./auth";
 export { default as Confirmation } from "./Confirmation";

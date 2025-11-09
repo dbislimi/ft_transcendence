@@ -63,15 +63,13 @@ export class BombPartyClient {
     devLog.log(`[BombPartyClient] Instance created [${this.connectionId}] with priority ${this.priority}`);
   }
 
-  /**
-   * Vérifie si l'utilisateur est authentifié (a un token valide)
-   */
+  // verifie si l'utilisateur est authentifie (a un token valide)
   private isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
     
     try {
-      // Vérifier si le token est expiré
+      // verifie si le token est expire
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiresAt = payload.exp * 1000;
       return Date.now() < expiresAt;
@@ -80,31 +78,31 @@ export class BombPartyClient {
     }
   }
 
-  /**
-   * Obtient l'URL WebSocket avec le token JWT
-   */
+  // recupere l'url websocket avec le token jwt (optionnel)
   private getWebSocketUrl(): string {
     const token = localStorage.getItem('token');
-    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
+    
+    // detecte l'environnement et utilise localhost en dev
+    // le navigateur ne peut pas resoudre les noms d'hotes docker comme "back"
+    const isDev = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    
+    const wsUrl = isDev 
+      ? 'ws://localhost:3001'
+      : (import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:3001`);
+    
     const baseUrl = wsUrl.replace(/^https?/, 'ws').replace(/^wss?/, 'ws');
     
-    if (!token) {
-      throw new Error('No authentication token available');
-    }
-    
-    // Ajouter le token en query param
+    // construit l'url - le token est optionnel
     const url = new URL(`${baseUrl}/bombparty/ws`);
-    url.searchParams.set('token', token);
+    if (token) {
+      url.searchParams.set('token', token);
+    }
     return url.toString();
   }
 
   public connect() {
-    // Vérifier l'authentification avant de se connecter
-    if (!this.isAuthenticated()) {
-      devLog.warn(`[BombPartyClient] Not authenticated, skipping connection [${this.connectionId}]`);
-      return;
-    }
-
+    // permet la connexion meme sans authentification jwt (mode guest)
     if (this.isConnecting || (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN))) {
       devLog.log(`[BombPartyClient] Connection already in progress or active, ignored [${this.connectionId}]`);
       return;
@@ -136,8 +134,8 @@ export class BombPartyClient {
         this._emit('connected', {});
       };
       
-      // Note: Les ping/pong natifs du protocole WebSocket sont gérés automatiquement par le navigateur
-      // On traite seulement les messages JSON 'bp:ping' dans onmessage ci-dessous
+      // note: les ping/pong natifs du protocole websocket sont geres automatiquement par le navigateur
+      // on traite seulement les messages json 'bp:ping' dans onmessage ci-dessous
       
       this.ws.onmessage = (event) => {
         if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
@@ -148,7 +146,7 @@ export class BombPartyClient {
         try {
           const data = JSON.parse(event.data);
           
-          // Répondre automatiquement aux ping
+          // repond automatiquement aux ping
           if (data.event === 'bp:ping') {
             this.emit('bp:pong', {});
             return;
@@ -171,8 +169,8 @@ export class BombPartyClient {
         devLog.log(`[BombPartyClient] Connection closed [${this.connectionId}], code: ${event.code}`);
         this._emit('disconnected', {});
         
-        // Reconnexion exponentielle uniquement si authentifié
-        if (this.isAuthenticated() && event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        // reconnexion exponentielle (meme sans authentification jwt)
+        if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000); // Max 30s
           this.reconnectAttempts++;
           devLog.log(`[BombPartyClient] Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
@@ -194,7 +192,7 @@ export class BombPartyClient {
       this.isConnecting = false;
       devLog.error(`[BombPartyClient] Exception lors de la connexion [${this.connectionId}]:`, err);
       
-      // Si erreur d'authentification, ne pas réessayer
+      // si erreur d'authentification, ne pas reessayer
       if (err instanceof Error && err.message.includes('token')) {
         devLog.warn(`[BombPartyClient] Authentication error, not retrying [${this.connectionId}]`);
         return;
@@ -232,6 +230,7 @@ export class BombPartyClient {
   }
 
   on(event: 'bonus:applied', handler: EventHandler): () => void;
+  on(event: 'bp:bonus:applied', handler: EventHandler): () => void;
   on(event: 'bp:auth:success', handler: EventHandler): () => void;
   on(event: 'bp:lobby:created', handler: EventHandler): () => void;
   on(event: 'bp:lobby:joined', handler: EventHandler): () => void;
@@ -245,6 +244,20 @@ export class BombPartyClient {
   on(event: 'bp:game:start', handler: EventHandler): () => void;
   on(event: 'connected', handler: EventHandler): () => void;
   on(event: 'error', handler: EventHandler): () => void;
+  // Tournament events
+  on(event: 'bp:tournament:created', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:joined', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:left', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:status', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:updated', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:finished', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:started', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:round_started', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:round_ended', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:match_started', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:match_ended', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:player_forfeit', handler: EventHandler): () => void;
+  on(event: 'bp:tournament:reconnected', handler: EventHandler): () => void;
   on(event: string, handler: EventHandler): () => void {
     const set = this.handlers.get(event) ?? new Set<EventHandler>();
     set.add(handler);
@@ -267,8 +280,8 @@ export class BombPartyClient {
         devLog.log(`[BombPartyClient] WebSocket not ready, queuing message [${this.connectionId}]:`, event);
         this.pendingMessages.push({ event, payload });
         
-        // Ne pas tenter de reconnexion si non authentifié
-        if (this.isAuthenticated() && !this.isConnecting && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
+        // tente la reconnexion si necessaire (meme sans authentification jwt)
+        if (!this.isConnecting && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
           devLog.log(`[BombPartyClient] Reconnection attempt to send message [${this.connectionId}]`);
           this.connect();
         }
@@ -282,20 +295,16 @@ export class BombPartyClient {
     } catch (err) {
       devLog.error(`[BombPartyClient] Error sending message [${this.connectionId}]:`, err);
       
-      // Ne pas mettre en queue les messages non critiques si non authentifié
-      if (this.isAuthenticated()) {
+      // met en queue les messages et tente la reconnexion
       this.pendingMessages.push({ event, payload });
       this.disconnect();
       
       this.reconnectTimer = setTimeout(() => {
-          if (this.isAuthenticated()) {
         this.connect();
-          }
       }, 1000) as unknown as number;
-      }
     }
     
-    // Mode mock pour les tests
+    // mode mock pour les tests
     if (this.mock && !this.ws) {
       if (event === 'bp:bonus:activate') {
         setTimeout(() => {
@@ -311,13 +320,8 @@ export class BombPartyClient {
   }
 
   authenticate(playerName: string): void {
-    // authenticated est le flag pour bp:auth:success, pas pour JWT
-    // On vérifie d'abord qu'on a un JWT valide via isAuthenticated()
-    if (!this.isAuthenticated()) {
-      devLog.warn(`[BombPartyClient] Cannot authenticate: no valid JWT token [${this.connectionId}]`);
-      return;
-    }
-    
+    // authenticated est le flag pour bp:auth:success, pas pour jwt
+    // permet l'authentification meme sans jwt (mode guest)
     if (this.authenticated && this.currentPlayerName === playerName) {
       devLog.log(`[BombPartyClient] Already authenticated as [${playerName}], ignored [${this.connectionId}]`);
       return;
@@ -330,12 +334,8 @@ export class BombPartyClient {
       devLog.log(`[BombPartyClient] WebSocket not connected during authentication, connecting... [${this.connectionId}]`);
       this.pendingMessages.push({ event: 'bp:auth', payload: { playerName } });
       
-      // Se connecter seulement si authentifié avec JWT
-      if (this.isAuthenticated()) {
+      // se connecte meme sans jwt (mode guest)
       this.connect();
-      } else {
-        devLog.warn(`[BombPartyClient] Cannot connect: not authenticated [${this.connectionId}]`);
-      }
       return;
     }
     

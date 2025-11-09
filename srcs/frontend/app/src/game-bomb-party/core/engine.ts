@@ -1,13 +1,13 @@
 import type { GameState, GamePhase, Player, GameConfig, BonusKey } from './types';
 import { STREAK_FOR_BONUS } from './types';
 import { validateWithDictionary, validateLocal } from '../data/validator';
-import trigramWordsData from '../data/trigram_words.json';
 import { BombPartyEngineGetters } from './engine-getters';
+import { getRandomSyllable } from '../data/syllableLoader';
 
 export class BombPartyEngine {
   private state: GameState;
-  private lastTrigram: string = '';
-  private currentTrigramUsageCount: number = 0;
+  private lastSyllable: string = '';
+  private currentSyllableUsageCount: number = 0;
   private totalPlayersInRound: number = 0;
   private doubleChanceConsumedThisTurn: boolean = false;
   private getters!: BombPartyEngineGetters;
@@ -20,7 +20,7 @@ export class BombPartyEngine {
   private updateGetters(): void {
     this.getters = new BombPartyEngineGetters(
       this.state,
-      this.currentTrigramUsageCount,
+      this.currentSyllableUsageCount,
       this.totalPlayersInRound
     );
   }
@@ -30,7 +30,7 @@ export class BombPartyEngine {
       phase: 'LOBBY',
       players: [],
       currentPlayerIndex: 0,
-      currentTrigram: '',
+      currentSyllable: '',
       usedWords: [],
       turnEndsAt: 0,
       turnOrder: [],
@@ -59,7 +59,7 @@ export class BombPartyEngine {
       phase: 'COUNTDOWN',
       players,
       currentPlayerIndex: 0,
-      currentTrigram: '',
+      currentSyllable: '',
       usedWords: [],
       turnEndsAt: 0,
       turnOrder: players.map(p => p.id),
@@ -70,7 +70,7 @@ export class BombPartyEngine {
     };
 
     // Init
-    this.currentTrigramUsageCount = 0;
+    this.currentSyllableUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
   }
 
@@ -87,8 +87,8 @@ export class BombPartyEngine {
       }
     }
 
-    this.state.currentTrigram = this.getNewTrigram();
-    this.currentTrigramUsageCount = 1;
+    this.state.currentSyllable = this.getNewSyllable();
+    this.currentSyllableUsageCount = 1;
     this.totalPlayersInRound = this.state.players.length;
     this.state.phase = 'TURN_ACTIVE';
     this.doubleChanceConsumedThisTurn = false;
@@ -103,23 +103,16 @@ export class BombPartyEngine {
     }
   }
 
-  private getNewTrigram(): string {
-    const newTrigram = this.selectRandomTrigram();
-    this.lastTrigram = newTrigram;
-    return newTrigram;
-  }
-
-  private selectRandomTrigram(): string {
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const candidates = Object.keys(map);
-    const filtered = candidates.filter(t => t !== this.lastTrigram);
-    const pool = filtered.length > 0 ? filtered : candidates;
-    if (pool.length === 0) return '';
-    return pool[Math.floor(Math.random() * pool.length)];
+  private getNewSyllable(): string {
+    // pour le mode local, on utilise les syllabes du fichier syllabes.json
+    // en mode multiplayer, la syllabe vient du backend
+    const newSyllable = getRandomSyllable(this.lastSyllable);
+    this.lastSyllable = newSyllable;
+    return newSyllable;
   }
 
   submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-    const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
+    const validation = validateWithDictionary(word, this.state.currentSyllable, this.state.usedWords);
     if (validation.ok) {
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
@@ -146,8 +139,10 @@ export class BombPartyEngine {
       if (p?.pendingEffects?.doubleChance && !this.doubleChanceConsumedThisTurn) {
         this.doubleChanceConsumedThisTurn = true;
         if (p.pendingEffects) p.pendingEffects.doubleChance = false;
+        // ne pas changer la phase : le joueur peut reessayer sur le meme tour
         return { ok: false, reason: validation.reason, consumedDoubleChance: true };
       }
+      // mot invalide sans double chance : passer a la phase RESOLVE
       this.state.phase = 'RESOLVE';
       return { ok: false, reason: validation.reason };
     }
@@ -179,7 +174,7 @@ export class BombPartyEngine {
       this.state.phase = 'GAME_OVER';
       return;
     }
-    this.currentTrigramUsageCount++;
+    this.currentSyllableUsageCount++;
     this.nextPlayer();
     this.startTurn();
   }
@@ -209,9 +204,9 @@ export class BombPartyEngine {
     return this.getters.getState();
   }
 
-  getCurrentTrigramUsageCount(): number {
+  getCurrentSyllableUsageCount(): number {
     this.updateGetters();
-    return this.getters.getCurrentTrigramUsageCount();
+    return this.getters.getCurrentSyllableUsageCount();
   }
 
   getTotalPlayersInRound(): number {
@@ -244,9 +239,9 @@ export class BombPartyEngine {
     return this.getters.getWordSuggestions(maxSuggestions);
   }
 
-  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
+  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
     this.updateGetters();
-    return this.getters.getCurrentTrigramInfo();
+    return this.getters.getCurrentSyllableInfo();
   }
 
   getTurnDurationForCurrentPlayer(): number {
@@ -256,7 +251,7 @@ export class BombPartyEngine {
 
   reset(): void {
     this.state = this.getInitialState();
-    this.lastTrigram = '';
+    this.lastSyllable = '';
     this.updateGetters();
   }
 
@@ -281,6 +276,7 @@ export class BombPartyEngine {
         return { ok: true };
       case 'plus5sec':
         if (this.state.phase === 'TURN_ACTIVE' && this.state.activeTurnEndsAt) {
+          // Ajouter 5 secondes au temps de fin du tour
           this.state.activeTurnEndsAt += 5000;
           this.state.turnEndsAt = this.state.activeTurnEndsAt;
           p.bonuses.plus5sec -= 1;

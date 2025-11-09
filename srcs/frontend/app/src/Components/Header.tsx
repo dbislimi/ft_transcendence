@@ -10,7 +10,11 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   
   return (
-    <header className="relative z-20 w-full bg-gradient-to-r from-slate-900/80 via-purple-900/80 to-slate-900/80 backdrop-blur-xl border-b border-purple-500/20 shadow-2xl">
+    <header className="relative z-20 w-full backdrop-blur-xl border-b" style={{
+      background: 'var(--bg-header)',
+      borderColor: 'rgba(148, 163, 184, 0.3)',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    }}>
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           
@@ -23,15 +27,15 @@ export default function Header() {
                   className="nav-btn-aesthetic"
                 >
                   <span className="label-aesthetic">
-                    👤 {t('nav.profile') || 'Profil'}
+                    {t('nav.profile') || 'Profil'}
                   </span>
                 </Link>
                 <Link 
-                  to="/bomb-party/stats" 
+                  to="/stats" 
                   className="nav-btn-aesthetic"
                 >
                   <span className="label-aesthetic">
-                    📊 Statistiques
+                    Statistiques
                   </span>
                 </Link>
               </>
@@ -92,7 +96,7 @@ export default function Header() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 to-pink-600/0 group-hover:from-red-600/20 group-hover:to-pink-600/20 transition-all duration-300"></div>
                 <span className="relative text-red-300 group-hover:text-red-200 font-semibold transition-colors duration-300">
-                  🚪
+                  {t('nav.logout') || 'Déconnexion'}
                 </span>
               </button>
             )}

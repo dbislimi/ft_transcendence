@@ -4,7 +4,7 @@ import { verifyToken } from '../utils/auth.ts';
 
 export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any, any, any, any>) {
   
-  // Récupérer l'historique des matchs de l'utilisateur
+  // recuperer l'historique des matchs de l'utilisateur
   fastify.get('/my-matches', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
@@ -36,7 +36,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
     }
   });
 
-  // Ajouter un nouveau match (pour quand vous jouez une partie)
+  // ajouter un nouveau match (pour quand vous jouez une partie)
   fastify.post('/matches', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
@@ -49,7 +49,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
     };
 
     try {
-      // Déterminer qui est player1 et player2
+      // determiner qui est player1 et player2
       const player1_id = decoded.id;
       const player2_id = opponent_id;
 
@@ -64,18 +64,18 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
         );
       });
 
-      // Mettre à jour les stats des utilisateurs
+      // mettre a jour les stats des utilisateurs
       await new Promise<void>((resolve, reject) => {
         fastify.db.serialize(() => {
           fastify.db.run("BEGIN TRANSACTION");
           
-          // Incrémenter les victoires du gagnant
+          // incrementer les victoires du gagnant
           fastify.db.run(
             "UPDATE users SET wins = wins + 1 WHERE id = ?",
             [winner_id]
           );
           
-          // Incrémenter les défaites du perdant
+          // incrementer les defaites du perdant
           const loser_id = winner_id === player1_id ? player2_id : player1_id;
           fastify.db.run(
             "UPDATE users SET losses = losses + 1 WHERE id = ?",
@@ -103,7 +103,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
     }
   });
 
-  // Récupérer les statistiques de l'utilisateur
+  // recuperer les statistiques de l'utilisateur
   fastify.get('/my-stats', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
@@ -135,19 +135,19 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
     }
   });
 
-  // Route de test pour ajouter des matchs factices (à supprimer en production)
+  // route de test pour ajouter des matchs factices (a supprimer en production)
   fastify.post('/add-test-matches', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
 
     try {
-      // Créer quelques matchs factices pour tester
+      // creer quelques matchs factices pour tester
       const testMatches = [
-        { opponent_id: 2, winner_id: decoded.id }, // Victoire
-        { opponent_id: 3, winner_id: 3 }, // Défaite
-        { opponent_id: 2, winner_id: decoded.id }, // Victoire
-        { opponent_id: 4, winner_id: decoded.id }, // Victoire
-        { opponent_id: 3, winner_id: 3 }, // Défaite
+        { opponent_id: 2, winner_id: decoded.id }, // victoire
+        { opponent_id: 3, winner_id: 3 }, // defaite
+        { opponent_id: 2, winner_id: decoded.id }, // victoire
+        { opponent_id: 4, winner_id: decoded.id }, // victoire
+        { opponent_id: 3, winner_id: 3 }, // defaite
       ];
 
       for (const match of testMatches) {
@@ -162,9 +162,9 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
           );
         });
 
-        // Mettre à jour les stats
+        // mettre a jour les stats
         if (match.winner_id === decoded.id) {
-          // Victoire pour l'utilisateur
+          // victoire pour l'utilisateur
           await new Promise<void>((resolve, reject) => {
             fastify.db.run(
               "UPDATE users SET wins = wins + 1 WHERE id = ?",
@@ -172,7 +172,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
               (err) => err ? reject(err) : resolve()
             );
           });
-          // Défaite pour l'adversaire
+          // defaite pour l'adversaire
           await new Promise<void>((resolve, reject) => {
             fastify.db.run(
               "UPDATE users SET losses = losses + 1 WHERE id = ?",
@@ -181,7 +181,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance<any, any
             );
           });
         } else {
-          // Défaite pour l'utilisateur
+          // defaite pour l'utilisateur
           await new Promise<void>((resolve, reject) => {
             fastify.db.run(
               "UPDATE users SET losses = losses + 1 WHERE id = ?",

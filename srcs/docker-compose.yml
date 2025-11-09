@@ -33,8 +33,6 @@ services:
       - /usr/app/node_modules
     ports:
       - 5173:5173
-    env_file:
-      - ./frontend/app/.env.local
     depends_on:
       - back
     restart: unless-stopped

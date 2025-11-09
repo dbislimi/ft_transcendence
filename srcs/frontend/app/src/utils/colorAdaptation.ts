@@ -1,7 +1,5 @@
-/**
- * Système d'adaptation des couleurs selon l'arrière-plan
- * Analyse les couleurs dominantes et génère des schémas adaptatifs
- */
+// systeme d'adaptation des couleurs selon l'arriere-plan
+// analyse les couleurs dominantes et genere des schemas adaptatifs
 
 export interface ColorScheme {
   primary: string;
@@ -153,9 +151,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
   }
 };
 
-/**
- * Analyse un fond et détermine le schéma de couleurs approprié
- */
+// analyse un fond et determine le schema de couleurs approprie
 export function analyzeBackground(backgroundId: string, backgroundUrl?: string): BackgroundAnalysis {
   const backgroundMappings: Record<string, string> = {
     // Fonds sombres
@@ -169,14 +165,18 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
     'dark-souls': 'dark-halloween',
     'the-last-of-us': 'dark-halloween',
     'Gta 5': 'dark-blue',
+    'grace': 'dark-blue',
+    'pexels-umkreisel-app-956999': 'dark-blue',
+    '1': 'dark-blue',
     
     // Fonds clairs
     'forest': 'light-nature',
-    'grace': 'light-sky',
     'kitti': 'light-gradient',
-    '1': 'light-gradient',
     'pexels-padrinan-19670': 'light-nature',
-    'pexels-umkreisel-app-956999': 'light-sky',
+    'cyberpunk2077': 'light-sky',
+    'CyberPunk2077': 'light-sky',
+    'gta6': 'light-sky',
+    'theft': 'light-sky',
     
     // Fonds neutres
     'windows95': 'neutral-light',
@@ -192,24 +192,24 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
     
     'fortnite-season_00_pre_season': 'dark-blue',
     'fortnite-season_04': 'dark-blue',
-    'fortnite-season_05_no_rift': 'dark-blue',
     'fortnite-season_06': 'dark-halloween',
     'fortnite-season_07': 'dark-snow',
-    'fortnite-season_08': 'dark-blue',
+    'fortnite-season_05_no_rift': 'light-sky',
+    'fortnite-season_08': 'light-sky',
     
-    'fortnite-chapter_03_season_02': 'dark-blue',
+    'fortnite-chapter_03_season_02': 'light-sky',
     'fortnite-chapter_04_season_03': 'light-nature',
     'fortnite-chapter_04_season_og': 'dark-blue',
     
     'fortnite-event_avatar_elements': 'light-nature',
     'fortnite-event_find_the_force': 'dark-blue',
     'fortnite-event_star_wars_day_2024': 'dark-blue',
-    'fortnite-event_galactic_battle': 'dark-blue',
+    'fortnite-event_galactic_battle': 'light-sky',
     'fortnite-event_the_big_bang': 'dark-blue',
     'fortnite-event_mecha_team_leader': 'dark-blue',
     
     // Fortnite - Lieux
-    'fortnite-location_loot_lake': 'light-nature'
+    'fortnite-location_loot_lake': 'dark-blue'
   };
 
   const schemeKey = backgroundMappings[backgroundId] || 'neutral-dark';
@@ -224,9 +224,73 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
   };
 }
 
-/**
- * Détermine la couleur dominante à partir de la clé du schéma
- */
+// Détermine si un background est clair ou sombre pour le tri
+export function isBackgroundDark(backgroundId: string): boolean {
+  // Le background "default" peut être utilisé pour les deux modes
+  if (backgroundId === 'default') {
+    return false; // Par défaut, on le met dans les clairs, mais il sera disponible partout
+  }
+  
+  const backgroundMappings: Record<string, string> = {
+    // Fonds sombres
+    '42': 'dark-blue',
+    'matrix-42': 'dark-matrix',
+    'hallowenn-background': 'dark-halloween',
+    'snow-background': 'dark-snow',
+    'matrix': 'dark-matrix',
+    'batman': 'dark-blue',
+    'dark-souls': 'dark-halloween',
+    'the-last-of-us': 'dark-halloween',
+    'Gta 5': 'dark-blue',
+    'bit-cloud': 'neutral-dark',
+    'grace': 'dark-blue',
+    'pexels-umkreisel-app-956999': 'dark-blue',
+    '1': 'dark-blue',
+    
+    // Fonds clairs
+    'forest': 'light-nature',
+    'kitti': 'light-gradient',
+    'pexels-padrinan-19670': 'light-nature',
+    'windows95': 'neutral-light',
+    'cyberpunk2077': 'light-sky',
+    'CyberPunk2077': 'light-sky',
+    'gta6': 'light-sky',
+    'theft': 'light-sky',
+    
+    // Fortnite - sombres
+    'fortnite-halloween_01_fortnitemares_2017': 'dark-halloween',
+    'fortnite-halloween_02_fortnitemares_2018': 'dark-halloween',
+    'fortnite-halloween_03_cube_queen': 'dark-halloween',
+    'fortnite-halloween_04_fortnitemares_2024': 'dark-halloween',
+    'fortnite-noel_01_winterfest_2017': 'dark-snow',
+    'fortnite-noel_02_winterfest_2019': 'dark-snow',
+    'fortnite-season_00_pre_season': 'dark-blue',
+    'fortnite-season_04': 'dark-blue',
+    'fortnite-season_06': 'dark-halloween',
+    'fortnite-season_07': 'dark-snow',
+    'fortnite-chapter_04_season_og': 'dark-blue',
+    'fortnite-event_find_the_force': 'dark-blue',
+    'fortnite-event_star_wars_day_2024': 'dark-blue',
+    'fortnite-event_the_big_bang': 'dark-blue',
+    'fortnite-event_mecha_team_leader': 'dark-blue',
+    
+    // Fortnite - sombres
+    'fortnite-location_loot_lake': 'dark-blue',
+    
+    // Fortnite - clairs
+    'fortnite-chapter_04_season_03': 'light-nature',
+    'fortnite-event_avatar_elements': 'light-nature',
+    'fortnite-season_05_no_rift': 'light-sky',
+    'fortnite-season_08': 'light-sky',
+    'fortnite-chapter_03_season_02': 'light-sky',
+    'fortnite-event_galactic_battle': 'light-sky'
+  };
+
+  const schemeKey = backgroundMappings[backgroundId] || 'neutral-dark';
+  return schemeKey.includes('dark') || schemeKey.includes('matrix') || schemeKey.includes('halloween') || schemeKey.includes('snow');
+}
+
+// determine la couleur dominante a partir de la cle du schema
 function getDominantColorFromScheme(schemeKey: string): BackgroundAnalysis['dominantColor'] {
   if (schemeKey.includes('blue')) return 'blue';
   if (schemeKey.includes('green') || schemeKey.includes('nature')) return 'green';
@@ -237,18 +301,14 @@ function getDominantColorFromScheme(schemeKey: string): BackgroundAnalysis['domi
   return 'neutral';
 }
 
-/**
- * Détermine le niveau de contraste
- */
+// determine le niveau de contraste
 function getContrastLevel(schemeKey: string): BackgroundAnalysis['contrast'] {
   if (schemeKey.includes('matrix') || schemeKey.includes('halloween')) return 'high';
   if (schemeKey.includes('dark') || schemeKey.includes('light')) return 'medium';
   return 'low';
 }
 
-/**
- * Applique un schéma de couleurs au document
- */
+// applique un schema de couleurs au document
 export function applyColorScheme(scheme: ColorScheme): void {
   const root = document.documentElement;
   
@@ -263,6 +323,11 @@ export function applyColorScheme(scheme: ColorScheme): void {
   root.style.setProperty('--color-background', scheme.background);
   root.style.setProperty('--color-card', scheme.card);
   
+  // Synchroniser les variables de boutons avec le schéma de couleurs adaptatif
+  root.style.setProperty('--btn-primary-bg', `linear-gradient(135deg, ${scheme.button}, ${scheme.secondary})`);
+  root.style.setProperty('--btn-primary-hover', `linear-gradient(135deg, ${scheme.buttonHover}, ${scheme.button})`);
+  root.style.setProperty('--accent-primary', scheme.accent);
+  
   // Ajouter les versions RGB pour la transparence
   root.style.setProperty('--color-button-rgb', hexToRgb(scheme.button));
   root.style.setProperty('--color-button-hover-rgb', hexToRgb(scheme.buttonHover));
@@ -275,9 +340,7 @@ export function applyColorScheme(scheme: ColorScheme): void {
     .join(' ');
 }
 
-/**
- * Convertit une couleur hexadécimale en valeurs RGB séparées
- */
+// convertit une couleur hexadecimale en valeurs rgb separees
 function hexToRgb(hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result 
@@ -376,9 +439,7 @@ function generateSchemeFromColors(colors: { r: number; g: number; b: number; bri
   }
 }
 
-/**
- * Ajuste la luminosité d'une couleur RGB
- */
+// ajuste la luminosite d'une couleur rgb
 function adjustBrightness(rgb: string, amount: number): string {
   const match = rgb.match(/rgb\((\d+), (\d+), (\d+)\)/);
   if (!match) return rgb;

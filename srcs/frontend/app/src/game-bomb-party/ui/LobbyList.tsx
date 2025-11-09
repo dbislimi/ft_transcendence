@@ -105,22 +105,21 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
             console.log('[LobbyList] Refresh button clicked, current lobbies:', lobbies.length);
             setIsLoading(true);
             
-            // Use client if available (in lobby), otherwise use service
+            // Always use the service's requestLobbyList method which properly handles the WebSocket connection
+            console.log('[LobbyList] Requesting lobby list via service');
+            requestLobbyList();
+            
+            // Also try via client if available (for cases where we're in a lobby)
             if (client) {
-              console.log('[LobbyList] Using BombPartyClient to request lobby list');
-              client.sendMessage({
-                event: 'bp:lobby:list',
-                payload: {}
-              });
-            } else {
-              console.log('[LobbyList] Using BombPartyService to request lobby list');
-              requestLobbyList();
+              console.log('[LobbyList] Also requesting via client');
+              client.emit('bp:lobby:list', {});
             }
             
             setTimeout(() => {
               setIsLoading(false);
-              console.log('[LobbyList] After refresh, lobbies:', useBombPartyStore.getState().lobbies.length);
-            }, 1000);
+              const updatedLobbies = useBombPartyStore.getState().lobbies;
+              console.log('[LobbyList] After refresh, lobbies:', updatedLobbies.length, updatedLobbies);
+            }, 1500);
           }}
           disabled={isLoading}
           className="px-3 py-1 text-sm rounded border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-50"

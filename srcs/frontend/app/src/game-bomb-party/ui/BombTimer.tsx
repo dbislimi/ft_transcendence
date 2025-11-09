@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface BombTimerProps {
-  trigram: string;
+  syllable: string;
   remainingMs: number;
   isActive: boolean;
   usageCount?: number;
@@ -11,7 +11,7 @@ interface BombTimerProps {
 }
 
 export default function BombTimer({ 
-  trigram, 
+  syllable, 
   remainingMs, 
   isActive, 
   usageCount, 
@@ -29,8 +29,8 @@ export default function BombTimer({
   const isDanger = false;
   const timeDisplay = formatTime(remainingMs);
   
-  // Protection contre trigram undefined
-  const displayTrigram = trigram || '...';
+  // Protection contre syllable undefined
+  const displaySyllable = syllable || '...';
 
   if (!isActive || remainingMs <= 0) {
     return (
@@ -40,12 +40,12 @@ export default function BombTimer({
           💣
         </div>
         
-        {/* Trigramme */}
+        {/* Syllabe */}
         <div className="text-5xl font-bold tracking-wider text-slate-400">
-          {displayTrigram.toUpperCase()}
+          {displaySyllable.toUpperCase()}
         </div>
         
-        {/* Compteur d'utilisation du trigramme */}
+        {/* Compteur d'utilisation de la syllabe */}
         {usageCount !== undefined && totalPlayers !== undefined && (
           <div className="text-lg text-slate-300 mt-2 bg-slate-800/50 px-3 py-1 rounded-full">
             {usageCount} / {totalPlayers}
@@ -75,11 +75,11 @@ export default function BombTimer({
         {timeDisplay}
       </div>
       
-      {/* Trigramme */}
+      {/* Syllabe */}
       <div className={`text-5xl font-bold tracking-wider transition-all duration-300 ${
         isActive ? 'text-yellow-400' : 'text-slate-400'
       }`}>
-        {trigram.toUpperCase()}
+        {syllable.toUpperCase()}
       </div>
       
       {/* Indicateur de tour actuel */}
@@ -89,7 +89,7 @@ export default function BombTimer({
         </div>
       )}
       
-      {/* Compteur d'utilisation du trigramme */}
+      {/* Compteur d'utilisation de la syllabe */}
       {usageCount !== undefined && totalPlayers !== undefined && (
         <div className="text-lg text-slate-300 mt-2 bg-slate-800/50 px-3 py-1 rounded-full">
           {usageCount} / {totalPlayers}

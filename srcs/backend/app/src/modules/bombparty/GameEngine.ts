@@ -31,12 +31,12 @@ import {
   getTurnDurationForCurrentPlayer,
   activateBonus
 } from './engine/index.ts';
-import { getRandomTrigram } from './trigramSelector.ts';
+import { getRandomSyllable } from './syllableSelector.ts';
 
 export class BombPartyEngine {
   private state: GameState;
-  private lastTrigram: string = '';
-  private currentTrigramUsageCount: number = 0;
+  private lastSyllable: string = '';
+  private currentSyllableUsageCount: number = 0;
   private doubleChanceConsumedThisTurn: boolean = false;
 
   constructor() {
@@ -53,7 +53,7 @@ export class BombPartyEngine {
     const gamePlayers = createGamePlayers(players, gameConfig);
     this.state = createGameState(gamePlayers, gameConfig);
 
-    this.currentTrigramUsageCount = 0;
+    this.currentSyllableUsageCount = 0;
   }
 
   startCountdown(): void {
@@ -62,16 +62,16 @@ export class BombPartyEngine {
 
   startTurn(): void {
     console.log('[BombParty DEBUG] startTurn() CALLED');
-    this.currentTrigramUsageCount = 1;
+    this.currentSyllableUsageCount = 1;
     this.doubleChanceConsumedThisTurn = false;
 
     startTurn(
       this.state,
-      () => this.getNewTrigram(),
+      () => this.getNewSyllable(),
       () => this.getTurnDurationForCurrentPlayer()
     );
     
-    console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentTrigram=${this.state.currentTrigram}, currentPlayerIndex=${this.state.currentPlayerIndex}`);
+    console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentSyllable=${this.state.currentSyllable}, currentPlayerIndex=${this.state.currentPlayerIndex}`);
   }
 
   isTurnExpired(): boolean {
@@ -82,10 +82,10 @@ export class BombPartyEngine {
     return checkAndEndExpiredTurn(this.state, () => this.resolveTurn(false, true));
   }
 
-  private getNewTrigram(): string {
-    const newTrigram = getRandomTrigram(this.lastTrigram);
-    this.lastTrigram = newTrigram;
-    return newTrigram;
+  private getNewSyllable(): string {
+    const newSyllable = getRandomSyllable(this.lastSyllable);
+    this.lastSyllable = newSyllable;
+    return newSyllable;
   }
 
   submitWord(word: string, msTaken: number): { 
@@ -121,7 +121,7 @@ export class BombPartyEngine {
       () => this.startTurn()
     );
     
-    this.currentTrigramUsageCount++;
+    this.currentSyllableUsageCount++;
   }
 
   private nextPlayer(): void {
@@ -214,8 +214,8 @@ export class BombPartyEngine {
 
   reset(): void {
     this.state = getInitialState();
-    this.lastTrigram = '';
-    this.currentTrigramUsageCount = 0;
+    this.lastSyllable = '';
+    this.currentSyllableUsageCount = 0;
     this.doubleChanceConsumedThisTurn = false;
   }
 }

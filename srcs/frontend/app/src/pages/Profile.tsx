@@ -36,7 +36,7 @@ export default function Profile() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // États pour les vraies données
+  // etats pour les vraies donnees
   const [stats, setStats] = useState<Stats>({
     totalGames: 0,
     wins: 0,
@@ -58,7 +58,7 @@ export default function Profile() {
     "/avatars/avatar10.png"
   ];
 
-  // Fonction pour calculer le rang basé sur les victoires
+  // fonction pour calculer le rang base sur les victoires
   const calculateRank = (wins: number): string => {
     if (wins >= 100) return "Légende";
     if (wins >= 50) return "Maître";
@@ -68,13 +68,13 @@ export default function Profile() {
     return "Novice";
   };
 
-  // Récupérer les vraies données
+  // recuperer les vraies donnees
   const fetchData = async () => {
     if (!token || !user) return;
     
     setLoading(true);
     try {
-      // Récupérer les amis
+      // recuperer les amis
       const friendsResponse = await fetch("http://localhost:3001/friends", {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -87,8 +87,8 @@ export default function Profile() {
         })));
       }
 
-      // Utiliser les stats de la base de données utilisateur (wins/losses)
-      // Les statistiques sont déjà disponibles dans user.wins et user.losses depuis la DB
+      // utiliser les stats de la base de donnees utilisateur (wins/losses)
+      // les statistiques sont deja disponibles dans user.wins et user.losses depuis la db
       if (user) {
         const totalGames = (user.wins || 0) + (user.losses || 0);
         const wins = user.wins || 0;
@@ -103,8 +103,8 @@ export default function Profile() {
           wins,
           losses,
           winRate,
-          currentStreak: 0, // À implémenter si nécessaire
-          bestStreak: 0,    // À implémenter si nécessaire
+          currentStreak: 0, // a implementer si necessaire
+          bestStreak: 0,    // a implementer si necessaire
           rank,
           points
         });
@@ -125,7 +125,7 @@ export default function Profile() {
       fetchData();
     }
     
-    // Animation d'entrée
+    // animation d'entree
     setTimeout(() => setIsLoaded(true), 100);
   }, [user, token]);
 
@@ -153,7 +153,7 @@ export default function Profile() {
         setMessage("Profil mis à jour avec succès !");
         setIsError(false);
         setEditMode(false);
-        // Rafraîchir les données utilisateur
+        // rafraichir les donnees utilisateur
         window.location.reload();
       } else {
         const errorData = await response.json();

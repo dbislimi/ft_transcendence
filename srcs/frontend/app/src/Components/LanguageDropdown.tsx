@@ -1,7 +1,5 @@
-/**
- * Menu deroulant ameliore pour la selection de langue
- * Remplace le simple select par un vrai dropdown avec drapeaux
- */
+// menu deroulant ameliore pour la selection de langue
+// remplace le simple select par un vrai dropdown avec drapeaux
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';

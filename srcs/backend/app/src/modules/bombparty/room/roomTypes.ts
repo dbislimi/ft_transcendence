@@ -9,6 +9,7 @@ export interface Room {
   players: Map<string, PlayerConnection>;
   createdAt: number;
   startedAt?: number;
+  lastGameState?: any; // État précédent pour calculer les deltas
 }
 
 export interface PlayerConnection {

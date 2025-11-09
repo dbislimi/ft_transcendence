@@ -46,7 +46,7 @@ describe('BombParty Heartbeat', () => {
     const connection = wsServer['connections'].get(mockSocket);
     const initialPong = connection!.lastPong;
     
-    // Simuler un pong après 1 seconde
+    // simule un pong apres 1 seconde
     if (typeof jest !== 'undefined' && jest.advanceTimersByTime) {
       jest.advanceTimersByTime(1000);
     }
@@ -66,13 +66,13 @@ describe('BombParty Heartbeat', () => {
     wsServer.registerConnection(socket1);
     wsServer.registerConnection(socket2);
     
-    // Avancer le temps pour déclencher le ping
+    // avance le temps pour declencher le ping
     if (typeof jest !== 'undefined' && jest.advanceTimersByTime) {
       jest.advanceTimersByTime(30000);
     }
     
-    // Le ping devrait être appelé (via sendPingToAll dans l'interval)
-    // Note: on vérifie que la méthode existe et peut être appelée
+    // le ping devrait etre appele (via sendPingToAll dans l'interval)
+    // note: on verifie que la methode existe et peut etre appelee
     expect(socket1.ping).toBeDefined();
     expect(socket2.ping).toBeDefined();
   });
@@ -89,9 +89,9 @@ describe('BombParty Heartbeat', () => {
       }
     }
     
-    // La connexion devrait être supprimée
-    // Note: La suppression se fait dans wsServer via socket.on('close'), 
-    // donc on vérifie juste que la méthode existe
+    // la connexion devrait etre supprimee
+    // note: la suppression se fait dans wsServer via socket.on('close'), 
+    // donc on verifie juste que la methode existe
     expect(wsServer['connections']).toBeDefined();
   });
 });

@@ -39,18 +39,19 @@ export default function BombPartyStatsContainer() {
         console.log('[Stats] Loading complete data for user ID:', user.id);
         
         try {
-          const [stats, history, trigrams, rankingResponse] = await Promise.all([
+          const [statsResponse, historyResponse, trigramsResponse, rankingResponse] = await Promise.all([
             bombPartyStatsService.getUserStats(user.id),
             bombPartyStatsService.getUserMatchHistory(user.id),
             bombPartyStatsService.getUserTrigramStats(user.id),
             bombPartyStatsService.getGlobalRanking()
           ]);
 
-          console.log('[Stats] Data loaded:', { stats, history, trigrams, rankingResponse });
+          console.log('[Stats] Data loaded:', { statsResponse, historyResponse, trigramsResponse, rankingResponse });
 
-          setUserStats(stats);
-          setMatchHistory(history);
-          setTrigramStats(trigrams);
+          // Extract data from response objects
+          setUserStats(statsResponse.data || statsResponse);
+          setMatchHistory(historyResponse.data || historyResponse);
+          setTrigramStats(trigramsResponse.data || trigramsResponse);
           setGlobalRanking(rankingResponse.data || []);
         } catch (authError) {
           console.warn('[Stats] Error loading authenticated stats, loading ranking only');
@@ -77,10 +78,10 @@ export default function BombPartyStatsContainer() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-slate-300">{t('bombParty.stats.loading')}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+          <p className="text-gray-300">{t('bombParty.stats.loading')}</p>
         </div>
       </div>
     );
@@ -88,14 +89,14 @@ export default function BombPartyStatsContainer() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-900">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-slate-200 mb-2">{t('bombParty.stats.error')}</h2>
-          <p className="text-slate-400 mb-4">{error}</p>
+          <h2 className="text-xl font-bold text-white mb-2">{t('bombParty.stats.error')}</h2>
+          <p className="text-gray-300 mb-4">{error}</p>
           <button
             onClick={loadUserData}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
           >
             {t('bombParty.stats.retry')}
           </button>
@@ -105,39 +106,38 @@ export default function BombPartyStatsContainer() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+    <div>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            📊 {t('bombParty.stats.title')}
+          </h1>
+          <p className="text-gray-300">
+            {user?.id 
+              ? t('bombParty.stats.subtitle')
+              : t('bombParty.stats.subtitleGuest')}
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/bomb-party')}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg text-purple-300 hover:from-purple-600/30 hover:to-blue-600/30 transition-all duration-300 flex items-center gap-2"
+        >
+          <span>←</span>
+          <span>{t('bombParty.stats.back')}</span>
+        </button>
+      </div>
+
+      {!user?.id && (
+        <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-2xl">ℹ️</span>
           <div>
-            <h1 className="text-3xl font-bold text-cyan-400 mb-2">
-              📊 {t('bombParty.stats.title')}
-            </h1>
-            <p className="text-slate-400">
-              {user?.id 
-                ? t('bombParty.stats.subtitle')
-                : t('bombParty.stats.subtitleGuest')}
+            <p className="text-blue-300 font-semibold mb-1">{t('bombParty.stats.loginPrompt')}</p>
+            <p className="text-gray-300 text-sm">
+              {t('bombParty.stats.loginPromptDesc')}
             </p>
           </div>
-          <button
-            onClick={() => navigate('/bomb-party')}
-            className="px-6 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-300 hover:text-white transition-all duration-200 flex items-center gap-2"
-          >
-            <span>←</span>
-            <span>{t('bombParty.stats.back')}</span>
-          </button>
         </div>
-
-        {!user?.id && (
-          <div className="mb-6 bg-cyan-900/20 border border-cyan-700/50 rounded-lg p-4 flex items-start gap-3">
-            <span className="text-2xl">ℹ️</span>
-            <div>
-              <p className="text-cyan-300 font-semibold mb-1">{t('bombParty.stats.loginPrompt')}</p>
-              <p className="text-slate-400 text-sm">
-                {t('bombParty.stats.loginPromptDesc')}
-              </p>
-            </div>
-          </div>
-        )}
+      )}
 
         <BombPartyStatsFilters 
           activeTab={activeTab}
@@ -172,7 +172,6 @@ export default function BombPartyStatsContainer() {
             user={user}
           />
         )}
-      </div>
     </div>
   );
 }

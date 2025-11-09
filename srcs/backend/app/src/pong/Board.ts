@@ -229,13 +229,13 @@ export default class Board {
 		}
 	}
 	updateBot(dt: number) {
-		// Debug: vérifier l'état du tableau une fois par seconde
+		// debug: verifier l'etat du tableau une fois par seconde
 		if (this.elapsedTime >= 1) {
 			console.log(`[updateBot] botController.length=${this.botController.length}`);
 			console.log(`[updateBot] bot[0]=${this.botController[0] ? 'EXISTS' : 'undefined'}, bot[1]=${this.botController[1] ? 'EXISTS' : 'undefined'}`);
 		}
 		
-		// Méthode manuelle pour éviter les problèmes avec forEach sur sparse arrays
+		// methode manuelle pour eviter les problemes avec forEach sur sparse arrays
 		for (let index = 0; index < this.botController.length; index++) {
 			const bot = this.botController[index];
 			if (!bot) continue;

@@ -1,22 +1,19 @@
 import type { GameState, Player } from './types';
-import trigramWordsData from '../data/trigram_words.json';
 
-/**
- * Classe contenant tous les getters du BombPartyEngine
- * Séparés pour une meilleure organisation du code
- */
+// classe contenant tous les getters du BombPartyEngine
+// separes pour une meilleure organisation du code
 export class BombPartyEngineGetters {
   private state: GameState;
-  private currentTrigramUsageCount: number;
+  private currentSyllableUsageCount: number;
   private totalPlayersInRound: number;
 
   constructor(
     state: GameState,
-    currentTrigramUsageCount: number,
+    currentSyllableUsageCount: number,
     totalPlayersInRound: number
   ) {
     this.state = state;
-    this.currentTrigramUsageCount = currentTrigramUsageCount;
+    this.currentSyllableUsageCount = currentSyllableUsageCount;
     this.totalPlayersInRound = totalPlayersInRound;
   }
 
@@ -24,8 +21,8 @@ export class BombPartyEngineGetters {
     return { ...this.state };
   }
 
-  getCurrentTrigramUsageCount(): number {
-    return this.currentTrigramUsageCount;
+  getCurrentSyllableUsageCount(): number {
+    return this.currentSyllableUsageCount;
   }
 
   getTotalPlayersInRound(): number {
@@ -51,22 +48,20 @@ export class BombPartyEngineGetters {
   }
 
   getWordSuggestions(maxSuggestions: number = 5): string[] {
-    if (!this.state.currentTrigram) return [];
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    return list
-      .filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase()))
-      .slice(0, maxSuggestions);
+    // pour le mode local, retourne des suggestions basiques
+    // en mode multiplayer, les suggestions viennent du backend
+    if (!this.state.currentSyllable) return [];
+    // suggestions simplifiees pour le mode local
+    return [];
   }
 
-  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
-    if (!this.state.currentTrigram) {
-      return { trigram: '', availableWords: 0, totalWords: 0 };
+  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
+    if (!this.state.currentSyllable) {
+      return { syllable: '', availableWords: 0, totalWords: 0 };
     }
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    const availableWords = list.filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase())).length;
-    return { trigram: this.state.currentTrigram, availableWords, totalWords: list.length };
+    // pour le mode local, retourne des valeurs par defaut
+    // en mode multiplayer, les infos viennent du backend
+    return { syllable: this.state.currentSyllable, availableWords: 0, totalWords: 0 };
   }
 
   getTurnDurationForCurrentPlayer(): number {

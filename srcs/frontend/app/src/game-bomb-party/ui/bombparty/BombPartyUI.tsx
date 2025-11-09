@@ -56,11 +56,11 @@ export default function BombPartyUI({ state, onBackToMenu }: BombPartyUIProps) {
 export function BottomLeftDebugSuggestions({
   title,
   words,
-  trigramInfo,
+  syllableInfo,
 }: {
   title: string;
   words: string[];
-  trigramInfo: { availableWords: number; totalWords: number } | null;
+  syllableInfo: { availableWords: number; totalWords: number } | null;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
@@ -77,9 +77,9 @@ export function BottomLeftDebugSuggestions({
         <div className="mt-2 bg-slate-800/90 backdrop-blur-md rounded-xl border border-purple-500/30 p-3 max-w-xs">
           <div className="text-xs text-slate-400 mb-2">
             {title}
-            {trigramInfo && (
+            {syllableInfo && (
               <span className="ml-2 text-[10px] text-slate-500">
-                {trigramInfo.availableWords}/{trigramInfo.totalWords}
+                {syllableInfo.availableWords}/{syllableInfo.totalWords}
               </span>
             )}
           </div>

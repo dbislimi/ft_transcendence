@@ -25,7 +25,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Thomas Benelgorch-1.png",
     descriptionKey: "thomas",
     links: {
-      github: "https://github.com/thomas-benelgorch",
+      github: "https://github.com/Neo677",
       linkedin: "https://linkedin.com/in/thomas-benelgorch"
     }
   },
@@ -47,7 +47,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Dylan Ravaonoromanana-1.png",
     descriptionKey: "dylan",
     links: {
-      github: "https://github.com/dylan-ravaonoromanana",
+      github: "https://github.com/Dylan063",
       linkedin: "https://linkedin.com/in/dylan-ravaonoromanana"
     }
   },
@@ -58,7 +58,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Dren Bislimi-1.png",
     descriptionKey: "dren",
     links: {
-      github: "https://github.com/dren-bislimi",
+      github: "https://github.com/dbislimi",
       linkedin: "https://linkedin.com/in/dren-bislimi"
     }
   }

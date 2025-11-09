@@ -90,9 +90,15 @@ export function cleanupEmptyRoom(
   roomEngines: Map<string, any>
 ): void {
   if (room.players.size === 0) {
-    rooms.delete(roomId);
+    // Nettoyer le roomEngine pour éviter les fuites mémoire
     if (roomEngines.has(roomId)) {
       roomEngines.delete(roomId);
     }
+    // Nettoyer l'état précédent
+    room.lastGameState = undefined;
+    // Supprimer la room
+    rooms.delete(roomId);
+    // Réinitialiser startedAt si défini
+    room.startedAt = undefined;
   }
 }

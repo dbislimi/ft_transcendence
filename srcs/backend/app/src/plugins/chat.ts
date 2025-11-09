@@ -70,7 +70,7 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
             );
 
             if (msg.to) {
-              // Message privé
+              // message prive
               const target = clients.find((c) => c.id === msg.to);
               if (target && target.id !== client.id) {
                 if (!(await isBlocked(target.id, client.id))) {

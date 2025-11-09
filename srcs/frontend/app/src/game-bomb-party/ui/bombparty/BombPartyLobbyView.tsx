@@ -1,6 +1,7 @@
 import React from 'react';
 import LobbyScreen from '../LobbyScreen';
 import PlayersScreen from '../PlayersScreen';
+import BombPartyTournamentView from './BombPartyTournamentView';
 import type { BombPartyHooksState } from './BombPartyHooks';
 
 interface BombPartyLobbyViewProps {
@@ -22,6 +23,15 @@ export default function BombPartyLobbyView({
   onLeaveLobby,
   onStartGame
 }: BombPartyLobbyViewProps) {
+  // si on est en mode tournoi ou si on est deja dans un tournoi, affiche la vue tournoi
+  if (state.multiplayerType === 'tournament' || state.tournamentId) {
+    return (
+      <BombPartyTournamentView
+        onBack={onBackFromLobby}
+      />
+    );
+  }
+
   if (state.gamePhase === 'LOBBY') {
     return (
       <LobbyScreen 

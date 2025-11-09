@@ -37,7 +37,7 @@ export interface GameState {
   phase: GamePhase;
   players: Player[];
   currentPlayerIndex: number;
-  currentTrigram: string;
+  currentSyllable: string;
   usedWords: string[];
   turnEndsAt: number;
   // Turn order & timing
@@ -60,11 +60,11 @@ export interface GameState {
 
 export interface ValidationResult {
   ok: boolean;
-  reason?: 'too_short' | 'no_trigram' | 'duplicate' | 'invalid_chars';
+  reason?: 'too_short' | 'no_syllable' | 'duplicate' | 'invalid_chars' | 'not_in_dictionary';
 }
 
-export interface TrigramInfo {
-  trigram: string;
+export interface SyllableInfo {
+  syllable: string;
   availableWords: number;
   totalWords: number;
 }

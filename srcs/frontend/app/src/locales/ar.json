@@ -3,7 +3,8 @@
     "signin": "تسجيل", 
     "settings": "الإعدادات",
     "profile": "الملف الشخصي",
-    "home": "الرئيسية" 
+    "home": "الرئيسية",
+    "logout": "تسجيل الخروج"
   },
   "home": { 
     "connectBtn": "اتصال", 
@@ -319,7 +320,8 @@
     "back": "رجوع", 
     "backAria": "العودة للخلف",
     "goBackHome": "العودة للرئيسية",
-    "error": "خطأ"
+    "error": "خطأ",
+    "close": "إغلاق"
   },
   "accessibility": { "languageSwitcher": "محدد اللغة" },
   "ui": {
@@ -369,22 +371,48 @@
       "energySaverDesc": "تقليل التأثيرات البصرية لتوفير البطارية",
       "autoSave": "يتم حفظ التغييرات تلقائياً",
       "close": "إغلاق",
-      "description": "المظهر، التباين، اللغة، الخلفية، الرسوم المتحركة"
+      "description": "المظهر، التباين، اللغة، الخلفية، الرسوم المتحركة",
+      "lightMode": "☀️ الوضع الفاتح",
+      "darkMode": "🌙 الوضع الداكن",
+      "equipped": "مجهز",
+      "backgroundTip": "💡 نصيحة: اختر خلفية للوضع الفاتح وأخرى للوضع الداكن. ستتغير الخلفية تلقائياً عند التبديل بين الأوضاع.",
+      "performanceTitle": "الأداء والرسوم المتحركة",
+      "autoChangeBackground": "تغيير الخلفية تلقائياً",
+      "autoChangeBackgroundDesc": "يغير خلفية الشاشة تلقائياً عند التبديل بين الوضع الفاتح والداكن"
     },
     "game": {
       "title": "اللعبة",
       "description": "التحكم والتفضيلات"
     },
     "account": {
-      "title": "الحساب",
-      "description": "الملف الشخصي والأمان"
+      "title": "تفضيلات الخلفية",
+      "description": "معاينة الخلفيات",
+      "profile": "الملف الشخصي",
+      "security": "الأمان",
+      "preferences": "التفضيلات",
+      "notAuthenticated": "غير متصل",
+      "notAuthenticatedDesc": "سجل الدخول للوصول إلى إعدادات الحساب",
+      "notAuthenticatedSecurityDesc": "سجل الدخول للوصول إلى إعدادات الأمان",
+      "userInfo": "معلومات المستخدم",
+      "displayName": "اسم العرض",
+      "displayNamePlaceholder": "اسمك",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "بريدك@الإلكتروني.com",
+      "twoFactor": "المصادقة الثنائية",
+      "twoFactorDesc": "أضف طبقة إضافية من الأمان لحسابك",
+      "twoFactorInfo": "موصى به لمزيد من الأمان",
+      "backgroundPreview": "معاينة الخلفية",
+      "backgroundPreviewDesc": "معاينات الخلفيات المحددة لكل وضع",
+      "lightModeBackground": "الوضع الفاتح",
+      "darkModeBackground": "الوضع الداكن"
     },
     "advanced": {
       "title": "متقدم",
       "description": "خيارات تقنية"
     },
     "home": {
-      "description": "العودة إلى الرئيسية"
+      "description": "العودة إلى الرئيسية",
+      "subtitle": "العودة إلى الصفحة الرئيسية"
     }
   },
   "shop": {
@@ -399,6 +427,7 @@
       "available": "متاحة"
     },
     "equipped": "مجهز",
+    "select": "تحديد",
     "contrast": {
       "title": "التباين",
       "description": "اضبط تباين وسطوع النص",

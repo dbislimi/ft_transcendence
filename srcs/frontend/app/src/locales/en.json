@@ -3,7 +3,8 @@
       "signin": "Sign in", 
       "settings": "Settings",
       "profile": "Profile",
-      "home": "Home"
+      "home": "Home",
+      "logout": "Logout"
     },
     "home": { 
       "connectBtn": "Connect", 
@@ -45,10 +46,10 @@
     "linkedin": "LinkedIn",
     "portfolio": "Portfolio",
     "descriptions": {
-      "thomas": "Developer passionate about modern web technologies and innovation. Specialized in full-stack development with a creative and methodical approach.",
-      "bilal": "Expert in backend development and software architecture. Passionate about performance and application scalability.",
-      "dylan": "Creative frontend developer with an eye for design and user experience. Specialized in modern and reactive interfaces.",
-      "dren": "Versatile developer with expertise in DevOps and robust application development. Passionate about automation and efficiency."
+      "thomas": "Built the second game and the site's frontend (pages, navigation, integrations). Also drives real‑time architecture and turns ideas into reliable features.",
+      "bilal": "Implemented the real‑time chat and Google sign‑up (OAuth). Ensures backend security and performance.",
+      "dylan": "Designed the end‑to‑end user experience (UX/UI): reactive interfaces, animations, accessibility and visual consistency.",
+      "dren": "Led the entire Pong game with its AI and laid the project's foundations (structure, tooling, CI/CD) for controlled deployments."
     }
   },
   "bombParty": {
@@ -95,6 +96,17 @@
         "hoursAgo": "{hours}h ago",
         "daysAgo": "{days}d ago"
       },
+    "playerNameModal": {
+      "title": "Choose your player name",
+      "description": "Enter a username to start playing Bomb Party",
+      "placeholder": "Player name",
+      "submit": "Start playing",
+      "validation": {
+        "tooShort": "Name must be at least 2 characters",
+        "tooLong": "Name must be at most 20 characters",
+        "invalidChars": "Only letters, numbers, spaces and dashes allowed"
+      }
+    },
     "debug": { "show": "Show debug", "hide": "Hide debug" },
     "chat": {
       "placeholder": "Type here...",
@@ -304,6 +316,7 @@
       "available": "available"
     },
     "equipped": "Equipped",
+    "select": "Select",
     "contrast": {
       "title": "Contrast",
       "description": "Adjust text contrast and brightness",
@@ -361,29 +374,56 @@
       "energySaverDesc": "Reduce visual effects to save battery",
       "autoSave": "Changes are saved automatically",
       "close": "Close",
-      "description": "Theme, contrast, language, background, animations"
+      "description": "Theme, contrast, language, background, animations",
+      "lightMode": "☀️ Light Mode",
+      "darkMode": "🌙 Dark Mode",
+      "equipped": "Equipped",
+      "backgroundTip": "💡 Tip: Choose a background for light mode and one for dark mode. The background will automatically change when you switch between modes.",
+      "performanceTitle": "Performance and animations",
+      "autoChangeBackground": "Automatic background change",
+      "autoChangeBackgroundDesc": "Automatically changes the wallpaper when switching between light and dark modes"
     },
     "game": {
       "title": "Game",
       "description": "Controls and preferences"
     },
     "account": {
-      "title": "Account",
-      "description": "Profile and security"
+      "title": "Background Preferences",
+      "description": "Background previews",
+      "profile": "Profile",
+      "security": "Security",
+      "preferences": "Preferences",
+      "notAuthenticated": "Not authenticated",
+      "notAuthenticatedDesc": "Sign in to access account settings",
+      "notAuthenticatedSecurityDesc": "Sign in to access security settings",
+      "userInfo": "User information",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "twoFactor": "Two-factor authentication",
+      "twoFactorDesc": "Add an extra layer of security to your account",
+      "twoFactorInfo": "Recommended for better security",
+      "backgroundPreview": "Background preview",
+      "backgroundPreviewDesc": "Previews of selected backgrounds for each mode",
+      "lightModeBackground": "Light Mode",
+      "darkModeBackground": "Dark Mode"
     },
     "advanced": {
       "title": "Advanced",
       "description": "Technical options"
     },
     "home": {
-      "description": "Return to home"
+      "description": "Return to home",
+      "subtitle": "Return to the main page"
     }
   },
   "common": { 
     "back": "Back", 
     "backAria": "Go back",
     "goBackHome": "Go back home",
-    "error": "Error"
+    "error": "Error",
+    "close": "Close"
   },
   "accessibility": { "languageSwitcher": "Language selector" },
   "ui": {

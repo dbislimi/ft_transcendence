@@ -16,6 +16,7 @@ export default fp(async function authHook(fastify: FastifyInstance<any, any, any
       "/auth/google/callback",
       "/chat",
       "/bombparty",
+      "/api/bomb-party",  // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
       "/game/ws",  // WebSocket Pong endpoint (auth handled by getClient in websockets.ts)
     ];
 

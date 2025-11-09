@@ -37,11 +37,11 @@ export default function BombPartyGameView({
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {SUGGESTIONS_ENABLED && state.gameState.phase === 'TURN_ACTIVE' && state.gameState.currentTrigram && isCurrentPlayerTurn() && (
+      {SUGGESTIONS_ENABLED && state.gameState.phase === 'TURN_ACTIVE' && state.gameState.currentSyllable && isCurrentPlayerTurn() && (
         <BottomLeftDebugSuggestions
           title={t('bombParty.hud.wordSuggestions')}
           words={engine.getWordSuggestions(5)}
-          trigramInfo={engine.getCurrentTrigramInfo()}
+          syllableInfo={engine.getCurrentSyllableInfo()}
         />
       )}
 

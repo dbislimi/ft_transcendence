@@ -9,6 +9,7 @@ import type { GameConfig, BonusKey } from '../../core/types';
 export interface BombPartyHooksState {
   gamePhase: 'RULES' | 'LOBBY' | 'PLAYERS' | 'GAME' | 'GAME_OVER';
   gameMode: 'local' | 'multiplayer';
+  multiplayerType: 'tournament' | 'quickmatch' | null;
   countdown: number;
   gameState: any;
   wordJustSubmitted: boolean;
@@ -25,6 +26,11 @@ export interface BombPartyHooksState {
   lobbyMaxPlayers: number;
   isAuthenticating: boolean;
   gameStartTime: number | null;
+  tournamentId: string | null;
+  tournamentStatus: 'WAITING' | 'IN_PROGRESS' | 'FINISHED' | null;
+  tournamentBracket: any;
+  tournamentCurrentRound: number | null;
+  bonusNotification: { bonusKey: BonusKey; playerName: string } | null;
 }
 
 export interface BombPartyHooksActions {
@@ -49,8 +55,28 @@ export interface BombPartyHooksActions {
 }
 
 export function useBombPartyHooks(user: any) {
+  const storeGamePhase = useBombPartyStore((state) => state.gamePhase);
   const [gamePhase, setGamePhase] = useState<'RULES' | 'LOBBY' | 'PLAYERS' | 'GAME' | 'GAME_OVER'>('RULES');
   const [gameMode, setGameMode] = useState<'local' | 'multiplayer'>('local');
+  
+  // Synchroniser le gamePhase du store avec l'état local
+  // Surtout important pour les événements bp:game:countdown et bp:game:start reçus par le service
+  useEffect(() => {
+    const storeRoomId = useBombPartyStore.getState().connection.roomId;
+    // Ne synchroniser que si on est en mode multijoueur et que le store indique GAME
+    // pour éviter de forcer GAME en mode local
+    if (gameMode === 'multiplayer' && storeGamePhase === 'GAME' && gamePhase !== 'GAME') {
+      console.log('[BombPartyHooks] Syncing gamePhase from store: GAME (from bp:game:countdown/start)');
+      setGamePhase('GAME');
+    }
+    // Ne pas permettre de revenir à RULES si on est en jeu (sauf si explicitement demandé)
+    if (gameMode === 'multiplayer' && gamePhase === 'GAME' && storeGamePhase === 'RULES' && storeRoomId) {
+      console.log('[BombPartyHooks] Preventing gamePhase reset to RULES while in game, roomId:', storeRoomId);
+      // Ne pas réinitialiser si on est en jeu - forcer le store à rester en GAME
+      useBombPartyStore.getState().setGamePhase('GAME');
+    }
+  }, [storeGamePhase, gameMode, gamePhase]);
+  const [multiplayerType, setMultiplayerType] = useState<'tournament' | 'quickmatch' | null>(null);
   const [engine] = useState(() => new BombPartyEngine());
   const [timer] = useState(() => new TurnTimer());
   const [client] = useState(() => new BombPartyClient({ mock: false }));
@@ -70,6 +96,11 @@ export function useBombPartyHooks(user: any) {
   const [lobbyMaxPlayers, setLobbyMaxPlayers] = useState(4);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
+  const [tournamentId, setTournamentId] = useState<string | null>(null);
+  const [tournamentStatus, setTournamentStatus] = useState<'WAITING' | 'IN_PROGRESS' | 'FINISHED' | null>(null);
+  const [tournamentBracket, setTournamentBracket] = useState<any>(null);
+  const [tournamentCurrentRound, setTournamentCurrentRound] = useState<number | null>(null);
+  const [bonusNotification, setBonusNotification] = useState<{ bonusKey: BonusKey; playerName: string } | null>(null);
 
   const roomIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
@@ -89,9 +120,29 @@ export function useBombPartyHooks(user: any) {
     };
   }, [client, roomId]);
 
+  // Sync local hook state with centralized store when the service is primary
+  const storeConnection = useBombPartyStore(s => s.connection);
+  useEffect(() => {
+    // Mirror connection fields to hooks state
+    if (playerId !== storeConnection.playerId) setPlayerId(storeConnection.playerId);
+    if (roomId !== storeConnection.roomId) setRoomId(storeConnection.roomId);
+    // Sync players and max players for PlayersScreen counters
+    const storePlayers = storeConnection.lobbyPlayers || [];
+    const localCount = lobbyPlayers?.length || 0;
+    if (localCount !== storePlayers.length) setLobbyPlayers(storePlayers);
+    if (lobbyMaxPlayers !== (storeConnection.lobbyMaxPlayers || 4)) {
+      setLobbyMaxPlayers(storeConnection.lobbyMaxPlayers || 4);
+    }
+    // Compute host status from first player id
+    const first = storePlayers[0]?.id;
+    const amIHost = !!(first && storeConnection.playerId && first === storeConnection.playerId);
+    if (isHost !== amIHost) setIsHost(amIHost);
+  }, [storeConnection.playerId, storeConnection.roomId, storeConnection.lobbyPlayers, storeConnection.lobbyMaxPlayers]);
+
   const state: BombPartyHooksState = {
     gamePhase,
     gameMode,
+    multiplayerType,
     countdown,
     gameState,
     wordJustSubmitted,
@@ -107,7 +158,12 @@ export function useBombPartyHooks(user: any) {
     isHost,
     lobbyMaxPlayers,
     isAuthenticating,
-    gameStartTime
+    gameStartTime,
+    tournamentId,
+    tournamentStatus,
+    tournamentBracket,
+    tournamentCurrentRound,
+    bonusNotification
   };
 
   const actions: BombPartyHooksActions = {
@@ -154,7 +210,13 @@ export function useBombPartyHooks(user: any) {
     client.joinLobby(roomId, password);
   }, [client, playerId, isAuthenticating]);
 
-  const handleBackFromLobby = useCallback(() => setGamePhase('RULES'), []);
+  const handleBackFromLobby = useCallback(() => {
+    // Si on vient d'un choix multijoueur, remettre le type à null pour revenir au choix Tournoi/Partie rapide
+    // mais garder le gamePhase à LOBBY temporairement, puis le changer à RULES
+    // RulesScreen gérera l'affichage du choix multijoueur si multiplayerType est défini
+    setGamePhase('RULES');
+    // Ne pas réinitialiser multiplayerType ici, RulesScreen l'utilisera pour savoir où revenir
+  }, []);
 
   const handleLeaveLobby = useCallback(() => {
     if (roomId) {
@@ -216,10 +278,10 @@ export function useBombPartyHooks(user: any) {
     setTurnInProgress(true);
     
     const responseTime = turnStartTime > 0 ? Date.now() - turnStartTime : 0;
-    bombPartyStatsService.recordTrigramAttempt(gameState.currentTrigram, true, responseTime);
+    bombPartyStatsService.recordTrigramAttempt(gameState.currentSyllable, true, responseTime);
 
     if (gameMode === 'local') {
-      const msTaken = performance.now() - turnStartTime;
+      const msTaken = Date.now() - turnStartTime;
       const result = engine.submitWord(word, msTaken);
       
       if (result.ok) {
@@ -230,7 +292,7 @@ export function useBombPartyHooks(user: any) {
         
         if (!engine.isGameOver()) {
           setTimeout(() => {
-            setTurnStartTime(performance.now());
+            setTurnStartTime(Date.now());
             setGameState(engine.getState());
             setTurnInProgress(false);
             setWordJustSubmitted(false);
@@ -248,7 +310,7 @@ export function useBombPartyHooks(user: any) {
           
           if (!engine.isGameOver()) {
             setTimeout(() => {
-              setTurnStartTime(performance.now());
+              setTurnStartTime(Date.now());
               setGameState(engine.getState());
               setTurnInProgress(false);
               setWordJustSubmitted(false);
@@ -259,7 +321,7 @@ export function useBombPartyHooks(user: any) {
     } else {
       if (!roomId || !playerId)
         return;
-      const msTaken = performance.now() - turnStartTime;
+      const msTaken = Date.now() - turnStartTime;
       client.submitWord(roomId, word, msTaken);
     }
   }, [client, roomId, playerId, turnStartTime, gameMode, engine, setWordJustSubmitted, setTurnInProgress, setGameState, setGamePhase]);
@@ -270,7 +332,18 @@ export function useBombPartyHooks(user: any) {
       if (!currentPlayer) return false;
       const result = engine.activateBonus(currentPlayer.id, bonusKey);
       if (result.ok) {
-        setGameState(engine.getState());
+        const newState = engine.getState();
+        setGameState(newState);
+        
+        // affiche la notification pour le mode local aussi
+        setBonusNotification({ bonusKey, playerName: currentPlayer.name });
+        
+        // si c'est le bonus plus5sec, met a jour le timer
+        if (bonusKey === 'plus5sec' && result.meta?.extendMs) {
+          timer.extendTurn(result.meta.extendMs);
+          setTimerFlash(true);
+          setTimeout(() => setTimerFlash(false), 1000);
+        }
       }
       return result.ok;
     } else {
@@ -281,7 +354,7 @@ export function useBombPartyHooks(user: any) {
       client.activateBonus(roomId, bonusKey);
       return true;
     }
-  }, [client, roomId, playerId, gameMode, engine]);
+  }, [client, roomId, playerId, gameMode, engine, gameState, timer]);
 
   const handleBackToMenu = useCallback(() => {
     engine.reset();
@@ -298,11 +371,13 @@ export function useBombPartyHooks(user: any) {
     setLobbyPlayers([]);
     setIsHost(false);
     setGameMode('local');
+    setMultiplayerType(null);
   }, [engine, timer, client, roomId]);
 
   const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1, multiplayerType?: 'tournament' | 'quickmatch') => {
     setGameMode(mode);
     if (mode === 'local') {
+      setMultiplayerType(null);
       engine.reset();
       const config = { livesPerPlayer: 3, turnDurationMs: 15000, playersCount };
       engine.startGame(config);
@@ -311,14 +386,20 @@ export function useBombPartyHooks(user: any) {
       setGamePhase('GAME');
       setCountdown(0);
       
-      setTurnStartTime(performance.now());
+      setTurnStartTime(Date.now());
     } else {
-      // Mode multijoueur - on va vers le lobby
-      // Le type de partie (tournament/quickmatch) sera géré dans le lobby
+      // mode multijoueur - stocke le type et va vers le lobby
       console.log('[BombParty] Mode multijoueur sélectionné, type:', multiplayerType);
-      setGamePhase('LOBBY');
+      // Si multiplayerType est undefined et qu'on est déjà en RULES, c'est une réinitialisation depuis RulesScreen
+      if (multiplayerType === undefined && gamePhase === 'RULES') {
+        setMultiplayerType(null);
+        // Rester en phase RULES pour afficher le choix du mode
+      } else {
+        setMultiplayerType(multiplayerType || null);
+        setGamePhase('LOBBY');
+      }
     }
-  }, [engine, timer]);
+  }, [engine, timer, gamePhase]);
 
   const isCurrentPlayerTurn = useCallback(() => {
     if (gameMode === 'local') {
@@ -354,16 +435,38 @@ export function useBombPartyHooks(user: any) {
         winnerId: (gameState as any).winner?.id
       };
 
-      const stats = bombPartyStatsService.calculateGameStats(gameData, playerId, user?.id || '');
+      // Sauvegarder les statistiques (authentifié ou local)
+      const stats = bombPartyStatsService.calculateGameStats(
+        gameData, 
+        playerId, 
+        user?.id || 'local'
+      );
       
-      bombPartyStatsService.saveGameStats(stats).catch(error => {
+      // Ajouter le nom du joueur pour les stats locales
+      const player = gameState.players.find(p => p.id === playerId);
+      const playerName = player?.name || `Guest_${playerId}`;
+      
+      bombPartyStatsService.saveGameStats({
+        ...stats,
+        playerName: playerName
+      }).catch(error => {
         console.error('Erreur sauvegarde statistiques:', error);
       });
       
+      // Check if player is in a tournament
+      const store = useBombPartyStore.getState();
+      const isInTournament = !!store.tournamentId && store.tournamentStatus === 'IN_PROGRESS';
+      
       const redirectTimer = setTimeout(() => {
-        console.log("[BombParty] Game ended, redirecting to home screen");
-        alert("Game ended. Returning to home screen...");
-        setGamePhase('RULES');
+        if (isInTournament) {
+          console.log("[BombParty] Tournament match ended, redirecting to bracket");
+          // Redirect to bracket page for next match
+          window.location.href = '/bomb-party';
+        } else {
+          console.log("[BombParty] Game ended, redirecting to home screen");
+          alert("Game ended. Returning to home screen...");
+          setGamePhase('RULES');
+        }
       }, 5000);
       
       return () => clearTimeout(redirectTimer);
@@ -378,16 +481,19 @@ export function useBombPartyHooks(user: any) {
         const connectionTimer = setTimeout(connect, 100);
     
     const handleConnected = () => {
-      // Reset authentication state on new connection
+      // reset authentication state on new connection
       setIsAuthenticating(true);
       setPlayerId(null);
       
       const guestId = Math.floor(Math.random() * 1000);
-      const playerName = user?.name || `Guest_${guestId}`;
+      // prefere le nom choisi localement depuis le modal si disponible, puis le nom user, puis guest fallback
+      const storedName = localStorage.getItem('bombparty_player_name');
+      const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
       
       console.log('[BombPartyHooks] Authentification avec le nom:', playerName);
       client.authenticate(playerName);
-    };    const handleAuthSuccess = (payload: any) => {
+    };
+    const handleAuthSuccess = (payload: any) => {
       console.log('[BombPartyHooks] Authentication successful, playerId:', payload.playerId);
       clearTimeout(authTimeout);
       setPlayerId(payload.playerId);
@@ -540,7 +646,7 @@ export function useBombPartyHooks(user: any) {
     const unsubscribeRoomState = client.on('bp:room:state', handleRoomState);
     const unsubscribePlayerLeft = client.on('bp:lobby:player_left', handlePlayerLeft);
     
-    // Handle lobby list updates
+    // gere les mises a jour de la liste des lobbies
     const handleLobbyListUpdate = (payload: any) => {
       console.log('[BombPartyHooks] Lobby list updated, rooms:', payload?.rooms?.length);
       if (payload?.rooms) {
@@ -607,7 +713,7 @@ export function useBombPartyHooks(user: any) {
         playerId: curPlayerId,
         currentPlayerId: payload.gameState.currentPlayerId,
         players: payload.gameState.players?.map((p: any) => ({ id: p.id, name: p.name, lives: p.lives, isEliminated: p.isEliminated })) || [],
-        currentTrigram: payload.gameState.currentTrigram,
+        currentSyllable: payload.gameState.currentSyllable,
         usedWords: payload.gameState.usedWords,
         hasUsedWords: !!payload.gameState.usedWords
       });
@@ -620,15 +726,12 @@ export function useBombPartyHooks(user: any) {
         setWordJustSubmitted(false);
         setTurnInProgress(false);
         const turnDuration = payload.gameState.turnDurationMs || (payload.gameState.baseTurnSeconds * 1000);
-
         const serverTurnStart = payload.gameState.turnStartedAt;
-        const now = Date.now();
-        const elapsed = now - serverTurnStart;
-        const remaining = Math.max(0, turnDuration - elapsed);
 
-        if (remaining > 0) {
-          timer.startTurn(remaining);
-          setTurnStartTime(performance.now());
+        if (serverTurnStart && turnDuration > 0) {
+          // Utiliser les timestamps serveur pour synchroniser le timer
+          timer.startTurn(serverTurnStart, turnDuration, Date.now());
+          setTurnStartTime(Date.now());
           setTimerGracePeriod(true);
           setTimeout(() => setTimerGracePeriod(false), 5000);
         } else {
@@ -641,22 +744,108 @@ export function useBombPartyHooks(user: any) {
     const unsubscribeGameEnd = client.on('bp:game:end', handleGameEnd);
     const unsubscribeConnected = client.on('connected', handleConnected);
     const unsubscribeError = client.on('error', handleConnectionError);
+    
+    // Handler pour les notifications de bonus - reçu par TOUS les joueurs de la room
+    const unsubscribeBonusApplied = client.on('bp:bonus:applied' as any, (payload: any) => {
+      const curRoom = roomIdRef.current;
+      if (payload?.roomId === curRoom && payload?.playerId && payload?.bonusKey) {
+        console.log('[BombParty] Bonus activé reçu par tous les joueurs:', {
+          bonusKey: payload.bonusKey,
+          playerId: payload.playerId,
+          roomId: payload.roomId
+        });
+        
+        // Trouver le joueur dans le state actuel (utiliser gameState pour le mode multijoueur)
+        const currentState = gameMode === 'local' ? engine.getState() : gameState;
+        const player = currentState?.players?.find((p: any) => p.id === payload.playerId);
+        const playerName = player?.name || 'Un joueur';
+        
+        // Afficher la notification pour TOUS les joueurs (même celui qui l'a activé)
+        setBonusNotification({ bonusKey: payload.bonusKey, playerName });
+        
+        // Si c'est le bonus plus5sec et que c'est notre tour, mettre à jour le timer
+        if (payload.bonusKey === 'plus5sec' && payload.meta?.extendMs) {
+          const currentPlayerId = currentState?.players?.[currentState?.currentPlayerIndex]?.id;
+          if (payload.playerId === currentPlayerId && currentState?.phase === 'TURN_ACTIVE') {
+            timer.extendTurn(payload.meta.extendMs);
+            setTimerFlash(true);
+            setTimeout(() => setTimerFlash(false), 1000);
+          }
+        }
+        
+        // Si c'est le bonus vitesseEclair et que c'est notre tour qui arrive, préparer l'affichage
+        if (payload.bonusKey === 'vitesseEclair' && payload.meta?.targetId) {
+          const currentPlayerId = playerIdRef.current;
+          if (payload.meta.targetId === currentPlayerId) {
+            // Le joueur actuel sera le prochain à avoir un tour rapide
+            console.log('[BombParty] Vous aurez un tour rapide !');
+          }
+        }
+      }
+    });
+
+    // handlers d'evenements tournoi
+    const handleTournamentCreated = (payload: any) => {
+      console.log('[BombParty] Tournament created:', payload);
+      setTournamentId(payload.tournamentId);
+      setTournamentStatus('WAITING');
+    };
+
+    const handleTournamentJoined = (payload: any) => {
+      console.log('[BombParty] Tournament joined:', payload);
+      setTournamentId(payload.tournamentId);
+      setTournamentStatus(payload.status || 'WAITING');
+    };
+
+    const handleTournamentLeft = () => {
+      console.log('[BombParty] Tournament left');
+      setTournamentId(null);
+      setTournamentStatus(null);
+      setTournamentBracket(null);
+      setTournamentCurrentRound(null);
+    };
+
+    const handleTournamentStatus = (payload: any) => {
+      console.log('[BombParty] Tournament status:', payload);
+      if (payload.status) setTournamentStatus(payload.status);
+      if (payload.bracket) setTournamentBracket(payload.bracket);
+      if (payload.currentRound !== undefined) setTournamentCurrentRound(payload.currentRound);
+    };
+
+    const handleTournamentUpdated = (payload: any) => {
+      console.log('[BombParty] Tournament updated:', payload);
+      if (payload.status) setTournamentStatus(payload.status);
+      if (payload.bracket) setTournamentBracket(payload.bracket);
+      if (payload.currentRound !== undefined) setTournamentCurrentRound(payload.currentRound);
+    };
+
+    const handleTournamentFinished = (payload: any) => {
+      console.log('[BombParty] Tournament finished:', payload);
+      setTournamentStatus('FINISHED');
+    };
+
+    const unsubscribeTournamentCreated = client.on('bp:tournament:created' as any, handleTournamentCreated);
+    const unsubscribeTournamentJoined = client.on('bp:tournament:joined' as any, handleTournamentJoined);
+    const unsubscribeTournamentLeft = client.on('bp:tournament:left' as any, handleTournamentLeft);
+    const unsubscribeTournamentStatus = client.on('bp:tournament:status' as any, handleTournamentStatus);
+    const unsubscribeTournamentUpdated = client.on('bp:tournament:updated' as any, handleTournamentUpdated);
+    const unsubscribeTournamentFinished = client.on('bp:tournament:finished' as any, handleTournamentFinished);
 
     return () => {
       clearTimeout(authTimeout);
-      clearTimeout(connectionTimer); // Nettoyer le timer de connexion
+      clearTimeout(connectionTimer); // nettoie le timer de connexion
       
-      // Nettoyer la connexion WebSocket
+      // nettoie la connexion websocket
       console.log('[BombPartyHooks] Nettoyage du client WebSocket');
       client.disconnect();
       
-      // Nettoyer les intervalles
+      // nettoie les intervalles
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
       
-      // Nettoyer les abonnements
+      // nettoie les abonnements
       unsubscribeAuth();
       unsubscribeCreated();
       unsubscribeJoined();
@@ -671,6 +860,13 @@ export function useBombPartyHooks(user: any) {
       unsubscribeGameEnd();
       unsubscribeConnected();
       unsubscribeError();
+      unsubscribeBonusApplied();
+      unsubscribeTournamentCreated();
+      unsubscribeTournamentJoined();
+      unsubscribeTournamentLeft();
+      unsubscribeTournamentStatus();
+      unsubscribeTournamentUpdated();
+      unsubscribeTournamentFinished();
     };
   }, [client, timer, user]);
 
@@ -689,6 +885,7 @@ export function useBombPartyHooks(user: any) {
       handleStartGame,
       handleWordSubmit,
       handleActivateBonus,
+      handleCloseBonusNotification: () => setBonusNotification(null),
       handleBackToMenu,
       handleModeSelect,
       isCurrentPlayerTurn

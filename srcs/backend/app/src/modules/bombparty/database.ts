@@ -49,9 +49,16 @@ export class BombPartyDatabase {
       `);
 
       // Index pour les performances
+      // Index simples
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_room_id ON bp_matches (room_id);`);
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_winner_id ON bp_matches (winner_id);`);
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_created_at ON bp_matches (created_at);`);
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_ended_at ON bp_matches (ended_at);`);
+      
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
+      // Index composite pour requêtes fréquentes
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_player ON bp_participants (match_id, player_id);`);
     });
 
   }
