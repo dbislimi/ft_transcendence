@@ -9,12 +9,13 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 interface Client {
   id: number;
   name: string;
-  socket: any; // WebSocket
+  socket: WebSocket;
 }
 
-export default fp(async function Chat(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function Chat(fastify: FastifyInstance) {
   const clients: Client[] = [];
 
+  // Vérifie si un utilisateur bloque un autre
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -24,14 +25,28 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
           if (err) reject(err);
           else resolve(!!row);
         }
-      ); 
+      );
     });
   }
 
-
+  // Envoi vers un client spécifique
   function sendToClient(client: Client, data: any) {
-    if (client.socket.readyState === 1) {
-      client.socket.send(JSON.stringify(data));
+    try {
+      if (client.socket.readyState === 1) {
+        client.socket.send(JSON.stringify(data));
+      }
+    } catch (err) {
+      fastify.log.error("Erreur envoi WS:", err);
+    }
+  }
+
+  // Envoie la liste des utilisateurs connectés à tous
+  function broadcastUsers() {
+    const users = clients.map(c => ({ id: c.id, name: c.name }));
+    for (const c of clients) {
+      if (c.socket.readyState === 1) {
+        c.socket.send(JSON.stringify({ type: "users", users }));
+      }
     }
   }
 
@@ -43,22 +58,20 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
-        id: number;
-        name: string;
-        email: string;
-      };
-
-      console.log("ON VA VOIR C QUOI", decoded);
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
       const client: Client = { id: decoded.id, name: decoded.name, socket };
       clients.push(client);
-      fastify.log.info(` ${client.name} connecté`);
 
-      // Messages entrants
+      fastify.log.info(`✅ ${client.name} connecté (${clients.length} clients)`);
+
+      // Envoie la liste des utilisateurs à tous
+      broadcastUsers();
+
+      // Réception de message
       socket.on("message", async (raw: Buffer) => {
         try {
           const data = JSON.parse(raw.toString());
-          console.log("AHHHHHHHHHHHHHHHHHHHHH");
+
           if (data.type === "message") {
             const msg = {
               from: client.id,
@@ -67,7 +80,8 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
               text: data.text,
               date: new Date().toISOString(),
             };
-            
+
+            // Sauvegarde en base
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
               [msg.from, msg.to, msg.text, msg.date]
@@ -75,10 +89,10 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
 
             if (msg.to) {
               // Message privé
-              const target = clients.find((c) => c.id === msg.to);
-              if (target && target.id !== client.id) {
-                if (!(await isBlocked(target.id, client.id))) {
-                  sendToClient(target, { type: "private", ...msg });
+              const targets = clients.filter(c => c.id === msg.to);
+              for (const t of targets) {
+                if (!(await isBlocked(t.id, client.id))) {
+                  sendToClient(t, { type: "private", ...msg });
                 }
               }
               sendToClient(client, { type: "private", ...msg });
@@ -107,17 +121,18 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
             sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} débloqué` });
           }
         } catch (err) {
-          fastify.log.error(" Erreur message WS :", err);
+          fastify.log.error("Erreur message WS :", err);
         }
       });
 
       socket.on("close", () => {
-        const index = clients.findIndex((c) => c.id === client.id);
+        const index = clients.findIndex(c => c.socket === socket);
         if (index !== -1) clients.splice(index, 1);
-        fastify.log.info(` ${client.name} déconnecté`);
+        fastify.log.info(`❌ ${client.name} déconnecté (${clients.length} restants)`);
+        broadcastUsers();
       });
     } catch (err) {
-      fastify.log.error(" JWT invalide :", err);
+      fastify.log.error("JWT invalide :", err);
       socket.close();
     }
   });

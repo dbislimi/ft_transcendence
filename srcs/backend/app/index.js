@@ -38,6 +38,12 @@ db.serialize(() => {
   		date TEXT NOT NULL
 	);`);
 
+	db.run(`CREATE TABLE IF NOT EXISTS blocks (
+  		id INTEGER PRIMARY KEY AUTOINCREMENT,
+  		blockerId INTEGER NOT NULL,
+  		blockedId INTEGER NOT NULL
+		);`);
+
 	// Ensure legacy databases get new columns (ALTER TABLE will fail if column exists, so ignore errors)
 	db.run(`ALTER TABLE users ADD COLUMN display_name TEXT;`, (err) => {});
 	db.run(`ALTER TABLE users ADD COLUMN avatar TEXT;`, (err) => {});
