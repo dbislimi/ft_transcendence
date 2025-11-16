@@ -19,6 +19,7 @@ export function computeUpdatedUserStats(
   const newBestStreak = Math.max(existingStats.best_streak, matchData.bestStreak);
   const newTotalPlayTime = existingStats.total_play_time + matchData.matchDuration;
   
+  // moyenne ponderee: on reconstruit le total depuis l'ancienne moyenne puis on ajoute le nouveau
   const totalResponseTime = existingStats.average_response_time * existingStats.total_words_submitted + 
                           matchData.averageResponseTime * matchData.wordsSubmitted;
   const newAverageResponseTime = newTotalWordsSubmitted > 0 ? 
@@ -68,6 +69,7 @@ export function computeUpdatedTrigramStats(
   newAverageTime: number;
 } {
   const newTimesUsed = existingStats.times_used + 1;
+  // on reconstruit le count depuis le rate stocke (arrondi pour eviter les erreurs de float)
   const newSuccessCount = Math.round(existingStats.success_rate * existingStats.times_used) + (isSuccess ? 1 : 0);
   const newSuccessRate = newSuccessCount / newTimesUsed;
   

@@ -9,7 +9,11 @@ export interface Room {
   players: Map<string, PlayerConnection>;
   createdAt: number;
   startedAt?: number;
-  lastGameState?: any; // État précédent pour calculer les deltas
+  lastGameState?: any; // etat precedent pour calculer les deltas
+  stateVersion?: number; // version pour detecter les updates obsoletes
+  sequenceNumber?: number; // numero de sequence pour ordonner les events
+  playerLastSequence?: Map<string, number>; // dernier sequence recu par joueur
+  hostId?: string;
 }
 
 export interface PlayerConnection {
@@ -17,6 +21,8 @@ export interface PlayerConnection {
   name: string;
   ws: WebSocket;
   roomId?: string;
+  // support multi-onglets: un joueur peut avoir plusieurs websockets
+  sockets?: Set<WebSocket>;
 }
 
 export interface BPServerMessage {
@@ -73,6 +79,7 @@ export interface JoinRoomResult {
 export interface LeaveRoomResult {
   success: boolean;
   error?: string;
+  newHostId?: string;
 }
 
 export interface StartGameResult {

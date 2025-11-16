@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { TurnTimer } from '../core/timer';
+import { TurnTimer } from '../../core/timer';
 
 interface SynchronizedTimerProps {
   timer: TurnTimer;
@@ -11,10 +11,6 @@ interface SynchronizedTimerProps {
   onExpire?: () => void;
 }
 
-/**
- * Composant de timer synchronisé avec le serveur
- * Affiche le temps restant avec correction de drift automatique
- */
 export const SynchronizedTimer: React.FC<SynchronizedTimerProps> = memo(({
   timer,
   isActive,
@@ -29,7 +25,6 @@ export const SynchronizedTimer: React.FC<SynchronizedTimerProps> = memo(({
   const lastSyncRef = useRef<number>(Date.now());
   const animationFrameRef = useRef<number>();
 
-  // Synchronisation périodique avec correction de drift
   useEffect(() => {
     if (!isActive) {
       setRemainingMs(0);
@@ -40,7 +35,7 @@ export const SynchronizedTimer: React.FC<SynchronizedTimerProps> = memo(({
     }
 
     let lastUpdate = performance.now();
-    const updateInterval = 50; // Mise à jour toutes les 50ms pour fluidité
+    const updateInterval = 50;
 
     const updateTimer = () => {
       const now = performance.now();
@@ -50,14 +45,12 @@ export const SynchronizedTimer: React.FC<SynchronizedTimerProps> = memo(({
         const remaining = timer.getRemainingMs();
         setRemainingMs(remaining);
 
-        // Détection de drift : si le temps restant est négatif ou très différent de l'attendu
         const expectedElapsed = Date.now() - lastSyncRef.current;
         const actualRemaining = totalDurationMs - expectedElapsed;
         const drift = remaining - actualRemaining;
 
-        if (Math.abs(drift) > 100) { // Drift de plus de 100ms
+        if (Math.abs(drift) > 100) {
           setDriftCorrection(drift);
-          // Correction automatique après 1 seconde de drift
           if (Math.abs(drift) > 500) {
             timer.updateServerTime(Date.now() - drift, Date.now());
             lastSyncRef.current = Date.now();

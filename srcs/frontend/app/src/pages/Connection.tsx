@@ -43,7 +43,6 @@ export default function Connection() {
       if (response.ok) {
         const data = await response.json();
 
-        // If server indicates 2FA is required, store the temporary id and redirect to the 2FA page
         if (data.require2fa) {
           if (data.userId) {
             localStorage.setItem("for2FaUserId", String(data.userId));

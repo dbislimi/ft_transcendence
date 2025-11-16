@@ -1,25 +1,21 @@
 import fs from 'fs';
-import { normalizeText } from './syllableExtractor.ts';
+import { normalizeText, isValidSyllableInWord } from './syllableExtractor.ts';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuration du lazy loading
-const PARTITION_SIZE = 10000; // Nombre de mots par partition
-const CACHE_SIZE = 5; // Nombre de partitions à garder en cache
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes en millisecondes
+const PARTITION_SIZE = 10000;
+const CACHE_SIZE = 5;
+const CACHE_TTL = 5 * 60 * 1000;
 
 interface PartitionCache {
   words: Set<string>;
   lastAccessed: number;
 }
 
-/**
- * Gestionnaire de dictionnaire avec lazy loading et partition
- * Charge uniquement les partitions nécessaires en mémoire
- */
+// lazy loading des partitions pour eviter de charger tout le dico en memoire
 export class DictionaryManager {
   private partitions: Map<number, PartitionCache> = new Map();
   private totalWords: number = 0;
@@ -35,14 +31,9 @@ export class DictionaryManager {
     this.ensurePartitionsDir();
   }
 
-  /**
-   * Initialise le gestionnaire de dictionnaire
-   * Vérifie si les partitions existent, sinon les crée
-   */
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // Vérifie si les partitions existent
     if (!fs.existsSync(this.partitionsDir) || this.getPartitionFiles().length === 0) {
       console.log('[DictionaryManager] Création des partitions...');
       await this.createPartitions();
@@ -51,7 +42,6 @@ export class DictionaryManager {
       this.partitionCount = this.partitionFiles.length;
     }
 
-    // Charge le nombre total de mots
     const allWords = fs.readFileSync(this.allWordsPath, 'utf8');
     this.totalWords = allWords.split('\n').filter(line => line.trim().length > 0).length;
 
@@ -79,9 +69,6 @@ export class DictionaryManager {
       .map(file => path.join(this.partitionsDir, file));
   }
 
-  /**
-   * Crée les partitions du dictionnaire
-   */
   private async createPartitions(): Promise<void> {
     const allWords = fs.readFileSync(this.allWordsPath, 'utf8');
     const words = allWords
@@ -103,7 +90,6 @@ export class DictionaryManager {
       }
     }
 
-    // Sauvegarde la dernière partition si elle n'est pas vide
     if (currentPartition.length > 0) {
       await this.savePartition(partitionIndex, currentPartition);
       partitionIndex++;
@@ -119,18 +105,14 @@ export class DictionaryManager {
     fs.writeFileSync(partitionPath, words.join('\n'), 'utf8');
   }
 
-  /**
-   * Charge une partition en mémoire (avec cache LRU)
-   */
+  // cache LRU: garde max 5 partitions en memoire
   private async loadPartition(partitionIndex: number): Promise<Set<string>> {
-    // Vérifie le cache
     const cached = this.partitions.get(partitionIndex);
     if (cached) {
       cached.lastAccessed = Date.now();
       return cached.words;
     }
 
-    // Charge depuis le disque
     const partitionPath = path.join(this.partitionsDir, `partition_${partitionIndex}.txt`);
     if (!fs.existsSync(partitionPath)) {
       throw new Error(`Partition ${partitionIndex} not found`);
@@ -144,25 +126,20 @@ export class DictionaryManager {
         .filter(line => line.length > 0)
     );
 
-    // Ajoute au cache
     this.partitions.set(partitionIndex, {
       words,
       lastAccessed: Date.now()
     });
 
-    // Nettoie le cache si nécessaire (LRU)
     this.cleanupCache();
 
     return words;
   }
 
-  /**
-   * Nettoie le cache en gardant seulement les partitions les plus récemment utilisées
-   */
+  // garde seulement les CACHE_SIZE partitions les plus recentes
   private cleanupCache(): void {
     if (this.partitions.size <= CACHE_SIZE) return;
 
-    // Trie par dernière utilisation et supprime les plus anciennes
     const sorted = Array.from(this.partitions.entries())
       .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
 
@@ -172,19 +149,11 @@ export class DictionaryManager {
     }
   }
 
-  /**
-   * Trouve la partition qui pourrait contenir un mot
-   * Utilise une recherche binaire approximative
-   */
+  // pour l'instant on cherche dans toutes les partitions (pas de tri par syllabe)
   private findPartitionForWord(word: string): number[] {
-    // Pour l'instant, on cherche dans toutes les partitions
-    // Une optimisation future pourrait utiliser un index par préfixe
     return Array.from({ length: this.partitionCount }, (_, i) => i);
   }
 
-  /**
-   * Vérifie si un mot existe dans le dictionnaire
-   */
   async wordExists(word: string): Promise<boolean> {
     if (!this.initialized) {
       await this.initialize();
@@ -193,7 +162,6 @@ export class DictionaryManager {
     const normalizedWord = normalizeText(word);
     const partitionIndices = this.findPartitionForWord(normalizedWord);
 
-    // Recherche dans les partitions pertinentes
     for (const partitionIndex of partitionIndices) {
       try {
         const partition = await this.loadPartition(partitionIndex);
@@ -208,9 +176,6 @@ export class DictionaryManager {
     return false;
   }
 
-  /**
-   * Obtient des suggestions de mots pour une syllabe
-   */
   async getWordSuggestions(syllable: string, maxSuggestions: number = 5): Promise<string[]> {
     if (!this.initialized) {
       await this.initialize();
@@ -219,12 +184,11 @@ export class DictionaryManager {
     const normalizedSyllable = normalizeText(syllable);
     const suggestions: string[] = [];
 
-    // Recherche dans toutes les partitions
     for (let i = 0; i < this.partitionCount && suggestions.length < maxSuggestions; i++) {
       try {
         const partition = await this.loadPartition(i);
         for (const word of partition) {
-          if (word.includes(normalizedSyllable) && word.length >= 3) {
+          if (word.length >= 3 && isValidSyllableInWord(word, normalizedSyllable)) {
             suggestions.push(word);
             if (suggestions.length >= maxSuggestions) break;
           }
@@ -237,23 +201,14 @@ export class DictionaryManager {
     return suggestions.slice(0, maxSuggestions);
   }
 
-  /**
-   * Obtient le nombre total de mots
-   */
   getTotalWords(): number {
     return this.totalWords;
   }
 
-  /**
-   * Obtient le nombre de partitions
-   */
   getPartitionCount(): number {
     return this.partitionCount;
   }
 
-  /**
-   * Obtient les statistiques du cache
-   */
   getCacheStats(): { size: number; maxSize: number; partitions: number[] } {
     return {
       size: this.partitions.size,
@@ -263,16 +218,11 @@ export class DictionaryManager {
   }
 }
 
-// Instance singleton
 let dictionaryManagerInstance: DictionaryManager | null = null;
 
-/**
- * Obtient l'instance singleton du gestionnaire de dictionnaire
- */
 export function getDictionaryManager(): DictionaryManager {
   if (!dictionaryManagerInstance) {
     dictionaryManagerInstance = new DictionaryManager();
   }
   return dictionaryManagerInstance;
 }
-

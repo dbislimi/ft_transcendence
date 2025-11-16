@@ -4,20 +4,12 @@ import WebSocket from 'ws';
 import jwt from 'jsonwebtoken';
 import { BombPartyRoomManager } from './RoomManager.ts';
 import { BombPartyWSServer } from './wsServer.ts';
-import { BombPartyTournamentManager } from './tournament/BombPartyTournamentManager.ts';
-import {
-  handleCreateTournament,
-  handleJoinTournament,
-  handleLeaveTournament,
-  handleStartTournament,
-  handleGetTournamentStatus,
-  handleListTournaments
-} from './tournament/tournamentHandlers.ts';
 import { 
   validateClientMessage, 
   validatePlayerName,
   validateAuthMessage
 } from './validation.ts';
+import { sanitizePlayerName } from './security.ts';
 import { ErrorCode } from './types.ts';
 import { v4 as uuidv4 } from 'uuid';
 import { bombPartyLogger } from './log.ts';
@@ -28,19 +20,12 @@ interface WSSession {
   playerId?: string;
   playerName?: string;
   roomId?: string;
-  tournamentId?: string;
   authenticated: boolean;
 }
 
 const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
   const roomManager = new BombPartyRoomManager();
   const wsServer = new BombPartyWSServer();
-  const tournamentManager = new BombPartyTournamentManager(
-    roomManager,
-    (playerIds: string[], event: string, payload: any) => {
-      wsServer.broadcastToPlayers(playerIds, { event, payload });
-    }
-  );
 
   function broadcastLobbyList(): void {
     const publicRooms = roomManager.getPublicRooms();
@@ -49,27 +34,23 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
       payload: { rooms: publicRooms }
     };
 
-    // envoie seulement aux connexions pas dans un tournoi
     const conns = wsServer.getAllConnections();
     for (const conn of conns) {
-      const pid = conn.playerId;
-      if (!pid || !tournamentManager.isPlayerInTournament(pid)) {
-        wsServer.sendMessage(conn.socket, message);
-      }
+      wsServer.sendMessage(conn.socket, message);
     }
   }
+
+  roomManager.setBroadcastLobbyListCallback(broadcastLobbyList);
 
   fastify.get('/bombparty/ws', { websocket: true }, (socket: WebSocket, request) => {
     const session: WSSession = {
       authenticated: false
     };
 
-    // check jwt a l'upgrade
     let userId: number | undefined;
     let userAuthenticated = false;
     
     try {
-      // recupere le token depuis query string ou headers
       let token: string | undefined;
       
       if (request.query && typeof request.query.token === 'string') {
@@ -84,7 +65,6 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           const url = new URL(`http://localhost${request.url}`);
           token = url.searchParams.get('token') || undefined;
         } catch (e) {
-          // ignore les erreurs de parsing url
         }
       }
 
@@ -95,19 +75,16 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           userAuthenticated = true;
           bombPartyLogger.info({ userId }, 'WebSocket connection authenticated');
         } catch (jwtError) {
-          // token invalide ou expire, on laisse quand meme se connecter en guest
           bombPartyLogger.warn({ error: jwtError instanceof Error ? jwtError.message : String(jwtError) }, 'JWT verification failed on WS upgrade, allowing unauthenticated connection');
           userId = undefined;
           userAuthenticated = false;
         }
       } else {
-        // pas de token, mode guest
         bombPartyLogger.info('No token provided on WS upgrade, allowing unauthenticated connection');
         userId = undefined;
         userAuthenticated = false;
       }
     } catch (error) {
-      // en cas d'erreur on laisse quand meme se connecter en guest
       bombPartyLogger.warn({ error }, 'Error during WS authentication, allowing unauthenticated connection');
       userId = undefined;
       userAuthenticated = false;
@@ -124,14 +101,15 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
     }
 
     async function authenticatePlayer(playerName: string): Promise<boolean> {
-      const nameResult = validatePlayerName(playerName);
+      const sanitizedName = sanitizePlayerName(playerName);
+      
+      const nameResult = validatePlayerName(sanitizedName);
       if (!nameResult.success) {
         sendError(nameResult.error || 'Nom invalide', nameResult.code || ErrorCode.VALIDATION_ERROR);
         return false;
       }
       
-      // si user authentifie, on recupere le display_name depuis la db
-      let finalPlayerName = nameResult.data!;
+      let finalPlayerName = sanitizePlayerName(nameResult.data!);
       if (userAuthenticated && typeof userId === 'number') {
         try {
           const user = await new Promise<any>((resolve, reject) => {
@@ -142,7 +120,7 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           });
           
           if (user && user.display_name) {
-            finalPlayerName = user.display_name;
+            finalPlayerName = sanitizePlayerName(user.display_name);
             bombPartyLogger.info({ userId, displayName: finalPlayerName }, 'Using display name from database for authenticated user');
           }
         } catch (error) {
@@ -150,21 +128,9 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
         }
       }
       
-      // reuse playerId si user authentifie et qu'on a deja un mapping
       let resolvedPlayerId: string | undefined;
       if (userAuthenticated && typeof userId === 'number') {
         resolvedPlayerId = wsServer.getPlayerIdForUser(userId);
-      }
-
-      // Si un autre onglet est déjà connecté pour ce user, fermer la connexion précédente
-      if (userAuthenticated && typeof userId === 'number') {
-        const all = wsServer.getAllConnections();
-        for (const conn of all) {
-          if (conn.userId === userId && conn.socket !== socket) {
-            bombPartyLogger.info({ userId }, 'Closing previous connection for same authenticated user');
-            wsServer.closeConnection(conn.socket, 'DUPLICATE_LOGIN');
-          }
-        }
       }
 
       session.playerId = resolvedPlayerId || uuidv4();
@@ -177,12 +143,6 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
         wsServer.setPlayerIdForUser(userId, session.playerId);
       }
 
-      // tentative de reconnexion au tournoi si applicable
-      try {
-        tournamentManager.handlePlayerReconnect(session.playerId, socket);
-      } catch (e) {
-        bombPartyLogger.warn({ playerId: session.playerId, error: e instanceof Error ? e.message : String(e) }, 'Tournament reconnect attempt failed');
-      }
       return true;
     }
 
@@ -198,20 +158,18 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
       try {
         const rawMessage = JSON.parse(data.toString());
         
-        // rate limiting par type de message (amélioré avec throttling)
         const messageType = rawMessage.event || 'unknown';
         const rateLimitConfig: Record<string, { max: number; window: number }> = {
-          'bp:game:input': { max: 10, window: 2000 }, // réduit de 15 à 10 pour éviter le spam
+          'bp:game:input': { max: 10, window: 2000 },
           'bp:chat:message': { max: 8, window: 2000 },
           'bp:lobby:update': { max: 5, window: 2000 },
-          'bp:bonus:activate': { max: 3, window: 2000 }, // très restrictif pour les bonus
-          'bp:lobby:create': { max: 3, window: 5000 }, // limiter création de rooms
+          'bp:bonus:activate': { max: 3, window: 2000 },
+          'bp:lobby:create': { max: 3, window: 5000 },
           'bp:lobby:join': { max: 5, window: 2000 },
         };
         
         const config = rateLimitConfig[messageType] || { max: 10, window: 2000 };
         if (!wsServer.checkRateLimit(socket, messageType, config.max, config.window)) {
-          // rate limit depasse, envoyer une erreur au client
           sendError(`Rate limit exceeded for ${messageType}. Please slow down.`, ErrorCode.VALIDATION_ERROR);
           return;
         }
@@ -220,9 +178,16 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           bombPartyLogger.info({ event: messageType, userId }, 'Message received');
         }
 
-        // Repond au ping meme avant authentification (heartbeat frontend)
         if (rawMessage.event === 'bp:ping') {
-          sendMessage({ event: 'bp:pong', payload: { ts: Date.now() } });
+          const receivedAt = Date.now();
+          const sentAt = rawMessage.payload?.ts;
+          bombPartyLogger.debug({ 
+            userId,
+            sentAt,
+            receivedAt,
+            latency: sentAt ? receivedAt - sentAt : 'unknown'
+          }, 'bp:ping received, sending bp:pong');
+          sendMessage({ event: 'bp:pong', payload: { ts: receivedAt, clientTs: sentAt } });
           return;
         }
 
@@ -258,6 +223,12 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
         }
         const message = validation.data!;
         const playerId = session.playerId!;
+        
+        if (message.payload?.roomId && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(message.payload.roomId)) {
+          sendError('Invalid room ID format', ErrorCode.VALIDATION_ERROR);
+          return;
+        }
+        
         switch (message.event) {
           case 'bp:lobby:create':
             handleLobbyCreate(playerId, message.payload);
@@ -295,50 +266,9 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
             bombPartyLogger.info({ playerId, roomId: message.payload?.roomId }, 'Room subscribe ignored (not implemented)');
             break;
 
-          // handlers tournoi
-          case 'bp:tournament:create':
-            handleTournamentCreate(playerId, message.payload);
+          case 'bp:room:state_request':
+            handleRoomStateRequest(playerId, message.payload);
             break;
-
-          case 'bp:tournament:join':
-            handleTournamentJoin(playerId, message.payload);
-            break;
-
-          case 'bp:tournament:leave':
-            handleTournamentLeave(playerId, message.payload);
-            break;
-
-          case 'bp:tournament:start':
-            handleTournamentStart(playerId, message.payload);
-            break;
-
-          case 'bp:tournament:status':
-            handleTournamentStatus(playerId, message.payload);
-            break;
-
-          case 'bp:tournament:list':
-            handleTournamentList(playerId);
-            break;
-
-          case 'bp:tournament:ready': {
-            const tournament = tournamentManager.getTournamentByPlayerId(playerId);
-            if (!tournament) {
-              sendError('You are not in a tournament', ErrorCode.STATE_ERROR);
-              break;
-            }
-            try {
-              const matchId = message.payload?.matchId;
-              const ready = !!message.payload?.ready;
-              if (!matchId) {
-                sendError('Missing matchId', ErrorCode.VALIDATION_ERROR);
-                break;
-              }
-              tournament.setPlayerReady(matchId, playerId, ready);
-            } catch (e) {
-              sendError('Failed to set readiness', ErrorCode.STATE_ERROR);
-            }
-            break;
-          }
 
           default:
             sendError(`Event not supported: ${message.event}`, ErrorCode.VALIDATION_ERROR);
@@ -351,12 +281,6 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
     });
 
     function handleLobbyCreate(playerId: string, payload: any): void {
-      // empeche de creer un lobby si le joueur est dans un tournoi
-      if (tournamentManager.isPlayerInTournament(playerId)) {
-        sendError('You cannot create a lobby while in a tournament', ErrorCode.STATE_ERROR);
-        return;
-      }
-      
       const result = roomManager.createRoom(
         playerId,
         payload.name,
@@ -404,41 +328,78 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
     }
 
     function handleLobbyJoin(playerId: string, payload: any): void {
-      // empeche de rejoindre un lobby si le joueur est dans un tournoi
-      if (tournamentManager.isPlayerInTournament(playerId)) {
-        sendError('You cannot join a lobby while in a tournament', ErrorCode.STATE_ERROR);
-        return;
-      }
       const result = roomManager.joinRoom(playerId, payload.roomId, payload.password);
 
       if (result.success) {
         session.roomId = payload.roomId;
         wsServer.updateConnection(socket, session.playerId, payload.roomId);
+        
+        const hasGameInProgress = roomManager.hasGameInProgress(payload.roomId);
+        
+        bombPartyLogger.info({ 
+          playerId, 
+          roomId: payload.roomId, 
+          hasGameInProgress
+        }, 'Player joined room');
+        
         sendMessage({
           event: 'bp:lobby:joined',
           payload: {
             roomId: payload.roomId,
             playerId,
             players: result.players || [],
-            maxPlayers: result.maxPlayers
+            maxPlayers: result.maxPlayers,
+            isReconnect: hasGameInProgress
           }
         });
         
-        // Mettre à jour la liste des lobbies pour tous les clients
+        if (hasGameInProgress) {
+          const roomState = roomManager.getRoomStateForReconnect(playerId, payload.roomId);
+          
+          if (roomState.success && roomState.gameState) {
+            bombPartyLogger.info({ 
+              playerId, 
+              roomId: payload.roomId,
+              phase: roomState.gameState.phase
+            }, 'Sending game state to reconnected player');
+            
+            sendMessage({
+              event: 'bp:game:state',
+              payload: {
+                roomId: payload.roomId,
+                gameState: roomState.gameState,
+                full: true,
+                sequenceNumber: roomState.sequenceNumber,
+                stateVersion: roomState.stateVersion,
+                isReconnect: true
+              }
+            });
+          }
+        }
+        
         broadcastLobbyList();
       } else {
         let code: ErrorCode = ErrorCode.STATE_ERROR;
-        if (result.error?.includes('non trouvée')) code = ErrorCode.STATE_ERROR;
-        else if (result.error?.includes('pleine')) code = ErrorCode.STATE_ERROR;
-        else if (result.error?.includes('mot de passe')) code = ErrorCode.AUTH_ERROR;
-        else if (result.error?.includes('déjà dans')) code = ErrorCode.STATE_ERROR;
+        const errorMsg = result.error || 'Error joining lobby';
+        
+        if (errorMsg.includes('non trouvée') || errorMsg.includes('not found')) {
+          code = ErrorCode.STATE_ERROR;
+        } else if (errorMsg.includes('pleine') || errorMsg.includes('full')) {
+          code = ErrorCode.STATE_ERROR;
+        } else if (errorMsg.includes('mot de passe') || errorMsg.includes('password') || errorMsg.includes('Mot de passe requis')) {
+          code = ErrorCode.AUTH_ERROR;
+        } else if (errorMsg.includes('déjà dans') || errorMsg.includes('already in')) {
+          code = ErrorCode.STATE_ERROR;
+        } else if (errorMsg.includes('Invalid') || errorMsg.includes('invalide')) {
+          code = ErrorCode.VALIDATION_ERROR;
+        }
 
-        sendError(result.error || 'Error joining lobby', code);
+        sendError(errorMsg, code);
       }
     }
 
     function handleLobbyLeave(playerId: string, payload: any): void {
-      const result = roomManager.leaveRoom(playerId, payload.roomId);
+      const result = roomManager.leaveRoom(playerId, payload.roomId, socket);
 
       if (result.success) {
         session.roomId = undefined;
@@ -447,22 +408,18 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           event: 'bp:lobby:left',
           payload: {
             roomId: payload.roomId,
-            playerId
+            playerId,
+            newHostId: result.newHostId,
+            hostTransferred: !!result.newHostId
           }
         });
         
-        // Mettre à jour la liste des lobbies pour tous les clients
         broadcastLobbyList();
       } else {
         sendError(result.error || 'Error leaving lobby', ErrorCode.STATE_ERROR);
       }
     }
     function handleLobbyList(playerId: string, payload: any): void {
-      if (tournamentManager.isPlayerInTournament(playerId)) {
-        bombPartyLogger.info({ playerId }, 'Player in tournament - lobby list blocked');
-        sendError('You cannot list lobbies while in a tournament', ErrorCode.STATE_ERROR);
-        return;
-      }
       const publicRooms = roomManager.getPublicRooms();
       bombPartyLogger.info({ playerId, roomCount: publicRooms.length }, 'Sending lobby list');
       sendMessage({
@@ -502,138 +459,137 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 
     async function handleGameInput(playerId: string, payload: any): Promise<void> {
       try {
+        if (!payload.roomId || !payload.word) {
+          bombPartyLogger.warn({ playerId, payload }, 'Invalid payload in handleGameInput');
+          sendError('Invalid game input payload', ErrorCode.VALIDATION_ERROR);
+          return;
+        }
+
+        sendMessage({
+          event: 'bp:game:input:received',
+          payload: {
+            roomId: payload.roomId,
+            word: payload.word,
+            receivedAt: Date.now()
+          }
+        });
+
         const result = await roomManager.handleGameInput(
           playerId,
           payload.roomId,
           payload.word,
-          payload.msTaken
+          payload.msTaken || 0
         );
 
         if (!result.success) {
+          bombPartyLogger.warn({ playerId, roomId: payload.roomId, error: result.error }, 'Game input failed');
           sendError(result.error || 'Error game input', ErrorCode.STATE_ERROR);
         }
       } catch (error) {
-        bombPartyLogger.error({ playerId, error }, 'Error handling game input');
+        bombPartyLogger.error({ playerId, roomId: payload?.roomId, error }, 'Error handling game input');
         sendError('Internal server error processing game input', ErrorCode.STATE_ERROR);
       }
     }
 
-    function handleBonusActivate(playerId: string, payload: any): void {
-      const result = roomManager.activateBonus(
-        playerId,
-        payload.roomId,
-        payload.bonusKey
-      );
+    async function handleBonusActivate(playerId: string, payload: any): Promise<void> {
+      try {
+        if (!payload.roomId || !payload.bonusKey) {
+          bombPartyLogger.warn({ playerId, payload }, 'Invalid payload in handleBonusActivate');
+          sendError('Invalid bonus activation payload', ErrorCode.VALIDATION_ERROR);
+          return;
+        }
 
-      if (!result.success) {
-        sendError(result.error || 'Error activating bonus', ErrorCode.STATE_ERROR);
+        const result = roomManager.activateBonus(
+          playerId,
+          payload.roomId,
+          payload.bonusKey
+        );
+
+        if (!result.success) {
+          bombPartyLogger.warn({ playerId, roomId: payload.roomId, bonusKey: payload.bonusKey, error: result.error }, 'Bonus activation failed');
+          sendError(result.error || 'Error activating bonus', ErrorCode.STATE_ERROR);
+        }
+      } catch (error) {
+        bombPartyLogger.error({ playerId, roomId: payload?.roomId, bonusKey: payload?.bonusKey, error }, 'Error in handleBonusActivate');
+        sendError('Internal server error activating bonus', ErrorCode.STATE_ERROR);
       }
     }
 
-    // wrappers pour les handlers tournoi (standardise la signature sendMessage)
-    function handleTournamentCreate(playerId: string, payload: any): void {
-      if (!payload.tournamentId) {
-        payload.tournamentId = uuidv4();
+    function handleRoomStateRequest(playerId: string, payload: any): void {
+      if (!payload.roomId) {
+        sendError('Room ID required', ErrorCode.VALIDATION_ERROR);
+        return;
       }
-      const res = handleCreateTournament(
-        playerId,
-        session.playerName || 'Unknown',
-        socket,
-        {
-          tournamentId: payload.tournamentId,
-          capacity: payload.capacity,
-          password: payload.password
-        },
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
+
+      const result = roomManager.getRoomStateForReconnect(playerId, payload.roomId);
+      
+      if (result.success) {
+        if (result.gameState) {
+          sendMessage({
+            event: 'bp:game:state',
+            payload: {
+              roomId: payload.roomId,
+              gameState: result.gameState,
+              full: true,
+              sequenceNumber: result.sequenceNumber,
+              stateVersion: result.stateVersion,
+              isReconnect: true
+            }
+          });
+        } else {
+          sendMessage({
+            event: 'bp:room:state',
+            payload: {
+              roomId: payload.roomId,
+              sequenceNumber: result.sequenceNumber,
+              stateVersion: result.stateVersion,
+              isReconnect: true
+            }
+          });
         }
-      );
-      if (res?.success) {
-        session.tournamentId = payload.tournamentId;
+      } else {
+        sendError(result.error || 'Room state not available', ErrorCode.STATE_ERROR);
       }
-    }
-
-    function handleTournamentJoin(playerId: string, payload: any): void {
-      const res = handleJoinTournament(
-        playerId,
-        session.playerName || 'Unknown',
-        socket,
-        payload,
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
-        }
-      );
-      if (res?.success) {
-        if (session.roomId) {
-          wsServer.updateConnection(socket, session.playerId, undefined);
-          session.roomId = undefined;
-        }
-        session.tournamentId = payload.tournamentId;
-      }
-    }
-
-    function handleTournamentLeave(playerId: string, payload: any): void {
-      const res = handleLeaveTournament(
-        playerId,
-        payload,
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
-        }
-      );
-      if (res?.success && session.tournamentId === payload.tournamentId) {
-        session.tournamentId = undefined;
-      }
-    }
-
-    function handleTournamentStart(playerId: string, payload: any): void {
-      handleStartTournament(
-        playerId,
-        payload,
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
-        }
-      );
-    }
-
-    function handleTournamentStatus(playerId: string, payload: any): void {
-      handleGetTournamentStatus(
-        playerId,
-        payload,
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
-        }
-      );
-    }
-
-    function handleTournamentList(playerId: string): void {
-      handleListTournaments(
-        playerId,
-        {
-          tournamentManager,
-          sendMessage: (event: string, p: any) => sendMessage({ event, payload: p }),
-          sendError
-        }
-      );
     }
 
     socket.on('close', (code: number, reason: Buffer) => {
       if (session.playerId && session.roomId) {
-        roomManager.leaveRoom(session.playerId, session.roomId);
-      }
-      
-      // gestion deconnexion tournoi
-      if (session.playerId) {
-        tournamentManager.handlePlayerDisconnect(session.playerId);
+        const gracePeriodMs = 5000;
+        const playerId = session.playerId;
+        const roomId = session.roomId;
+        
+        bombPartyLogger.info({ 
+          playerId, 
+          roomId, 
+          code, 
+          reason: reason.toString(),
+          gracePeriodMs
+        }, 'WebSocket fermé - Grace period de 5s avant éjection');
+        
+        setTimeout(() => {
+          const room = roomManager.getRoom(roomId);
+          if (!room) {
+            bombPartyLogger.debug({ playerId, roomId }, 'Room inexistante après grace period');
+            return;
+          }
+          
+          const roomPlayer = room.players.get(playerId);
+          if (!roomPlayer) {
+            bombPartyLogger.debug({ playerId, roomId }, 'Joueur déjà parti de la room');
+            return;
+          }
+          
+          const hasActiveSocket = roomPlayer.sockets && roomPlayer.sockets.size > 0 && 
+            Array.from(roomPlayer.sockets).some(ws => ws.readyState === 1); // OPEN = 1
+          
+          if (hasActiveSocket) {
+            bombPartyLogger.info({ playerId, roomId }, '✅ Joueur reconnecté pendant grace period - pas d\'éjection');
+            return;
+          }
+          
+          bombPartyLogger.info({ playerId, roomId }, '❌ Pas de reconnexion après grace period - éjection du joueur');
+          roomManager.leaveRoom(playerId, roomId, socket);
+        }, gracePeriodMs);
       }
     });
 
@@ -657,7 +613,6 @@ export default bombPartyWSHandlers;
 export class BombPartyWSManager {
   private static instance: BombPartyRoomManager | null = null;
 
-  // recupere l'instance du RoomManager (pour les tests)
   static getRoomManager(): BombPartyRoomManager | null {
     return this.instance;
   }

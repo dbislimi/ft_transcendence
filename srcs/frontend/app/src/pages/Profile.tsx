@@ -36,7 +36,6 @@ export default function Profile() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // etats pour les vraies donnees
   const [stats, setStats] = useState<Stats>({
     totalGames: 0,
     wins: 0,
@@ -58,7 +57,6 @@ export default function Profile() {
     "/avatars/avatar10.png"
   ];
 
-  // fonction pour calculer le rang base sur les victoires
   const calculateRank = (wins: number): string => {
     if (wins >= 100) return "Légende";
     if (wins >= 50) return "Maître";
@@ -68,13 +66,11 @@ export default function Profile() {
     return "Novice";
   };
 
-  // recuperer les vraies donnees
   const fetchData = async () => {
     if (!token || !user) return;
     
     setLoading(true);
     try {
-      // recuperer les amis
       const friendsResponse = await fetch("http://localhost:3001/friends", {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -88,7 +84,6 @@ export default function Profile() {
       }
 
       // utiliser les stats de la base de donnees utilisateur (wins/losses)
-      // les statistiques sont deja disponibles dans user.wins et user.losses depuis la db
       if (user) {
         const totalGames = (user.wins || 0) + (user.losses || 0);
         const wins = user.wins || 0;
@@ -103,8 +98,8 @@ export default function Profile() {
           wins,
           losses,
           winRate,
-          currentStreak: 0, // a implementer si necessaire
-          bestStreak: 0,    // a implementer si necessaire
+          currentStreak: 0,
+          bestStreak: 0,
           rank,
           points
         });
@@ -125,7 +120,6 @@ export default function Profile() {
       fetchData();
     }
     
-    // animation d'entree
     setTimeout(() => setIsLoaded(true), 100);
   }, [user, token]);
 
@@ -153,7 +147,6 @@ export default function Profile() {
         setMessage("Profil mis à jour avec succès !");
         setIsError(false);
         setEditMode(false);
-        // rafraichir les donnees utilisateur
         window.location.reload();
       } else {
         const errorData = await response.json();

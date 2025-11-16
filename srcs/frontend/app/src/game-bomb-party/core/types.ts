@@ -1,66 +1,14 @@
-export type GamePhase = 'LOBBY' | 'COUNTDOWN' | 'TURN_ACTIVE' | 'RESOLVE' | 'GAME_OVER';
+import type { GamePhase, BonusKey, PlayerBonuses, Player, GameState as SharedGameState, GameConfig, ValidationResult } from '@shared/bombparty/types';
 
-// --- Bonuses & Effects ---
-export type BonusKey = 'inversion' | 'plus5sec' | 'vitesseEclair' | 'doubleChance' | 'extraLife';
+export type { GamePhase, BonusKey, PlayerBonuses, Player, GameConfig, ValidationResult };
 
-export interface PlayerBonuses {
-  inversion: number;
-  plus5sec: number;
-  vitesseEclair: number;
-  doubleChance: number;
-  extraLife: number;
-}
-
-export interface Player {
-  id: string;
-  name: string;
-  lives: number;
-  isEliminated: boolean;
-  streak: number;
-  bonuses: PlayerBonuses;
-  pendingEffects?: {
-    vitesseEclair?: boolean; // reserved - not used per-player currently
-    doubleChance?: boolean;  // applies on player's next turn
-  };
-}
-
-// Back-compat alias
 export type PlayerState = Player;
 
-export interface GameConfig {
-  livesPerPlayer: number;
-  turnDurationMs: number;
-  playersCount: number;
-}
-
-export interface GameState {
-  phase: GamePhase;
-  players: Player[];
-  currentPlayerIndex: number;
-  currentSyllable: string;
-  usedWords: string[];
-  turnEndsAt: number;
-  // Turn order & timing
-  turnOrder: string[];           // player ids in current order
-  turnDirection: 1 | -1;         // 1 clockwise, -1 counter-clockwise
-  baseTurnSeconds: number;       // e.g. 15
-  activeTurnEndsAt?: number;     // ms timestamp for current turn end
-  // Effects
-  pendingFastForNextPlayerId?: string; // if set, next player's turn is fast (3s)
-  history: Array<{
-    playerId: string;
-    word: string;
-    ok: boolean;
-    msTaken: number;
-  }>;
-  // Game end
-  winner?: Player;               // Winner when game is over
+export interface GameState extends SharedGameState {
+  winner?: Player;
   finalStats?: any;
-}
-
-export interface ValidationResult {
-  ok: boolean;
-  reason?: 'too_short' | 'no_syllable' | 'duplicate' | 'invalid_chars' | 'not_in_dictionary';
+  stateVersion?: number;
+  sequenceNumber?: number;
 }
 
 export interface SyllableInfo {
@@ -74,5 +22,4 @@ export interface WordSuggestion {
   isUsed: boolean;
 }
 
-// Bonus gain rule
-export const STREAK_FOR_BONUS = 3;
+export { STREAK_FOR_BONUS } from '@shared/bombparty/types';

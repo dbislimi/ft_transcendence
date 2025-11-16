@@ -6,7 +6,6 @@ export interface UserStats {
   totalValidWords: number;
   bestStreak: number;
   averageResponseTime: number;
-  favoriteTrigram: string | null;
   totalPlayTime: number;
   winRate: number;
   accuracy: number;
@@ -45,5 +44,5 @@ export interface RankingEntry {
   rank: number;
 }
 
-export type StatsTableType = 'history' | 'trigrams' | 'ranking';
-export type StatsTabType = 'overview' | 'history' | 'trigrams' | 'ranking';
+export type StatsTableType = 'history' | 'ranking';
+export type StatsTabType = 'overview' | 'history' | 'ranking';

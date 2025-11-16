@@ -95,4 +95,3 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
     });
 });
 
-//jcrois mtn faut juste tu recup le token que t'envoie dans le front en sah mais azy tema vite fait si t'a pas un chemin en plus a retirer du hook

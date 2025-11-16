@@ -63,31 +63,27 @@ export default function BonusNotification({ bonusKey, playerName, onClose }: Bon
         isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-8 scale-95'
       }`}
     >
-      {/* Effet de lueur animé */}
-      <div className={`absolute inset-0 blur-2xl ${colors.glow} opacity-75 animate-pulse`}></div>
+      <div className={`absolute inset-0 blur-2xl ${colors.glow} opacity-75 animate-double-chance-glow`}></div>
       
-      {/* Conteneur principal */}
-      <div className={`relative bg-gradient-to-r ${colors.from}/95 ${colors.to}/95 backdrop-blur-xl border-2 border-white/30 rounded-2xl px-8 py-5 shadow-2xl flex items-center gap-5 min-w-[350px] transform transition-all duration-500 ${
-        isAnimating ? 'animate-bounce-subtle' : ''
+      <div className={`relative bg-gradient-to-r ${colors.from}/95 ${colors.to}/95 backdrop-blur-xl border-2 border-white/30 rounded-2xl px-8 py-5 shadow-2xl flex items-center gap-5 min-w-[350px] transform transition-transform duration-500 ${
+        isAnimating ? 'animate-bonus-flash' : ''
       }`}>
-        {/* Particules animées autour de l'icône */}
         <div className="relative">
-          <div className={`text-5xl transform transition-all duration-500 ${
+          <div className={`text-5xl transform transition-transform duration-500 ${
             isAnimating ? 'animate-spin-slow scale-110' : 'scale-100'
           }`}>
             {bonusIcons[bonusKey]}
           </div>
-          {/* Cercles animés autour de l'icône */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`w-16 h-16 rounded-full border-2 border-white/30 animate-ping ${colors.glow}`}></div>
+            <div className={`w-16 h-16 rounded-full border-2 border-white/30 animate-modern-ping ${colors.glow}`}></div>
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`w-12 h-12 rounded-full border-2 border-white/20 animate-ping delay-150 ${colors.glow}`} style={{ animationDelay: '150ms' }}></div>
+            <div className={`w-12 h-12 rounded-full border-2 border-white/20 animate-modern-ping ${colors.glow}`} style={{ animationDelay: '150ms' }}></div>
           </div>
         </div>
         
         <div className="flex-1">
-          <div className="text-white font-bold text-xl mb-1 transform transition-all duration-300 hover:scale-105">
+          <div className="text-white font-bold text-xl mb-1 transform transition-transform duration-300 hover:scale-105">
             {t(bonusNames[bonusKey])}
           </div>
           <div className="text-white/90 text-sm font-medium">
@@ -100,13 +96,11 @@ export default function BonusNotification({ bonusKey, playerName, onClose }: Bon
             setIsVisible(false);
             setTimeout(onClose, 500);
           }}
-          className="text-white/70 hover:text-white transition-all duration-200 hover:scale-125 hover:rotate-90 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20"
+          className="text-white/70 hover:text-white transition-colors duration-200 hover:scale-125 hover:rotate-90 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20"
           aria-label={t('common.close', 'Fermer')}
         >
           ✕
         </button>
-        
-        {/* Barre de progression */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden">
           <div 
             className={`h-full bg-gradient-to-r ${colors.from} ${colors.to} animate-progress`}
@@ -120,22 +114,8 @@ export default function BonusNotification({ bonusKey, playerName, onClose }: Bon
           from { width: 100%; }
           to { width: 0%; }
         }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-        .animate-bounce-subtle {
-          animation: bounce-subtle 0.6s ease-out;
-        }
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-10px) scale(1.05); }
-        }
-        .delay-150 {
-          animation-delay: 150ms;
+        .animate-progress {
+          animation: progress 3s linear forwards;
         }
       `}</style>
     </div>

@@ -1,18 +1,15 @@
 {
-  "nav": { 
-    "signin": "Inscription", 
-    "settings": "Réglages", 
-    "profile": "Profil", 
-    "home": "Accueil",
+  "nav": {
+    "signin": "Inscription",
+    "settings": "Réglages",
+    "profile": "Profil",
     "logout": "Déconnexion"
   },
-  "home": { 
-    "connectBtn": "Connexion", 
-    "registrationBtn": "Inscription", 
-    "gameBtn": "Jeu", 
-    "aboutBtn": "À propos de nous", 
+  "home": {
+    "connectBtn": "Connexion",
+    "registrationBtn": "Inscription",
+    "aboutBtn": "À propos de nous",
     "subtitle": "Bienvenue",
-    "welcome": "Bienvenue, {{name}} !",
     "connectDesc": "Accéder à ton compte",
     "registrationDesc": "Rejoindre l'aventure",
     "pongTitle": "Pong",
@@ -23,19 +20,6 @@
     "aboutDesc": "Découvrir l'équipe",
     "readyToTranscend": "Prêt à transcender tes limites ?",
     "optimalPerformance": "Performance optimale"
-  },
-  "game": { 
-    "start": "démarrer", 
-    "stop": "arrêter", 
-    "speedUnit": "km/h",
-    "online": "En ligne",
-    "selectBotDifficulty": "Sélectionner la difficulté du bot",
-    "local": "Local",
-    "easy": "Facile",
-    "medium": "Moyen",
-    "hard": "Difficile",
-    "play": "Jouer",
-    "train": "Entraîner"
   },
   "about": {
     "title": "Notre Équipe",
@@ -58,61 +42,46 @@
       "openAria": "Ouvrir les informations du jeu",
       "closeAria": "Fermer le panneau d'informations",
       "howToGetTitle": "Comment obtenir des bonus",
-      "streakRule": "Gagne un bonus aléatoire toutes les {{n}} réponses valides d'affilée.",
       "bonusesTitle": "Bonus"
     },
-    "debug": { 
-      "show": "Afficher debug", 
-      "hide": "Masquer debug" 
+    "debug": {
+      "show": "Afficher debug",
+      "hide": "Masquer debug"
     },
     "chat": {
       "placeholder": "Écris ici...",
       "send": "Envoyer",
       "inputAria": "Champ de chat",
-      "sendAria": "Envoyer le message",
-      "system": { 
-        "joined": "{{name}} a rejoint", 
-        "left": "{{name}} est parti", 
-        "you": "Toi" 
-      }
+      "sendAria": "Envoyer le message"
     },
     "bonus": {
-      "title": "Bonus",
-      "activatedBy": "{{player}} a activé",
       "inversion": {
-        "name": "Inversion",
-        "desc": "Inverse le sens du tour"
+        "name": "Inversion"
       },
       "plus5sec": {
-        "name": "+5 secondes",
-        "desc": "Ajoute 5 secondes au temps restant"
+        "name": "+5 secondes"
       },
       "vitesseEclair": {
-        "name": "Vitesse éclair",
-        "desc": "Le prochain joueur aura un tour rapide"
+        "name": "Vitesse éclair"
       },
       "doubleChance": {
-        "name": "Double chance",
-        "desc": "Permet de réessayer si le mot est invalide"
+        "name": "Double chance"
       },
       "extraLife": {
-        "name": "Vie supplémentaire",
-        "desc": "Ajoute une vie"
+        "name": "Vie supplémentaire"
       }
     },
     "menu": {
       "title": "Bomb Party",
       "subtitle": "Trouvez des mots contenant le trigramme avant que le temps soit écoulé !",
       "playersCount": "Nombre de joueurs",
-      "players": "joueurs",
       "startGame": "Démarrer la partie",
       "rules": {
         "title": "Règles du jeu",
         "rule1": "Trouvez des mots contenant le trigramme affiché",
         "rule2": "Chaque joueur commence avec 3 vies",
         "rule3": "15 secondes par tour pour répondre",
-        "rule4": "Le dernier survivant remporte la partie !",
-        "rule5": "Les mots doivent être en français et valides"
+        "rule4": "Le dernier survivant remporte la partie !"
       }
     },
     "lobby": {
@@ -126,14 +95,9 @@
       "name": "Nom",
       "private": "Privé",
       "password": "Mot de passe",
-      "passwordOpt": "Mot de passe (optionnel)",
       "create": "Créer",
       "join": "Rejoindre",
-      "lobbyId": "ID du lobby",
       "playersCount": "Nombre de joueurs",
-      "lobbyIdPlaceholder": "Collez l'ID du lobby ici...",
-      "lobbyIdHelp": "Demandez l'ID du lobby au créateur",
-      "passwordPlaceholder": "Mot de passe (si le lobby est privé)",
       "availableLobbies": "Salons disponibles",
       "noLobbies": "Aucun salon disponible",
       "noLobbiesDesc": "Créez un nouveau salon pour commencer à jouer !",
@@ -150,17 +114,6 @@
       "hoursAgo": "Il y a {hours}h",
       "daysAgo": "Il y a {days}j"
     },
-    "playerNameModal": {
-      "title": "Choisissez votre nom de joueur",
-      "description": "Entrez un nom d'utilisateur pour commencer à jouer à Bomb Party",
-      "placeholder": "Nom du joueur",
-      "submit": "Commencer à jouer",
-      "validation": {
-        "tooShort": "Le nom doit contenir au moins 2 caractères",
-        "tooLong": "Le nom doit contenir au maximum 20 caractères",
-        "invalidChars": "Seuls les lettres, chiffres, espaces et tirets sont autorisés"
-      }
-    },
     "players": {
       "title": "Joueurs en attente",
       "players": "joueurs",
@@ -168,8 +121,7 @@
       "waiting": "En attente",
       "host": "Hôte",
       "waitingForPlayers": "En attente de joueurs supplémentaires...",
-      "startingIn": "Démarrage dans",
-      "startGame": "Démarrer la partie",
+      "start": "Démarrer la partie",
       "leave": "Quitter"
     },
     "rules": {
@@ -179,32 +131,17 @@
       "rule2": "Chaque tour est chronométré. Si le temps est écoulé, tu perds une vie.",
       "rule3": "Pas de mots en double.",
       "rule4": "Le dernier joueur en lice gagne.",
-      "continue": "Je comprends, continuer",
-      "continueAria": "Continuer vers le salon",
       "modeSelection": "Sélection du mode",
       "localMode": "Mode Local",
       "multiplayerMode": "Mode Multijoueur",
       "localPlayers": "Joueurs locaux",
       "localModeDesc": "Jouer seul ou à plusieurs sur le même écran",
       "multiplayerModeDesc": "Jouer en ligne avec d'autres joueurs",
-      "playersCount": "Nombre de joueurs",
       "players": "joueurs",
-      "startLocalGame": "Commencer le jeu local",
-      "multiplayerTypeSelection": "Type de partie multijoueur",
-      "tournamentMode": "Tournoi",
-      "tournamentModeDesc": "Participez à un tournoi avec plusieurs rounds",
-      "quickmatchMode": "Partie rapide",
-      "quickmatchModeDesc": "Jouez une partie rapide avec d'autres joueurs",
-      "startTournament": "Commencer le tournoi",
-      "startQuickmatch": "Commencer la partie rapide"
+      "startLocalGame": "Commencer le jeu local"
     },
     "game": {
-      "countdown": "Démarrage dans",
-      "turnIndicator": "Tour de",
-      "timeRemaining": "Temps restant",
-      "wordSuggestions": "Suggestions",
-      "suggestionsEnabled": "Suggestions activées",
-      "suggestionsDisabled": "Suggestions désactivées"
+      "countdown": "Démarrage dans"
     },
     "hud": {
       "yourTurn": "À ton tour",
@@ -220,82 +157,16 @@
       "recentWords": "Mots récents :",
       "errors": {
         "tooShort": "Le mot doit contenir au moins 3 lettres",
-        "noTrigram": "Le mot doit contenir le trigramme",
-        "duplicate": "Mot déjà utilisé",
-        "notInDictionary": "Ce mot n'existe pas dans le dictionnaire français"
+        "duplicate": "Ce mot a déjà été utilisé dans cette partie"
       }
     },
     "gameOver": {
       "title": "Fin de partie !",
-      "winner": "Vainqueur : {{name}}",
       "backToMenu": "Retour au menu",
       "victory": "Victoire !",
-      "winnerName": "{{name}}",
-      "winnerMessage": "Félicitations ! Vous avez remporté la partie !",
-      "livesRemaining": "{{count}} {{count, plural, one {vie restante} other {vies restantes}}} ❤️",
       "gameFinished": "Partie terminée !"
     },
     "backToMenu": "Retour au menu",
-    "tournament": {
-      "title": "Tournoi BombParty",
-      "createTab": "Créer un tournoi",
-      "joinTab": "Rejoindre un tournoi",
-      "capacity": "Capacité (nombre de joueurs)",
-      "create": "Créer le tournoi",
-      "available": "Tournois disponibles",
-      "noTournaments": "Aucun tournoi disponible",
-      "noTournamentsDesc": "Créez-en un ou attendez qu'un autre joueur en crée un",
-      "players": "joueurs",
-      "tournament": "Tournoi",
-      "inProgress": "En cours",
-      "finished": "Terminé",
-      "waiting": "En attente",
-  "bracketTitle": "Bracket du Tournoi",
-      "lobby": {
-        "title": "Lobby du Tournoi",
-        "playersRegistered": "Joueurs inscrits",
-        "waitingForPlayers": "En attente de {count} joueur(s)...",
-        "startingSoon": "Le tournoi va démarrer bientôt !",
-        "starting": "Démarrage du tournoi...",
-        "registeredPlayers": "Joueurs inscrits",
-        "noPlayers": "Aucun joueur inscrit",
-        "ready": "Prêt",
-        "waiting": "En attente...",
-        "players": "Joueurs"
-      },
-      "statusBar": {
-        "inProgress": "Tournoi en cours",
-        "round": "Tour {current} / {total}",
-        "viewBracket": "Voir le bracket",
-        "leave": "Quitter le tournoi",
-        "confirmLeave": "Êtes-vous sûr de vouloir quitter le tournoi ?"
-      },
-      "bracket": {
-        "final": "Finale",
-        "round": "Tour {round}",
-        "noMatches": "Aucun match disponible",
-        "noMatchesInRound": "Aucun match dans ce tour"
-      },
-      "match": {
-        "round": "Tour",
-        "waiting": "En attente",
-        "inProgress": "En cours",
-        "finished": "Terminé",
-        "tbd": "TBD",
-        "winner": "Gagnant",
-        "join": "Rejoindre le match",
-        "total": "Matchs",
-        "you": "Vous",
-        "confirm": "Confirmer prêt",
-        "cancel": "Annuler",
-        "waitingOpponent": "En attente de l'adversaire...",
-        "ready": "Prêt",
-        "notReady": "Pas prêt",
-        "vs": "VS"
-      },
-      "winner": "Le gagnant est :",
-      "backToMenu": "Retour au menu"
-    },
     "stats": {
       "title": "Statistiques Bomb Party",
       "subtitle": "Découvrez vos performances et comparez-vous aux autres joueurs",
@@ -314,7 +185,6 @@
         "ranking": "Classement"
       },
       "overview": {
-        "title": "Vue d'ensemble",
         "matchStats": "Statistiques des parties",
         "totalMatches": "Parties jouées",
         "totalWins": "Victoires",
@@ -328,7 +198,6 @@
         "otherStats": "Autres statistiques",
         "totalPlayTime": "Temps de jeu total",
         "favoriteTrigramTitle": "Trigramme préféré",
-        "favoriteTrigramDesc": "Votre trigramme le plus joué",
         "none": "Aucun"
       },
       "history": {
@@ -340,18 +209,14 @@
         "duration": "Durée",
         "result": "Résultat",
         "victory": "Victoire",
-        "defeat": "Défaite",
-        "empty": "Aucune partie jouée",
-        "emptyDesc": "Vos parties apparaîtront ici une fois que vous aurez joué."
+        "defeat": "Défaite"
       },
       "trigrams": {
         "title": "Statistiques par trigramme",
         "trigram": "Trigramme",
         "attempts": "Tentatives",
         "successRate": "Taux de réussite",
-        "averageTime": "Temps moyen",
-        "empty": "Aucune donnée de trigramme",
-        "emptyDesc": "Les statistiques de vos trigrammes apparaîtront ici."
+        "averageTime": "Temps moyen"
       },
       "ranking": {
         "title": "Classement global",
@@ -361,56 +226,24 @@
         "games": "Parties",
         "winRate": "Taux de victoire",
         "bestStreak": "Meilleur streak",
-        "you": "(Vous)",
-        "empty": "Aucun joueur classé",
-        "emptyDesc": "Le classement apparaîtra après les premières parties."
+        "you": "(Vous)"
       },
       "charts": {
         "trigramDistribution": "Répartition des trigrammes"
       }
     }
   },
-  "profile": {
-    "title": "Profil",
-    "memberSince": "Membre depuis {{date}}",
-    "stats": {
-      "games": "Parties",
-      "wins": "Victoires",
-      "winrate": "Taux de victoire",
-      "playtime": "Temps de jeu"
-    },
-    "playTime": "Temps de jeu",
-    "wins": "Victoires",
-    "losses": "Défaites",
-    "badges": { "title": "Badges" },
-    "loading": "Chargement du profil...",
-    "error": "Échec du chargement du profil",
-    "retry": "Réessayer",
-    "closeAria": "Fermer la fenêtre de profil"
-  },
-  "common": { 
-    "back": "Retour", 
+  "common": {
+    "back": "Retour",
     "backAria": "Revenir en arrière",
-    "goBackHome": "Retour à l'accueil",
-    "error": "Erreur",
     "close": "Fermer"
   },
-  "accessibility": { 
-    "languageSwitcher": "Sélecteur de langue" 
+  "accessibility": {
+    "languageSwitcher": "Sélecteur de langue"
   },
   "ui": {
     "background": {
-      "title": "Arrière-plans",
-      "open": "Fond",
-      "openAria": "Ouvrir le sélecteur d'arrière-plan",
-      "selectAria": "Sélectionner l'arrière-plan {{name}}",
-      "default": "Par défaut",
-      "space": "Espace (animé)",
       "defaultPreview": "Conserver le fond du jeu",
-      "42": "42",
-      "halloween": "Halloween",
-      "matrix42": "Matrix 42",
-      "snow": "Neige",
       "active": "Actif",
       "applyAll": "Utiliser pour tous les jeux"
     }
@@ -438,7 +271,6 @@
       "contrastHigh": "Élevé",
       "contrastVeryHigh": "Très élevé",
       "contrastPreview": "Aperçu du texte avec ce niveau de contraste",
-      "normal": "Normal",
       "animations": "Animations",
       "animationsDesc": "Active les effets visuels et transitions",
       "energySaver": "Mode économie d'énergie",
@@ -456,25 +288,21 @@
     },
     "game": {
       "title": "Jeu",
-      "description": "Contrôles et préférences"
+      "description": "Contrôles et préférences",
+      "soundsEnabled": "Sons activés",
+      "soundsEnabledDesc": "Activer les effets sonores du jeu",
+      "reducedMotion": "Réduire les animations",
+      "reducedMotionDesc": "Réduire les animations pour améliorer les performances",
+      "showFPS": "Afficher FPS",
+      "showFPSDesc": "Afficher le nombre d'images par seconde",
+      "autoSave": "Les modifications sont sauvegardées automatiquement",
+      "close": "Fermer"
     },
+    "close": "Fermer",
     "account": {
       "title": "Préférences de fond",
       "description": "Aperçus des arrière-plans",
-      "profile": "Profil",
-      "security": "Sécurité",
       "preferences": "Préférences",
-      "notAuthenticated": "Non connecté",
-      "notAuthenticatedDesc": "Connectez-vous pour accéder aux réglages de compte",
-      "notAuthenticatedSecurityDesc": "Connectez-vous pour accéder aux réglages de sécurité",
-      "userInfo": "Informations utilisateur",
-      "displayName": "Nom d'affichage",
-      "displayNamePlaceholder": "Votre nom",
-      "email": "Email",
-      "emailPlaceholder": "votre@email.com",
-      "twoFactor": "Authentification à deux facteurs",
-      "twoFactorDesc": "Ajoutez une couche de sécurité supplémentaire à votre compte",
-      "twoFactorInfo": "Recommandé pour une meilleure sécurité",
       "backgroundPreview": "Aperçu des arrière-plans",
       "backgroundPreviewDesc": "Aperçus des arrière-plans sélectionnés pour chaque mode",
       "lightModeBackground": "Mode Clair",
@@ -491,46 +319,88 @@
   },
   "shop": {
     "title": "Boutique",
-    "sections": {
-      "backgrounds": "Arrière-plans",
-      "themes": "Thèmes",
-      "accessibility": "Accessibilité",
-      "performance": "Performance"
-    },
-    "categories": {
-      "general": "Arrière-plans",
-      "fortnite": "Fortnite"
-    },
     "items": {
       "available": "disponibles"
     },
     "equipped": "Équipé",
     "select": "Sélectionner",
-    "contrast": {
-      "title": "Contraste",
-      "description": "Ajuste le contraste et la luminosité du texte",
-      "veryLow": "Très faible",
-      "low": "Faible",
-      "normal": "Normal",
-      "high": "Élevé",
-      "veryHigh": "Très élevé",
-      "preview": "Aperçu du texte avec ce niveau de contraste"
-    },
-    "animations": {
-      "title": "Animations",
-      "description": "Active ou désactive les animations et effets visuels"
-    },
-    "energySaver": {
-      "title": "Économie d'énergie",
-      "description": "Réduit les effets décoratifs pour économiser la batterie"
+    "backgrounds": {
+      "default": {
+        "name": "Par défaut",
+        "description": "Arrière-plan simple et épuré"
+      },
+      "42": {
+        "name": "42",
+        "description": "Logo emblématique de 42"
+      },
+      "42background": {
+        "name": "42",
+        "description": "Logo emblématique de 42"
+      },
+      "halloween": {
+        "name": "Halloween",
+        "description": "Ambiance mystérieuse d'Halloween"
+      },
+      "matrix-42": {
+        "name": "Matrix 42",
+        "description": "Style Matrix avec code"
+      },
+      "snow": {
+        "name": "Neige",
+        "description": "Flocons de neige animés"
+      },
+      "matrix": {
+        "name": "Matrix",
+        "description": "Effet Matrix digital"
+      },
+      "forest": {
+        "name": "Forêt",
+        "description": "Paysage forestier naturel"
+      },
+      "grace": {
+        "name": "Grace",
+        "description": "Ambiance gracieuse et élégante"
+      },
+      "batman": {
+        "name": "Batman",
+        "description": "Univers sombre de Gotham"
+      },
+      "dark-souls": {
+        "name": "Dark Souls",
+        "description": "Atmosphère épique et mystérieuse"
+      },
+      "the-last-of-us": {
+        "name": "The Last of Us",
+        "description": "Post-apocalyptique"
+      },
+      "windows95": {
+        "name": "Windows 95",
+        "description": "Nostalgie"
+      },
+      "bit-cloud": {
+        "name": "Bit Cloud",
+        "description": "Nuages pixelisés"
+      },
+      "gta-5": {
+        "name": "Gta 5",
+        "description": "Ambiance urbaine nocturne"
+      },
+      "kitti": {
+        "name": "Kitti",
+        "description": "Chaton"
+      },
+      "interstellar": {
+        "name": "Interstellar",
+        "description": "Voyage à travers les étoiles"
+      },
+      "pexels-padrinan-19670": {
+        "name": "Paysage Naturel",
+        "description": "Vue panoramique de la nature"
+      },
+      "pexels-umkreisel-app-956999": {
+        "name": "Ciel Étoilé",
+        "description": "Nuit étoilée"
+      }
     }
-  },
-  "auth": {
-    "emailPlaceholder": "votre@email.com",
-    "passwordPlaceholder": "••••••••",
-    "namePlaceholder": "Votre nom complet",
-    "emailInvalid": "Email invalide.",
-    "passwordRequired": "Le mot de passe est requis.",
-    "passwordsDontMatch": "Les mots de passe ne correspondent pas"
   }
 }

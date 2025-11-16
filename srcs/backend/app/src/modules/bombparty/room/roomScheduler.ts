@@ -1,6 +1,6 @@
 import { BombPartyEngine } from '../GameEngine.ts';
 import type { Room } from './roomTypes.ts';
-import { broadcastGameState, handleGameEnd } from './roomHandlers.ts';
+import { broadcastGameState, broadcastTurnStartedWithState, handleGameEnd } from './roomHandlers.ts';
 
 export function startTurnCheckInterval(
   roomEngines: Map<string, BombPartyEngine>,
@@ -17,7 +17,14 @@ export function checkAllActiveTurns(
 ): void {
   for (const [roomId, engine] of roomEngines) {
     if (engine.checkAndEndExpiredTurn()) {
-      broadcastGameState(roomId, roomEngines, rooms);
+      const gameState = engine.getState();
+      // si nouveau tour demarre, on envoie turn + state en une fois
+      if (gameState.phase === 'TURN_ACTIVE') {
+        broadcastTurnStartedWithState(roomId, roomEngines, rooms);
+      } else {
+        broadcastGameState(roomId, roomEngines, rooms);
+      }
+      
       if (engine.isGameOver()) {
         handleGameEnd(roomId, roomEngines, rooms);
       }

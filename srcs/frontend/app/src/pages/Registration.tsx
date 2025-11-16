@@ -21,7 +21,6 @@ export default function Registration() {
   const [step, setStep] = useState(1);
   const [avatar, setAvatar] = useState("/avatars/avatar1.png");
   
-  // Store form data from step 1
   const [formData, setFormData] = useState<UserInfos>({
     name: "",
     email: "",
@@ -44,7 +43,6 @@ export default function Registration() {
   ];
 
   const handleNextStep = async () => {
-    // validate step 1 fields (reuse existing validation logic)
     const nameInput = (document.getElementById("Name") as HTMLInputElement)?.value || "";
     const emailInput = (document.getElementById("email") as HTMLInputElement)?.value || "";
     const displayNameInput = (document.getElementById("displayName") as HTMLInputElement)?.value || "";
@@ -69,7 +67,6 @@ export default function Registration() {
       return;
     }
 
-    // ✅ Save form data before moving to step 2
     setFormData({
       name: nameInput,
       email: emailInput,
@@ -85,14 +82,12 @@ export default function Registration() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // ✅ Use saved formData from step 1 + selected avatar
     const info: UserInfos = {
       ...formData,
-      avatar: avatar  // Update with the selected avatar from step 2
+      avatar: avatar
     };
 
     try {
-      // Debug: log payload before sending
       console.debug("[Registration] Sending payload to /register:", info);
 
       const response = await fetch("http://localhost:3001/register", {
@@ -101,12 +96,10 @@ export default function Registration() {
         body: JSON.stringify(info),
       });
 
-      // Read body as text first to avoid potential JSON parse errors
       const text = await response.text().catch(() => "");
       let data: any = {};
       try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { raw: text }; }
 
-      // Debug: log response status and body
       console.debug("[Registration] /register response status:", response.status, "body:", data);
 
       if (response.ok) {
@@ -118,7 +111,6 @@ export default function Registration() {
         login(userData);
         navigate("/");
       } else {
-        // show detailed message in console and alert
         const errMsg = data.error || (data.raw ? data.raw : "Erreur serveur");
         console.warn("[Registration] register failed:", response.status, errMsg);
         alert(errMsg);
@@ -214,9 +206,7 @@ export default function Registration() {
 
                 <div className="flex justify-center mb-8">
                   <div className="relative">
-                    {/* Put image above the decorative overlay so it never gets fully covered */}
                     <img src={avatar} alt="Avatar sélectionné" className="w-32 h-32 rounded-full object-cover border-4 border-green-400/50 shadow-lg relative z-10" />
-                    {/* Decorative overlay should not intercept clicks and should be subtle */}
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400/10 to-purple-400/10 pointer-events-none z-0" />
                   </div>
                 </div>

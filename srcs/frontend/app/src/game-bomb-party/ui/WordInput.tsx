@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getWordSuggestions } from '../data/validator';
 import type { PlayerBonuses, BonusKey } from '../core/types';
+import { SuccessAnimation, ErrorAnimation } from './Animations';
+import { useSoundEffects } from './useSoundEffects';
+import { useSettings } from '../../contexts/SettingsContext';
+import { BONUS_RARITY, MAX_BONUS_PER_TYPE } from '@shared/bombparty/types';
 
 interface WordInputProps {
   syllable: string;
@@ -23,6 +27,12 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
   const inputRef = useRef<HTMLInputElement>(null);
   const [cooldown, setCooldown] = useState(false);
   const [processingKey, setProcessingKey] = useState<BonusKey | null>(null);
+  const [successTrigger, setSuccessTrigger] = useState<number | null>(null);
+  const [errorTrigger, setErrorTrigger] = useState<{ timestamp: number; message: string } | null>(null);
+  const { playSound } = useSoundEffects();
+  const { settings } = useSettings();
+  const previousUsedWordsRef = useRef<string[]>(usedWords);
+  const lastSubmittedWordRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isActive && inputRef.current) {
@@ -45,6 +55,33 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
     }
   }, [syllable, engine]);
 
+  useEffect(() => {
+    if (lastSubmittedWordRef.current && usedWords.length > previousUsedWordsRef.current.length) {
+      const newWord = usedWords.find(w => 
+        !previousUsedWordsRef.current.includes(w) && 
+        w.toLowerCase() === lastSubmittedWordRef.current
+      );
+      
+      if (newWord) {
+        setSuccessTrigger(Date.now());
+        playSound('success');
+        lastSubmittedWordRef.current = null;
+      }
+    }
+    
+    if (lastSubmittedWordRef.current) {
+      const timeout = setTimeout(() => {
+        if (!usedWords.includes(lastSubmittedWordRef.current!)) {
+          lastSubmittedWordRef.current = null;
+        }
+      }, 2000);
+      
+      return () => clearTimeout(timeout);
+    }
+    
+    previousUsedWordsRef.current = usedWords;
+  }, [usedWords, playSound]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!word.trim()) return;
@@ -52,21 +89,31 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
     const trimmedWord = word.trim();
     
     if (trimmedWord.length < 3) {
-      setError(t('bombParty.input.errors.tooShort'));
+      const errorMsg = t('bombParty.input.errors.tooShort');
+      setError(errorMsg);
+      setErrorTrigger({ timestamp: Date.now(), message: errorMsg });
+      playSound('error');
       return;
     }
 
     if (syllable && !trimmedWord.toLowerCase().includes(syllable.toLowerCase())) {
-      setError(t('bombParty.input.errors.noTrigram', { trigram: syllable }));
+      const errorMsg = t('bombParty.input.errors.missingSyllable', { syllable: syllable.toUpperCase() });
+      setError(errorMsg);
+      setErrorTrigger({ timestamp: Date.now(), message: errorMsg });
+      playSound('error');
       return;
     }
 
     if (usedWords.includes(trimmedWord.toLowerCase())) {
-      setError(t('bombParty.input.errors.duplicate'));
+      const errorMsg = t('bombParty.input.errors.duplicate');
+      setError(errorMsg);
+      setErrorTrigger({ timestamp: Date.now(), message: errorMsg });
+      playSound('error');
       return;
     }
 
     setError(null);
+    lastSubmittedWordRef.current = trimmedWord.toLowerCase();
     onSubmit(trimmedWord);
     setWord('');
   };
@@ -115,6 +162,33 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
     },
   };
 
+  const getRarityStyles = (rarity: 'common' | 'uncommon' | 'rare') => {
+    switch (rarity) {
+      case 'rare':
+        return {
+          border: 'border-yellow-400/70 border-2',
+          glow: 'shadow-yellow-500/60 shadow-lg',
+          pulse: 'animate-double-chance-glow',
+          badge: 'bg-gradient-to-br from-yellow-400 to-orange-500 text-yellow-900',
+        };
+      case 'uncommon':
+        return {
+          border: 'border-blue-400/70 border-2',
+          glow: 'shadow-blue-500/50 shadow-md',
+          pulse: '',
+          badge: 'bg-gradient-to-br from-blue-400 to-cyan-500 text-blue-900',
+        };
+      case 'common':
+      default:
+        return {
+          border: 'border-cyan-400/50 border-2',
+          glow: 'shadow-cyan-500/40 shadow-sm',
+          pulse: '',
+          badge: 'bg-gradient-to-br from-cyan-400 to-blue-500 text-cyan-900',
+        };
+    }
+  };
+
   const BonusBar = () => {
     const items: Array<{ key: BonusKey; icon: string; nameKey: string; descKey: string }> = [
       { key: 'inversion', icon: '🔁', nameKey: 'bombParty.bonus.inversion.name', descKey: 'bombParty.bonus.inversion.desc' },
@@ -130,6 +204,9 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           const disabled = cooldown || count <= 0 || !isActive;
           const styles = bonusStyles[it.key];
           const isProcessing = processingKey === it.key;
+          const rarity = BONUS_RARITY[it.key];
+          const rarityStyles = getRarityStyles(rarity);
+          const isAtMax = count >= MAX_BONUS_PER_TYPE;
           
           return (
             <button
@@ -137,41 +214,37 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
               type="button"
               onClick={() => tryActivate(it.key)}
               disabled={disabled}
-              title={`${t(it.nameKey)} — ${t(it.descKey)}`}
-              className={`relative w-12 h-12 rounded-xl border-2 text-2xl flex items-center justify-center transition-all duration-300 transform ${
+              title={`${t(it.nameKey)} — ${t(it.descKey)}${isAtMax ? ` (${count}/${MAX_BONUS_PER_TYPE})` : ''}`}
+              className={`relative w-12 h-12 rounded-xl text-2xl flex items-center justify-center transition-all duration-300 transform ${
                 disabled 
-                  ? 'border-slate-600 text-slate-400 opacity-40 cursor-not-allowed' 
-                  : `border-cyan-400/50 bg-gradient-to-br ${styles.gradient} ${styles.hover} ${styles.glow} cursor-pointer hover:scale-110 active:scale-95`
+                  ? 'border-slate-600 text-slate-400 opacity-40 cursor-not-allowed border-2' 
+                  : `${rarityStyles.border} bg-gradient-to-br ${styles.gradient} ${styles.hover} ${styles.glow} ${rarityStyles.glow} cursor-pointer hover:scale-110 active:scale-95 ${rarityStyles.pulse}`
               } ${
                 isProcessing ? 'animate-bonus-activate scale-125' : ''
               }`}
             >
-              {/* Effet de lueur au hover */}
               {!disabled && (
                 <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${styles.gradient} opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm -z-10`}></div>
               )}
               
-              {/* Icône avec animation */}
               <span className={`relative z-10 transform transition-transform duration-300 ${
                 isProcessing ? 'animate-spin-bonus' : ''
               }`}>
                 {it.icon}
               </span>
               
-              {/* Badge de compteur */}
               {count > 0 && (
-                <span className={`absolute -top-1 -right-1 text-[10px] font-bold bg-gradient-to-br ${styles.gradient} text-white rounded-full w-6 h-6 flex items-center justify-center border-2 border-white/30 shadow-lg transform transition-all duration-300 ${
+                <span className={`absolute -top-1 -right-1 text-[10px] font-bold ${rarityStyles.badge} rounded-full w-6 h-6 flex items-center justify-center border-2 border-white/30 shadow-lg transform transition-all duration-300 ${
                   !disabled ? 'hover:scale-125' : ''
-                }`}>
+                } ${isAtMax ? 'ring-2 ring-yellow-300 ring-opacity-75' : ''}`}>
                   {count}
                 </span>
               )}
               
-              {/* Effet de particules lors de l'activation */}
               {isProcessing && (
                 <>
-                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-ping`}></div>
-                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-ping`} style={{ animationDelay: '150ms' }}></div>
+                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-modern-ping`}></div>
+                  <div className={`absolute inset-0 rounded-xl ${styles.glow} animate-modern-ping`} style={{ animationDelay: '150ms' }}></div>
                 </>
               )}
             </button>
@@ -181,14 +254,22 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
     );
   };
 
+  const animationsDisabled = settings.game?.preferences?.reducedMotion || !settings.display.animations;
+
   if (!isActive) {
     return null;
   }
 
   return (
-    <div className="w-full max-w-md px-6">
+    <>
+      <SuccessAnimation trigger={successTrigger} disabled={animationsDisabled} />
+      <ErrorAnimation 
+        trigger={errorTrigger?.timestamp} 
+        disabled={animationsDisabled}
+        message={errorTrigger?.message}
+      />
+      <div className="w-full max-w-md px-6">
       <div className="bg-slate-800/90 backdrop-blur-md rounded-xl border border-cyan-500/30 p-6 shadow-2xl">
-        {/* Instructions */}
         <div className="text-center mb-4">
           <p className="text-slate-300 text-sm mb-2">
             {t('bombParty.input.instruction')}
@@ -196,7 +277,6 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           <p className="text-cyan-400 font-mono text-lg">
             "{(syllable || '...').toUpperCase()}"
           </p>
-          {/* Informations de la syllabe */}
           {syllableInfo && (
             <div className="mt-2 text-xs text-slate-400">
               {syllableInfo.availableWords} mots disponibles sur {syllableInfo.totalWords}
@@ -204,7 +284,6 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           )}
         </div>
 
-        {/* Formulaire */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <input
@@ -222,11 +301,10 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
             />
           </div>
 
-          {/* Bonus bar */}
           <div className="flex justify-between items-center">
-            <div className={`text-sm font-medium transition-all duration-300 ${
+            <div className={`text-sm font-medium transition-colors duration-300 ${
               hasDoubleChance 
-                ? 'text-blue-400 animate-pulse flex items-center gap-2' 
+                ? 'text-blue-400 animate-double-chance-glow flex items-center gap-2' 
                 : 'text-slate-400'
             }`}>
               {hasDoubleChance && (
@@ -238,31 +316,7 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
             </div>
             <BonusBar />
           </div>
-          
-          <style>{`
-            @keyframes spin-bonus {
-              0% { transform: rotate(0deg) scale(1); }
-              50% { transform: rotate(180deg) scale(1.2); }
-              100% { transform: rotate(360deg) scale(1); }
-            }
-            @keyframes bonus-activate {
-              0%, 100% { transform: scale(1); }
-              25% { transform: scale(1.3) rotate(5deg); }
-              50% { transform: scale(1.2) rotate(-5deg); }
-              75% { transform: scale(1.25) rotate(3deg); }
-            }
-            .animate-spin-bonus {
-              animation: spin-bonus 0.6s ease-in-out;
-            }
-            .animate-bonus-activate {
-              animation: bonus-activate 0.6s ease-out;
-            }
-            .animate-spin-slow {
-              animation: spin 3s linear infinite;
-            }
-          `}</style>
 
-          {/* Bouton de soumission */}
           <button
             type="submit"
             disabled={!word.trim() || !isActive}
@@ -272,16 +326,12 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           </button>
         </form>
 
-        {/* Affichage des erreurs */}
         {error && (
           <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
             <p className="text-red-400 text-sm text-center">{error}</p>
           </div>
         )}
 
-        {/* Suggestions retirées de l'input central pour éviter le double affichage */}
-
-        {/* Mots récents */}
         {usedWords.length > 0 && (
           <div className="mt-4 p-3 bg-slate-700/30 rounded-lg">
             <h4 className="text-slate-300 text-sm font-medium mb-2">
@@ -300,6 +350,7 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

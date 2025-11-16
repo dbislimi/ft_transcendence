@@ -3,73 +3,74 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { bombPartyStatsService } from '../../services/bombPartyStatsService';
+import { logger } from '../../utils/logger';
 import { BombPartyStatsCharts } from './BombPartyStatsCharts';
 import { BombPartyStatsTable } from './BombPartyStatsTable';
 import { BombPartyStatsSummary } from './BombPartyStatsSummary';
 import { BombPartyStatsFilters } from './BombPartyStatsFilters';
-import type { UserStats, MatchHistory, TrigramStats, RankingEntry } from './BombPartyStatsTypes';
+import type { UserStats, MatchHistory, RankingEntry } from './BombPartyStatsTypes';
 
 export default function BombPartyStatsContainer() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const hasToken = !!localStorage.getItem('token');
-  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'trigrams' | 'ranking'>((user?.id && hasToken) ? 'overview' : 'ranking');
+  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'ranking'>((user?.id && hasToken) ? 'overview' : 'ranking');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [matchHistory, setMatchHistory] = useState<MatchHistory[]>([]);
-  const [trigramStats, setTrigramStats] = useState<TrigramStats[]>([]);
   const [globalRanking, setGlobalRanking] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
-    console.log('[Stats] useEffect triggered, user:', user);
+    logger.debug('useEffect triggered', { userId: user?.id });
     loadUserData();
   }, [user?.id]);
 
   const loadUserData = async () => {
-    console.log('[Stats] loadUserData called, user:', user);
+    logger.debug('loadUserData called', { userId: user?.id });
     
     setLoading(true);
     setError(null);
 
     try {
       if (user?.id) {
-        console.log('[Stats] Loading complete data for user ID:', user.id);
+        logger.debug('Loading complete data for user', { userId: user.id });
         
         try {
-          const [statsResponse, historyResponse, trigramsResponse, rankingResponse] = await Promise.all([
+          const [statsResponse, historyResponse, rankingResponse] = await Promise.all([
             bombPartyStatsService.getUserStats(user.id),
             bombPartyStatsService.getUserMatchHistory(user.id),
-            bombPartyStatsService.getUserTrigramStats(user.id),
             bombPartyStatsService.getGlobalRanking()
           ]);
 
-          console.log('[Stats] Data loaded:', { statsResponse, historyResponse, trigramsResponse, rankingResponse });
+          logger.debug('data loaded', { 
+            hasStats: !!statsResponse,
+            hasHistory: !!historyResponse,
+            hasRanking: !!rankingResponse
+          });
 
-          // Extract data from response objects
           setUserStats(statsResponse.data || statsResponse);
           setMatchHistory(historyResponse.data || historyResponse);
-          setTrigramStats(trigramsResponse.data || trigramsResponse);
           setGlobalRanking(rankingResponse.data || []);
         } catch (authError) {
-          console.warn('[Stats] Error loading authenticated stats, loading ranking only');
+          logger.warn('Error loading authenticated stats, loading ranking only', { error: authError });
           const rankingResponse = await bombPartyStatsService.getGlobalRanking();
           setGlobalRanking(rankingResponse.data || []);
           setError(t('bombParty.stats.reconnectPrompt'));
         }
       } else {
-        console.log('[Stats] Loading global ranking only');
+        logger.debug('Loading global ranking only');
         
         const rankingResponse = await bombPartyStatsService.getGlobalRanking();
 
-        console.log('[Stats] Global ranking loaded:', { rankingResponse });
+        logger.debug('Global ranking loaded', { count: rankingResponse.data?.length || 0 });
 
         setGlobalRanking(rankingResponse.data || []);
       }
     } catch (err) {
-      console.error('[Stats] Error loading statistics:', err);
+      logger.error('Error loading statistics', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
@@ -139,6 +140,7 @@ export default function BombPartyStatsContainer() {
         </div>
       )}
 
+
         <BombPartyStatsFilters 
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -153,14 +155,6 @@ export default function BombPartyStatsContainer() {
           <BombPartyStatsTable 
             type="history"
             data={matchHistory}
-            user={user}
-          />
-        )}
-
-        {activeTab === 'trigrams' && (
-          <BombPartyStatsTable 
-            type="trigrams"
-            data={trigramStats}
             user={user}
           />
         )}

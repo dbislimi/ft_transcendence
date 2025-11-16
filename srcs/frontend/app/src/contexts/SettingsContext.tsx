@@ -1,6 +1,3 @@
-// context global des reglages de l'application
-// gere tous les parametres utilisateur avec persistance localStorage
-
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,7 +13,7 @@ export interface DisplaySettings {
   fontSize: FontSize;
   animations: boolean;
   energySaver: boolean;
-  autoChangeBackground: boolean; // Change automatiquement le background selon le thème
+  autoChangeBackground: boolean;
 }
 
 export interface GameSettings {
@@ -28,6 +25,7 @@ export interface GameSettings {
   preferences: {
     showFPS: boolean;
     reducedMotion: boolean;
+    soundsEnabled: boolean;
   };
 }
 
@@ -40,7 +38,7 @@ export interface AccountSettings {
     twoFactorEnabled: boolean;
   };
   preferences: {
-    showBackgroundPreview: boolean; // Afficher les aperçus des backgrounds sélectionnés
+    showBackgroundPreview: boolean;
   };
 }
 
@@ -67,7 +65,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     fontSize: 'medium',
     animations: true,
     energySaver: false,
-    autoChangeBackground: true, // Par défaut, le background change automatiquement
+    autoChangeBackground: true,
   },
   game: {
     controls: {
@@ -78,6 +76,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     preferences: {
       showFPS: false,
       reducedMotion: false,
+      soundsEnabled: true,
     },
   },
   account: {
@@ -89,7 +88,7 @@ const DEFAULT_SETTINGS: AppSettings = {
       twoFactorEnabled: false,
     },
     preferences: {
-      showBackgroundPreview: true, // Par défaut, afficher les aperçus
+      showBackgroundPreview: true,
     },
   },
   advanced: {
@@ -150,13 +149,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.setProperty('--contrast-level', contrast.toString());
     const textBrightness = Math.min(1.0, 0.5 + (contrast - 0.5) * 0.5);
     document.documentElement.style.setProperty('--text-brightness', textBrightness.toString());
-    // Taille de police
     document.documentElement.classList.remove('text-small', 'text-medium', 'text-large');
     document.documentElement.classList.add(`text-${fontSize}`);
-    // Animations
     document.documentElement.classList.toggle('reduce-motion', !animations);
     document.documentElement.classList.toggle('energy-saver', energySaver);
-    // Langue
     i18n.changeLanguage(language);
   }, [settings.display, i18n]);
 

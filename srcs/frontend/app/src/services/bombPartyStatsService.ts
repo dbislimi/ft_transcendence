@@ -1,5 +1,3 @@
-// service pour gerer les statistiques bomb party cote frontend
-
 interface GameStats {
   matchId: number;
   isWin: boolean;
@@ -10,7 +8,6 @@ interface GameStats {
   matchDuration: number;
   position: number;
   finalLives: number;
-  favoriteTrigram?: string;
 }
 
 interface TrigramAttempt {
@@ -23,12 +20,10 @@ class BombPartyStatsService {
   private baseUrl = 'http://localhost:3001/api/bomb-party';
   private trigramAttempts: TrigramAttempt[] = [];
 
-  // recupere le token d'authentification
   private getAuthToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  // recupere l'ID utilisateur depuis le token JWT
   private getUserIdFromToken(): number | null {
     const token = this.getAuthToken();
     if (!token) return null;
@@ -42,7 +37,6 @@ class BombPartyStatsService {
     }
   }
 
-  // effectue une requete authentifiee
   private async fetchWithAuth(url: string, options: RequestInit = {}) {
     const token = this.getAuthToken();
     
@@ -70,7 +64,6 @@ class BombPartyStatsService {
     return data;
   }
 
-  // enregistre une tentative de trigramme
   recordTrigramAttempt(trigram: string, isSuccess: boolean, responseTime: number): void {
     this.trigramAttempts.push({
       trigram,
@@ -79,12 +72,10 @@ class BombPartyStatsService {
     });
   }
 
-  // sauvegarde les statistiques d'une partie
   async saveGameStats(stats: GameStats & { userId: string | number; playerName?: string }): Promise<void> {
     try {
       const token = this.getAuthToken();
       
-      // Si l'utilisateur est connecté, utiliser l'endpoint authentifié
       if (token && stats.userId) {
         await this.fetchWithAuth(`${this.baseUrl}/stats/update`, {
           method: 'POST',
@@ -100,8 +91,6 @@ class BombPartyStatsService {
 
         console.log('Statistiques sauvegardées avec succès (utilisateur authentifié)');
       } else {
-        // Sinon, utiliser l'endpoint local (sans authentification)
-        // Le playerName est requis pour identifier la session locale
         const playerName = stats.playerName || `Guest_${Date.now()}`;
         
         const response = await fetch(`${this.baseUrl}/stats/update-local`, {
@@ -128,7 +117,6 @@ class BombPartyStatsService {
     }
   }
 
-  // calcule les statistiques a partir des donnees de jeu
   calculateGameStats(
     gameData: {
       players: Array<{ id: string; name: string; lives: number; streak: number }>;
@@ -145,18 +133,6 @@ class BombPartyStatsService {
     const validWords = playerHistory.filter(h => h.ok);
     const totalResponseTime = playerHistory.reduce((sum, h) => sum + h.msTaken, 0);
     
-    const trigramCounts: Record<string, number> = {};
-    gameData.usedWords.forEach(word => {
-      for (let i = 0; i < word.length - 2; i++) {
-        const trigram = word.substring(i, i + 3).toLowerCase();
-        trigramCounts[trigram] = (trigramCounts[trigram] || 0) + 1;
-      }
-    });
-    
-    const favoriteTrigram = Object.entries(trigramCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0];
-
-    // Calculer la position du joueur
     const player = gameData.players.find(p => p.id === playerId);
     const alivePlayers = gameData.players.filter(p => p.lives > 0);
     const position = alivePlayers.length === 1 ? 1 : 
@@ -172,14 +148,11 @@ class BombPartyStatsService {
       matchDuration: Math.floor((gameData.endTime - gameData.startTime) / 1000),
       position,
       finalLives: player?.lives || 0,
-      favoriteTrigram,
       userId
     };
   }
 
-  // recupere les statistiques d'un utilisateur
   async getUserStats(userId?: string | number) {
-    // Use token userId as source of truth if available, otherwise use provided userId
     const actualUserId = this.getUserIdFromToken() || userId;
     if (!actualUserId) {
       throw new Error('User ID not available');
@@ -187,9 +160,7 @@ class BombPartyStatsService {
     return this.fetchWithAuth(`${this.baseUrl}/stats/${actualUserId}`);
   }
 
-  // recupere l'historique des parties d'un utilisateur
   async getUserMatchHistory(userId?: string | number, limit = 20, offset = 0) {
-    // Use token userId as source of truth if available, otherwise use provided userId
     const actualUserId = this.getUserIdFromToken() || userId;
     if (!actualUserId) {
       throw new Error('User ID not available');
@@ -197,9 +168,7 @@ class BombPartyStatsService {
     return this.fetchWithAuth(`${this.baseUrl}/history/${actualUserId}?limit=${limit}&offset=${offset}`);
   }
 
-  // recupere les statistiques de trigrammes d'un utilisateur
   async getUserTrigramStats(userId?: string | number, limit = 10) {
-    // Use token userId as source of truth if available, otherwise use provided userId
     const actualUserId = this.getUserIdFromToken() || userId;
     if (!actualUserId) {
       throw new Error('User ID not available');
@@ -207,7 +176,6 @@ class BombPartyStatsService {
     return this.fetchWithAuth(`${this.baseUrl}/trigram-stats/${actualUserId}?limit=${limit}`);
   }
 
-  // recupere le classement global (accessible sans authentification)
   async getGlobalRanking(limit = 50) {
     const response = await fetch(`${this.baseUrl}/ranking?limit=${limit}`, {
       headers: {
@@ -221,8 +189,36 @@ class BombPartyStatsService {
 
     return response.json();
   }
+
+  async getUserProgress(userId?: string | number) {
+    const actualUserId = this.getUserIdFromToken() || userId;
+    if (!actualUserId) {
+      throw new Error('User ID not available');
+    }
+    return this.fetchWithAuth(`${this.baseUrl}/progress/${actualUserId}`);
+  }
+
+  async updateProgress(matchData: {
+    isWin: boolean;
+    wordsSubmitted: number;
+    validWords: number;
+    bestStreak: number;
+    matchDuration: number;
+    finalLives?: number;
+  }) {
+    return this.fetchWithAuth(`${this.baseUrl}/progress/update`, {
+      method: 'POST',
+      body: JSON.stringify(matchData)
+    });
+  }
+
+  async updatePreferences(preferences: { theme?: string; avatar?: string }) {
+    return this.fetchWithAuth(`${this.baseUrl}/progress/preferences`, {
+      method: 'POST',
+      body: JSON.stringify(preferences)
+    });
+  }
 }
 
-// Instance singleton
 export const bombPartyStatsService = new BombPartyStatsService();
 export default bombPartyStatsService;

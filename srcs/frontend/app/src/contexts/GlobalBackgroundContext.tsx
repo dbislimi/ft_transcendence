@@ -28,11 +28,10 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
   
   const [lightBackgroundId, setLightBackgroundId] = useState<string>('default');
   const [darkBackgroundId, setDarkBackgroundId] = useState<string>('default');
-  const [lastUsedBackgroundId, setLastUsedBackgroundId] = useState<string>('default'); // Background utilisé quand autoChangeBackground est désactivé
+  const [lastUsedBackgroundId, setLastUsedBackgroundId] = useState<string>('default');
   const [isLoading, setIsLoading] = useState(false);
   const [currentColorScheme, setCurrentColorScheme] = useState<ColorScheme | null>(null);
 
-  // Charger les backgrounds sauvegardés
   useEffect(() => {
     try {
       const savedLightId = localStorage.getItem(STORAGE_KEY_LIGHT);
@@ -45,7 +44,6 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
         setDarkBackgroundId(savedDarkId);
       }
       
-      // Initialiser le dernier background utilisé selon le thème actuel
       const initialBackgroundId = currentTheme === 'light' 
         ? (savedLightId && getBackgroundById(savedLightId) ? savedLightId : 'default')
         : (savedDarkId && getBackgroundById(savedDarkId) ? savedDarkId : 'default');
@@ -53,30 +51,21 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     } catch (error) {
       console.error('Erreur lors du chargement de l\'arrière-plan:', error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // On charge une seule fois au démarrage
+  }, []);
 
-  // Déterminer le background actuel selon le thème et le paramètre autoChangeBackground
   const currentBackgroundId = useMemo(() => {
-    // Si autoChangeBackground est activé, changer selon le thème
     if (settings.display.autoChangeBackground) {
       return currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
     }
-    // Sinon, garder le même background même si on change de thème
     return lastUsedBackgroundId;
   }, [currentTheme, lightBackgroundId, darkBackgroundId, settings.display.autoChangeBackground, lastUsedBackgroundId]);
 
-  // Mettre à jour le dernier background utilisé quand autoChangeBackground est activé
   useEffect(() => {
     if (settings.display.autoChangeBackground) {
       const themeBackgroundId = currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
       setLastUsedBackgroundId(themeBackgroundId);
     } else {
-      // Quand on désactive autoChangeBackground, capturer le background actuel une seule fois
-      // pour qu'il reste fixe même si on change les backgrounds d'autres modes
       const currentThemeBackgroundId = currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
-      // Ne mettre à jour que si lastUsedBackgroundId n'est pas encore défini ou si c'est le premier chargement
-      // ou si le thème actuel change (pour capturer le nouveau background du nouveau thème)
       setLastUsedBackgroundId(prev => {
         if (!prev || prev === 'default' || prev !== currentThemeBackgroundId) {
           return currentThemeBackgroundId;
@@ -90,15 +79,7 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     const background = getBackgroundById(currentBackgroundId);
     if (!background) return;
 
-    console.log('[Background] Application:', {
-      id: background.id,
-      name: background.name,
-      type: background.type
-    });
-
     const analysis = analyzeBackground(background.id, background.url || undefined);
-    console.log('[Color] Background analysis:', analysis);
-    
     applyColorScheme(analysis.recommendedScheme);
     setCurrentColorScheme(analysis.recommendedScheme);
 
@@ -125,7 +106,6 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     }
 
     try {
-      // Sauvegarder selon le thème actuel
       if (currentTheme === 'light') {
         localStorage.setItem(STORAGE_KEY_LIGHT, currentBackgroundId);
       } else {
@@ -137,10 +117,8 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
   }, [currentBackgroundId, currentTheme]);
 
   const setBackgroundForTheme = useCallback(async (id: string, theme: 'light' | 'dark') => {
-    console.log('[Background] setBackgroundForTheme called with ID:', id, 'Theme:', theme);
     const background = getBackgroundById(id);
     if (!background) {
-      console.warn('[Background] ID not found:', id);
       return;
     }
 
@@ -148,22 +126,18 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     
     try {
       if (background.url && background.type === 'image') {
-        console.log('[Background] Preloading image:', background.url);
         const img = new Image();
         await new Promise((resolve, reject) => {
           img.onload = () => {
-            console.log('[Background] Image preloaded successfully');
             resolve(true);
           };
           img.onerror = (error) => {
-            console.error('[Background] Preload error:', error);
             reject(error);
           };
           img.src = background.url!;
         });
       }
       
-      console.log('[Background] Updating background for theme:', theme, 'to:', id);
       if (theme === 'light') {
         setLightBackgroundId(id);
         localStorage.setItem(STORAGE_KEY_LIGHT, id);
@@ -172,33 +146,24 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
         localStorage.setItem(STORAGE_KEY_DARK, id);
       }
       
-      // Mettre à jour lastUsedBackgroundId seulement si :
-      // 1. autoChangeBackground est activé ET c'est le thème actuel
-      // 2. OU autoChangeBackground est désactivé ET c'est le thème actuel (pour garder le background actuel)
       if (settings.display.autoChangeBackground) {
-        // Si autoChangeBackground est activé, mettre à jour seulement si c'est le thème actuel
         if (theme === currentTheme) {
           setLastUsedBackgroundId(id);
         }
       } else {
-        // Si autoChangeBackground est désactivé, mettre à jour seulement si c'est le thème actuel
-        // Cela garantit que changer le background d'un autre mode ne change pas le background actuel
         if (theme === currentTheme) {
           setLastUsedBackgroundId(id);
         }
       }
     } catch (error) {
-      console.error('[Background] Error loading:', error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const setBackground = useCallback(async (id: string) => {
-    // Déterminer pour quel thème définir le background
     const background = getBackgroundById(id);
     if (!background) {
-      console.warn('[Background] ID not found:', id);
       return;
     }
 
@@ -207,7 +172,6 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     
     await setBackgroundForTheme(id, targetTheme);
     
-    // Mettre à jour le dernier background utilisé si autoChangeBackground est désactivé
     if (!settings.display.autoChangeBackground) {
       setLastUsedBackgroundId(id);
     }
@@ -217,14 +181,11 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     return getBackgroundById(currentBackgroundId) || allBackgrounds[0];
   }, [currentBackgroundId]);
 
-  // Séparer les backgrounds en clairs et sombres
   const lightBackgrounds = useMemo(() => {
-    // Inclure "default" dans les deux listes
     return allBackgrounds.filter(bg => bg.id === 'default' || !isBackgroundDark(bg.id));
   }, []);
 
   const darkBackgrounds = useMemo(() => {
-    // Inclure "default" dans les deux listes
     return allBackgrounds.filter(bg => bg.id === 'default' || isBackgroundDark(bg.id));
   }, []);
 

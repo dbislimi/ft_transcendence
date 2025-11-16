@@ -1,6 +1,3 @@
-// websocketcoordinator - un utilitaire global pour coordonner les connexions websocket
-// et eviter les connexions multiples
-
 type ConnectionType = 'bombPartyClient' | 'bombPartyService' | 'other';
 
 interface RegistrationInfo {
@@ -8,22 +5,19 @@ interface RegistrationInfo {
   type: ConnectionType;
   timestamp: number;
   priority: number;
+  isActive: boolean;
 }
 
-// classe singleton pour gerer les connexions websocket au serveur
-// permet de coordonner differentes parties de l'application qui utilisent
-// des connexions websocket au meme endpoint
 class WebSocketCoordinator {
   private static instance: WebSocketCoordinator;
   private activeConnections: Map<string, RegistrationInfo> = new Map();
   private primaryConnection: string | null = null;
+  private connectionChangeCallbacks: Set<(primaryId: string | null) => void> = new Set();
   
   private constructor() {
-    // Singleton
     console.log('[WebSocketCoordinator] Initialisation');
   }
   
-  // obtient l'instance unique du coordinateur
   public static getInstance(): WebSocketCoordinator {
     if (!WebSocketCoordinator.instance) {
       WebSocketCoordinator.instance = new WebSocketCoordinator();
@@ -31,27 +25,43 @@ class WebSocketCoordinator {
     return WebSocketCoordinator.instance;
   }
   
-  // enregistre une connexion websocket
-  // id: identifiant unique de la connexion
-  // type: type de connexion
-  // priority: priorite de la connexion (plus le nombre est eleve, plus la priorite est haute)
-  // returns: true si cette connexion est autorisee, false sinon
   public registerConnection(id: string, type: ConnectionType, priority: number = 1): boolean {
-    console.log(`[WebSocketCoordinator] Enregistrement de la connexion [${id}] de type [${type}]`);
+    console.log(`[WebSocketCoordinator] Enregistrement de la connexion [${id}] de type [${type}] avec priorité ${priority}`);
     
-    // Enregistrer la connexion
-    const info: RegistrationInfo = {
-      id,
-      type,
-      timestamp: Date.now(),
-      priority
-    };
+    if (this.activeConnections.has(id)) {
+      const existing = this.activeConnections.get(id)!;
+      if (existing.isActive) {
+        console.log(`[WebSocketCoordinator] Connection [${id}] already registered and active`);
+        return this.primaryConnection === id;
+      }
+      existing.isActive = true;
+      existing.priority = priority; // Mettre à jour la priorité si elle a changé
+      existing.timestamp = Date.now(); // Mettre à jour le timestamp
+    } else {
+      const info: RegistrationInfo = {
+        id,
+        type,
+        timestamp: Date.now(),
+        priority,
+        isActive: true
+      };
+      
+      this.activeConnections.set(id, info);
+    }
     
-    this.activeConnections.set(id, info);
-    
+    const wasPrimary = this.primaryConnection === id;
     this.updatePrimaryConnection();
     
     const isPrimary = this.primaryConnection === id;
+    
+    if (!wasPrimary && isPrimary) {
+      console.log(`[WebSocketCoordinator] Connection [${id}] became primary`);
+      this.notifyConnectionChange();
+    } else if (wasPrimary && !isPrimary) {
+      console.log(`[WebSocketCoordinator] Connection [${id}] lost primary status`);
+      this.notifyConnectionChange();
+    }
+    
     console.log(`[WebSocketCoordinator] Connection [${id}] ${isPrimary ? 'authorized (primary)' : 'not authorized (secondary)'}`);
     return isPrimary;
   }
@@ -63,15 +73,41 @@ class WebSocketCoordinator {
   public unregisterConnection(id: string): void {
     if (this.activeConnections.has(id)) {
       console.log(`[WebSocketCoordinator] Unregistering connection [${id}]`);
+      const wasPrimary = this.primaryConnection === id;
+      
       this.activeConnections.delete(id);
       
-      if (this.primaryConnection === id) {
+      if (wasPrimary) {
         this.updatePrimaryConnection();
+        this.notifyConnectionChange();
       }
     }
   }
   
-  // met a jour la connexion principale en fonction des priorites
+  public markConnectionInactive(id: string): void {
+    const info = this.activeConnections.get(id);
+    if (info) {
+      info.isActive = false;
+      if (this.primaryConnection === id) {
+        this.updatePrimaryConnection();
+        this.notifyConnectionChange();
+      }
+    }
+  }
+  
+  public markConnectionActive(id: string): void {
+    const info = this.activeConnections.get(id);
+    if (info) {
+      info.isActive = true;
+      const wasPrimary = this.primaryConnection === id;
+      this.updatePrimaryConnection();
+      
+      if (!wasPrimary && this.primaryConnection === id) {
+        this.notifyConnectionChange();
+      }
+    }
+  }
+  
   private updatePrimaryConnection(): void {
     if (this.activeConnections.size === 0) {
       this.primaryConnection = null;
@@ -79,13 +115,19 @@ class WebSocketCoordinator {
     }
     
     let highestPriority = -1;
-    let primaryId = null;
+    let primaryId: string | null = null;
+    let earliestTimestamp = Infinity;
     
     for (const [id, info] of this.activeConnections.entries()) {
+      if (!info.isActive) {
+        continue;
+      }
+      
       if (info.priority > highestPriority || 
-          (info.priority === highestPriority && primaryId && this.activeConnections.get(primaryId)!.timestamp > info.timestamp)) {
+          (info.priority === highestPriority && info.timestamp < earliestTimestamp)) {
         highestPriority = info.priority;
         primaryId = id;
+        earliestTimestamp = info.timestamp;
       }
     }
     
@@ -93,17 +135,46 @@ class WebSocketCoordinator {
     this.primaryConnection = primaryId;
     
     if (oldPrimary !== primaryId) {
-      console.log(`[WebSocketCoordinator] New primary connection: [${primaryId}]`);
+      console.log(`[WebSocketCoordinator] New primary connection: [${primaryId || 'none'}]`);
     }
   }
   
-  public getConnectionsInfo(): { activeCount: number, primaryConnection: string | null } {
-    return {
-      activeCount: this.activeConnections.size,
-      primaryConnection: this.primaryConnection
+  private notifyConnectionChange(): void {
+    for (const callback of this.connectionChangeCallbacks) {
+      try {
+        callback(this.primaryConnection);
+      } catch (err) {
+        console.error('[WebSocketCoordinator] Error in connection change callback:', err);
+      }
+    }
+  }
+  
+  public onPrimaryConnectionChange(callback: (primaryId: string | null) => void): () => void {
+    this.connectionChangeCallbacks.add(callback);
+    return () => {
+      this.connectionChangeCallbacks.delete(callback);
     };
+  }
+  
+  public getConnectionsInfo(): { activeCount: number, primaryConnection: string | null, allConnections: Array<{ id: string; type: ConnectionType; priority: number; isActive: boolean }> } {
+    return {
+      activeCount: Array.from(this.activeConnections.values()).filter(c => c.isActive).length,
+      primaryConnection: this.primaryConnection,
+      allConnections: Array.from(this.activeConnections.values()).map(c => ({
+        id: c.id,
+        type: c.type,
+        priority: c.priority,
+        isActive: c.isActive
+      }))
+    };
+  }
+  
+  public cleanup(): void {
+    this.activeConnections.clear();
+    this.primaryConnection = null;
+    this.connectionChangeCallbacks.clear();
+    console.log('[WebSocketCoordinator] Cleanup completed');
   }
 }
 
-// Exporter l'instance singleton
 export const wsCoordinator = WebSocketCoordinator.getInstance();

@@ -32,4 +32,3 @@ export interface GameState {
 	players: Players;
 	bonuses: Bonuses;
 }
-

@@ -25,13 +25,10 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<"create" | "join">("create");
 	const { connection } = useBombPartyStore();
-
-	// Create state
 	const [name, setName] = useState("");
 	const [isPrivate, setIsPrivate] = useState(false);
 	const [password, setPassword] = useState("");
 	const [maxPlayers, setMaxPlayers] = useState(4);
-
 
 	return (
 		<BackgroundSurface game="bombparty">
@@ -43,7 +40,6 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							{t("bombParty.lobby.title")}
 						</h1>
 						<div className="flex items-center gap-2">
-							{/* Indicateur de connexion */}
 							<div className="flex items-center gap-2">
 								<div className={`w-2 h-2 rounded-full ${
 									connection.state === 'connected' ? 'bg-green-400' :
@@ -69,13 +65,11 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						</div>
 					</div>
 
-					{/* Affichage des erreurs */}
 					{connection.lastError && (
 						<div className="mb-4 p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-300 text-sm">
 							{connection.lastError}
 						</div>
 					)}
-
 					<div className="flex gap-2 mb-4">
 						<button
 							type="button"
@@ -148,8 +142,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 									name.trim() && connection.state === 'connected' && connection.playerId
 										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl"
 										: "bg-slate-600 text-slate-400 cursor-not-allowed"
-								}`}
-							>
+								}`} >
 								{connection.state !== 'connected' || !connection.playerId ? (
 									<div className="flex items-center justify-center gap-2">
 										<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -169,8 +162,6 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 					)}
 				</div>
 			</div>
-
-			{/* Background picker modal removed */}
 		</BackgroundSurface>
 	);
 }

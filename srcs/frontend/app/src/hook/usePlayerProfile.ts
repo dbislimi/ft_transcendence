@@ -32,9 +32,6 @@ export function usePlayerProfile(userId: string | null) {
 
                 const data = await response.json();
                 if (!cancelled) {
-                    // Map backend data to PlayerProfile type
-
-                    
                     const mappedProfile: PlayerProfile = {
                         id: String(data.id),
                         username: data.username || data.name || data.display_name || 'Unknown',

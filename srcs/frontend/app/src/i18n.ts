@@ -9,8 +9,7 @@ import ar from './locales/ar.json'
 const supported = ['en', 'fr', 'es', 'ru', 'ar'] as const;
 const saved = localStorage.getItem('lang') || '';
 const browser = navigator.language.slice(0, 2);
-const initial = supported.includes(saved as any) ? saved :
-                supported.includes(browser as any) ? browser : 'fr';
+const initial = supported.includes(saved as any) ? saved : supported.includes(browser as any) ? browser : 'fr';
 
 i18n.use(initReactI18next).init({
     resources: { en:{translation:en}, fr:{translation:fr}, es:{translation:es}, ru:{translation:ru}, ar:{translation:ar} },

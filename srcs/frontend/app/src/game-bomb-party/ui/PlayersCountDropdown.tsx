@@ -24,16 +24,6 @@ const defaultOptions: PlayersCountOption[] = [
   { value: 12, label: '12 joueurs', icon: '' },
 ];
 
-const tournamentOptions: PlayersCountOption[] = [
-  { value: 4, label: '4 joueurs', icon: '' },
-  { value: 6, label: '6 joueurs', icon: '' },
-  { value: 8, label: '8 joueurs', icon: '' },
-  { value: 10, label: '10 joueurs', icon: '' },
-  { value: 12, label: '12 joueurs', icon: '' },
-  { value: 16, label: '16 joueurs', icon: '' },
-  { value: 32, label: '32 joueurs', icon: '' },
-];
-
 export default function PlayersCountDropdown({
   value,
   onChange,
@@ -43,34 +33,24 @@ export default function PlayersCountDropdown({
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // utilise les options personnalisees ou les options par defaut
   const availableOptions = options 
     ? defaultOptions.filter(opt => options.includes(opt.value))
     : defaultOptions;
-
-  // detecte si c'est pour un tournoi (si les options incluent 16 ou 32)
-  const isTournament = options?.includes(16) || options?.includes(32);
-  const finalOptions = isTournament ? tournamentOptions : availableOptions;
-
+  const finalOptions = availableOptions;
   const currentOption = finalOptions.find(opt => opt.value === value) || finalOptions[0];
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   const handleChange = (newValue: number) => {
     onChange(newValue);
     setIsOpen(false);
   };
-
   return (
     <div className="relative" ref={dropdownRef}>
       {label && (
@@ -78,20 +58,14 @@ export default function PlayersCountDropdown({
           {label}
         </label>
       )}
-      
-      {/* Bouton principal */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative overflow-hidden rounded-lg px-4 py-2 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-500/30 hover:border-slate-400/50 transition-all duration-300 hover:scale-105 flex items-center gap-2 w-full"
-      >
+        className="group relative overflow-hidden rounded-lg px-4 py-2 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-500/30 hover:border-slate-400/50 transition-all duration-300 hover:scale-105 flex items-center gap-2 w-full">
         <div className="absolute inset-0 bg-gradient-to-r from-slate-600/0 to-slate-500/0 group-hover:from-slate-600/20 group-hover:to-slate-500/20 transition-all duration-300"></div>
-        
         <span className="relative text-slate-300 group-hover:text-slate-200 font-medium text-sm flex-1 text-left">
           {currentOption.label}
-        </span>
-        
-        {/* Icone fleche */}
+        </span>        
         <svg 
           className={`relative w-4 h-4 text-slate-400 group-hover:text-slate-300 transition-all duration-300 ${
             isOpen ? 'rotate-180' : ''
@@ -103,8 +77,6 @@ export default function PlayersCountDropdown({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-
-      {/* Menu deroulant */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-full bg-slate-800/95 backdrop-blur-md border border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden animate-settings-slide">
           <div className="py-2">
@@ -129,9 +101,7 @@ export default function PlayersCountDropdown({
                 )}
               </button>
             ))}
-          </div>
-          
-          {/* Indicateur visuel en bas */}
+          </div>          
           <div className="h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
         </div>
       )}

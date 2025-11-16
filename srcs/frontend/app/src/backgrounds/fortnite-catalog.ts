@@ -1,5 +1,3 @@
-// Catalogue des backgrounds Fortnite
-
 const fortniteBackgroundFiles = import.meta.glob('/img/background/fortnite_background/*.{webp,png,jpg,jpeg}', { 
   eager: true, 
   query: '?url',
@@ -86,7 +84,6 @@ function generateNameFromFilename(filename: string): { name: string; category: F
     return { name: locationName.charAt(0).toUpperCase() + locationName.slice(1), category: 'location' };
   }
   
-  // Fallback
   return { name: basename.replace(/_/g, ' '), category: 'event' };
 }
 
@@ -143,27 +140,3 @@ export function getFortniteBackgroundById(id: string): FortniteBackgroundItem | 
 export function getFortniteBackgroundsByCategory(category: FortniteBackgroundItem['category']): FortniteBackgroundItem[] {
   return fortniteBackgrounds.filter(bg => bg.category === category);
 }
-
-// // Log pour debug
-// export function logFortniteBackgrounds(): void {
-//   console.log('[Fortnite Backgrounds] Loaded:', {
-//     total: fortniteBackgrounds.length,
-//     categories: {
-//       halloween: getFortniteBackgroundsByCategory('halloween').length,
-//       noel: getFortniteBackgroundsByCategory('noel').length,
-//       season: getFortniteBackgroundsByCategory('season').length,
-//       chapter: getFortniteBackgroundsByCategory('chapter').length,
-//       event: getFortniteBackgroundsByCategory('event').length,
-//       location: getFortniteBackgroundsByCategory('location').length
-//     },
-//     items: fortniteBackgrounds.map(bg => ({
-//       id: bg.id,
-//       name: bg.name,
-//       category: bg.category
-//     }))
-//   });
-// }
-
-// if (import.meta.env.DEV) {
-//   logFortniteBackgrounds();
-// }

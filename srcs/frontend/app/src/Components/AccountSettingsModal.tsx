@@ -3,11 +3,6 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
 
-/*
-  Modal des réglages de compte
-  Affiche les préférences (aperçus des arrière-plans)
- */
-
 interface AccountSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,11 +10,9 @@ interface AccountSettingsModalProps {
 
 export default function AccountSettingsModal({ isOpen, onClose }: AccountSettingsModalProps) {
   const { t } = useTranslation();
-  const { availableBackgrounds, lightBackgroundId, darkBackgroundId } = useGlobalBackground();
-  
-  // Récupérer les objets BackgroundItem correspondants
-  const lightBackground = useMemo(() => {
-    return availableBackgrounds.find(bg => bg.id === lightBackgroundId) || availableBackgrounds[0];
+  const { lightBackgroundId, darkBackgroundId, availableBackgrounds } = useGlobalBackground();
+
+  const lightBackground = useMemo(() => {    return availableBackgrounds.find(bg => bg.id === lightBackgroundId) || availableBackgrounds[0];
   }, [lightBackgroundId, availableBackgrounds]);
   
   const darkBackground = useMemo(() => {
@@ -41,8 +34,6 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
         className="settings-modal rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-settings-slide"
         onClick={(e) => e.stopPropagation()}
       >
-        
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
           <div className="flex items-center space-x-3">
             <span className="text-3xl">👤</span>
@@ -61,12 +52,10 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           <div className="space-y-6">
             <h3 className="text-xl font-semibold text-white mb-4">{t('settings.account.preferences') || 'Préférences'}</h3>
             
-            {/* Aperçus des backgrounds */}
             <div className="settings-section rounded-xl p-6">
               <h4 className="text-lg font-medium text-white mb-4">
                 {t('settings.account.backgroundPreview') || 'Aperçu des arrière-plans'}
@@ -75,9 +64,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                 {t('settings.account.backgroundPreviewDesc') || 'Aperçus des arrière-plans sélectionnés pour chaque mode'}
               </p>
               
-              {/* Aperçus des backgrounds */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Background mode clair */}
                 <div className="space-y-3">
                   <h5 className="text-md font-semibold text-white flex items-center gap-2">
                     <span>☀️</span>
@@ -104,7 +91,6 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                   </div>
                 </div>
                 
-                {/* Background mode sombre */}
                 <div className="space-y-3">
                   <h5 className="text-md font-semibold text-white flex items-center gap-2">
                     <span>🌙</span>

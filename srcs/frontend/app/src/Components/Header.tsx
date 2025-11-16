@@ -17,8 +17,6 @@ export default function Header() {
     }}>
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
-          
-          {/* Section gauche - Liens */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
@@ -51,13 +49,10 @@ export default function Header() {
             )}            
           </div>
           
-          {/* Section centre - Logo */}
           <Link to={"/"} className="group relative">
             <div className="relative">
-              {/* Effet de lueur autour du logo */}
               <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
               
-              {/* Logo avec animations */}
               <div className="relative size-20 bg-gradient-to-br from-slate-800 to-purple-900 rounded-full p-2 border border-purple-500/30 group-hover:border-purple-400/50 transition-all duration-300 group-hover:scale-110">
                 <img
                   src={Logo}
@@ -66,29 +61,23 @@ export default function Header() {
                 />
               </div>
               
-              {/* Particules flottantes autour du logo */}
               <div className="absolute -top-1 -left-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping opacity-75"></div>
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-purple-400 rounded-full animate-ping opacity-75" style={{animationDelay: '0.5s'}}></div>
               <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-ping opacity-75" style={{animationDelay: '1s'}}></div>
             </div>
           </Link>
           
-          {/* Section droite - Contrôles et Réglages */}
           <div className="flex items-center gap-4">
-            {/* Sélecteur de langue amélioré */}
             <LanguageDropdown />
             
-            {/* Toggle de thème */}
             <ThemeToggle />
             
-            {/* Bouton Réglages */}
             <Link to="/settings" className="nav-btn-aesthetic inline-block">
               <span className="label-aesthetic">
                 {t('nav.settings')}
               </span>
             </Link>
 
-            {/* Bouton de déconnexion si connecté */}
             {isAuthenticated && (
               <button
                 onClick={logout}

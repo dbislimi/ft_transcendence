@@ -62,12 +62,8 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       displayName = body.display_name;
     }
 
-  // allow names with accents, spaces, apostrophes and hyphens (e.g. "Jean-Luc", "Élodie Dupré").
-  // relaxed to allow multiple words and uppercase letters after spaces as in real names.
-  // allow names starting with either uppercase or lowercase, keep accents/spaces/apostrophes/hyphens
   const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // Allow letters, digits, hyphens and underscores in display names (common usernames)
   const displayNameRegex = /^[a-zA-Z0-9_-]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
@@ -147,7 +143,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
     } catch (err: any) {
       try {
-        // Log full stack if available and a sanitized request body (never log raw password)
         const stack = err && err.stack ? err.stack : String(err);
         const body = request && (request.body as any) ? { ...request.body } : {};
         if (body.password) body.password = '***REDACTED***';

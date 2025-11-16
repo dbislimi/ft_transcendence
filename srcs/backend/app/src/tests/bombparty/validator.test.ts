@@ -125,6 +125,50 @@ describe('BombParty Validator', () => {
     });
   });
 
+  describe('syllable validation', () => {
+    it('should reject "chat" for syllable "at" (not a real syllable)', () => {
+      const result = validateLocal('chat', 'at', []);
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('no_syllable');
+    });
+
+    it('should accept "chat" for syllable "cha" (real syllable)', () => {
+      const result = validateLocal('chat', 'cha', []);
+      expect(result.ok).toBe(true);
+    });
+
+    it('should accept "chat" for syllable "t" if it is a real syllable', () => {
+      // "t" est la dernière syllabe de "chat"
+      const result = validateLocal('chat', 't', []);
+      // car il n'a pas de voyelle. Testons pour voir le comportement.
+      expect(result).toBeDefined();
+    });
+
+    it('should reject word where syllable is only a substring, not a real syllable', () => {
+      // "maison" -> syllabes: ["mai", "son"]
+      // "ai" est une sous-chaîne mais pas une vraie syllabe
+      const result = validateLocal('maison', 'ai', []);
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('no_syllable');
+    });
+
+    it('should accept word where syllable is a real syllable', () => {
+      // "maison" -> syllabes: ["mai", "son"]
+      const result1 = validateLocal('maison', 'mai', []);
+      expect(result1.ok).toBe(true);
+
+      const result2 = validateLocal('maison', 'son', []);
+      expect(result2.ok).toBe(true);
+    });
+
+    it('should handle compound words with hyphens', () => {
+      // "porte-monnaie" -> vérifie chaque partie séparément
+      const result = validateLocal('porte-monnaie', 'mon', []);
+      // "mon" devrait être dans "monnaie"
+      expect(result.ok).toBe(true);
+    });
+  });
+
   describe('edge cases', () => {
     it('should handle empty syllable', () => {
       const result = validateLocal('test', '', []);

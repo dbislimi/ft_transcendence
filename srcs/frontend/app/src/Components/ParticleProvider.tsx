@@ -31,7 +31,6 @@ export default function ParticleProvider() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Configuration
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;

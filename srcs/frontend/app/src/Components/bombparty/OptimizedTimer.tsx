@@ -22,14 +22,12 @@ const OptimizedTimer: React.FC<OptimizedTimerProps> = memo(({ className }) => {
     const time = getRemainingTime();
     setDisplayTime(time);
     
-    // flash when time is low
     if (time <= 3000 && time > 0) {
       setTimerFlash(true);
     } else {
       setTimerFlash(false);
     }
     
-    // grace period when time expires
     if (time <= 0 && isMyTurnActive) {
       setTimerGracePeriod(true);
     } else {

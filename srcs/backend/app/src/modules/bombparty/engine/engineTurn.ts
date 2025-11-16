@@ -1,15 +1,36 @@
-import type { GameState, BonusKey } from '../types';
+import type { GameState, BonusKey, SyllableDifficulty } from '../types';
 import { FAST_TURN_DURATION } from './engineState.ts';
 
+const EASY_SYLLABLE_DURATION_MS = 12000;
+const MEDIUM_SYLLABLE_DURATION_MS = 15000;
+const HARD_SYLLABLE_DURATION_MS = 19000;
+const MAX_TURN_DURATION_MS = 25000;
+
 export function getTurnDurationForCurrentPlayer(state: GameState): number {
-  const base = state.baseTurnSeconds * 1000;
   const currentId = state.players[state.currentPlayerIndex]?.id;
   
   if (currentId && state.pendingFastForNextPlayerId === currentId) {
     return FAST_TURN_DURATION;
   }
   
-  return base;
+  const difficulty = state.currentSyllableDifficulty || 'medium';
+  let baseDuration: number;
+  
+  switch (difficulty) {
+    case 'easy':
+      baseDuration = EASY_SYLLABLE_DURATION_MS;
+      break;
+    case 'hard':
+      baseDuration = HARD_SYLLABLE_DURATION_MS;
+      break;
+    case 'medium':
+    default:
+      baseDuration = MEDIUM_SYLLABLE_DURATION_MS;
+      break;
+  }
+  
+  // cap max pour eviter duree trop longue
+  return Math.min(baseDuration, MAX_TURN_DURATION_MS);
 }
 
 export function activateBonus(state: GameState, playerId: string, bonusKey: BonusKey): { ok: boolean; meta?: any } {
@@ -30,7 +51,6 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       
     case 'plus5sec':
       if (state.phase === 'TURN_ACTIVE' && state.turnStartedAt) {
-        // ajoute 5 secondes a la duree du tour
         state.turnDurationMs += 5000;
         player.bonuses.plus5sec -= 1;
         return { ok: true, meta: { extendMs: 5000 } };
@@ -38,6 +58,7 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       return { ok: false };
       
     case 'vitesseEclair':
+      // applique au prochain joueur vivant, pas au joueur actuel
       const targetIdx = peekNextAliveIndex(state);
       const targetId = targetIdx >= 0 ? state.players[targetIdx].id : undefined;
       if (targetId) {
@@ -55,6 +76,7 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       
     case 'extraLife':
       if (player.isEliminated) return { ok: false };
+      // cap a 9 vies max
       player.lives = Math.min(player.lives + 1, 9);
       player.bonuses.extraLife -= 1;
       return { ok: true };

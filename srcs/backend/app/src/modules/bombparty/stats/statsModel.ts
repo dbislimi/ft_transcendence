@@ -8,7 +8,6 @@ export interface UserStats {
   totalValidWords: number;
   bestStreak: number;
   averageResponseTime: number;
-  favoriteTrigram: string | null;
   totalPlayTime: number;
   winRate: number;
   accuracy: number;
@@ -50,7 +49,6 @@ export interface MatchData {
   bestStreak: number;
   averageResponseTime: number;
   matchDuration: number;
-  favoriteTrigram?: string;
 }
 
 export interface MatchHistoryData {
@@ -109,7 +107,6 @@ export class StatsModel {
       totalValidWords: row.total_valid_words,
       bestStreak: row.best_streak,
       averageResponseTime: row.average_response_time,
-      favoriteTrigram: row.favorite_trigram,
       totalPlayTime: row.total_play_time,
       winRate: row.total_matches > 0 ? (row.total_wins / row.total_matches) * 100 : 0,
       accuracy: row.total_words_submitted > 0 ? (row.total_valid_words / row.total_words_submitted) * 100 : 0,
@@ -129,7 +126,7 @@ export class StatsModel {
       finalLives: row.final_lives,
       matchDuration: row.match_duration,
       playedAt: new Date(row.played_at),
-      isWin: row.position === 1
+      isWin: row.position === 1 // position 1 = gagnant
     };
   }
 
@@ -137,7 +134,7 @@ export class StatsModel {
     return {
       trigram: row.trigram,
       timesUsed: row.times_used,
-      successRate: row.success_rate * 100,
+      successRate: row.success_rate * 100, // db stocke en decimal (0-1), on convertit en %
       averageTime: row.average_time,
       lastUsed: new Date(row.last_used)
     };
@@ -151,7 +148,7 @@ export class StatsModel {
       totalMatches: row.total_matches,
       winRate: row.win_rate,
       bestStreak: row.best_streak,
-      rank: index + 1
+      rank: index + 1 // rank commence a 1, pas 0
     };
   }
 }

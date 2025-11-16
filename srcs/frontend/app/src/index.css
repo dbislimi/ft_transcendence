@@ -1,3 +1,7 @@
+/* ********************************* */
+/*         css variables              */
+/* ********************************* */
+
 @import "tailwindcss";
 
 :root {
@@ -19,42 +23,35 @@
 }
 
 :root:not(.dark) {
-  /* Arrière-plan */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #e2e8f0;
   --bg-card: #ffffff;
   --bg-header: rgba(226, 232, 240, 0.6);
-  
-  /* Textes - couleurs plus sombres pour meilleur contraste */
+
   --text-primary: #000000;
   --text-secondary: #1e293b;
   --text-muted: #334155;
-  
-  /* Bordures */
+
   --border-color: #cbd5e1;
   --border-hover: #94a3b8;
-  
-  /* Accents */
+
   --accent-primary: #3b82f6;
   --accent-secondary: #8b5cf6;
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
   --accent-error: #ef4444;
-  
-  /* Boutons */
+
   --btn-primary-bg: linear-gradient(135deg, #3b82f6, #1d4ed8);
   --btn-primary-hover: linear-gradient(135deg, #2563eb, #1e40af);
   --btn-secondary-bg: #f1f5f9;
   --btn-secondary-hover: #e2e8f0;
   --btn-secondary-text: #334155;
-  
-  /* Ombres */
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  
-  /* Variables de couleur pour compatibilité */
+
   --color-text: #000000;
   --color-text-secondary: #1e293b;
   --color-button: #3b82f6;
@@ -67,44 +64,30 @@
   --color-card: #ffffff;
 }
 
-/* ===== THeME SOMBRE ===== */
 :root.dark {
-  /* Arriere-plans */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
   --bg-card: #1e293b;
   --bg-header: rgba(15, 23, 42, 0.7);
-  
-  /* Textes */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  
-  /* Bordures */
   --border-color: #475569;
   --border-hover: #64748b;
-  
-  /* Accents */
   --accent-primary: #60a5fa;
   --accent-secondary: #a78bfa;
   --accent-success: #34d399;
   --accent-warning: #fbbf24;
   --accent-error: #f87171;
-  
-  /* Boutons */
   --btn-primary-bg: linear-gradient(135deg, #60a5fa, #3b82f6);
   --btn-primary-hover: linear-gradient(135deg, #3b82f6, #2563eb);
   --btn-secondary-bg: #334155;
   --btn-secondary-hover: #475569;
   --btn-secondary-text: #cbd5e1;
-  
-  /* Ombres */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  
-  /* Variables de couleur pour compatibilité */
   --color-text: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-button: #1e40af;
@@ -117,73 +100,38 @@
   --color-card: #1e293b;
 }
 
-/* Application des couleurs */
+/* ********************************* */
+/*      theme color overrides         */
+/* ********************************* */
+
 .dark .bg-gradient-to-br {
   background: linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary));
-}
-
-.dark .text-gray-900 {
+} .dark .text-gray-900 {
   color: var(--text-primary);
-}
-
-.dark .text-gray-500 {
+} .dark .text-gray-500 {
   color: var(--text-secondary);
-}
-
-.dark .border-gray-300 {
+} .dark .border-gray-300 {
   border-color: var(--border-color);
-}
-
-.dark .bg-gray-100 {
+} .dark .bg-gray-100 {
   background-color: var(--bg-secondary);
-}
-
-/* Classes pour le contraste */
-.contrast-150 {
+} .contrast-150 {
   filter: contrast(150%);
-}
-
-.contrast-200 {
+} .contrast-200 {
   filter: contrast(200%);
 }
+
+/* ********************************* */
+/*          base styles               */
+/* ********************************* */
 
 html, body {
   height: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@keyframes shooting-star {
-  0% {
-    transform: translateX(-100px) translateY(0px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(calc(100vw + 100px)) translateY(100px);
-    opacity: 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-  }
-}
-
-/* ===== TAILLE DE POLICE DYNAMIQUE ===== */
 .text-small {
   font-size: var(--font-size-small) !important;
-}
-
-.text-small * {
+} .text-small * {
   font-size: inherit !important;
 }
 
@@ -199,19 +147,9 @@ html, body {
   font-size: inherit !important;
 }
 
-/* ===== CONTRASTE ADAPTATIF ===== */
-:root {
-  --contrast-level: 1.0;
-  --text-brightness: 1.0;
-}
-
-html {
-  filter: contrast(var(--contrast-level));
-}
-
-.text-contrast-adaptive {
-  filter: brightness(var(--text-brightness));
-}
+/* ********************************* */
+/*         button styles              */
+/* ********************************* */
 
 .accent-adaptive {
   color: var(--color-accent);
@@ -238,13 +176,11 @@ html {
   text-decoration: none;
 }
 
-/* Mode light - text-shadow adapté */
 :root:not(.dark) .nav-btn-aesthetic {
   text-shadow: none;
   color: #ffffff !important;
 }
 
-/* Mode dark - text-shadow normal */
 .dark .nav-btn-aesthetic {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -276,13 +212,11 @@ html {
   text-align: center;
 }
 
-/* Mode light - text-shadow adapté */
 :root:not(.dark) .action-btn-aesthetic {
   text-shadow: none;
   color: #ffffff !important;
 }
 
-/* Mode dark - text-shadow normal */
 .dark .action-btn-aesthetic {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -325,35 +259,9 @@ html {
   text-shadow: 0 0 10px var(--accent-primary);
 }
 
-@keyframes titleShimmer {
-  0%, 100% {
-    background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px var(--color-accent);
-    filter: drop-shadow(0 0 20px var(--color-accent));
-  }
-  50% {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-accent));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 50px var(--color-accent);
-    filter: drop-shadow(0 0 30px var(--color-accent));
-  }
-}
-
-/* Version statique du titre (quand animations desactivees) */
-.reduce-motion .home-title-adaptive {
-  animation: none;
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px var(--color-accent);
-  filter: drop-shadow(0 0 20px var(--color-accent));
-}
+/* ********************************* */
+/*         text styles                */
+/* ********************************* */
 
 .home-subtitle-adaptive {
   color: var(--color-text-secondary);
@@ -372,8 +280,6 @@ html {
   text-shadow: 0 0 20px var(--color-accent);
 }
 
-
-/* Effets de texte pour les boutons */
 .btn-text-aesthetic {
   color: var(--color-text);
   font-weight: 600;
@@ -387,7 +293,6 @@ html {
   transform: translateY(-1px);
 }
 
-/* Effets pour les titres de section */
 .section-title-aesthetic {
   background: linear-gradient(135deg, var(--color-text), var(--color-accent));
   background-clip: text;
@@ -410,7 +315,6 @@ html {
   border-radius: 1px;
 }
 
-/* Effets pour les descriptions */
 .description-aesthetic {
   color: var(--color-text-secondary);
   font-weight: 300;
@@ -419,12 +323,10 @@ html {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Mode light - pas de text-shadow pour les descriptions */
 :root:not(.dark) .description-aesthetic {
   text-shadow: none;
 }
 
-/* Effets pour les labels */
 .label-aesthetic {
   color: var(--color-text);
   font-weight: 500;
@@ -432,34 +334,14 @@ html {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Mode light - pas de text-shadow pour les labels */
 :root:not(.dark) .label-aesthetic {
   text-shadow: none;
 }
 
-/* Classes pour differents niveaux de contraste */
-.contrast-low { --contrast-level: 0.7; --text-brightness: 0.8; }
-.contrast-normal { --contrast-level: 1.0; --text-brightness: 1.0; }
-.contrast-high { --contrast-level: 1.5; --text-brightness: 1.2; }
-.contrast-very-high { --contrast-level: 2.0; --text-brightness: 1.4; }
+/* ********************************* */
+/*      accessibility & performance   */
+/* ********************************* */
 
-/* Textes adaptatifs au contraste */
-.text-adaptive-primary {
-  color: var(--text-primary);
-  filter: brightness(var(--text-brightness));
-}
-
-.text-adaptive-secondary {
-  color: var(--text-secondary);
-  filter: brightness(calc(var(--text-brightness) * 0.9));
-}
-
-.text-adaptive-muted {
-  color: var(--text-muted);
-  filter: brightness(calc(var(--text-brightness) * 0.8));
-}
-
-/* Animations reduites */
 .reduce-motion *,
 .reduce-motion *::before,
 .reduce-motion *::after {
@@ -469,7 +351,6 @@ html {
   scroll-behavior: auto !important;
 }
 
-/* Mode economie d'energie */
 .energy-saver {
   --animation-duration: 0.1s;
 }
@@ -485,7 +366,6 @@ html {
   animation-play-state: paused !important;
 }
 
-/* Reduire les effets de particules en mode economie */
 .energy-saver canvas {
   opacity: 0.3 !important;
 }
@@ -494,12 +374,14 @@ html {
   filter: blur(4px) !important;
 }
 
-.energy-saver .animate-shooting-star,
-.energy-saver .animate-float {
+.energy-saver .animate-shooting-star {
   animation-play-state: paused !important;
 }
 
-/* Styles pour les composants de reglages */
+/* ********************************* */
+/*         settings modal             */
+/* ********************************* */
+
 .settings-modal {
   background: var(--bg-card);
   backdrop-filter: blur(12px);
@@ -517,15 +399,6 @@ html {
   background: var(--bg-tertiary);
 }
 
-.settings-toggle {
-  transition: all var(--animation-duration) var(--animation-timing);
-}
-
-.settings-slider {
-  transition: all var(--animation-duration) var(--animation-timing);
-}
-
-/* Animation pour les modales de reglages */
 @keyframes settingsSlideIn {
   from {
     opacity: 0;
@@ -541,9 +414,10 @@ html {
   animation: settingsSlideIn var(--animation-duration) var(--animation-timing);
 }
 
-/* ===== APPLICATION DES VARIABLES DE THEME ===== */
+/* ********************************* */
+/*      theme application             */
+/* ********************************* */
 
-/* Corps de la page */
 html {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -556,13 +430,11 @@ body {
   transition: background-color var(--animation-duration), color var(--animation-duration);
 }
 
-/* Assurer que le root utilise aussi les variables */
 #root {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
 
-/* Override des classes Tailwind pour le theme */
 .bg-slate-800 { background-color: var(--bg-secondary) !important; }
 .bg-slate-700 { background-color: var(--bg-tertiary) !important; }
 .bg-slate-900 { background-color: var(--bg-primary) !important; }
@@ -579,7 +451,6 @@ body {
 .text-slate-100 { color: var(--text-primary) !important; }
 .text-slate-200 { color: var(--text-secondary) !important; }
 
-/* Mode light - assurer que le texte blanc devient sombre */
 :root:not(.dark) .text-white {
   color: #000000 !important;
 }
@@ -587,6 +458,7 @@ body {
 :root:not(.dark) .text-slate-100 {
   color: #000000 !important;
 }
+
 .border-gray-600 { border-color: var(--border-color) !important; }
 .border-gray-500 { border-color: var(--border-hover) !important; }
 .border-gray-300 { border-color: var(--border-color) !important; }
@@ -595,13 +467,11 @@ body {
 .border-slate-700 { border-color: var(--border-color) !important; }
 .border-purple-500 { border-color: var(--accent-secondary) !important; }
 
-/* Override pour les boutons Tailwind standards */
 button[class*="bg-blue"], button[class*="bg-cyan"], button[class*="bg-purple"], 
 button[class*="bg-green"], button[class*="bg-red"], button[class*="bg-yellow"] {
   transition: all 0.3s ease;
 }
 
-/* Boutons avec gradients cyan/purple */
 button.bg-gradient-to-r.from-cyan-600.to-purple-600,
 .bg-gradient-to-r.from-cyan-600.to-purple-600 {
   background: var(--btn-primary-bg) !important;
@@ -613,7 +483,6 @@ button.bg-gradient-to-r.from-cyan-600.to-purple-600:hover,
   background: var(--btn-primary-hover) !important;
 }
 
-/* Boutons avec bordures slate */
 button.border-slate-600,
 .border-slate-600 {
   border-color: var(--border-color) !important;
@@ -624,7 +493,6 @@ button.border-slate-600:hover,
   border-color: var(--border-hover) !important;
 }
 
-/* Override pour les boutons avec classes Tailwind de couleur */
 button.bg-blue-600, .bg-blue-600 {
   background-color: var(--accent-primary) !important;
   color: var(--color-text) !important;
@@ -654,9 +522,10 @@ button.bg-red-600, .bg-red-600 {
   color: var(--color-text) !important;
 }
 
-/* ===== BOUTONS ===== */
+/* ********************************* */
+/*      duplicate button styles       */
+/* ********************************* */
 
-/* Boutons de navigation */
 .nav-btn-aesthetic {
   background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
   color: var(--color-text) !important;
@@ -691,7 +560,6 @@ button.bg-red-600, .bg-red-600 {
   text-shadow: 0 0 10px var(--color-accent);
 }
 
-/* Effets pour les labels */
 .label-aesthetic {
   color: var(--color-text);
   font-weight: 500;
@@ -699,14 +567,11 @@ button.bg-red-600, .bg-red-600 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Boutons d'action esthetiques */
 .action-btn-aesthetic {
-  /* Background avec transparence pour voir le fond */
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.15), 
     rgba(29, 78, 216, 0.15)
   ) !important;
-  /* Fallback pour les thèmes */
   background-color: rgba(30, 41, 59, 0.25) !important;
   color: var(--color-text) !important;
   border: 2px solid rgba(148, 163, 184, 0.4) !important;
@@ -728,7 +593,6 @@ button.bg-red-600, .bg-red-600 {
   cursor: pointer;
 }
 
-/* Mode sombre - transparence adaptée */
 .dark .action-btn-aesthetic {
   background: linear-gradient(135deg, 
     rgba(96, 165, 250, 0.15), 
@@ -738,7 +602,6 @@ button.bg-red-600, .bg-red-600 {
   border-color: rgba(148, 163, 184, 0.3) !important;
 }
 
-/* Mode clair - transparence adaptée */
 :root:not(.dark) .action-btn-aesthetic {
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.12), 
@@ -749,7 +612,6 @@ button.bg-red-600, .bg-red-600 {
 }
 
 .action-btn-aesthetic:hover {
-  /* Hover avec un peu plus d'opacité mais toujours transparent */
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.25), 
     rgba(29, 78, 216, 0.25)
@@ -761,7 +623,6 @@ button.bg-red-600, .bg-red-600 {
   text-shadow: 0 0 10px var(--accent-primary);
 }
 
-/* Mode sombre - hover */
 .dark .action-btn-aesthetic:hover {
   background: linear-gradient(135deg, 
     rgba(96, 165, 250, 0.22), 
@@ -770,7 +631,6 @@ button.bg-red-600, .bg-red-600 {
   background-color: rgba(30, 41, 59, 0.32) !important;
 }
 
-/* Mode clair - hover */
 :root:not(.dark) .action-btn-aesthetic:hover {
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.18), 
@@ -779,7 +639,6 @@ button.bg-red-600, .bg-red-600 {
   background-color: rgba(248, 250, 252, 0.28) !important;
 }
 
-/* Textes des boutons */
 .btn-text-aesthetic {
   color: var(--color-text);
   font-weight: 600;
@@ -787,7 +646,6 @@ button.bg-red-600, .bg-red-600 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Mode light - pas de text-shadow pour les textes de boutons */
 :root:not(.dark) .btn-text-aesthetic {
   text-shadow: none;
 }
@@ -799,7 +657,6 @@ button.bg-red-600, .bg-red-600 {
   opacity: 0.9;
 }
 
-/* Boutique et modales */
 .section-title-aesthetic {
   color: var(--color-text);
   font-weight: 700;
@@ -837,7 +694,10 @@ button.bg-red-600, .bg-red-600 {
   text-shadow: 0 0 10px var(--accent-primary);
 }
 
-/* ===== SLIDER DE CONTRASTE ===== */
+/* ********************************* */
+/*      slider de contraste           */
+/* ********************************* */
+
 .slider-contrast {
   -webkit-appearance: none;
   appearance: none;
@@ -884,21 +744,18 @@ button.bg-red-600, .bg-red-600 {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-/* ===== ARRIeRE-PLANS GLOBAUX ===== */
+/* ********************************* */
+/*      background styles             */
+/* ********************************* */
 
-/* Classe par defaut pour l'arriere-plan */
 .bg-active-default {
   background: var(--bg-primary);
 }
 
-/* Mode dark - arrière-plan par défaut */
 .dark .bg-active-default {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
 }
 
-/* ===== EFFET CYBERPUNK (Style .cyber-button-big) ===== */
-
-/* Style cyberpunk inspiré de .cyber-button-big */
 .cyberpunk-title {
   font-family: 'Arial Black', 'Arial Bold', sans-serif;
   font-weight: 900;
@@ -930,7 +787,6 @@ button.bg-red-600, .bg-red-600 {
   z-index: 1;
 }
 
-/* Effet de glitch au survol et animation - style cyberpunk.css */
 .cyberpunk-glitch {
   position: relative;
 }
@@ -952,8 +808,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(0);
     filter: hue-rotate(0deg);
-  }
-  90.5% {
+  } 90.5% {
     clip-path: polygon(
       0 0,
       calc(100% - 20px) 0,
@@ -964,8 +819,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(-2px, 0);
     filter: hue-rotate(0deg);
-  }
-  91% {
+  } 91% {
     clip-path: polygon(
       0 0,
       calc(100% - 18px) 0,
@@ -976,8 +830,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(2px, 2px);
     filter: hue-rotate(90deg) invert(0.1);
-  }
-  91.5% {
+  } 91.5% {
     clip-path: polygon(
       0 0,
       calc(100% - 22px) 0,
@@ -988,8 +841,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(-2px, -2px);
     filter: hue-rotate(180deg) invert(0.2);
-  }
-  92% {
+  } 92% {
     clip-path: polygon(
       0 0,
       calc(100% - 20px) 0,
@@ -1000,8 +852,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(3px, 0);
     filter: hue-rotate(270deg) invert(0.1);
-  }
-  92.5% {
+  } 92.5% {
     clip-path: polygon(
       0 0,
       calc(100% - 20px) 0,
@@ -1012,8 +863,7 @@ button.bg-red-600, .bg-red-600 {
     );
     transform: translate(-3px, 0);
     filter: hue-rotate(360deg);
-  }
-  93% {
+  } 93% {
     clip-path: polygon(
       0 0,
       calc(100% - 20px) 0,
@@ -1027,7 +877,6 @@ button.bg-red-600, .bg-red-600 {
   }
 }
 
-/* Effet de double bordure avec glitch - ombre décalée pour effet glitch */
 .cyberpunk-title::before {
   content: attr(data-text);
   position: absolute;
@@ -1053,38 +902,32 @@ button.bg-red-600, .bg-red-600 {
     -2px 0 var(--color-button, #1e40af);
 }
 
-/* Animation pour l'effet de texte glitch (ombre décalée) */
 @keyframes cyberpunk-glitch-text {
   0%, 90%, 100% {
     opacity: 0;
     transform: translate(0);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-  90.5% {
+  } 90.5% {
     opacity: 0.8;
     transform: translate(2px, 0);
     clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
     color: var(--color-button, #1e40af);
-  }
-  91% {
+  } 91% {
     opacity: 0.6;
     transform: translate(-2px, 0);
     clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
     color: var(--color-button, #1e40af);
-  }
-  91.5% {
+  } 91.5% {
     opacity: 0.4;
     transform: translate(0, 2px);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     color: var(--color-button, #1e40af);
-  }
-  92% {
+  } 92% {
     opacity: 0;
     transform: translate(0);
   }
 }
 
-/* Effet de lueur interne */
 .cyberpunk-title::after {
   content: '';
   position: absolute;
@@ -1112,13 +955,11 @@ button.bg-red-600, .bg-red-600 {
 @keyframes cyberpunk-inner-glow {
   0%, 100% {
     opacity: 0.3;
-  }
-  50% {
+  } 50% {
     opacity: 0.6;
   }
 }
 
-/* Mode clair - ajustement des couleurs */
 :root:not(.dark) .cyberpunk-title {
   background: rgba(0, 0, 0, 0.9);
   border-color: var(--color-button, #3b82f6);
@@ -1129,11 +970,9 @@ button.bg-red-600, .bg-red-600 {
     0 0 15px rgba(59, 130, 246, 0.3),
     inset 0 0 15px rgba(59, 130, 246, 0.05);
 }
-
 :root:not(.dark) .cyberpunk-title::before {
   background: var(--color-button, #3b82f6);
 }
-
 :root:not(.dark) .cyberpunk-title::after {
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.08) 0%,
@@ -1142,7 +981,6 @@ button.bg-red-600, .bg-red-600 {
   );
 }
 
-/* Mode sombre - couleurs bleues comme les boutons */
 .dark .cyberpunk-title {
   background: rgba(0, 0, 0, 0.8);
   border-color: var(--color-button, #1e40af);
@@ -1166,21 +1004,17 @@ button.bg-red-600, .bg-red-600 {
   );
 }
 
-/* Mode light - arrière-plan par défaut */
 :root:not(.dark) .bg-active-default {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
 }
 
-/* Classes pour les arriere-plans avec images */
 .bg-active-42background,
 .bg-active-hallowenn-background,
 .bg-active-matrix-42-background,
 .bg-active-snow-background {
-  /* Les styles background-image sont appliques via JS */
   position: relative;
 }
 
-/* Overlay pour ameliorer la lisibilite du texte sur les images */
 .bg-active-42background::before,
 .bg-active-hallowenn-background::before,
 .bg-active-matrix-42-background::before,
@@ -1196,13 +1030,11 @@ button.bg-red-600, .bg-red-600 {
   pointer-events: none;
 }
 
-/* Assurer que le contenu reste au-dessus */
 #root {
   position: relative;
   z-index: 1;
 }
 
-/* Ameliorer la lisibilite sur les arriere-plans d'image */
 body[class*="bg-active-"]:not(.bg-active-default) .text-white {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }

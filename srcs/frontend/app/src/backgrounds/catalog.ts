@@ -1,5 +1,3 @@
-// backgrounds avec Vite global
-
 import { fortniteBackgrounds, type FortniteBackgroundItem } from './fortnite-catalog';
 
 const backgroundFiles = import.meta.glob('/img/background/*.{svg,webp,png,jpg,jpeg}', { 
@@ -70,7 +68,6 @@ function generateDescription(name: string, filename: string): string {
   return descriptions[name] || `Arrière-plan ${name.toLowerCase()}`;
 }
 
-// Determine le type de fichier
 function getFileType(filename: string): 'image' | 'svg' {
   return filename.endsWith('.svg') ? 'svg' : 'image';
 }
@@ -105,7 +102,6 @@ function buildCatalog(): BackgroundItem[] {
     });
   }
 
-  // Dylan Sah c'est pour toi
   const theme42Path = Object.keys(backgroundFiles).find(path => path.includes('42background'));
   if (theme42Path) {
     const theme42Url = backgroundFiles[theme42Path] as string;
@@ -125,7 +121,6 @@ function buildCatalog(): BackgroundItem[] {
 
 export const backgroundCatalog: BackgroundItem[] = buildCatalog();
 
-// convert les fortniteback en objets BackgroundItem
 const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => ({
   id: fb.id,
   name: fb.name,
@@ -135,7 +130,6 @@ const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => 
   tags: fb.tags
 }));
 
-// catalogue complet
 export const allBackgrounds: BackgroundItem[] = [...backgroundCatalog, ...fortniteBackgroundItems];
 export function getBackgroundById(id: string): BackgroundItem | undefined {
   return allBackgrounds.find(bg => bg.id === id);
@@ -150,7 +144,6 @@ export function getBackgroundsByType(type: 'image' | 'svg' | 'default'): Backgro
   return allBackgrounds.filter(bg => bg.type === type);
 }
 
-// Tag backgrounds
 export function searchBackgrounds(query: string): BackgroundItem[] {
   const lowerQuery = query.toLowerCase();
   return allBackgrounds.filter(bg => 

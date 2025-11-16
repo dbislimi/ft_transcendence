@@ -1,14 +1,10 @@
 import fs from 'fs';
-import { normalizeText } from './syllableExtractor.ts';
+import { normalizeText, isValidSyllableInWord } from './syllableExtractor.ts';
 import { getDictionaryManager } from './dictionaryManager.ts';
 
-// Charge le fichier de mots francais pour l'index des fragments
-// Le dictionnaire complet est géré par DictionaryManager avec lazy loading
 const francaisWordsPath = new URL('./data/francais.txt', import.meta.url);
 const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
 
-// Crée un Set de tous les mots normalisés pour l'index des fragments
-// Note: Pour la validation, on utilise DictionaryManager qui charge les partitions à la demande
 const frenchLexicon: Set<string> = new Set(
   francaisWordsData
     .split('\n')
@@ -17,8 +13,6 @@ const frenchLexicon: Set<string> = new Set(
     .map(word => normalizeText(word))
 );
 
-// charge le fichier de syllabes valides
-// IMPORTANT: Ce fichier doit exister, pas de fallback pour garantir l'utilisation des syllabes filtrées
 const syllablesPath = new URL('./data/syllabes.txt', import.meta.url);
 
 if (!fs.existsSync(syllablesPath)) {
@@ -39,12 +33,7 @@ if (availableFragments.length === 0) {
 console.log(`[BombParty] ✓ ${availableFragments.length} syllabes valides chargées depuis syllabes.txt`);
 console.log(`[BombParty] Exemples de syllabes: ${availableFragments.slice(0, 5).join(', ')}...`);
 
-// cree un index des fragments : fragment -> mots qui le contiennent
-// (uniquement pour les syllabes valides, pour optimiser)
 const fragmentIndex: Map<string, Set<string>> = new Map();
-
-// initialise l'index des fragments seulement pour les syllabes valides
-// Crée un Set pour une recherche rapide
 const validSyllablesSet = new Set(availableFragments);
 
 console.log('[BombParty] Initialisation de l\'index des fragments pour les syllabes valides...');
@@ -52,7 +41,6 @@ let wordCount = 0;
 for (const word of frenchLexicon) {
   if (word.length >= 3) {
     const normalized = normalizeText(word);
-    // Extrait tous les fragments possibles du mot et vérifie s'ils sont dans les syllabes valides
     for (let len = 2; len <= Math.min(4, normalized.length); len++) {
       for (let i = 0; i <= normalized.length - len; i++) {
         const fragment = normalized.substring(i, i + len);
@@ -73,13 +61,9 @@ for (const word of frenchLexicon) {
 
 console.log(`[BombParty] Index des fragments initialisé pour ${fragmentIndex.size} syllabes valides`);
 
-// Historique des syllabes récentes pour éviter les répétitions
 const recentSyllablesHistory: string[] = [];
-const MAX_HISTORY_SIZE = 15; // Nombre de syllabes récentes à éviter
+const MAX_HISTORY_SIZE = 15;
 
-// obtient un fragment aleatoire (syllabe/fragment de mot)
-// Évite les répétitions récentes pour plus de variété
-// GARANTIT que seule une syllabe du fichier syllabes.txt est retournée
 export function getRandomSyllable(excludeSyllable?: string): string {
   if (availableFragments.length === 0) {
     throw new Error('[BombParty] ERREUR: Aucune syllabe disponible. Le fichier syllabes.txt est vide.');
@@ -87,22 +71,16 @@ export function getRandomSyllable(excludeSyllable?: string): string {
 
   const normalizedExclude = excludeSyllable ? normalizeText(excludeSyllable) : undefined;
   
-  // Crée un Set des syllabes à éviter (dernière syllabe + historique récent)
   const excludeSet = new Set<string>();
   if (normalizedExclude) {
     excludeSet.add(normalizedExclude);
   }
-  // Ajoute les syllabes récentes à éviter
   recentSyllablesHistory.forEach(s => excludeSet.add(normalizeText(s)));
   
-  // Filtre les candidats en excluant les syllabes récentes
-  // IMPORTANT: On filtre uniquement dans availableFragments (qui vient de syllabes.txt)
   let candidates = availableFragments.filter(s => !excludeSet.has(s));
   
-  // Si tous les candidats sont exclus, on réduit l'historique et on réessaie
   if (candidates.length === 0) {
     console.log('[BombParty] Toutes les syllabes sont récentes, réduction de l\'historique...');
-    // Réduit l'historique à la moitié
     recentSyllablesHistory.splice(0, Math.floor(MAX_HISTORY_SIZE / 2));
     excludeSet.clear();
     if (normalizedExclude) {
@@ -112,18 +90,47 @@ export function getRandomSyllable(excludeSyllable?: string): string {
     candidates = availableFragments.filter(s => !excludeSet.has(s));
   }
   
-  // Si toujours aucun candidat, on prend parmi tous (cas extrême)
-  // MAIS toujours depuis availableFragments (syllabes.txt)
   const pool = candidates.length > 0 ? candidates : availableFragments;
   
-  // Sélectionne une syllabe aléatoire depuis le pool (qui vient uniquement de syllabes.txt)
+  const easySyllables = pool.filter(s => {
+    const words = fragmentIndex.get(normalizeText(s));
+    return words && words.size >= 100;
+  });
+  
+  if (easySyllables.length > 0) {
+    const selected = easySyllables[Math.floor(Math.random() * easySyllables.length)];
+    const selectedNormalized = normalizeText(selected);
+    
+    recentSyllablesHistory.push(selectedNormalized);
+    if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
+      recentSyllablesHistory.shift();
+    }
+    
+    return selected.toUpperCase();
+  }
+  
+  const mediumSyllables = pool.filter(s => {
+    const words = fragmentIndex.get(normalizeText(s));
+    return words && words.size >= 50 && words.size < 100;
+  });
+  
+  if (mediumSyllables.length > 0) {
+    const selected = mediumSyllables[Math.floor(Math.random() * mediumSyllables.length)];
+    const selectedNormalized = normalizeText(selected);
+    
+    recentSyllablesHistory.push(selectedNormalized);
+    if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
+      recentSyllablesHistory.shift();
+    }
+    
+    return selected.toUpperCase();
+  }
+  
   const selected = pool[Math.floor(Math.random() * pool.length)];
   const selectedNormalized = normalizeText(selected);
   
-  // Vérification de sécurité: s'assurer que la syllabe sélectionnée est bien dans availableFragments
   if (!availableFragments.includes(selectedNormalized)) {
     console.error(`[BombParty] ERREUR: Syllabe "${selected}" n'est pas dans availableFragments!`);
-    // En cas d'erreur, prendre la première syllabe disponible
     const fallback = availableFragments[0];
     if (!fallback) {
       throw new Error('[BombParty] ERREUR CRITIQUE: Impossible de sélectionner une syllabe valide.');
@@ -131,18 +138,14 @@ export function getRandomSyllable(excludeSyllable?: string): string {
     return fallback.toUpperCase();
   }
   
-  // Ajoute la syllabe sélectionnée à l'historique
   recentSyllablesHistory.push(selectedNormalized);
-  
-  // Limite la taille de l'historique
   if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
-    recentSyllablesHistory.shift(); // Retire la plus ancienne
+    recentSyllablesHistory.shift();
   }
   
   return selected.toUpperCase();
 }
 
-// obtient les informations sur un fragment
 export function getSyllableInfo(syllable: string): {
   syllable: string;
   availableWords: number;
@@ -157,19 +160,28 @@ export function getSyllableInfo(syllable: string): {
   };
 }
 
-// verifie si un fragment est valide
+export function getSyllableDifficulty(syllable: string): 'easy' | 'medium' | 'hard' {
+  const info = getSyllableInfo(syllable);
+  const wordCount = info.availableWords;
+  
+  if (wordCount >= 100) {
+    return 'easy';
+  } else if (wordCount >= 50) {
+    return 'medium';
+  } else {
+    return 'hard';
+  }
+}
+
 export function isValidSyllable(syllable: string): boolean {
   return availableFragments.includes(normalizeText(syllable));
 }
 
-// obtient tous les fragments disponibles
 export function getAllSyllables(): string[] {
   return availableFragments.map(f => f.toUpperCase());
 }
 
-// obtient des suggestions de mots pour un fragment
 export async function getWordSuggestions(syllable: string, maxSuggestions: number = 5): Promise<string[]> {
-  // Essaie d'abord l'index en mémoire (rapide)
   const normalizedSyllable = normalizeText(syllable);
   const words = fragmentIndex.get(normalizedSyllable) || new Set();
   if (words.size >= maxSuggestions) {
@@ -179,37 +191,30 @@ export async function getWordSuggestions(syllable: string, maxSuggestions: numbe
       .slice(0, maxSuggestions);
   }
 
-  // Sinon, utilise le DictionaryManager pour une recherche plus complète
   const dictManager = getDictionaryManager();
   await dictManager.initialize();
   return await dictManager.getWordSuggestions(syllable, maxSuggestions);
 }
 
-// Version synchrone pour compatibilité (utilise uniquement l'index en mémoire)
 export function getWordSuggestionsSync(syllable: string, maxSuggestions: number = 5): string[] {
   const normalizedSyllable = normalizeText(syllable);
   const words = fragmentIndex.get(normalizedSyllable) || new Set();
   return Array.from(words)
-    .filter(w => w.length >= 3)
+    .filter(w => w.length >= 3 && isValidSyllableInWord(w, normalizedSyllable))
     .sort((a, b) => a.localeCompare(b))
     .slice(0, maxSuggestions);
 }
 
-// verifie si un mot existe dans le dictionnaire francais
-// Utilise le DictionaryManager avec lazy loading pour de meilleures performances
 export async function wordExistsInDictionary(word: string): Promise<boolean> {
   const dictManager = getDictionaryManager();
   await dictManager.initialize();
   return await dictManager.wordExists(word);
 }
 
-// Version synchrone pour compatibilité (utilise le Set en mémoire)
-// À utiliser uniquement pour des validations rapides, pas pour la validation finale
 export function wordExistsInDictionarySync(word: string): boolean {
   return frenchLexicon.has(normalizeText(word));
 }
 
-// obtient le dictionnaire francais complet
 export function getFrenchLexicon(): Set<string> {
   return frenchLexicon;
 }

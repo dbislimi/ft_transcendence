@@ -27,7 +27,7 @@ const gameController = async (fastify: any, options: any) => {
 		console.log("pong WS connected");
 		let client = fastify.getClient(req, socket);
 		
-		// si pas de client authentifie, creer un client temporaire pour le mode offline
+		// fallback offline si pas d'auth
 		if (!client) {
 			console.log("pong WS: No authenticated client, creating temporary client for offline mode");
 			const tempId = Math.floor(Math.random() * 1000000); // ID temporaire
@@ -65,14 +65,12 @@ const gameController = async (fastify: any, options: any) => {
 				console.log("client ready for next tournament round", client.name);
 				games.playerReady(client);
 			} else if (data.event === "start") {
-				// Allow starting a new session even if a previous room exists by cleaning it up first
 				const action = data.body?.action as string | undefined;
 				switch (action) {
 					case "list_tournaments":
 						socket.send(JSON.stringify({ event: "tournaments", body: games.listTournaments() }));
 						return;
 					case "play_online":
-						// Ensure any previous room/queue state is cleared before matchmaking
 						games.stop_online(client);
 						games.startOnline(client);
 						break;

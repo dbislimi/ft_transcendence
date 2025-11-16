@@ -4,11 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useSettings, type Theme, type ContrastLevel, type FontSize, type Language } from '../contexts/SettingsContext';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
 
-/*
-  Modal complete des reglages d'affichage
-  Inclut : Theme, Contraste, Langue, Arriere-plan, Taille du texte, Animations, economie d'energie
- */
-
 interface DisplaySettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,10 +13,21 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   const { t } = useTranslation();
   const { settings, updateDisplaySettings } = useSettings();
   const { currentBackground, setBackground, setBackgroundForTheme, availableBackgrounds, lightBackgrounds, darkBackgrounds, lightBackgroundId, darkBackgroundId, isLoading } = useGlobalBackground();
+
+  const getBackgroundName = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.name`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.name;
+  };
+
+  const getBackgroundDescription = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.description`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.description;
+  };
   const [activeSection, setActiveSection] = useState<string>('theme');
   const [backgroundTab, setBackgroundTab] = useState<'light' | 'dark'>(settings.display.theme);
   
-  // Synchroniser l'onglet avec le thème actuel quand on ouvre la section background
   useEffect(() => {
     if (activeSection === 'background') {
       setBackgroundTab(settings.display.theme);
@@ -96,8 +102,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
         className="settings-modal rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-settings-slide"
         onClick={(e) => e.stopPropagation()}
       >
-        
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-600/30">
           <h2 className="text-2xl font-bold section-title-aesthetic flex items-center gap-3">
             <span className="text-3xl">👁️</span>
@@ -114,8 +118,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
         </div>
 
         <div className="flex h-[600px]">
-          
-          {/* Sidebar */}
           <div className="w-64 bg-gray-800/50 border-r border-gray-600/30 p-4">
             <nav className="space-y-2">
               {sections.map((section) => (
@@ -135,15 +137,11 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
             </nav>
           </div>
 
-          {/* Content */}
           <div className="flex-1 p-6 overflow-y-auto">
-            
-            {/* Section Theme */}
             {activeSection === 'theme' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.appearance') || 'Apparence'}</h3>
                 
-                {/* Theme Clair/Sombre */}
                 <div className="settings-section rounded-xl p-6">
                   <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.theme') || 'Thème'}</h4>
                   <div className="grid grid-cols-2 gap-4">
@@ -172,7 +170,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                     </button>
                   </div>
                   
-                  {/* Option changement automatique de background */}
                   <div className="mt-6 pt-6 border-t border-gray-700">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -196,7 +193,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                   </div>
                 </div>
 
-                {/* Taille du texte */}
                 <div className="settings-section rounded-xl p-6">
                   <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.fontSize') || 'Taille du texte'}</h4>
                   <div className="grid grid-cols-3 gap-3">
@@ -224,12 +220,10 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Accessibilite */}
             {activeSection === 'accessibility' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.accessibility') || 'Accessibilité'}</h3>
                 
-                {/* Contraste reglable */}
                 <div className="settings-section rounded-xl p-6">
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -242,7 +236,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       {t('settings.display.contrastDesc') || 'Ajuste le contraste et la luminosité du texte'}
                     </p>
                     
-                    {/* Slider de contraste */}
                     <div className="space-y-4">
                       <input
                         type="range"
@@ -254,14 +247,12 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                         className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-contrast"
                       />
                       
-                      {/* Indicateurs */}
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{t('settings.display.contrastLow') || 'Faible'}</span>
                         <span>{t('settings.display.contrastNormal') || 'Normal'}</span>
                         <span>{t('settings.display.contrastHigh') || 'Élevé'}</span>
                       </div>
                       
-                      {/* Aperçu du contraste */}
                       <div className="mt-4 p-3 rounded-lg bg-gray-700/50 border border-gray-600">
                         <p className="text-sm" style={{ filter: `contrast(${settings.display.contrast}) brightness(${Math.min(1.0, 0.5 + (settings.display.contrast - 0.5) * 0.5)})` }}>
                           {t('settings.display.contrastPreview') || 'Aperçu du texte avec ce niveau de contraste'}
@@ -273,7 +264,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Langue */}
             {activeSection === 'language' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.language') || 'Langue'}</h3>
@@ -307,13 +297,11 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Arriere-plan */}
             {activeSection === 'background' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.background') || 'Arrière-plan'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
-                  {/* Onglets Clair/Sombre */}
                   <div className="flex gap-2 mb-6 bg-gray-800/50 rounded-lg p-1">
                     <button
                       onClick={() => setBackgroundTab('light')}
@@ -337,10 +325,8 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                     </button>
                   </div>
 
-                  {/* Liste des backgrounds selon l'onglet */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {(backgroundTab === 'light' ? lightBackgrounds : darkBackgrounds).map((bg) => {
-                      // Vérifier si ce background est actif pour le thème de l'onglet (pas le thème actuel)
                       const isActive = backgroundTab === 'light' 
                         ? lightBackgroundId === bg.id 
                         : darkBackgroundId === bg.id;
@@ -372,10 +358,8 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                               </div>
                             )}
                             
-                            {/* Overlay au hover */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
                             
-                            {/* Indicateur de chargement */}
                             {isLoading && isActive && (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
@@ -384,11 +368,14 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                           </div>
                           
                           <div className="p-3 text-center bg-gray-800/90">
-                            <h5 className="text-white text-sm font-medium mb-1">{bg.name}</h5>
-                            <p className="text-gray-400 text-xs">{bg.description}</p>
+                            <h5 className="text-white text-sm font-medium mb-1">
+                              {getBackgroundName(bg)}
+                            </h5>
+                            <p className="text-gray-400 text-xs">
+                              {getBackgroundDescription(bg)}
+                            </p>
                           </div>
                           
-                          {/* Badge "Equipé" */}
                           {isActive && (
                             <>
                               <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
@@ -406,7 +393,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                     })}
                   </div>
                   
-                  {/* Info sur les arrière-plans */}
                   <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <p className="text-blue-300 text-sm">
                       {t('settings.display.backgroundTip') || '💡 Astuce : Choisissez un arrière-plan pour le mode clair et un pour le mode sombre. L\'arrière-plan changera automatiquement lorsque vous basculerez entre les modes.'}
@@ -416,12 +402,10 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Performance */}
             {activeSection === 'performance' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.performanceTitle') || t('settings.display.performance') || 'Performance et animations'}</h3>
                 
-                {/* Animations */}
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -440,7 +424,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                   </div>
                 </div>
 
-                {/* Mode économie d'énergie */}
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -463,7 +446,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-600/30">
           <div className="text-sm text-gray-400">
             {t('settings.display.autoSave') || 'Les modifications sont sauvegardées automatiquement'}

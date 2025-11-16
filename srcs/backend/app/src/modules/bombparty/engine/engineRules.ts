@@ -1,7 +1,8 @@
-import type { GameState, ValidationResult, BonusKey } from '../types';
+import type { GameState, ValidationResult, BonusKey, PlayerBonuses } from '../types';
 import { validateWithDictionarySync } from '../validator.ts';
 import { getRandomSyllable } from '../syllableSelector.ts';
 import { STREAK_FOR_BONUS } from './engineState.ts';
+import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '/usr/shared/bombparty/types.ts';
 
 export function submitWord(
   state: GameState,
@@ -45,15 +46,14 @@ export function submitWord(
       msTaken
     });
 
+    // double chance: annule la penalite si bonus actif
     if (currentPlayer?.pendingEffects?.doubleChance && !doubleChanceConsumedThisTurn) {
       if (currentPlayer.pendingEffects) {
         currentPlayer.pendingEffects.doubleChance = false;
       }
-      // ne pas changer la phase : le joueur peut reessayer sur le meme tour
       return { ok: false, reason: validation.reason, consumedDoubleChance: true };
     }
 
-    // mot invalide sans double chance : passer a la phase RESOLVE
     state.phase = 'RESOLVE';
     return { ok: false, reason: validation.reason };
   }
@@ -64,11 +64,42 @@ export function getNewSyllable(lastSyllable: string): string {
   return newSyllable;
 }
 
+function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
+  const availableBonuses = BONUS_WEIGHTS.filter(([key]) => {
+    const currentCount = playerBonuses[key] || 0;
+    return currentCount < MAX_BONUS_PER_TYPE;
+  });
+
+  if (availableBonuses.length === 0) {
+    return null;
+  }
+
+  const totalWeight = availableBonuses.reduce((sum, [, weight]) => sum + weight, 0);
+  
+  // selection ponderee: random puis soustrait les poids jusqu'a <= 0
+  let random = Math.random() * totalWeight;
+  
+  for (const [key, weight] of availableBonuses) {
+    random -= weight;
+    if (random <= 0) {
+      return key;
+    }
+  }
+  
+  // fallback (ne devrait pas arriver)
+  return availableBonuses[0][0];
+}
+
 export function giveRandomBonus(state: GameState, playerId: string): void {
   const player = state.players.find(p => p.id === playerId);
   if (!player) return;
   
-  const keys: BonusKey[] = ['inversion', 'plus5sec', 'vitesseEclair', 'doubleChance', 'extraLife'];
-  const key = keys[Math.floor(Math.random() * keys.length)];
-  player.bonuses[key] = (player.bonuses[key] || 0) + 1;
+  const selectedBonus = selectWeightedBonus(player.bonuses);
+  
+  if (selectedBonus) {
+    const currentCount = player.bonuses[selectedBonus] || 0;
+    if (currentCount < MAX_BONUS_PER_TYPE) {
+      player.bonuses[selectedBonus] = currentCount + 1;
+    }
+  }
 }

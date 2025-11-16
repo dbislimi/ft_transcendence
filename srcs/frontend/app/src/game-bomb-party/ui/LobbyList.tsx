@@ -29,7 +29,7 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPassword(prev => prev); // Trigger re-render
+      setPassword(prev => prev);
     }, 60000);
 
     return () => clearInterval(interval);
@@ -63,21 +63,28 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     
-    if (minutes < 1) return t("bombParty.lobby.justNow");
-    if (minutes < 60) return t("bombParty.lobby.minutesAgo").replace("{minutes}", minutes.toString());
-    if (hours < 24) return t("bombParty.lobby.hoursAgo").replace("{hours}", hours.toString());
+    if (minutes < 1) 
+      return t("bombParty.lobby.justNow");
+    if (minutes < 60)
+      return t("bombParty.lobby.minutesAgo").replace("{minutes}", minutes.toString());
+    if (hours < 24)
+      return t("bombParty.lobby.hoursAgo").replace("{hours}", hours.toString());
     return t("bombParty.lobby.daysAgo").replace("{days}", Math.floor(hours / 24).toString());
   };
 
   const getLobbyStatus = (lobby: LobbyInfo) => {
-    if (lobby.isStarted) return t("bombParty.lobby.inProgress");
-    if (lobby.players >= lobby.maxPlayers) return t("bombParty.lobby.full");
+    if (lobby.isStarted)
+      return t("bombParty.lobby.inProgress");
+    if (lobby.players >= lobby.maxPlayers)
+      return t("bombParty.lobby.full");
     return t("bombParty.lobby.waiting");
   };
 
   const getStatusColor = (lobby: LobbyInfo) => {
-    if (lobby.isStarted) return "text-red-400";
-    if (lobby.players >= lobby.maxPlayers) return "text-orange-400";
+    if (lobby.isStarted)
+      return "text-red-400";
+    if (lobby.players >= lobby.maxPlayers)
+      return "text-orange-400";
     return "text-green-400";
   };
 
@@ -104,17 +111,12 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
           onClick={() => {
             console.log('[LobbyList] Refresh button clicked, current lobbies:', lobbies.length);
             setIsLoading(true);
-            
-            // Always use the service's requestLobbyList method which properly handles the WebSocket connection
             console.log('[LobbyList] Requesting lobby list via service');
             requestLobbyList();
-            
-            // Also try via client if available (for cases where we're in a lobby)
             if (client) {
               console.log('[LobbyList] Also requesting via client');
               client.emit('bp:lobby:list', {});
-            }
-            
+            }      
             setTimeout(() => {
               setIsLoading(false);
               const updatedLobbies = useBombPartyStore.getState().lobbies;
@@ -122,8 +124,7 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
             }, 1500);
           }}
           disabled={isLoading}
-          className="px-3 py-1 text-sm rounded border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-50"
-        >
+          className="px-3 py-1 text-sm rounded border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-50">
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-slate-300 border-t-transparent rounded-full animate-spin"></div>
           ) : (
@@ -186,7 +187,6 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
         </div>
       )}
 
-      {/* Modal pour mot de passe */}
       {selectedLobby && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-lg border border-purple-500/30 p-6 max-w-md w-full mx-4">

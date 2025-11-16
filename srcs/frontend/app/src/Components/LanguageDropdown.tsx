@@ -1,6 +1,3 @@
-// menu deroulant ameliore pour la selection de langue
-// remplace le simple select par un vrai dropdown avec drapeaux
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings, type Language } from '../contexts/SettingsContext';
@@ -44,7 +41,6 @@ export default function LanguageDropdown() {
     i18n.changeLanguage(language);
     setIsOpen(false);
     
-    // Forcer un re-render pour s'assurer que les traductions sont appliquees
     setTimeout(() => {
       window.dispatchEvent(new Event('languageChanged'));
     }, 100);
@@ -52,7 +48,6 @@ export default function LanguageDropdown() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Bouton principal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="group relative overflow-hidden rounded-lg px-4 py-2 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-500/30 hover:border-slate-400/50 transition-all duration-300 hover:scale-105 flex items-center gap-2 min-w-[100px]"
@@ -64,7 +59,6 @@ export default function LanguageDropdown() {
           {currentLanguage.key.toUpperCase()}
         </span>
         
-        {/* Icone fleche */}
         <svg 
           className={`relative w-4 h-4 text-slate-400 group-hover:text-slate-300 transition-all duration-300 ${
             isOpen ? 'rotate-180' : ''
@@ -77,7 +71,6 @@ export default function LanguageDropdown() {
         </svg>
       </button>
 
-      {/* Menu deroulant */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-md border border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden animate-settings-slide">
           <div className="py-2">
@@ -105,7 +98,6 @@ export default function LanguageDropdown() {
             ))}
           </div>
           
-          {/* Indicateur visuel en bas */}
           <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
         </div>
       )}

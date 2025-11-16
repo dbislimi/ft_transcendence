@@ -1,9 +1,9 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
-import type { FastifyPluginAsync } from "fastify";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { BombPartyStatsManager } from "./StatsManager.ts";
+import { BombPartyStatsService } from "./statsService.ts";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -17,38 +17,28 @@ interface HistoryQuery {
   offset?: string;
 }
 
-const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
-  fastify: FastifyInstance<any, any, any, any, any>,
-  options
-) => {
-  
+export default fp(async function StatsRoutes(fastify: any) {
   const db = (await import("../../../index.js")).default;
   const statsManager = new BombPartyStatsManager(db);
-  
-
+  const statsService = new BombPartyStatsService(db);
   const authenticateToken = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // Try request.headers first (normalized by Fastify), then fallback to request.raw.headers
-      const authHeader = (request.headers.authorization || 
+      const authHeader = (((request as any).headers?.authorization) || 
         ((request as any).raw?.headers as any)?.authorization) as string | undefined;
-      
       console.log("[Stats API] Auth check:", {
-        url: request.url,
-        method: request.method,
-        hasHeadersAuth: !!request.headers.authorization,
+        url: (request as any).url,
+        method: (request as any).method,
+        hasHeadersAuth: !!((request as any).headers?.authorization),
         hasRawHeadersAuth: !!((request as any).raw?.headers as any)?.authorization,
         authHeaderPreview: authHeader ? `${authHeader.substring(0, 30)}...` : null
       });
-      
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         console.warn("[Stats API] Missing or invalid auth header");
         return reply.code(401).send({ error: "Token manquant" });
       }
-
       const token = authHeader.split(" ")[1];
       console.log("[Stats API] Verifying token with JWT_SECRET:", JWT_SECRET ? "SET" : "NOT SET");
       const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-      
       console.log("[Stats API] Token verified successfully for user:", decoded.id);
       (request as any).userId = decoded.id;
     } catch (error) {
@@ -61,7 +51,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   };
 
-  fastify.get<{ Params: StatsParams }>(
+  fastify.get(
     "/api/bomb-party/stats/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
@@ -74,7 +64,6 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           tokenUserId: requestingUserId,
           match: parseInt(userId) === requestingUserId
         });
-
         if (parseInt(userId) !== requestingUserId) {
           console.warn("[Stats API] Access denied: userId mismatch", {
             requested: userId,
@@ -82,15 +71,11 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           });
           return reply.code(403).send({ error: "Access denied" });
         }
-
-        // Use the userId from the token (source of truth) instead of the URL param
         const actualUserId = requestingUserId;
         const result = await statsManager.getUserStats(actualUserId);
-        
         if (!result.success) {
           return reply.code(500).send({ error: result.error });
         }
-
         return reply.send({
           success: true,
           data: result.data
@@ -102,7 +87,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   );
 
-  fastify.get<{ Params: StatsParams; Querystring: HistoryQuery }>(
+  fastify.get(
     "/api/bomb-party/history/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
@@ -110,13 +95,11 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         const { userId } = request.params;
         const { limit = "20", offset = "0" } = request.query;
         const requestingUserId = (request as any).userId;
-
         console.log("[Stats API] History request:", {
           requestedUserId: userId,
           tokenUserId: requestingUserId,
           match: parseInt(userId) === requestingUserId
         });
-
         if (parseInt(userId) !== requestingUserId) {
           console.warn("[Stats API] Access denied: userId mismatch", {
             requested: userId,
@@ -124,19 +107,15 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           });
           return reply.code(403).send({ error: "Access denied" });
         }
-
-        // Use the userId from the token (source of truth) instead of the URL param
         const actualUserId = requestingUserId;
         const result = await statsManager.getUserMatchHistory(
           actualUserId,
           parseInt(limit),
           parseInt(offset)
         );
-        
         if (!result.success) {
           return reply.code(500).send({ error: result.error });
         }
-
         return reply.send({
           success: true,
           data: result.data
@@ -148,7 +127,7 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   );
 
-  fastify.get<{ Params: StatsParams; Querystring: { limit?: string } }>(
+  fastify.get(
     "/api/bomb-party/trigram-stats/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
@@ -156,13 +135,11 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
         const { userId } = request.params;
         const { limit = "10" } = request.query;
         const requestingUserId = (request as any).userId;
-
         console.log("[Stats API] Trigram stats request:", {
           requestedUserId: userId,
           tokenUserId: requestingUserId,
           match: parseInt(userId) === requestingUserId
         });
-
         if (parseInt(userId) !== requestingUserId) {
           console.warn("[Stats API] Access denied: userId mismatch", {
             requested: userId,
@@ -170,18 +147,14 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           });
           return reply.code(403).send({ error: "Access denied" });
         }
-
-        // Use the userId from the token (source of truth) instead of the URL param
         const actualUserId = requestingUserId;
         const result = await statsManager.getUserTrigramStats(
           actualUserId,
           parseInt(limit)
         );
-        
         if (!result.success) {
           return reply.code(500).send({ error: result.error });
         }
-
         return reply.send({
           success: true,
           data: result.data
@@ -193,18 +166,15 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   );
 
-  fastify.get<{ Querystring: { limit?: string } }>(
+  fastify.get(
     "/api/bomb-party/ranking",
     async (request, reply) => {
       try {
         const { limit = "50" } = request.query;
-
         const result = await statsManager.getGlobalRanking(parseInt(limit));
-        
         if (!result.success) {
           return reply.code(500).send({ error: result.error });
         }
-
         return reply.send({
           success: true,
           data: result.data
@@ -232,23 +202,18 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           matchDuration: number;
           position: number;
           finalLives: number;
-          favoriteTrigram?: string;
         };
-
         const statsResult = await statsManager.updateUserStats(userId, {
           isWin: matchData.isWin,
           wordsSubmitted: matchData.wordsSubmitted,
           validWords: matchData.validWords,
           bestStreak: matchData.bestStreak,
           averageResponseTime: matchData.averageResponseTime,
-          matchDuration: matchData.matchDuration,
-          favoriteTrigram: matchData.favoriteTrigram
+          matchDuration: matchData.matchDuration
         });
-
         if (!statsResult.success) {
           return reply.code(500).send({ error: statsResult.error });
         }
-
         const historyResult = await statsManager.addMatchHistory(userId, matchData.matchId, {
           position: matchData.position,
           wordsSubmitted: matchData.wordsSubmitted,
@@ -256,11 +221,37 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           finalLives: matchData.finalLives,
           matchDuration: matchData.matchDuration
         });
-
         if (!historyResult.success) {
           console.error("[Stats API] Error adding history:", historyResult.error);
         }
-
+        try {
+          const userStatsResult = await statsManager.getUserStats(userId);
+          if (userStatsResult.success && userStatsResult.data) {
+            const progressResult = await statsService.updateProgress(userId, {
+              isWin: matchData.isWin,
+              wordsSubmitted: matchData.wordsSubmitted,
+              validWords: matchData.validWords,
+              bestStreak: matchData.bestStreak,
+              matchDuration: matchData.matchDuration,
+              finalLives: matchData.finalLives
+            }, {
+              totalWins: userStatsResult.data.totalWins,
+              totalMatches: userStatsResult.data.totalMatches,
+              totalValidWords: userStatsResult.data.totalValidWords,
+              averageResponseTime: userStatsResult.data.averageResponseTime,
+              bestStreak: userStatsResult.data.bestStreak
+            });
+            if (progressResult.success && progressResult.data) {
+              return reply.send({
+                success: true,
+                message: "Statistics updated successfully",
+                progress: progressResult.data
+              });
+            }
+          }
+        } catch (progressError) {
+          console.error("[Stats API] Error updating progress:", progressError);
+        }
         return reply.send({
           success: true,
           message: "Statistics updated successfully"
@@ -283,18 +274,15 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           isSuccess: boolean;
           responseTime: number;
         };
-
         const result = await statsManager.updateTrigramStats(
           userId,
           trigram,
           isSuccess,
           responseTime
         );
-
         if (!result.success) {
           return reply.code(500).send({ error: result.error });
         }
-
         return reply.send({
           success: true,
           message: "Trigram statistics updated"
@@ -306,8 +294,6 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   );
 
-  // Endpoint pour sauvegarder les stats en local (sans authentification)
-  // Utilise un utilisateur "Guest" spécial avec playerName pour identifier la session locale
   fastify.post(
     "/api/bomb-party/stats/update-local",
     async (request, reply) => {
@@ -322,29 +308,21 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           matchDuration: number;
           position: number;
           finalLives: number;
-          favoriteTrigram?: string;
-          playerName: string; // Nom du joueur local
+          playerName: string;
         };
-
-        // Créer ou récupérer l'utilisateur "Guest" avec le nom du joueur
         const guestId = await getOrCreateGuestUser(matchData.playerName, db);
-        
-        console.log(`[Stats API] Saving local stats for guest: ${matchData.playerName} (ID: ${guestId})`);
-
+        console.log(`[stats api] saving local for guest: ${matchData.playerName} (id: ${guestId})`);
         const statsResult = await statsManager.updateUserStats(guestId, {
           isWin: matchData.isWin,
           wordsSubmitted: matchData.wordsSubmitted,
           validWords: matchData.validWords,
           bestStreak: matchData.bestStreak,
           averageResponseTime: matchData.averageResponseTime,
-          matchDuration: matchData.matchDuration,
-          favoriteTrigram: matchData.favoriteTrigram
+          matchDuration: matchData.matchDuration
         });
-
         if (!statsResult.success) {
           return reply.code(500).send({ error: statsResult.error });
         }
-
         const historyResult = await statsManager.addMatchHistory(guestId, matchData.matchId, {
           position: matchData.position,
           wordsSubmitted: matchData.wordsSubmitted,
@@ -352,11 +330,9 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
           finalLives: matchData.finalLives,
           matchDuration: matchData.matchDuration
         });
-
         if (!historyResult.success) {
           console.error("[Stats API] Error adding history:", historyResult.error);
         }
-
         return reply.send({
           success: true,
           message: "Local statistics updated successfully",
@@ -369,10 +345,8 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     }
   );
 
-  // Fonction helper pour créer ou récupérer un utilisateur guest
   async function getOrCreateGuestUser(playerName: string, database: any): Promise<number> {
     return new Promise((resolve, reject) => {
-      // Chercher un utilisateur guest existant avec ce nom
       database.get(
         "SELECT id FROM users WHERE name = ? AND email LIKE 'guest_%'",
         [playerName],
@@ -382,13 +356,10 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
             reject(err);
             return;
           }
-
           if (row) {
             resolve(row.id);
             return;
           }
-
-          // Créer un nouvel utilisateur guest
           const guestEmail = `guest_${playerName}_${Date.now()}@local`;
           database.run(
             "INSERT INTO users (name, email, password, display_name) VALUES (?, ?, ?, ?)",
@@ -408,20 +379,16 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
     });
   }
 
-  // Endpoint pour obtenir des suggestions de mots pour une syllabe
-  fastify.get<{ Querystring: { syllable: string; max?: string } }>(
+  fastify.get(
     "/api/bomb-party/suggestions",
     async (request, reply) => {
       try {
         const { syllable, max = "5" } = request.query;
-        
         if (!syllable || typeof syllable !== 'string') {
           return reply.code(400).send({ error: "Syllable parameter is required" });
         }
-
         const { getWordSuggestions } = await import('./syllableSelector.ts');
         const suggestions = getWordSuggestions(syllable, parseInt(max) || 5);
-        
         return reply.send({
           success: true,
           data: {
@@ -435,7 +402,95 @@ const statsRoutes: FastifyPluginAsync<{ prefix?: string }> = async (
       }
     }
   );
-  
-};
 
-export default fp(statsRoutes);
+  fastify.get(
+    "/api/bomb-party/progress/:userId",
+    { preHandler: authenticateToken },
+    async (request, reply) => {
+      try {
+        const { userId } = request.params;
+        const requestingUserId = (request as any).userId;
+        if (parseInt(userId) !== requestingUserId) {
+          return reply.code(403).send({ error: "Access denied" });
+        }
+        const result = await statsService.getUserProgress(requestingUserId);
+        if (!result.success) {
+          return reply.code(500).send({ error: result.error });
+        }
+        return reply.send({
+          success: true,
+          data: result.data
+        });
+      } catch (error) {
+        console.error("[Stats API] Error fetching progress:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
+  fastify.post(
+    "/api/bomb-party/progress/update",
+    { preHandler: authenticateToken },
+    async (request, reply) => {
+      try {
+        const userId = (request as any).userId;
+        const matchData = request.body as {
+          isWin: boolean;
+          wordsSubmitted: number;
+          validWords: number;
+          bestStreak: number;
+          matchDuration: number;
+          finalLives?: number;
+        };
+        const statsResult = await statsManager.getUserStats(userId);
+        if (!statsResult.success || !statsResult.data) {
+          return reply.code(500).send({ error: "Failed to get user stats" });
+        }
+        const userStats = statsResult.data;
+        const progressResult = await statsService.updateProgress(userId, matchData, {
+          totalWins: userStats.totalWins,
+          totalMatches: userStats.totalMatches,
+          totalValidWords: userStats.totalValidWords,
+          averageResponseTime: userStats.averageResponseTime,
+          bestStreak: userStats.bestStreak
+        });
+
+        if (!progressResult.success) {
+          return reply.code(500).send({ error: progressResult.error });
+        }
+        return reply.send({
+          success: true,
+          data: progressResult.data
+        });
+      } catch (error) {
+        console.error("[Stats API] Error updating progress:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
+  fastify.post(
+    "/api/bomb-party/progress/preferences",
+    { preHandler: authenticateToken },
+    async (request, reply) => {
+      try {
+        const userId = (request as any).userId;
+        const preferences = request.body as {
+          theme?: string;
+          avatar?: string;
+        };
+        const result = await statsService.updateUserPreferences(userId, preferences);
+        if (!result.success) {
+          return reply.code(500).send({ error: result.error });
+        }
+        return reply.send({
+          success: true,
+          message: "Preferences updated"
+        });
+      } catch (error) {
+        console.error("[Stats API] Error updating preferences:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );  
+});

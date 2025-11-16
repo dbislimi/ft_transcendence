@@ -25,7 +25,6 @@ interface Tournament {
 
 export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 	const { t } = useTranslation();
-	// Require explicit selection of mode
 	const [mode, setMode] = useState<"Tournament" | "Quick Match" | null>(null);
 	const [variant, setVariant] = useState("Create");
 	const [size, setSize] = useState(4);
@@ -72,7 +71,6 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 	};
 	const wsOpen = wsRef?.current?.readyState === WebSocket.OPEN;
 
-	// Enable Start only when a choice is valid
 	const canStart = (() => {
 		if (!mode) return false;
 		if (mode === "Quick Match") return !!wsOpen;

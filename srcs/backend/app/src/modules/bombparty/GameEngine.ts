@@ -61,7 +61,6 @@ export class BombPartyEngine {
   }
 
   startTurn(): void {
-    console.log('[BombParty DEBUG] startTurn() CALLED');
     this.currentSyllableUsageCount = 1;
     this.doubleChanceConsumedThisTurn = false;
 
@@ -70,8 +69,6 @@ export class BombPartyEngine {
       () => this.getNewSyllable(),
       () => this.getTurnDurationForCurrentPlayer()
     );
-    
-    console.log(`[BombParty DEBUG] startTurn() COMPLETED -> currentSyllable=${this.state.currentSyllable}, currentPlayerIndex=${this.state.currentPlayerIndex}`);
   }
 
   isTurnExpired(): boolean {
@@ -154,8 +151,6 @@ export class BombPartyEngine {
   private getTurnDurationForCurrentPlayer(): number {
     return getTurnDurationForCurrentPlayer(this.state);
   }
-
-  // --- Public getters ---
 
   getState(): GameState {
     return { ...this.state };

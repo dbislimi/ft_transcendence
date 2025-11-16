@@ -49,7 +49,7 @@ export default abstract class BotController {
 		this.epsilon = epsilon;
 		this.epsilon_min = epsilon_min;
 		this.epsilon_decay = epsilon_decay;
-		// initialiser action a 5 (milieu du terrain) pour eviter que le bot soit immobile au debut
+		// init action a 5 (milieu) pour eviter bot immobile au debut
 		this.action = 5;
 	}
 
@@ -186,7 +186,7 @@ export class MediumBot extends BotController {
 		if (this.training === false) this.load();
 	}
 
-	// override pour fournir un fallback raisonnable quand aucune valeur q n'existe pour un etat en mode non-training
+	// fallback si pas de valeurs q apprises pour cet etat (mode non-training)
 	takeDecision(board: Board, player: Player) {
 		let reward = 0;
 		const state = this.getState(board, player);
@@ -198,8 +198,7 @@ export class MediumBot extends BotController {
 		let action: number;
 		const table = this.qTable[state];
 
-		// si on n'est pas en training et qu'on n'a pas de valeurs apprises pour cet etat (ou toutes egales),
-		// suivre la zone de la balle comme heuristique au lieu de default a l'action 0
+		// si pas de valeurs apprises, suivre zone balle comme heuristique
 		if (!this.training && (!table || table.every((v) => v === table[0]))) {
 			const parts = state.split("_");
 			const zoneStr = parts.length > 1 ? parts[1] : parts[0];

@@ -21,31 +21,35 @@ import {
   startTurnCheckInterval,
   cleanupInterval
 } from './room/index.ts';
+import { broadcastToRoom } from './room/roomUtils.ts';
+import { broadcastTurnStartedWithState, broadcastGameState } from './room/roomHandlers.ts';
 
 export class BombPartyRoomManager {
   private rooms = new Map<string, Room>();
   private players = new Map<string, PlayerConnection>();
   private roomEngines = new Map<string, BombPartyEngine>();
   private turnCheckInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private gameEndCallbacks = new Map<string, (roomId: string, winnerId?: string) => void>();
-  // Lock pour éviter les conditions de course sur handleGameInput
   private roomInputLocks = new Map<string, Promise<void>>();
+  private disconnectionGracePeriods = new Map<string, NodeJS.Timeout>();
+  
+  private readonly INACTIVE_ROOM_TIMEOUT = 30 * 60 * 1000;
+  private readonly EMPTY_ROOM_TIMEOUT = 5 * 60 * 1000;
 
   constructor() {
     this.turnCheckInterval = this.startTurnCheckInterval();
+    this.cleanupInterval = this.startCleanupInterval();
   }
 
-  // enregistre un callback quand une partie se termine dans une room
   registerGameEndCallback(roomId: string, callback: (roomId: string, winnerId?: string) => void): void {
     this.gameEndCallbacks.set(roomId, callback);
   }
 
-  // desenregistre le callback
   unregisterGameEndCallback(roomId: string): void {
     this.gameEndCallbacks.delete(roomId);
   }
 
-  // declenche le callback de fin de partie
   private triggerGameEndCallback(roomId: string, winnerId?: string): void {
     const callback = this.gameEndCallbacks.get(roomId);
     if (callback) {
@@ -54,64 +58,60 @@ export class BombPartyRoomManager {
     }
   }
 
-  // intervalle custom qui check les tours et gere les callbacks de fin
   private startTurnCheckInterval(): NodeJS.Timeout {
     return setInterval(() => {
       for (const [roomId, engine] of this.roomEngines) {
         if (engine.checkAndEndExpiredTurn()) {
-          // broadcast l'etat du jeu
+          console.log('[RoomManager] Tour expiré détecté, broadcast de l\'état mis à jour');
           const room = this.rooms.get(roomId);
           if (room) {
             const gameState = engine.getState();
-            for (const player of room.players.values()) {
-              if (player.ws && player.ws.readyState === 1) {
-                player.ws.send(JSON.stringify({
-                  event: 'bp:game:state',
-                  payload: { roomId, gameState }
-                }));
-              }
+            console.log('[RoomManager] État du jeu après expiration:', {
+              roomId,
+              phase: gameState.phase,
+              currentPlayer: gameState.players[gameState.currentPlayerIndex]?.name,
+              currentPlayerLives: gameState.players[gameState.currentPlayerIndex]?.lives,
+              playersLives: gameState.players.map((p: any) => ({ name: p.name, lives: p.lives, isEliminated: p.isEliminated }))
+            });
+            
+            if (gameState.phase === 'TURN_ACTIVE') {
+              broadcastTurnStartedWithState(roomId, this.roomEngines, this.rooms);
+            } else {
+              broadcastGameState(roomId, this.roomEngines, this.rooms);
             }
+            console.log('[RoomManager] bp:game:state envoyé aux clients');
           }
 
-          // check si la partie est finie
           if (engine.isGameOver()) {
             const winner = engine.getWinner();
             const winnerId = winner?.id;
 
-            // declenche le callback d'abord (pour les tournois)
             this.triggerGameEndCallback(roomId, winnerId);
 
-            // puis envoie le message de fin aux joueurs
             const finalStats = engine.getFinalStats();
             if (room) {
-              for (const player of room.players.values()) {
-                if (player.ws && player.ws.readyState === 1) {
-                  player.ws.send(JSON.stringify({
-                    event: 'bp:game:end',
-                    payload: {
-                      roomId,
-                      winner: winner || undefined,
-                      finalStats
-                    }
-                  }));
+              broadcastToRoom(room, {
+                event: 'bp:game:end',
+                payload: {
+                  roomId,
+                  winner: winner || undefined,
+                  finalStats
                 }
-              }
+              });
             }
 
-            // cleanup explicite pour éviter les fuites mémoire
             this.roomEngines.delete(roomId);
             if (room) {
               room.startedAt = undefined;
             }
             
-            // Si la room est vide après la fin de partie, la supprimer
             if (room && room.players.size === 0) {
               this.rooms.delete(roomId);
             }
           }
         }
       }
-    }, 1000);
+    }, 150);
   }
 
   registerPlayer(ws: WebSocket, playerId: string, playerName: string): void {
@@ -137,40 +137,43 @@ export class BombPartyRoomManager {
     return handleJoinRoom(playerId, roomId, password, this.players, this.rooms);
   }
 
-  leaveRoom(playerId: string, roomId: string): LeaveRoomResult {
-    return handleLeaveRoom(playerId, roomId, this.players, this.rooms, this.roomEngines);
+  leaveRoom(playerId: string, roomId: string, ws?: WebSocket): LeaveRoomResult {
+    return handleLeaveRoom(playerId, roomId, this.players, this.rooms, this.roomEngines, ws);
   }
 
   startGame(playerId: string, roomId: string): StartGameResult {
+    const inputLock = this.roomInputLocks.get(roomId);
+    if (inputLock) {
+      return { success: false, error: 'Action en cours, veuillez réessayer' };
+    }
+    
+    if (this.roomEngines.has(roomId)) {
+      return { success: false, error: 'Partie déjà en cours' };
+    }
+    
     return handleStartGame(playerId, roomId, this.rooms, this.roomEngines);
   }
 
   async handleGameInput(playerId: string, roomId: string, word: string, msTaken: number): Promise<GameInputResult> {
-    // Attendre que le lock précédent soit libéré pour cette room
     const previousLock = this.roomInputLocks.get(roomId);
     
     let result: GameInputResult;
     
-    // Créer un nouveau lock pour cette requête
-    const currentLock = (previousLock || Promise.resolve()).then(() => {
+    const currentLock = (previousLock || Promise.resolve()).then(async () => {
       return new Promise<void>((resolve) => {
-        // Exécuter handleGameInput de manière synchrone pour cette room
-        result = handleGameInput(playerId, roomId, word, msTaken, this.roomEngines, this.rooms);
-        
-        // Libérer le lock après un court délai pour permettre au broadcast de se terminer
-        setTimeout(() => {
-          resolve();
-        }, 10);
+        handleGameInput(playerId, roomId, word, msTaken, this.roomEngines, this.rooms).then((res) => {
+          result = res;
+          process.nextTick(() => {
+            resolve();
+          });
+        });
       });
     });
     
-    // Mettre à jour le lock pour cette room
     this.roomInputLocks.set(roomId, currentLock);
     
-    // Attendre que cette requête soit traitée
     await currentLock;
     
-    // Nettoyer le lock si c'était la dernière requête en attente
     if (this.roomInputLocks.get(roomId) === currentLock) {
       this.roomInputLocks.delete(roomId);
     }
@@ -179,6 +182,11 @@ export class BombPartyRoomManager {
   }
 
   activateBonus(playerId: string, roomId: string, bonusKey: any): ActivateBonusResult {
+    const inputLock = this.roomInputLocks.get(roomId);
+    if (inputLock) {
+      return { success: false, error: 'Action en cours, veuillez réessayer' };
+    }
+    
     return handleActivateBonus(playerId, roomId, bonusKey, this.roomEngines, this.rooms);
   }
 
@@ -213,6 +221,10 @@ export class BombPartyRoomManager {
     return this.getAllRooms().filter(room => !room.isPrivate);
   }
 
+  getRoom(roomId: string): Room | undefined {
+    return this.rooms.get(roomId);
+  }
+
   getRoomDetails(roomId: string): RoomDetailsResult {
     const room = this.rooms.get(roomId);
     if (!room) {
@@ -236,10 +248,133 @@ export class BombPartyRoomManager {
     };
   }
 
+  hasGameInProgress(roomId: string): boolean {
+    return this.roomEngines.has(roomId);
+  }
+
+  getRoomStateForReconnect(playerId: string, roomId: string): { 
+    success: boolean; 
+    gameState?: any; 
+    sequenceNumber?: number; 
+    stateVersion?: number; 
+    error?: string 
+  } {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      return { success: false, error: 'Room not found' };
+    }
+
+    if (!room.players.has(playerId)) {
+      return { success: false, error: 'Player not in room' };
+    }
+
+    const engine = this.roomEngines.get(roomId);
+    if (!engine) {
+      return { 
+        success: true, 
+        gameState: null,
+        sequenceNumber: room.sequenceNumber || 0,
+        stateVersion: room.stateVersion || 0
+      };
+    }
+
+    const gameState = engine.getState();
+    const stateWithVersion = {
+      ...gameState,
+      stateVersion: room.stateVersion || 0,
+      sequenceNumber: room.sequenceNumber || 0
+    };
+
+    return {
+      success: true,
+      gameState: stateWithVersion,
+      sequenceNumber: room.sequenceNumber || 0,
+      stateVersion: room.stateVersion || 0
+    };
+  }
+
+  private startCleanupInterval(): NodeJS.Timeout {
+    return setInterval(() => {
+      this.cleanupInactiveRooms();
+    }, 60000);
+  }
+
+  private cleanupInactiveRooms(): void {
+    const now = Date.now();
+    const roomsToDelete: string[] = [];
+
+    for (const [roomId, room] of this.rooms) {
+      const hasGameInProgress = this.roomEngines.has(roomId);
+      const isEmpty = room.players.size === 0;
+      const roomAge = now - room.createdAt;
+      const lastActivity = room.startedAt || room.createdAt;
+      const timeSinceLastActivity = now - lastActivity;
+
+      if (isEmpty && roomAge > this.EMPTY_ROOM_TIMEOUT) {
+        roomsToDelete.push(roomId);
+        continue;
+      }
+
+      if (!hasGameInProgress && !isEmpty && timeSinceLastActivity > this.INACTIVE_ROOM_TIMEOUT) {
+        roomsToDelete.push(roomId);
+        continue;
+      }
+
+      if (hasGameInProgress) {
+        const engine = this.roomEngines.get(roomId);
+        if (engine && engine.isGameOver()) {
+          const gameEndTime = room.startedAt || room.createdAt;
+          if (now - gameEndTime > 10 * 60 * 1000) {
+            roomsToDelete.push(roomId);
+          }
+        }
+      }
+    }
+
+    for (const roomId of roomsToDelete) {
+      const room = this.rooms.get(roomId);
+      if (room) {
+        if (room.players.size > 0) {
+          broadcastToRoom(room, {
+            event: 'bp:lobby:closed',
+            payload: {
+              roomId,
+              reason: 'Lobby inactif supprimé'
+            }
+          });
+        }
+        
+        this.roomEngines.delete(roomId);
+        this.rooms.delete(roomId);
+        console.log(`[RoomManager] Lobby inactif supprimé: ${roomId}`);
+      }
+    }
+
+    if (roomsToDelete.length > 0) {
+      this.broadcastLobbyListUpdate();
+    }
+  }
+
+  private broadcastLobbyListCallback: (() => void) | null = null;
+
+  setBroadcastLobbyListCallback(callback: () => void): void {
+    this.broadcastLobbyListCallback = callback;
+  }
+
+  broadcastLobbyListUpdate(): void {
+    if (this.broadcastLobbyListCallback) {
+      this.broadcastLobbyListCallback();
+    }
+  }
+
   cleanup(): void {
     if (this.turnCheckInterval) {
       clearInterval(this.turnCheckInterval);
       this.turnCheckInterval = null;
+    }
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
     this.rooms.clear();
     this.players.clear();

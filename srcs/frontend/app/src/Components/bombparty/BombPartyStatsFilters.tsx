@@ -14,7 +14,6 @@ export function BombPartyStatsFilters({ activeTab, onTabChange, isAuthenticated 
   const allTabs = [
     { key: 'overview' as const, label: t('bombParty.stats.tabs.overview'), icon: '📈', requiresAuth: true },
     { key: 'history' as const, label: t('bombParty.stats.tabs.history'), icon: '📜', requiresAuth: true },
-    { key: 'trigrams' as const, label: t('bombParty.stats.tabs.trigrams'), icon: '🔤', requiresAuth: true },
     { key: 'ranking' as const, label: t('bombParty.stats.tabs.ranking'), icon: '🏆', requiresAuth: false }
   ];
 

@@ -1,5 +1,3 @@
-// Modal boutique 
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
@@ -14,8 +12,19 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const { currentBackground, setBackgroundForTheme, availableBackgrounds, lightBackgrounds, darkBackgrounds, lightBackgroundId, darkBackgroundId, isLoading } = useGlobalBackground();
-  // Permettre de changer librement d'onglet indépendamment du thème actuel
   const [backgroundTab, setBackgroundTab] = useState<'light' | 'dark'>(settings.display.theme);
+
+  const getBackgroundName = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.name`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.name;
+  };
+
+  const getBackgroundDescription = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.description`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.description;
+  };
 
   if (!isOpen) return null;
 
@@ -24,7 +33,6 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
     setBackgroundForTheme(backgroundId, theme);
   };
 
-  // Filtrer selon l'onglet (clair/sombre)
   const filteredBackgrounds = backgroundTab === 'light' ? lightBackgrounds : darkBackgrounds;
 
   return (
@@ -52,11 +60,8 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
           </button>
         </div>
         <div className="flex h-[calc(90vh-120px)]">
-          {/* Main Content - Full width since only backgrounds */}
           <div className="flex-1 p-6 overflow-y-auto">
-            {/* Section Arrière-plans */}
             <div className="space-y-6">
-                {/* Onglets Mode Clair/Sombre */}
                 <div className="flex gap-2 mb-4 bg-gray-800/50 rounded-lg p-1">
                   <button
                     onClick={() => setBackgroundTab('light')}
@@ -80,7 +85,6 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                   </button>
                 </div>
 
-                {/* Compteur de backgrounds disponibles */}
                 <div className="flex items-center justify-end mb-4">
                   <span className="text-sm text-gray-400">
                     {filteredBackgrounds.length} {t('shop.items.available') || 'disponibles'}
@@ -89,7 +93,6 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {filteredBackgrounds.map((bg) => {
-                    // Vérifier si ce background est actif pour le thème de l'onglet (pas le thème actuel)
                     const isActive = backgroundTab === 'light' 
                       ? lightBackgroundId === bg.id 
                       : darkBackgroundId === bg.id;
@@ -128,7 +131,6 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                           </div>
                         )}
                         
-                        {/* Overlay au hover */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                             <div className="bg-white/90 text-black px-3 py-1 rounded-full text-xs font-semibold">
@@ -137,7 +139,6 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                           </div>
                         </div>
                         
-                        {/* Indicateur de chargement */}
                         {isLoading && isActive && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                             <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
@@ -145,9 +146,10 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                         )}
                       </div>
                       
-                      {/* Nom de l'arrière-plan */}
                       <div className="p-3">
-                        <h4 className="font-medium text-white text-sm truncate">{bg.name}</h4>
+                        <h4 className="font-medium text-white text-sm truncate">
+                          {getBackgroundName(bg)}
+                        </h4>
                         {isActive && (
                           <div className="flex items-center space-x-1 mt-1">
                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>

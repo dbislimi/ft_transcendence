@@ -12,12 +12,11 @@ export default function BombPartyUI({ state, onBackToMenu }: BombPartyUIProps) {
 
   if (state.gameState.phase === 'GAME_OVER') {
     const winner = (state.gameState as any).winner || state.gameState.players.find((p: any) => !p.isEliminated);
-    console.log('🏆 [Victory Screen] gameState.phase:', state.gameState.phase, 'winner:', winner, 'gameState.winner:', (state.gameState as any).winner);
     
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-40">
         <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md text-center">
-          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 mb-6 animate-pulse">
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 mb-6 animate-double-chance-glow">
             🏆 {t('bombParty.gameOver.title')} 🏆
           </h2>
           {winner && (
@@ -41,7 +40,7 @@ export default function BombPartyUI({ state, onBackToMenu }: BombPartyUIProps) {
           )}
           <button
             onClick={onBackToMenu}
-            className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-200 text-lg shadow-lg hover:shadow-xl"
+            className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl"
           >
             {t('bombParty.gameOver.backToMenu')}
           </button>
@@ -110,31 +109,45 @@ export function DraggablePanel({
   const cardRef = React.useRef<HTMLDivElement>(null);
   const [pos, setPos] = React.useState<{ x: number; y: number }>({ x: 24, y: window.innerHeight - 200 });
   const [dragging, setDragging] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const startRef = React.useRef<{ mx: number; my: number; x: number; y: number } | null>(null);
 
   React.useEffect(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const next = { x: Math.round(w / 2) + initialOffset.x, y: Math.round(h / 2) + initialOffset.y };
-    setPos({ x: clamp(next.x, 16, w - 320), y: clamp(next.y, 16, h - 120) });
+    try {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const next = { x: Math.round(w / 2) + initialOffset.x, y: Math.round(h / 2) + initialOffset.y };
+      setPos({ x: clamp(next.x, 16, w - 320), y: clamp(next.y, 16, h - 120) });
+    } catch (err) {
+      console.error('[DraggablePanel] Error in position initialization', err);
+      setError('Erreur d\'initialisation');
+    }
   }, [initialOffset.x, initialOffset.y]);
 
   React.useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if (!dragging || !startRef.current) return;
-      const dx = e.clientX - startRef.current.mx;
-      const dy = e.clientY - startRef.current.my;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const cardW = cardRef.current?.offsetWidth ?? 320;
-      const cardH = cardRef.current?.offsetHeight ?? 160;
-      const nx = clamp(startRef.current.x + dx, 8, w - cardW - 8);
-      const ny = clamp(startRef.current.y + dy, 8, h - cardH - 8);
-      setPos({ x: nx, y: ny });
+      try {
+        if (!dragging || !startRef.current) return;
+        const dx = e.clientX - startRef.current.mx;
+        const dy = e.clientY - startRef.current.my;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const cardW = cardRef.current?.offsetWidth ?? 320;
+        const cardH = cardRef.current?.offsetHeight ?? 160;
+        const nx = clamp(startRef.current.x + dx, 8, w - cardW - 8);
+        const ny = clamp(startRef.current.y + dy, 8, h - cardH - 8);
+        setPos({ x: nx, y: ny });
+      } catch (err) {
+        console.error('[DraggablePanel] Error in onMove', err);
+      }
     };
     const onUp = () => {
-      setDragging(false);
-      startRef.current = null;
+      try {
+        setDragging(false);
+        startRef.current = null;
+      } catch (err) {
+        console.error('[DraggablePanel] Error in onUp', err);
+      }
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
@@ -145,9 +158,21 @@ export function DraggablePanel({
   }, [dragging]);
 
   const onDown = (e: React.MouseEvent) => {
-    startRef.current = { mx: e.clientX, my: e.clientY, x: pos.x, y: pos.y };
-    setDragging(true);
+    try {
+      startRef.current = { mx: e.clientX, my: e.clientY, x: pos.x, y: pos.y };
+      setDragging(true);
+    } catch (err) {
+      console.error('[DraggablePanel] Error in onDown', err);
+    }
   };
+
+  if (error) {
+    return (
+      <div className="fixed z-40 bottom-4 right-4 p-4 bg-red-500/80 text-white rounded-lg">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div

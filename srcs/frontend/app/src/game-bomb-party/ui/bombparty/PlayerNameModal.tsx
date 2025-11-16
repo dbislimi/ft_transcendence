@@ -13,7 +13,6 @@ export default function PlayerNameModal({ isOpen, onSubmit }: PlayerNameModalPro
 
   useEffect(() => {
     if (isOpen) {
-      // Focus sur l'input quand le modal s'ouvre
       const input = document.getElementById('player-name-input');
       if (input) {
         setTimeout(() => input.focus(), 100);
@@ -41,7 +40,6 @@ export default function PlayerNameModal({ isOpen, onSubmit }: PlayerNameModalPro
       return;
     }
     
-    // verifie les caracteres valides
     if (!/^[a-zA-Z0-9_\-À-ÿ\s]+$/.test(trimmedName)) {
       setError(t('bombParty.playerName.invalidChars', 'Le nom contient des caractères invalides'));
       return;

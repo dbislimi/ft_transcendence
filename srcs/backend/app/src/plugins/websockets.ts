@@ -45,11 +45,9 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
         "getClient",
         (req: any, socket: WebSocket): Client | null => {
             try {
-                // token may be available in req.query for normal fastify requests,
-                // but for WebSocket upgrades req.query may be undefined. Try multiple sources.
+                // token peut etre dans query, url ou header
                 let token: string | undefined | null = undefined;
                 if (req.query && req.query.token) token = req.query.token;
-                // If not present, try parsing req.url which may contain the query string (e.g. /game/ws?token=...)
                 if (!token && req.url && typeof req.url === "string") {
                     try {
                         const fake = `http://localhost${req.url}`;

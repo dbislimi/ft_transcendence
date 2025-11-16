@@ -91,12 +91,6 @@ export function BombPartyStatsSummary({ userStats }: BombPartyStatsSummaryProps)
             <span className="text-slate-400">{t('bombParty.stats.overview.totalPlayTime')}:</span>
             <span className="text-white font-semibold">{formatDuration(userStats.totalPlayTime ?? 0)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">{t('bombParty.stats.overview.favoriteTrigramTitle')}:</span>
-            <span className="text-purple-400 font-semibold">
-              {userStats.favoriteTrigram || t('bombParty.stats.overview.none')}
-            </span>
-          </div>
         </div>
       </div>
     </div>

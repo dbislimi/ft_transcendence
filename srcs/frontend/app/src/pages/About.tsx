@@ -108,10 +108,8 @@ export default function About() {
                 className="group cursor-pointer"
                 onClick={() => openPopup(member)}
               >
-                {/* Carte du membre */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/50 to-purple-900/50 backdrop-blur-sm border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
                   
-                  {/* Photo du membre */}
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
                     <img
@@ -140,21 +138,16 @@ export default function About() {
         </div>
       </div>
 
-      {/* Pop-up du membre sélectionné */}
       {isPopupOpen && selectedMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={closePopup}
           ></div>
           
-          {/* Pop-up */}
           <div className={`relative bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl border border-purple-500/30 max-w-2xl w-full transform transition-all duration-300 ${isPopupOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             
-            {/* En-tête du pop-up */}
             <div className="relative p-8">
-              {/* Bouton fermer */}
               <button
                 onClick={closePopup}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200"

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
+import GameSettingsModal from "../Components/GameSettingsModal";
 import AccountSettingsModal from "../Components/AccountSettingsModal";
 
 
@@ -159,11 +160,9 @@ export default function Settings() {
       )}
       
       {activeModal === 'game' && (
-        <PlaceholderModal
+        <GameSettingsModal
           isOpen={true}
           onClose={closeModal}
-          title={t('settings.game.title') || 'Réglages de jeu'}
-          description={t('settings.game.description') || 'Contrôles et préférences de jeu'}
         />
       )}
       

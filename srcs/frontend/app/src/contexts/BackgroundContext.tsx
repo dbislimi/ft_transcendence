@@ -1,5 +1,4 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-// Imports SVG - chemins relatifs depuis le contexte
 import bg42 from '../../img/42background.svg?url';
 import bghalloween from '../../img/hallowenn_background.svg?url';
 import bgmatrix42 from '../../img/matrix_42_background.svg?url';
@@ -38,13 +37,11 @@ const DEFAULT_STATE: BackgroundState = {
   pong: 'default',
 };
 
-// Mapping keys -> image url path (resolved via Vite imports)
 const BACKGROUND_URLS: Partial<Record<Exclude<BackgroundKey, 'default'>, string>> = {
   '42': bg42,
   'halloween': bghalloween,
   'matrix42': bgmatrix42,
   'snow': bgsnow,
-  // 'space' is rendered by SpaceBackground component (no image URL)
 };
 
 function loadState(): BackgroundState {
@@ -64,7 +61,6 @@ function persistState(partial: Partial<BackgroundState>) {
     if (partial.bombparty) localStorage.setItem(STORAGE_KEYS.bombparty, partial.bombparty);
     if (partial.pong) localStorage.setItem(STORAGE_KEYS.pong, partial.pong);
   } catch {
-    // ignore storage errors
   }
 }
 
@@ -72,7 +68,6 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
   const [state, setState] = useState<BackgroundState>(() => loadState());
 
   useEffect(() => {
-    // Ensure any missing defaults are written once
     persistState(state);
   }, []);
 

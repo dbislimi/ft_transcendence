@@ -1,7 +1,5 @@
 import type { GameState, Player } from './types';
 
-// classe contenant tous les getters du BombPartyEngine
-// separes pour une meilleure organisation du code
 export class BombPartyEngineGetters {
   private state: GameState;
   private currentSyllableUsageCount: number;
@@ -18,7 +16,14 @@ export class BombPartyEngineGetters {
   }
 
   getState(): GameState {
-    return { ...this.state };
+    return { 
+      ...this.state,
+      players: this.state.players.map(p => ({
+        ...p,
+        bonuses: { ...p.bonuses },
+        pendingEffects: { ...p.pendingEffects }
+      }))
+    };
   }
 
   getCurrentSyllableUsageCount(): number {
@@ -48,10 +53,7 @@ export class BombPartyEngineGetters {
   }
 
   getWordSuggestions(maxSuggestions: number = 5): string[] {
-    // pour le mode local, retourne des suggestions basiques
-    // en mode multiplayer, les suggestions viennent du backend
     if (!this.state.currentSyllable) return [];
-    // suggestions simplifiees pour le mode local
     return [];
   }
 
@@ -59,17 +61,32 @@ export class BombPartyEngineGetters {
     if (!this.state.currentSyllable) {
       return { syllable: '', availableWords: 0, totalWords: 0 };
     }
-    // pour le mode local, retourne des valeurs par defaut
-    // en mode multiplayer, les infos viennent du backend
     return { syllable: this.state.currentSyllable, availableWords: 0, totalWords: 0 };
   }
 
   getTurnDurationForCurrentPlayer(): number {
-    const base = this.state.baseTurnSeconds * 1000;
     const currentId = this.state.players[this.state.currentPlayerIndex]?.id;
+    
     if (currentId && this.state.pendingFastForNextPlayerId === currentId) {
       return 3000;
     }
-    return base;
+    
+    const difficulty = this.state.currentSyllableDifficulty || 'medium';
+    let baseDuration: number;
+    
+    switch (difficulty) {
+      case 'easy':
+        baseDuration = 12000;
+        break;
+      case 'hard':
+        baseDuration = 19000;
+        break;
+      case 'medium':
+      default:
+        baseDuration = 15000;
+        break;
+    }
+    
+    return Math.min(baseDuration, 25000);
   }
 }

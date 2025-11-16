@@ -23,21 +23,14 @@ interface LogContext {
   roomId?: string;
   playerId?: string;
   matchId?: number;
-  tournamentId?: string;
   userId?: number;
   [key: string]: any;
 }
 
-/**
- * Crée un logger avec contexte pour corrélation
- */
 function createContextLogger(context: LogContext) {
   return bombPartyLogger.child(context);
 }
 
-/**
- * Mesure la latence d'une opération
- */
 export function measureLatency<T>(
   operation: () => T | Promise<T>,
   context: LogContext,
@@ -116,9 +109,6 @@ export function logTurnEvent(
   createContextLogger(context).info({ event, duration }, 'Turn event');
 }
 
-/**
- * Journalise une tentative de triche
- */
 export function logCheatAttempt(
   playerId: string,
   roomId: string,
@@ -132,9 +122,6 @@ export function logCheatAttempt(
   createContextLogger(context).warn({ cheatType, details }, 'Cheat attempt detected');
 }
 
-/**
- * Journalise une latence réseau
- */
 export function logNetworkLatency(
   playerId: string,
   roomId: string,
@@ -149,9 +136,6 @@ export function logNetworkLatency(
   createContextLogger(context)[level]({ latency, operation }, 'Network latency');
 }
 
-/**
- * Journalise une erreur avec contexte complet
- */
 export function logError(
   error: Error | string,
   context: LogContext,
@@ -163,9 +147,6 @@ export function logError(
   createContextLogger(context)[level]({ error: errorMessage, stack: errorStack }, 'Error occurred');
 }
 
-/**
- * Journalise une métrique de performance
- */
 export function logMetric(
   metricName: string,
   value: number,
@@ -173,19 +154,4 @@ export function logMetric(
   unit?: string
 ): void {
   createContextLogger(context).info({ metric: metricName, value, unit }, 'Performance metric');
-}
-
-/**
- * Journalise un événement de tournoi
- */
-export function logTournamentEvent(
-  tournamentId: string,
-  event: string,
-  playerId?: string,
-  data?: any
-): void {
-  const context: LogContext = { tournamentId };
-  if (playerId) context.playerId = playerId;
-  
-  createContextLogger(context).info({ event, data }, 'Tournament event');
 }

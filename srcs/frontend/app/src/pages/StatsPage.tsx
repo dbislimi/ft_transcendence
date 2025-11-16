@@ -13,18 +13,15 @@ export default function StatsPage() {
   const location = useLocation();
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // Déterminer le jeu actuel depuis l'URL ou par défaut bombparty
   const getCurrentGame = (): GameType => {
     if (location.pathname.includes('/stats/pong')) return 'pong';
     if (location.pathname.includes('/stats/bombparty')) return 'bombparty';
-    return 'bombparty'; // Par défaut
+    return 'bombparty';
   };
 
   const [selectedGame, setSelectedGame] = useState<GameType>(getCurrentGame());
 
-  // Mettre à jour le jeu sélectionné quand l'URL change
   useEffect(() => {
-    // Rediriger vers /stats/bombparty si on est sur /stats sans spécifier le jeu
     if (location.pathname === '/stats') {
       navigate('/stats/bombparty', { replace: true });
       return;
@@ -33,7 +30,6 @@ export default function StatsPage() {
     setSelectedGame(currentGame);
   }, [location.pathname, navigate]);
 
-  // Animation d'entrée
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
   }, []);

@@ -1,42 +1,26 @@
 {
-    "nav": { 
-      "signin": "Sign in", 
-      "settings": "Settings",
-      "profile": "Profile",
-      "home": "Home",
-      "logout": "Logout"
-    },
-    "home": { 
-      "connectBtn": "Connect", 
-      "registrationBtn": "Registration", 
-      "gameBtn": "Game", 
-      "aboutBtn": "About Us", 
-      "subtitle": "Challenge your limits in the Pong universe",
-      "welcome": "Welcome, {{name}}!",
-      "connectDesc": "Access your account",
-      "registrationDesc": "Join the adventure",
-      "pongTitle": "Pong",
-      "pongDesc": "Launch Pong",
-      "shopDesc": "Customize the experience",
-      "bombPartyTitle": "Bomb Party",
-      "bombPartyDesc": "Launch Bomb Party",
-      "aboutDesc": "Discover the team",
-      "readyToTranscend": "Ready to transcend your limits?",
-      "optimalPerformance": "Optimal performance"
-    },
-    "game": { 
-      "start": "start", 
-      "stop": "stop", 
-      "speedUnit": "km/h",
-      "online": "Online",
-      "selectBotDifficulty": "Select bot difficulty",
-      "local": "Local",
-      "easy": "Easy",
-      "medium": "Medium",
-      "hard": "Hard",
-      "play": "Play",
-      "train": "Train"
-    },
+  "nav": {
+    "signin": "Sign in",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "home": {
+    "connectBtn": "Connect",
+    "registrationBtn": "Registration",
+    "aboutBtn": "About Us",
+    "subtitle": "Challenge your limits in the Pong universe",
+    "connectDesc": "Access your account",
+    "registrationDesc": "Join the adventure",
+    "pongTitle": "Pong",
+    "pongDesc": "Launch Pong",
+    "shopDesc": "Customize the experience",
+    "bombPartyTitle": "Bomb Party",
+    "bombPartyDesc": "Launch Bomb Party",
+    "aboutDesc": "Discover the team",
+    "readyToTranscend": "Ready to transcend your limits?",
+    "optimalPerformance": "Optimal performance"
+  },
   "about": {
     "title": "Our Team",
     "subtitle": "Discover the talents behind Transcendence",
@@ -58,94 +42,80 @@
       "openAria": "Open game information",
       "closeAria": "Close information sidebar",
       "howToGetTitle": "How to earn bonuses",
-      "streakRule": "Earn a random bonus every {{n}} valid words in a row.",
       "bonusesTitle": "Bonuses"
     },
-      "lobby": {
-        "title": "Lobby",
-        "createTab": "Create",
-        "joinTab": "Join",
-        "name": "Name",
-        "private": "Private",
-        "password": "Password",
-        "passwordOpt": "Optional password",
-        "create": "Create",
-        "join": "Join",
-        "connecting": "Connecting...",
-        "connected": "Connected",
-        "disconnected": "Disconnected",
-        "connectionRequired": "Connection required",
-        "lobbyId": "Lobby ID",
-        "playersCount": "Number of players",
-        "lobbyIdPlaceholder": "Paste lobby ID here...",
-        "lobbyIdHelp": "Ask the lobby creator for the ID",
-        "passwordPlaceholder": "Password (if lobby is private)",
-        "availableLobbies": "Available Lobbies",
-        "noLobbies": "No lobby available",
-        "noLobbiesDesc": "Create a new lobby to start playing!",
-        "refresh": "Refresh",
-        "joinPrivate": "Join a private lobby",
-        "privatePasswordDesc": "This lobby is password-protected. Please enter the password to join.",
-        "enterPassword": "Enter the password",
-        "cancel": "Cancel",
-        "inProgress": "In progress",
-        "full": "Full",
-        "waiting": "Waiting",
-        "justNow": "Just now",
-        "minutesAgo": "{minutes} min ago",
-        "hoursAgo": "{hours}h ago",
-        "daysAgo": "{days}d ago"
-      },
-    "playerNameModal": {
-      "title": "Choose your player name",
-      "description": "Enter a username to start playing Bomb Party",
-      "placeholder": "Player name",
-      "submit": "Start playing",
-      "validation": {
-        "tooShort": "Name must be at least 2 characters",
-        "tooLong": "Name must be at most 20 characters",
-        "invalidChars": "Only letters, numbers, spaces and dashes allowed"
-      }
+    "lobby": {
+      "title": "Lobby",
+      "createTab": "Create",
+      "joinTab": "Join",
+      "name": "Name",
+      "private": "Private",
+      "password": "Password",
+      "create": "Create",
+      "join": "Join",
+      "connecting": "Connecting...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connectionRequired": "Connection required",
+      "playersCount": "Number of players",
+      "availableLobbies": "Available Lobbies",
+      "noLobbies": "No lobby available",
+      "noLobbiesDesc": "Create a new lobby to start playing!",
+      "refresh": "Refresh",
+      "joinPrivate": "Join a private lobby",
+      "privatePasswordDesc": "This lobby is password-protected. Please enter the password to join.",
+      "enterPassword": "Enter the password",
+      "cancel": "Cancel",
+      "inProgress": "In progress",
+      "full": "Full",
+      "waiting": "Waiting",
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} min ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
     },
-    "debug": { "show": "Show debug", "hide": "Hide debug" },
+    "debug": {
+      "show": "Show debug",
+      "hide": "Hide debug"
+    },
     "chat": {
       "placeholder": "Type here...",
       "send": "Send",
       "inputAria": "Chat input",
-      "sendAria": "Send message",
-      "system": { "joined": "{{name}} joined", "left": "{{name}} left", "you": "You" }
+      "sendAria": "Send message"
     },
     "bonus": {
-      "title": "Bonus",
-      "inversion": { "name": "Inversion", "desc": "Reverse the turn order." },
-      "plus5sec": { "name": "+5 seconds", "desc": "Add 5s to the current timer." },
-      "vitesseEclair": { "name": "Lightning speed", "desc": "Next player has only 3s." },
-      "doubleChance": { "name": "Double chance", "desc": "Two tries on your next turn." }
-      ,
-      "extraLife": { "name": "Extra life", "desc": "Gain one extra life (max 9)." }
+      "inversion": {
+        "name": "Inversion"
+      },
+      "plus5sec": {
+        "name": "+5 seconds"
+      },
+      "vitesseEclair": {
+        "name": "Lightning speed"
+      },
+      "doubleChance": {
+        "name": "Double chance"
+      },
+      "extraLife": {
+        "name": "Extra life"
+      }
     },
     "menu": {
       "title": "Bomb Party",
       "subtitle": "Find words containing the given trigram before time runs out!",
       "playersCount": "Number of players",
-      "players": "players",
       "startGame": "Start Game",
       "rules": {
         "title": "Game Rules",
         "rule1": "Find words containing the trigram",
         "rule2": "Each player has 3 lives",
         "rule3": "15 seconds per turn",
-        "rule4": "Last survivor wins!",
-        "rule5": "Words must be in French and valid"
+        "rule4": "Last survivor wins!"
       }
     },
     "game": {
-      "countdown": "Starting in",
-      "turnIndicator": "Turn of",
-      "timeRemaining": "Time remaining",
-      "wordSuggestions": "Suggestions",
-      "suggestionsEnabled": "Suggestions enabled",
-      "suggestionsDisabled": "Suggestions disabled"
+      "countdown": "Starting in"
     },
     "rules": {
       "title": "Game Rules",
@@ -154,15 +124,12 @@
       "rule2": "Each turn is timed. If time runs out, you lose a life.",
       "rule3": "No duplicate words.",
       "rule4": "Last player standing wins.",
-      "continue": "I understand, continue",
-      "continueAria": "Continue to lobby",
       "modeSelection": "Mode Selection",
       "localMode": "Local Mode",
       "multiplayerMode": "Multiplayer Mode",
       "localPlayers": "Local Players",
       "localModeDesc": "Play alone or with others on the same screen",
       "multiplayerModeDesc": "Play online with other players",
-      "playersCount": "Number of players",
       "players": "players",
       "startLocalGame": "Start Local Game"
     },
@@ -172,20 +139,14 @@
       "submit": "Submit",
       "recentWords": "Recent words:",
       "errors": {
-        "tooShort": "Word must be at least 3 letters long",
-        "noTrigram": "Word must contain the trigram",
-        "duplicate": "Word already used",
-        "notInDictionary": "This word is not in the French dictionary"
+        "tooShort": "The word must contain at least 3 letters",
+        "duplicate": "This word has already been used in this game"
       }
     },
     "gameOver": {
       "title": "Game Over!",
-      "winner": "Winner: {{name}}",
       "backToMenu": "Back to Menu",
       "victory": "Victory!",
-      "winnerName": "{{name}}",
-      "winnerMessage": "Congratulations! You won the game!",
-      "livesRemaining": "{{count}} {{count, plural, one {life remaining} other {lives remaining}}} ❤️",
       "gameFinished": "Game finished!"
     },
     "players": {
@@ -195,9 +156,8 @@
       "waiting": "Waiting",
       "host": "Host",
       "waitingForPlayers": "Waiting for more players...",
-      "startingIn": "Starting in",
-      "startGame": "Start Game",
-      "leave": "Leave"
+      "leave": "Leave",
+      "start": "Start Game"
     },
     "hud": {
       "yourTurn": "Your turn",
@@ -225,7 +185,6 @@
         "ranking": "Ranking"
       },
       "overview": {
-        "title": "Overview",
         "matchStats": "Match statistics",
         "totalMatches": "Games played",
         "totalWins": "Victories",
@@ -239,7 +198,6 @@
         "otherStats": "Other statistics",
         "totalPlayTime": "Total playtime",
         "favoriteTrigramTitle": "Favorite trigram",
-        "favoriteTrigramDesc": "Your most played trigram",
         "none": "None"
       },
       "history": {
@@ -251,18 +209,14 @@
         "duration": "Duration",
         "result": "Result",
         "victory": "Victory",
-        "defeat": "Defeat",
-        "empty": "No games played",
-        "emptyDesc": "Your games will appear here once you play."
+        "defeat": "Defeat"
       },
       "trigrams": {
         "title": "Trigram statistics",
         "trigram": "Trigram",
         "attempts": "Attempts",
         "successRate": "Success rate",
-        "averageTime": "Average time",
-        "empty": "No trigram data",
-        "emptyDesc": "Your trigram statistics will appear here."
+        "averageTime": "Average time"
       },
       "ranking": {
         "title": "Global ranking",
@@ -272,77 +226,98 @@
         "games": "Games",
         "winRate": "Win rate",
         "bestStreak": "Best streak",
-        "you": "(You)",
-        "empty": "No players in ranking",
-        "emptyDesc": "Be the first to appear in the ranking!"
+        "you": "(You)"
       },
       "charts": {
         "trigramDistribution": "Trigram distribution"
       }
     }
-  }
-  ,
-  "profile": {
-    "title": "Profile",
-    "memberSince": "Member since {{date}}",
-    "stats": {
-      "games": "Games",
-      "wins": "Wins",
-      "winrate": "Win rate",
-      "playtime": "Play time"
-    },
-    "badges": { "title": "Badges" },
-    "playTime": "Play time",
-    "wins": "Wins",
-    "losses": "Losses",
-    "loading": "Loading profile...",
-    "error": "Failed to load profile",
-    "retry": "Retry",
-    "closeAria": "Close profile modal"
   },
   "shop": {
     "title": "Shop",
-    "sections": {
-      "backgrounds": "Backgrounds",
-      "themes": "Themes",
-      "accessibility": "Accessibility",
-      "performance": "Performance"
-    },
-    "categories": {
-      "general": "Backgrounds",
-      "fortnite": "Fortnite"
-    },
     "items": {
       "available": "available"
     },
     "equipped": "Equipped",
     "select": "Select",
-    "contrast": {
-      "title": "Contrast",
-      "description": "Adjust text contrast and brightness",
-      "veryLow": "Very Low",
-      "low": "Low",
-      "normal": "Normal",
-      "high": "High",
-      "veryHigh": "Very High",
-      "preview": "Text preview with this contrast level"
-    },
-    "animations": {
-      "title": "Animations",
-      "description": "Enable or disable animations and visual effects"
-    },
-    "energySaver": {
-      "title": "Energy Saver",
-      "description": "Reduce decorative effects to save battery"
+    "backgrounds": {
+      "default": {
+        "name": "Default",
+        "description": "Simple and clean background"
+      },
+      "42": {
+        "name": "42",
+        "description": "Iconic 42 logo"
+      },
+      "42background": {
+        "name": "42",
+        "description": "Iconic 42 logo"
+      },
+      "halloween": {
+        "name": "Halloween",
+        "description": "Mysterious Halloween atmosphere"
+      },
+      "matrix-42": {
+        "name": "Matrix 42",
+        "description": "Matrix style with code"
+      },
+      "snow": {
+        "name": "Snow",
+        "description": "Animated snowflakes"
+      },
+      "matrix": {
+        "name": "Matrix",
+        "description": "Digital Matrix effect"
+      },
+      "forest": {
+        "name": "Forest",
+        "description": "Natural forest landscape"
+      },
+      "grace": {
+        "name": "Grace",
+        "description": "Graceful and elegant atmosphere"
+      },
+      "batman": {
+        "name": "Batman",
+        "description": "Dark Gotham universe"
+      },
+      "dark-souls": {
+        "name": "Dark Souls",
+        "description": "Epic and mysterious atmosphere"
+      },
+      "the-last-of-us": {
+        "name": "The Last of Us",
+        "description": "Post-apocalyptic"
+      },
+      "windows95": {
+        "name": "Windows 95",
+        "description": "Nostalgia"
+      },
+      "bit-cloud": {
+        "name": "Bit Cloud",
+        "description": "Pixelated clouds"
+      },
+      "gta-5": {
+        "name": "Gta 5",
+        "description": "Urban night atmosphere"
+      },
+      "kitti": {
+        "name": "Kitti",
+        "description": "Kitten"
+      },
+      "interstellar": {
+        "name": "Interstellar",
+        "description": "Journey through the stars"
+      },
+      "pexels-padrinan-19670": {
+        "name": "Natural Landscape",
+        "description": "Panoramic nature view"
+      },
+      "pexels-umkreisel-app-956999": {
+        "name": "Starry Sky",
+        "description": "Starry night"
+      }
     }
-  },
-  "auth": {
-    "emailPlaceholder": "your@email.com",
-    "passwordPlaceholder": "••••••••",
-    "namePlaceholder": "Your full name",
-    "emailInvalid": "Invalid email.",
-    "passwordRequired": "Password is required.",
-    "passwordsDontMatch": "Passwords do not match"
   },
   "settings": {
     "display": {
@@ -367,7 +342,6 @@
       "contrastHigh": "High",
       "contrastVeryHigh": "Very High",
       "contrastPreview": "Text preview with this contrast level",
-      "normal": "Normal",
       "animations": "Animations",
       "animationsDesc": "Enable visual effects and transitions",
       "energySaver": "Energy Saver Mode",
@@ -385,25 +359,20 @@
     },
     "game": {
       "title": "Game",
-      "description": "Controls and preferences"
+      "description": "Controls and preferences",
+      "soundsEnabled": "Sounds enabled",
+      "soundsEnabledDesc": "Enable game sound effects",
+      "reducedMotion": "Reduce animations",
+      "reducedMotionDesc": "Reduce animations to improve performance",
+      "showFPS": "Show FPS",
+      "showFPSDesc": "Display frames per second",
+      "autoSave": "Changes are saved automatically",
+      "close": "Close"
     },
     "account": {
       "title": "Background Preferences",
       "description": "Background previews",
-      "profile": "Profile",
-      "security": "Security",
       "preferences": "Preferences",
-      "notAuthenticated": "Not authenticated",
-      "notAuthenticatedDesc": "Sign in to access account settings",
-      "notAuthenticatedSecurityDesc": "Sign in to access security settings",
-      "userInfo": "User information",
-      "displayName": "Display name",
-      "displayNamePlaceholder": "Your name",
-      "email": "Email",
-      "emailPlaceholder": "your@email.com",
-      "twoFactor": "Two-factor authentication",
-      "twoFactorDesc": "Add an extra layer of security to your account",
-      "twoFactorInfo": "Recommended for better security",
       "backgroundPreview": "Background preview",
       "backgroundPreviewDesc": "Previews of selected backgrounds for each mode",
       "lightModeBackground": "Light Mode",
@@ -416,29 +385,20 @@
     "home": {
       "description": "Return to home",
       "subtitle": "Return to the main page"
-    }
-  },
-  "common": { 
-    "back": "Back", 
-    "backAria": "Go back",
-    "goBackHome": "Go back home",
-    "error": "Error",
+    },
     "close": "Close"
   },
-  "accessibility": { "languageSwitcher": "Language selector" },
+  "common": {
+    "back": "Back",
+    "backAria": "Go back",
+    "close": "Close"
+  },
+  "accessibility": {
+    "languageSwitcher": "Language selector"
+  },
   "ui": {
     "background": {
-      "title": "Backgrounds",
-      "open": "Backgrounds",
-      "openAria": "Open background picker",
-      "selectAria": "Select background {{name}}",
-      "default": "Default",
-      "space": "Space (animated)",
       "defaultPreview": "Keep game's default",
-      "42": "42",
-      "halloween": "Halloween",
-      "matrix42": "Matrix 42",
-      "snow": "Snow",
       "active": "Active",
       "applyAll": "Use for all games"
     }

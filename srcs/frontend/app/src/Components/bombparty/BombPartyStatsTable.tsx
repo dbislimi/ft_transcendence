@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MatchHistory, TrigramStats, RankingEntry, StatsTableType } from './BombPartyStatsTypes';
+import type { MatchHistory, RankingEntry, StatsTableType } from './BombPartyStatsTypes';
 
 interface BombPartyStatsTableProps {
   type: StatsTableType;
-  data: MatchHistory[] | TrigramStats[] | RankingEntry[];
+  data: MatchHistory[] | RankingEntry[];
   user: any;
 }
 
@@ -81,57 +81,6 @@ export function BombPartyStatsTable({ type, data, user }: BombPartyStatsTablePro
                     }`}>
                       {match.isWin ? t('bombParty.stats.history.victory') : t('bombParty.stats.history.defeat')}
                     </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'trigrams') {
-    const trigramData = data as TrigramStats[];
-    return (
-      <div className="bg-slate-800 rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400">🔤 {t('bombParty.stats.trigrams.title')}</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-700">
-              <tr>
-                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.trigram')}</th>
-                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.attempts')}</th>
-                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.successRate')}</th>
-                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.trigrams.averageTime')}</th>
-                <th className="px-4 py-3 text-left text-slate-300">{t('bombParty.stats.history.date')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trigramData.map((stat) => (
-                <tr key={stat.trigram} className="border-b border-slate-700 hover:bg-slate-700/50">
-                  <td className="px-4 py-3">
-                    <span className="bg-cyan-600 text-white px-2 py-1 rounded text-sm font-mono">
-                      {stat.trigram.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-300">{stat.timesUsed}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center">
-                      <span className="text-slate-300 mr-2">{stat.successRate.toFixed(1)}%</span>
-                      <div className="w-16 bg-slate-600 rounded-full h-2">
-                        <div 
-                          className="bg-green-400 h-2 rounded-full" 
-                          style={{ width: `${stat.successRate}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-300">{(stat.averageTime / 1000).toFixed(1)}s</td>
-                  <td className="px-4 py-3 text-slate-300 text-sm">
-                    {formatDate(stat.lastUsed)}
                   </td>
                 </tr>
               ))}

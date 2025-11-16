@@ -29,7 +29,7 @@ export class StatsPersistence {
         [userId],
         (err, existingStats) => {
           if (err) {
-            console.error(' [Stats] Error fetching stats:', err);
+            console.error('stats error fetch', err);
             resolve({ success: false, error: err.message });
             return;
           }
@@ -45,7 +45,6 @@ export class StatsPersistence {
                 total_valid_words = ?, 
                 best_streak = ?, 
                 average_response_time = ?, 
-                favorite_trigram = COALESCE(?, favorite_trigram),
                 total_play_time = ?,
                 updated_at = CURRENT_TIMESTAMP
                WHERE user_id = ?`,
@@ -56,13 +55,12 @@ export class StatsPersistence {
                 computed.newTotalValidWords,
                 computed.newBestStreak,
                 computed.newAverageResponseTime,
-                matchData.favoriteTrigram,
                 computed.newTotalPlayTime,
                 userId
               ],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Error updating stats:', err);
+                  console.error('stats error update', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -76,8 +74,8 @@ export class StatsPersistence {
               `INSERT INTO bp_user_stats (
                 user_id, total_matches, total_wins, total_words_submitted, 
                 total_valid_words, best_streak, average_response_time, 
-                favorite_trigram, total_play_time
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                total_play_time
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 userId,
                 computed.totalMatches,
@@ -86,12 +84,11 @@ export class StatsPersistence {
                 computed.totalValidWords,
                 computed.bestStreak,
                 computed.averageResponseTime,
-                matchData.favoriteTrigram,
                 computed.totalPlayTime
               ],
               function(err) {
                 if (err) {
-                  console.error(' [Stats] Error creating stats:', err);
+                  console.error('stats error create', err);
                   resolve({ success: false, error: err.message });
                 } else {
                   resolve({ success: true });
@@ -136,65 +133,6 @@ export class StatsPersistence {
     });
   }
 
-  async updateTrigramStats(
-    userId: number,
-    trigram: string,
-    isSuccess: boolean,
-    responseTime: number
-  ): Promise<DBResult<void>> {
-    return new Promise((resolve) => {
-      this.model.getDatabase().get(
-        'SELECT * FROM bp_trigram_stats WHERE user_id = ? AND trigram = ?',
-        [userId, trigram],
-        (err, existingStats) => {
-          if (err) {
-            console.error(' [Stats] Error fetching trigram stats:', err);
-            resolve({ success: false, error: err.message });
-            return;
-          }
-
-          if (existingStats) {
-            const computed = computeUpdatedTrigramStats(existingStats, isSuccess, responseTime);
-            
-            this.model.getDatabase().run(
-              `UPDATE bp_trigram_stats SET 
-                times_used = ?, 
-                success_rate = ?, 
-                average_time = ?,
-                last_used = CURRENT_TIMESTAMP
-               WHERE user_id = ? AND trigram = ?`,
-              [computed.newTimesUsed, computed.newSuccessRate, computed.newAverageTime, userId, trigram],
-              function(err) {
-                if (err) {
-                  console.error(' [Stats] Error updating trigram stats:', err);
-                  resolve({ success: false, error: err.message });
-                } else {
-                  resolve({ success: true });
-                }
-              }
-            );
-          } else {
-            const computed = computeNewTrigramStats(isSuccess, responseTime);
-            
-            this.model.getDatabase().run(
-              `INSERT INTO bp_trigram_stats (
-                user_id, trigram, times_used, success_rate, average_time
-              ) VALUES (?, ?, ?, ?, ?)`,
-              [userId, trigram, computed.timesUsed, computed.successRate, computed.averageTime],
-              function(err) {
-                if (err) {
-                  console.error(' [Stats] Error creating trigram stats:', err);
-                  resolve({ success: false, error: err.message });
-                } else {
-                  resolve({ success: true });
-                }
-              }
-            );
-          }
-        }
-      );
-    });
-  }
 
   async getUserStats(userId: number): Promise<DBResult<UserStats>> {
     return new Promise((resolve) => {
@@ -249,25 +187,8 @@ export class StatsPersistence {
     userId: number, 
     limit: number = 10
   ): Promise<DBResult<TrigramStats[]>> {
-    return new Promise((resolve) => {
-      this.model.getDatabase().all(
-        `SELECT * FROM bp_trigram_stats 
-         WHERE user_id = ? 
-         ORDER BY times_used DESC, success_rate DESC 
-         LIMIT ?`,
-        [userId, limit],
-        (err, rows) => {
-          if (err) {
-            console.error(' [Stats] Error fetching trigram stats:', err);
-            resolve({ success: false, error: err.message });
-            return;
-          }
-
-          const stats: TrigramStats[] = rows.map(row => this.model.mapRowToTrigramStats(row));
-          resolve({ success: true, data: stats });
-        }
-      );
-    });
+    // table supprimee, retour vide
+    return Promise.resolve({ success: true, data: [] });
   }
 
   async getGlobalRanking(limit: number = 50): Promise<DBResult<RankingEntry[]>> {
@@ -285,7 +206,7 @@ export class StatsPersistence {
           END as win_rate
         FROM bp_user_stats s
         JOIN users u ON s.user_id = u.id
-        WHERE s.total_matches >= 5
+        WHERE s.total_matches >= 5 // filtre les joueurs avec trop peu de matchs
         ORDER BY s.total_wins DESC, win_rate DESC, s.best_streak DESC
         LIMIT ?`,
         [limit],

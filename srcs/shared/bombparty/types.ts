@@ -2,9 +2,28 @@ export const STREAK_FOR_BONUS = 3;
 export const DEFAULT_LIVES = 3;
 export const DEFAULT_TURN_DURATION = 15000;
 export const FAST_TURN_DURATION = 3000;
+export const MAX_BONUS_PER_TYPE = 2;
 
 export type GamePhase = 'LOBBY' | 'COUNTDOWN' | 'TURN_ACTIVE' | 'RESOLVE' | 'GAME_OVER';
 export type BonusKey = 'inversion' | 'plus5sec' | 'vitesseEclair' | 'doubleChance' | 'extraLife';
+export type BonusRarity = 'common' | 'uncommon' | 'rare';
+
+export const BONUS_WEIGHTS: Array<[BonusKey, number]> = [
+  ['extraLife', 5],
+  ['vitesseEclair', 15],
+  ['plus5sec', 25],
+  ['doubleChance', 25],
+  ['inversion', 30],
+];
+
+export const BONUS_RARITY: Record<BonusKey, BonusRarity> = {
+  extraLife: 'rare',
+  vitesseEclair: 'uncommon',
+  plus5sec: 'common',
+  doubleChance: 'common',
+  inversion: 'common',
+};
+export type SyllableDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface PlayerBonuses {
   inversion: number;
@@ -19,6 +38,7 @@ export interface Player {
   name: string;
   lives: number;
   isEliminated: boolean;
+  isSpectator?: boolean;
   streak: number;
   bonuses: PlayerBonuses;
   pendingEffects?: {
@@ -37,28 +57,32 @@ export interface GameState {
   phase: GamePhase;
   players: Player[];
   currentPlayerIndex: number;
-  currentSyllable: string; // Uniformisé: était currentTrigram
+  currentPlayerId: string;
+  currentSyllable: string;
+  currentSyllableDifficulty?: SyllableDifficulty;
   usedWords: string[];
-  turnEndsAt: number;
+  turnStartedAt: number;
+  turnDurationMs: number;
   turnOrder: string[];
   turnDirection: 1 | -1;
   baseTurnSeconds: number;
-  activeTurnEndsAt?: number;
   pendingFastForNextPlayerId?: string;
+  turnEndsAt?: number;
+  activeTurnEndsAt?: number;
   history: Array<{
     playerId: string;
     word: string;
     ok: boolean;
     msTaken: number;
   }>;
+  stateVersion?: number;
+  sequenceNumber?: number;
 }
 
 export interface ValidationResult {
   ok: boolean;
-  reason?: 'too_short' | 'no_syllable' | 'duplicate' | 'invalid_chars'; // Uniformisé: était no_trigram
+  reason?: 'too_short' | 'no_syllable' | 'duplicate' | 'invalid_chars' | 'not_in_dictionary';
 }
-
-//  WebSocket Protocol Types 
 
 export interface BPLobbyCreateMessage {
   event: 'bp:lobby:create';
@@ -110,7 +134,6 @@ export type BPClientMessage =
   | BPBonusActivateMessage;
 
 
-// Server -> Client messages
 export interface BPLobbyCreatedMessage {
   event: 'bp:lobby:created';
   payload: {
@@ -178,7 +201,6 @@ export type BPServerMessage =
   | BPGameEndMessage
   | BPBonusAppliedMessage;
 
-//  Room & Lobby Types 
 export interface Room {
   id: string;
   name: string;
@@ -186,12 +208,11 @@ export interface Room {
   password?: string;
   maxPlayers: number;
   players: Map<string, { id: string; name: string; ws: any }>;
-  gameEngine?: any; // BombPartyEngine instance
+  gameEngine?: any;
   createdAt: number;
   startedAt?: number;
 }
 
-//  Database Types 
 export interface BPMatch {
   id: number;
   room_id: string;
@@ -215,49 +236,62 @@ export interface BPParticipant {
   is_eliminated: boolean;
 }
 
-//  Tournament Types 
-export type TournamentStatus = 'WAITING' | 'ROUND_IN_PROGRESS' | 'FINISHED' | 'CANCELLED';
-export type MatchStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED' | 'FORFEIT';
 
-export interface TournamentPlayer {
+export type BadgeRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export type BadgeType = 
+  | 'first_win'
+  | 'streak_10'
+  | 'streak_20'
+  | 'perfect_game'
+  | 'speed_demon'
+  | 'word_master'
+  | 'survivor'
+  | 'centurion'
+  | 'undefeated'
+  | 'trigram_expert';
+
+export interface Badge {
   id: string;
+  type: BadgeType;
   name: string;
-  joinedAt: number;
+  description: string;
+  icon: string;
+  rarity: BadgeRarity;
+  unlockedAt?: Date;
 }
 
-export interface TournamentMatch {
-  matchId: string;
-  roomId?: string;
-  players: TournamentPlayer[];
-  winnerId?: string;
-  loserId?: string;
-  status: MatchStatus;
-  startedAt?: number;
-  endedAt?: number;
+export interface Level {
+  level: number;
+  xpRequired: number;
+  title: string;
+  rewards?: {
+    themes?: string[];
+    avatars?: string[];
+  };
 }
 
-export interface TournamentRound {
-  roundNumber: number;
-  matches: TournamentMatch[];
-  status: 'PENDING' | 'IN_PROGRESS' | 'FINISHED';
+export interface UserProgress {
+  userId: number;
+  level: number;
+  currentXp: number;
+  totalXp: number;
+  xpToNextLevel: number;
+  badges: Badge[];
+  unlockedThemes: string[];
+  unlockedAvatars: string[];
+  currentTheme?: string;
+  currentAvatar?: string;
+  streak: number;
+  longestStreak: number;
+  lastWinStreak?: number;
 }
 
-export interface TournamentBracket {
-  rounds: TournamentRound[];
-  currentRound: number;
-  totalRounds: number;
-}
-
-export interface Tournament {
+export interface Achievement {
   id: string;
-  capacity: number;
-  players: TournamentPlayer[];
-  bracket?: TournamentBracket;
-  status: TournamentStatus;
-  createdAt: number;
-  startedAt?: number;
-  finishedAt?: number;
-  winnerId?: string;
-  password?: string;
-  isPrivate: boolean;
+  badgeType: BadgeType;
+  condition: (stats: any) => boolean;
+  description: string;
 }
+
+

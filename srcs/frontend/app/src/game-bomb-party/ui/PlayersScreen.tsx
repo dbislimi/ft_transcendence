@@ -23,9 +23,7 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
   const [isCountingDown, setIsCountingDown] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
-
   const canStart = players.length >= 2 && isHost;
-
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -34,29 +32,21 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
       }
     };
   }, []);
-
   const handleStart = () => {
-    console.log('[PlayersScreen] handleStart called', { canStart, isCountingDown, players: players.length, isHost, hasStarted: hasStartedRef.current });
     if (!canStart || isCountingDown || hasStartedRef.current) {
-      console.log('[PlayersScreen] Start blocked:', { canStart, isCountingDown, hasStarted: hasStartedRef.current });
       return;
     }
-    
     hasStartedRef.current = true;
-    console.log('[PlayersScreen] Starting countdown');
     setIsCountingDown(true);
     setCountdown(3);
-    
     intervalRef.current = window.setInterval(() => {
       setCountdown(prev => {
-        console.log('[PlayersScreen] Countdown:', prev);
         if (prev <= 1) {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
           setIsCountingDown(false);
-          console.log('[PlayersScreen] Calling onStart()');
           onStart();
           return 0;
         }
@@ -78,14 +68,10 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               {players.length}/{maxPlayers} {t("bombParty.players.players")}
             </div>
           </div>
-
-          {/* ID du lobby */}
           <div className="mb-6 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
             <div className="text-slate-300 text-sm mb-1">{t("bombParty.players.roomId")}</div>
             <div className="text-cyan-400 font-mono text-lg">{roomId}</div>
           </div>
-
-          {/* Liste des joueurs */}
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-300 mb-4">
               {t("bombParty.players.waiting")}
@@ -94,8 +80,7 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               {players.map((player, index) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600"
-                >
+                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
                       {index + 1}
@@ -111,8 +96,6 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               ))}
             </div>
           </div>
-
-          {/* Messages d'attente */}
           {players.length < maxPlayers && (
             <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <div className="text-yellow-400 text-center">
@@ -120,24 +103,18 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               </div>
             </div>
           )}
-
-          {/* Boutons d'action */}
           <div className="flex gap-4">
-            {/* Bouton Start pour l'hôte */}
             {isHost && (
               <button
                 onClick={handleStart}
                 disabled={!canStart || isCountingDown}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold rounded-lg hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold rounded-lg hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
                 {isCountingDown ? `${countdown}...` : t("bombParty.players.start")}
               </button>
             )}
-            
             <button
               onClick={onLeave}
-              className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all duration-200"
-            >
+              className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all duration-200">
               {t("bombParty.players.leave")}
             </button>
           </div>

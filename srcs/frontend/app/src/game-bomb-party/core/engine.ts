@@ -1,8 +1,9 @@
-import type { GameState, GamePhase, Player, GameConfig, BonusKey } from './types';
+import type { GameState, GamePhase, Player, GameConfig, BonusKey, PlayerBonuses } from './types';
 import { STREAK_FOR_BONUS } from './types';
 import { validateWithDictionary, validateLocal } from '../data/validator';
 import { BombPartyEngineGetters } from './engine-getters';
 import { getRandomSyllable } from '../data/syllableLoader';
+import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '@shared/bombparty/types';
 
 export class BombPartyEngine {
   private state: GameState;
@@ -30,8 +31,11 @@ export class BombPartyEngine {
       phase: 'LOBBY',
       players: [],
       currentPlayerIndex: 0,
+      currentPlayerId: '',
       currentSyllable: '',
       usedWords: [],
+      turnStartedAt: 0,
+      turnDurationMs: 15000,
       turnEndsAt: 0,
       turnOrder: [],
       turnDirection: 1,
@@ -59,8 +63,11 @@ export class BombPartyEngine {
       phase: 'COUNTDOWN',
       players,
       currentPlayerIndex: 0,
+      currentPlayerId: players[0]?.id || '',
       currentSyllable: '',
       usedWords: [],
+      turnStartedAt: 0,
+      turnDurationMs: config.turnDurationMs,
       turnEndsAt: 0,
       turnOrder: players.map(p => p.id),
       turnDirection: 1,
@@ -94,7 +101,9 @@ export class BombPartyEngine {
     this.doubleChanceConsumedThisTurn = false;
 
     const duration = this.getTurnDurationForCurrentPlayer();
-    const now = performance.now();
+    const now = Date.now();
+    this.state.turnStartedAt = now;
+    this.state.turnDurationMs = duration;
     this.state.turnEndsAt = now + duration;
     this.state.activeTurnEndsAt = this.state.turnEndsAt;
     const curId = this.state.players[this.state.currentPlayerIndex]?.id;
@@ -104,8 +113,6 @@ export class BombPartyEngine {
   }
 
   private getNewSyllable(): string {
-    // pour le mode local, on utilise les syllabes du fichier syllabes.json
-    // en mode multiplayer, la syllabe vient du backend
     const newSyllable = getRandomSyllable(this.lastSyllable);
     this.lastSyllable = newSyllable;
     return newSyllable;
@@ -139,10 +146,8 @@ export class BombPartyEngine {
       if (p?.pendingEffects?.doubleChance && !this.doubleChanceConsumedThisTurn) {
         this.doubleChanceConsumedThisTurn = true;
         if (p.pendingEffects) p.pendingEffects.doubleChance = false;
-        // ne pas changer la phase : le joueur peut reessayer sur le meme tour
         return { ok: false, reason: validation.reason, consumedDoubleChance: true };
       }
-      // mot invalide sans double chance : passer a la phase RESOLVE
       this.state.phase = 'RESOLVE';
       return { ok: false, reason: validation.reason };
     }
@@ -160,12 +165,20 @@ export class BombPartyEngine {
       return;
     }
 
-    console.log('Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
+    const livesBefore = currentPlayer.lives;
+    console.log('Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives, 'wordValid:', wordValid, 'timeExpired:', timeExpired);
     if (!wordValid || timeExpired) {
       currentPlayer.streak = 0;
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
+      console.log('[BombPartyEngine] Perte de vie:', {
+        playerName: currentPlayer.name,
+        livesBefore,
+        livesAfter: currentPlayer.lives,
+        reason: timeExpired ? 'Timer expiré' : 'Mot invalide'
+      });
       if (currentPlayer.lives === 0) {
         currentPlayer.isEliminated = true;
+        console.log('[BombPartyEngine] Joueur éliminé:', currentPlayer.name);
       }
     }
 
@@ -255,13 +268,42 @@ export class BombPartyEngine {
     this.updateGetters();
   }
 
-  // --- Bonuses mechanics ---
+  private selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
+    const availableBonuses = BONUS_WEIGHTS.filter(([key]) => {
+      const currentCount = playerBonuses[key] || 0;
+      return currentCount < MAX_BONUS_PER_TYPE;
+    });
+
+    if (availableBonuses.length === 0) {
+      return null;
+    }
+
+    const totalWeight = availableBonuses.reduce((sum, [, weight]) => sum + weight, 0);
+    
+    let random = Math.random() * totalWeight;
+    
+    for (const [key, weight] of availableBonuses) {
+      random -= weight;
+      if (random <= 0) {
+        return key;
+      }
+    }
+    
+    return availableBonuses[0][0];
+  }
+
   private giveRandomBonus(playerId: string): void {
     const p = this.state.players.find(pl => pl.id === playerId);
     if (!p) return;
-    const keys: BonusKey[] = ['inversion', 'plus5sec', 'vitesseEclair', 'doubleChance', 'extraLife'];
-    const key = keys[Math.floor(Math.random() * keys.length)];
-    p.bonuses[key] = (p.bonuses[key] || 0) + 1;
+    
+    const selectedBonus = this.selectWeightedBonus(p.bonuses);
+    
+    if (selectedBonus) {
+      const currentCount = p.bonuses[selectedBonus] || 0;
+      if (currentCount < MAX_BONUS_PER_TYPE) {
+        p.bonuses[selectedBonus] = currentCount + 1;
+      }
+    }
   }
 
   activateBonus(playerId: string, bonusKey: BonusKey): { ok: boolean; meta?: any } {
@@ -276,7 +318,6 @@ export class BombPartyEngine {
         return { ok: true };
       case 'plus5sec':
         if (this.state.phase === 'TURN_ACTIVE' && this.state.activeTurnEndsAt) {
-          // Ajouter 5 secondes au temps de fin du tour
           this.state.activeTurnEndsAt += 5000;
           this.state.turnEndsAt = this.state.activeTurnEndsAt;
           p.bonuses.plus5sec -= 1;
@@ -284,7 +325,6 @@ export class BombPartyEngine {
         }
         return { ok: false };
       case 'vitesseEclair':
-        // target next player alive
         const targetIdx = this.peekNextAliveIndex();
         const targetId = targetIdx >= 0 ? this.state.players[targetIdx].id : undefined;
         if (targetId) {

@@ -42,20 +42,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
-    console.log('[AuthContext] Init: user=', savedUser ? 'PRESENT' : 'MISSING', 'token=', savedToken ? 'PRESENT' : 'MISSING');
     
-    // ne considerer l'utilisateur comme authentifie QUE si user ET token existent
     if (savedUser && savedToken) {
       try {
         const userData = JSON.parse(savedUser);
         
-        // verifie si le token n'est pas expire
         const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
-        const expiresAt = tokenPayload.exp * 1000; // Convertir en millisecondes
+        const expiresAt = tokenPayload.exp * 1000;
         const now = Date.now();
         
         if (expiresAt < now) {
-          console.warn('[AuthContext] Token expired, clearing authentication');
           localStorage.removeItem('user');
           localStorage.removeItem('token');
           setUser(null);
@@ -67,7 +63,6 @@ useEffect(() => {
         setUser(userData);
         setToken(savedToken);
         setIsAuthenticated(true);
-        console.log('[AuthContext] Restored authentication for user:', userData.name, '(token expires in', Math.round((expiresAt - now) / 1000 / 60), 'minutes)');
       } catch (error) {
         console.error('Erreur lors du chargement des données utilisateur:', error);
         localStorage.removeItem('user');
@@ -77,8 +72,6 @@ useEffect(() => {
         setIsAuthenticated(false);
       }
     } else {
-      // Si l'un des deux manque, nettoyer tout
-      console.log('[AuthContext] Incomplete auth data, clearing');
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       setUser(null);

@@ -22,7 +22,6 @@ export function useGameWebsocket(
 		function doConnect(authToken: string | null) {
 			if (stopped || isConnecting) return;
 			
-			// ferme la connexion precedente si elle existe
 			if (ws && ws.readyState !== WebSocket.CLOSED) {
 				ws.close();
 				ws = null;
@@ -30,9 +29,6 @@ export function useGameWebsocket(
 			
 			isConnecting = true;
 			
-			// determine l'url du websocket en fonction de l'environnement
-			// en production ou sur reseau local, utiliser window.location.hostname
-			// le backend ecoute sur le port 3001
 			const wsHost = window.location.hostname === 'localhost' 
 				? 'localhost:3001' 
 				: `${window.location.hostname}:3001`;
@@ -54,14 +50,12 @@ export function useGameWebsocket(
 				
 				ws.onclose = (event) => {
 					isConnecting = false;
-					// ne pas logger les fermetures normales ou celles causees par le cleanup
 					if (!stopped && event.code !== 1000) {
 						console.log(`[ws:${api}] closed (code: ${event.code})`);
 					}
 				};
 				
 				ws.onerror = (err) => {
-					// Ignorer les erreurs si on est en train de nettoyer
 					if (!stopped) {
 						console.error(`[ws:${api}] error:`, err);
 					}
@@ -76,18 +70,13 @@ export function useGameWebsocket(
 
 		console.log(`[ws:${api}] Auth check: authenticated=${isAuthenticated}, token=${token ? 'PRESENT' : 'MISSING'}`);
 		
-		// pour le jeu pong, permettre une tentative de connexion meme sans token
-		// le backend decidera s'il accepte ou non (mode offline peut necessiter auth selon config)
 		if (token) {
 			console.log(`[ws:${api}] Connecting with authentication`);
 			doConnect(token);
 		} else {
-			// tente une connexion sans token pour le mode offline
-			// le backend peut fermer la connexion s'il necessite l'auth
 			console.log(`[ws:${api}] Attempting connection without token (may be rejected by server)`);
 			doConnect(null);
 			
-			// surveille l'arrivee du token pour reconnecter avec auth si disponible
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;
@@ -104,7 +93,6 @@ export function useGameWebsocket(
 						poll = null;
 					}
 				} else if (attempts > 40) {
-					// arrete de surveiller apres 20 secondes
 					if (poll) {
 						clearInterval(poll);
 						poll = null;
@@ -119,7 +107,6 @@ export function useGameWebsocket(
 				clearInterval(poll);
 				poll = null;
 			}
-			// Fermer la connexion seulement si elle est ouverte ou en cours de connexion
 			if (ws) {
 				const readyState = ws.readyState;
 				if (readyState === WebSocket.OPEN || readyState === WebSocket.CONNECTING) {

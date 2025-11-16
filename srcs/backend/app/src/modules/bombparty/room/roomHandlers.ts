@@ -1,5 +1,7 @@
 import { BombPartyEngine } from '../GameEngine.ts';
 import { v4 as uuidv4 } from 'uuid';
+import { bombPartyLogger } from '../log.ts';
+
 import type { 
   Room, 
   PlayerConnection, 
@@ -12,6 +14,7 @@ import type {
   GameInputResult,
   ActivateBonusResult
 } from './roomTypes.ts';
+
 import { 
   broadcastToRoom, 
   getPlayersList, 
@@ -20,6 +23,17 @@ import {
   validateGameStart,
   cleanupEmptyRoom
 } from './roomUtils.ts';
+
+import {
+  validatePlayerId,
+  validateRoomId,
+  validateMsTaken,
+  isHost,
+  isPlayerInRoom,
+  isCurrentPlayer,
+  canActivateBonus,
+  sanitizeWord
+} from '../security.ts';
 
 export function handleCreateRoom(
   creatorId: string,
@@ -30,33 +44,33 @@ export function handleCreateRoom(
   players: Map<string, PlayerConnection>,
   rooms: Map<string, Room>
 ): CreateRoomResult {
+  if (!validatePlayerId(creatorId)) {
+    return { success: false, error: 'Invalid player ID' };
+  }
   const creator = players.get(creatorId);
-  const validation = validateRoomCreation(creator, maxPlayers);
-  
+  const validation = validateRoomCreation(creator, maxPlayers, roomName, password);
   if (!validation.valid) {
     return { success: false, error: validation.error };
   }
-
   const roomId = uuidv4();
+  const normalizedRoomName = roomName.trim();
   const room: Room = {
     id: roomId,
-    name: roomName,
+    name: normalizedRoomName,
     isPrivate,
-    password,
+    password: password ? password.trim() : undefined,
     maxPlayers: validation.validMaxPlayers!,
     players: new Map(),
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    hostId: creatorId 
   };
-
   room.players.set(creatorId, {
     id: creatorId,
     name: creator!.name,
     ws: creator!.ws
   });
-
   creator!.roomId = roomId;
   rooms.set(roomId, room);
-
   return { success: true, roomId, maxPlayers: validation.validMaxPlayers };
 }
 
@@ -67,25 +81,45 @@ export function handleJoinRoom(
   players: Map<string, PlayerConnection>,
   rooms: Map<string, Room>
 ): JoinRoomResult {
+  if (!validatePlayerId(playerId)) {
+    return { success: false, error: 'Invalid player ID' };
+  }
+  if (!validateRoomId(roomId)) {
+    return { success: false, error: 'Invalid room ID' };
+  }
   const player = players.get(playerId);
-  const room = rooms.get(roomId);
-  
+  const room = rooms.get(roomId);  
+  if (player?.roomId === roomId && room) {
+    const playersList = getPlayersList(room);
+    return { success: true, players: playersList, maxPlayers: room.maxPlayers };
+  }
   const validation = validateRoomJoin(player, room, password);
   if (!validation.valid) {
     return { success: false, error: validation.error };
   }
 
-  room!.players.set(playerId, {
-    id: playerId,
-    name: player!.name,
-    ws: player!.ws
-  });
-
+  const existingPlayer = room!.players.get(playerId);
+  if (existingPlayer) {
+    if (!existingPlayer.sockets) {
+      existingPlayer.sockets = new Set([existingPlayer.ws]);
+    }
+    existingPlayer.sockets.add(player!.ws);
+  } else {
+    room!.players.set(playerId, {
+      id: playerId,
+      name: player!.name,
+      ws: player!.ws,
+      sockets: new Set([player!.ws])
+    }); // gestion multi-onglets: meme joueur, nouveau websocket
+  }
   player!.roomId = roomId;
-
+  
+  if ((room as any).emptyRoomTimeout) {
+    clearTimeout((room as any).emptyRoomTimeout);
+    (room as any).emptyRoomTimeout = undefined;
+    bombPartyLogger.info({ roomId, playerId }, '✅ Joueur rejoint - annulation suppression room vide');
+  }
   const playersList = getPlayersList(room!);
-
-  // Notifier le nouveau joueur qu'il a rejoint
   broadcastToRoom(room, {
     event: 'bp:lobby:joined',
     payload: {
@@ -96,7 +130,6 @@ export function handleJoinRoom(
       isHost: false
     }
   }, [playerId]);
-
   broadcastToRoom(room, {
     event: 'bp:lobby:player_joined',
     payload: {
@@ -106,8 +139,7 @@ export function handleJoinRoom(
       players: playersList,
       maxPlayers: room!.maxPlayers
     }
-  }, []);
-
+  }, [playerId]);
   return { success: true, players: playersList, maxPlayers: room!.maxPlayers };
 }
 
@@ -116,8 +148,17 @@ export function handleLeaveRoom(
   roomId: string,
   players: Map<string, PlayerConnection>,
   rooms: Map<string, Room>,
-  roomEngines: Map<string, BombPartyEngine>
+  roomEngines: Map<string, BombPartyEngine>,
+  ws?: WebSocket
 ): LeaveRoomResult {
+  if (!validatePlayerId(playerId)) {
+    return { success: false, error: 'Invalid player ID' };
+  }
+  
+  if (!validateRoomId(roomId)) {
+    return { success: false, error: 'Invalid room ID' };
+  }
+  
   const player = players.get(playerId);
   const room = rooms.get(roomId);
 
@@ -132,26 +173,59 @@ export function handleLeaveRoom(
   if (player.roomId !== roomId) {
     return { success: false, error: 'Not in this room' };
   }
+  
+  let newHostId: string | undefined;
+  if (room.hostId === playerId && room.players.size > 1) {
+    const remainingPlayers = Array.from(room.players.keys()).filter(id => id !== playerId);
+    if (remainingPlayers.length > 0) {
+      newHostId = remainingPlayers[0];
+      room.hostId = newHostId;
+    }
+  }
 
-  room.players.delete(playerId);
-  player.roomId = undefined;
+  const roomPlayer = room.players.get(playerId);
+  if (roomPlayer) {
+    if (ws && roomPlayer.sockets && roomPlayer.sockets.size > 1) {
+      roomPlayer.sockets.delete(ws);
+      if (roomPlayer.ws === ws && roomPlayer.sockets.size > 0) {
+        roomPlayer.ws = Array.from(roomPlayer.sockets)[0];
+      }
+    } else {
+      room.players.delete(playerId);
+      player.roomId = undefined;
+    }
+  } else {
+    player.roomId = undefined;
+  }
 
   const playersList = getPlayersList(room);
+  
+  const playerStillInRoom = room.players.has(playerId);
+  
+  const hasGameInProgress = roomEngines.has(roomId);
+  const gracePeriodMs = hasGameInProgress ? 10000 : 0; // delai avant suppression si partie en cours
+  
+  cleanupEmptyRoom(room, roomId, rooms, roomEngines, gracePeriodMs);
 
-  cleanupEmptyRoom(room, roomId, rooms, roomEngines);
-
-  if (room.players.size > 0) {
-    broadcastToRoom(room, {
+  if (playerStillInRoom === false && room.players.size > 0) {
+    const leftMessage: any = {
       event: 'bp:lobby:left',
       payload: {
         roomId,
         playerId,
         players: playersList
       }
-    });
+    };
+
+    if (newHostId) {
+      leftMessage.payload.newHostId = newHostId;
+      leftMessage.payload.hostTransferred = true;
+    }
+
+    broadcastToRoom(room, leftMessage);
   }
 
-  return { success: true };
+  return { success: true, newHostId };
 }
 
 export function handleStartGame(
@@ -160,12 +234,27 @@ export function handleStartGame(
   rooms: Map<string, Room>,
   roomEngines: Map<string, BombPartyEngine>
 ): StartGameResult {
-  console.log('[BombParty DEBUG] ========== handleStartGame() CALLED ==========');
-  console.log('[BombParty DEBUG] roomId:', roomId, 'playerId:', playerId);
+  if (!validatePlayerId(playerId)) {
+    return { success: false, error: 'Invalid player ID' };
+  }
+  
+  if (!validateRoomId(roomId)) {
+    return { success: false, error: 'Invalid room ID' };
+  }
   
   const room = rooms.get(roomId);
   if (!room) {
+    bombPartyLogger.warn({ roomId, playerId }, 'Room not found in handleStartGame');
     return { success: false, error: 'Room not found' };
+  }
+
+  if (!isPlayerInRoom(room, playerId)) {
+    return { success: false, error: 'Player not in room' };
+  }
+
+  if (!isHost(room, playerId)) {
+    bombPartyLogger.warn({ roomId, playerId, hostId: room.hostId }, 'Only host can start game');
+    return { success: false, error: 'Only the host can start the game' };
   }
 
   const validation = validateGameStart(room, roomEngines.has(roomId));
@@ -181,10 +270,6 @@ export function handleStartGame(
   
   room.startedAt = Date.now();
 
-  // Don't broadcast incomplete state here - wait for startTurn() to initialize everything
-  // The first complete state will be sent after startTurn() completes
-
-  // Envoyer l'événement bp:game:countdown pour démarrer le compte à rebours
   const countdownStartTime = Date.now();
   const countdownDuration = 3000; // 3 secondes
   
@@ -203,7 +288,6 @@ export function handleStartGame(
     if (gameEngine && currentRoom) {
       gameEngine.startCountdown();
       
-      // Envoyer l'événement bp:game:start pour indiquer que le jeu démarre
       broadcastToRoom(currentRoom, {
         event: 'bp:game:start',
         payload: {
@@ -214,9 +298,7 @@ export function handleStartGame(
       setTimeout(() => {
         if (roomEngines.has(roomId)) {
           gameEngine.startTurn();
-          broadcastTurnStarted(roomId, roomEngines, rooms);
-          // First broadcast with complete state happens here (forceFull = true)
-          broadcastGameState(roomId, roomEngines, rooms, true);
+          broadcastTurnStartedWithState(roomId, roomEngines, rooms, true);
         }
       }, 3000);
     }
@@ -225,44 +307,105 @@ export function handleStartGame(
   return { success: true };
 }
 
-export function handleGameInput(
+export async function handleGameInput(
   playerId: string,
   roomId: string,
   word: string,
   msTaken: number,
   roomEngines: Map<string, BombPartyEngine>,
   rooms: Map<string, Room>
-): GameInputResult {
-  const engine = roomEngines.get(roomId);
-  if (!engine) {
-    return { success: false, error: 'Game not found' };
-  }
+): Promise<GameInputResult> {
+  try {
+    if (!validatePlayerId(playerId)) {
+      return { success: false, error: 'Invalid player ID' };
+    }
+    
+    if (!validateRoomId(roomId)) {
+      return { success: false, error: 'Invalid room ID' };
+    }
+    
+    const room = rooms.get(roomId);
+    if (!room) {
+      return { success: false, error: 'Room not found' };
+    }
 
-  const currentPlayer = engine.getCurrentPlayer();
-  if (!currentPlayer || currentPlayer.id !== playerId) {
-    return { success: false, error: 'Not your turn' };
-  }
+    if (!isPlayerInRoom(room, playerId)) {
+      return { success: false, error: 'Player not in room' };
+    }
 
-  const result = engine.submitWord(word, msTaken);
-  
-  if (result.ok) {
-    // mot valide : resoudre le tour et passer au suivant
-    engine.resolveTurn(true, false);
-    broadcastTurnStarted(roomId, roomEngines, rooms);
-    broadcastGameState(roomId, roomEngines, rooms);
-  } else if (result.consumedDoubleChance) {
-    // double chance consommee : ne pas resoudre le tour, le joueur peut reessayer
-    // ne pas appeler resolveTurn ni broadcastTurnStarted
-    // juste mettre a jour l'etat pour informer que le bonus a ete consomme
-    broadcastGameState(roomId, roomEngines, rooms);
-  } else {
-    // mot invalide sans double chance : resoudre le tour et passer au suivant
-    engine.resolveTurn(false, false);
-    broadcastTurnStarted(roomId, roomEngines, rooms);
-    broadcastGameState(roomId, roomEngines, rooms);
-  }
+    const engine = roomEngines.get(roomId);
+    if (!engine) {
+      bombPartyLogger.warn({ roomId, playerId }, 'Game not found in handleGameInput');
+      return { success: false, error: 'Game not found' };
+    }
 
-  return { success: true };
+    const state = engine.getState();
+    
+    if (!isCurrentPlayer(state, playerId)) {
+      bombPartyLogger.warn({ roomId, playerId, currentPlayerId: state.currentPlayerId }, 'Not player turn in handleGameInput');
+      return { success: false, error: 'Not your turn' };
+    }
+
+    const sanitizedWord = sanitizeWord(word);
+    
+    if (sanitizedWord.length < 3) {
+      return { success: false, error: 'Word too short' };
+    }
+
+    const msValidation = validateMsTaken(
+      msTaken, 
+      state.turnStartedAt, 
+      state.turnDurationMs,
+      playerId,
+      roomId
+    );
+    
+    if (!msValidation.valid) {
+      bombPartyLogger.warn({ 
+        playerId, 
+        roomId, 
+        msTaken, 
+        turnStartedAt: state.turnStartedAt,
+        turnDurationMs: state.turnDurationMs,
+        reason: msValidation.reason 
+      }, '❌ msTaken validation failed - rejecting submission');
+      return { 
+        success: false, 
+        error: `Invalid time value: ${msValidation.reason || 'msTaken validation failed'}` 
+      };
+    }
+    
+    const correctedMsTaken = msValidation.corrected || msTaken;
+    
+    if (msValidation.corrected && msValidation.corrected !== msTaken) {
+      bombPartyLogger.info({ 
+        playerId, 
+        roomId, 
+        originalMsTaken: msTaken,
+        correctedMsTaken,
+        reason: msValidation.reason,
+        turnStartedAt: state.turnStartedAt,
+        realTime: Date.now() - state.turnStartedAt
+      }, '✅ msTaken corrected by server (source of truth)');
+    }
+
+    const result = engine.submitWord(sanitizedWord, correctedMsTaken);
+    
+    if (result.ok) {
+      engine.resolveTurn(true, false);
+      broadcastTurnStartedWithState(roomId, roomEngines, rooms);
+    } else if (result.consumedDoubleChance) {
+      broadcastGameState(roomId, roomEngines, rooms);
+    } else {
+      engine.resolveTurn(false, false);
+      broadcastTurnStartedWithState(roomId, roomEngines, rooms);
+    }
+
+    return { success: true };
+  } catch (error) {
+    bombPartyLogger.error({ roomId, playerId, error }, 'Error in handleGameInput');
+    return { success: false, error: 'Internal server error processing game input' };
+  }
 }
 
 export function handleActivateBonus(
@@ -272,30 +415,66 @@ export function handleActivateBonus(
   roomEngines: Map<string, BombPartyEngine>,
   rooms: Map<string, Room>
 ): ActivateBonusResult {
-  const engine = roomEngines.get(roomId);
-  if (!engine) {
-    return { success: false, error: 'Game not found' };
-  }
-
-  const result = engine.activateBonus(playerId, bonusKey);
-  
-  if (result.ok) {
+  try {
+    if (!validatePlayerId(playerId)) {
+      return { success: false, error: 'Invalid player ID' };
+    }
+    
+    if (!validateRoomId(roomId)) {
+      return { success: false, error: 'Invalid room ID' };
+    }
+    
     const room = rooms.get(roomId);
-    broadcastToRoom(room, {
-      event: 'bp:bonus:applied',
-      payload: {
-        roomId,
-        playerId,
-        bonusKey,
-        appliedAt: Date.now(),
-        meta: result.meta
+    if (!room) {
+      return { success: false, error: 'Room not found' };
+    }
+
+    if (!isPlayerInRoom(room, playerId)) {
+      return { success: false, error: 'Player not in room' };
+    }
+
+    const engine = roomEngines.get(roomId);
+    if (!engine) {
+      bombPartyLogger.warn({ roomId, playerId, bonusKey }, 'Game not found in handleActivateBonus');
+      return { success: false, error: 'Game not found' };
+    }
+
+    const state = engine.getState();
+    
+    const bonusCheck = canActivateBonus(state, playerId, bonusKey);
+    if (!bonusCheck.allowed) {
+      bombPartyLogger.warn({ roomId, playerId, bonusKey, reason: bonusCheck.reason }, 'Cannot activate bonus');
+      return { success: false, error: bonusCheck.reason || 'Cannot activate bonus' };
+    }
+
+    const result = engine.activateBonus(playerId, bonusKey);
+    
+    if (result.ok) {
+      const room = rooms.get(roomId);
+      if (!room) {
+        bombPartyLogger.warn({ roomId, playerId }, 'Room not found when broadcasting bonus');
+        return { success: false, error: 'Room not found' };
       }
-    });
+      
+      broadcastToRoom(room, {
+        event: 'bp:bonus:applied',
+        payload: {
+          roomId,
+          playerId,
+          bonusKey,
+          appliedAt: Date.now(),
+          meta: result.meta
+        }
+      });
 
-    broadcastGameState(roomId, roomEngines, rooms);
+      broadcastGameState(roomId, roomEngines, rooms);
+    }
+
+    return { success: result.ok, meta: result.meta };
+  } catch (error) {
+    bombPartyLogger.error({ roomId, playerId, bonusKey, error }, 'Error in handleActivateBonus');
+    return { success: false, error: 'Internal server error activating bonus' };
   }
-
-  return { success: result.ok, meta: result.meta };
 }
 
 export function handlePlayerDisconnect(
@@ -315,28 +494,21 @@ export function handlePlayerDisconnect(
       const wasCurrentPlayer = engine?.getCurrentPlayer()?.id === playerId;
       room.players.delete(playerId);
       
-      // Si c'était le joueur actuel et qu'il reste des joueurs, résoudre le tour
       if (room.players.size > 0 && engine && wasCurrentPlayer) {
-        // Résoudre le tour comme échoué (timeout)
         engine.resolveTurn(false, true);
         broadcastGameState(player.roomId, roomEngines, rooms);
         
-        // Vérifier si la partie est terminée
         if (engine.isGameOver()) {
           handleGameEnd(player.roomId, roomEngines, rooms);
         } else {
-          // Si la partie continue, s'assurer qu'il y a encore des joueurs vivants
           const aliveCount = engine.getAlivePlayersCount();
           if (aliveCount < 2) {
-            // Plus assez de joueurs, terminer la partie
             handleGameEnd(player.roomId, roomEngines, rooms);
           }
         }
       } else if (room.players.size === 0) {
-        // Plus de joueurs dans la room, nettoyer complètement
         cleanupEmptyRoom(room, player.roomId, rooms, roomEngines);
       } else if (engine && !wasCurrentPlayer) {
-        // Le joueur déconnecté n'était pas le joueur actuel, juste mettre à jour l'état
         broadcastGameState(player.roomId, roomEngines, rooms);
       }
     }
@@ -369,12 +541,10 @@ export function handleGameEnd(
 
   broadcastToRoom(room, endMessage);
 
-  // Nettoyage explicite du roomEngine et de l'état pour éviter les fuites mémoire
   roomEngines.delete(roomId);
   room.startedAt = undefined;
-  room.lastGameState = undefined; // Nettoyer l'état précédent
+  room.lastGameState = undefined;
   
-  // Réinitialiser l'état de la room pour permettre une nouvelle partie
   if (room.players.size === 0) {
     rooms.delete(roomId);
   }
@@ -390,7 +560,6 @@ export function broadcastTurnStarted(
   if (!engine || !room) return;
 
   const event = engine.getTurnStartedEvent();
-  // Utiliser le préfixe bp: pour la cohérence avec les autres événements
   broadcastToRoom(room, {
     event: 'bp:turn:started',
     payload: {
@@ -400,35 +569,106 @@ export function broadcastTurnStarted(
   });
 }
 
-// Calcule les différences entre deux états de jeu pour créer un delta
-function calculateStateDelta(prevState: any, currentState: any): any {
+export function broadcastTurnStartedWithState(
+  roomId: string,
+  roomEngines: Map<string, BombPartyEngine>,
+  rooms: Map<string, Room>,
+  forceFull: boolean = false
+): void {
+  const engine = roomEngines.get(roomId);
+  const room = rooms.get(roomId);
+  if (!engine || !room) return;
+
+  const turnEvent = engine.getTurnStartedEvent();
+  const currentState = engine.getState();
+  const prevState = room.lastGameState;
+  
+  if (!room.sequenceNumber) room.sequenceNumber = 0;
+  room.sequenceNumber++;
+  if (!room.stateVersion) room.stateVersion = 0;
+  room.stateVersion++;
+  
+  let winner: any = undefined;
+  if (currentState.phase === 'GAME_OVER') {
+    winner = engine.getWinner();
+  }
+  
+  const stateWithVersion = {
+    ...currentState,
+    winner: winner || undefined,
+    stateVersion: room.stateVersion,
+    sequenceNumber: room.sequenceNumber
+  };
+  
+  let payload: any;
+  if (forceFull || !prevState) {
+    payload = {
+      roomId,
+      gameState: stateWithVersion,
+      full: true,
+      sequenceNumber: room.sequenceNumber,
+      stateVersion: room.stateVersion,
+      turnStarted: turnEvent
+    };
+  } else {
+    const delta = calculateStateDelta(prevState, currentState, winner);
+    payload = {
+      roomId,
+      delta,
+      full: delta.full || false,
+      sequenceNumber: room.sequenceNumber,
+      stateVersion: room.stateVersion,
+      turnStarted: turnEvent
+    };
+    
+    if (delta.full) {
+      payload.gameState = stateWithVersion;
+    }
+  }
+  
+  // fallback pour anciens environnements sans structuredClone
+  if (typeof structuredClone !== 'undefined') {
+    room.lastGameState = structuredClone(currentState);
+  } else {
+    room.lastGameState = JSON.parse(JSON.stringify(currentState));
+  }
+  
+  broadcastToRoom(room, {
+    event: 'bp:game:state',
+    payload
+  });
+}
+
+function calculateStateDelta(prevState: any, currentState: any, winner?: any): any {
   if (!prevState) {
-    // Premier état, envoyer tout
     return { full: true, gameState: currentState };
   }
 
   const delta: any = { full: false };
+  let changeCount = 0;
   
-  // Comparer les champs principaux
   if (prevState.phase !== currentState.phase) {
     delta.phase = currentState.phase;
+    changeCount++;
   }
   
-  if (prevState.currentPlayerIndex !== currentState.currentPlayerIndex) {
+  const playerIndexChanged = prevState.currentPlayerIndex !== currentState.currentPlayerIndex;
+  if (playerIndexChanged) {
     delta.currentPlayerIndex = currentState.currentPlayerIndex;
     delta.currentPlayerId = currentState.currentPlayerId;
+    changeCount++;
   }
   
   if (prevState.currentSyllable !== currentState.currentSyllable) {
     delta.currentSyllable = currentState.currentSyllable;
+    changeCount++;
   }
   
-  // Comparer les joueurs (vies, élimination, streak, bonus)
   if (prevState.players.length !== currentState.players.length) {
     delta.players = currentState.players;
+    changeCount += 2;
   } else {
     const playerDeltas: any[] = [];
-    let hasPlayerChanges = false;
     
     for (let i = 0; i < currentState.players.length; i++) {
       const prev = prevState.players[i];
@@ -437,41 +677,55 @@ function calculateStateDelta(prevState: any, currentState: any): any {
       if (!prev || 
           prev.lives !== curr.lives ||
           prev.isEliminated !== curr.isEliminated ||
-          prev.streak !== curr.streak ||
-          JSON.stringify(prev.bonuses) !== JSON.stringify(curr.bonuses)) {
-        playerDeltas.push({ index: i, player: curr });
-        hasPlayerChanges = true;
+          prev.streak !== curr.streak) {
+        const bonusesChanged = prev.bonuses.inversion !== curr.bonuses.inversion ||
+          prev.bonuses.plus5sec !== curr.bonuses.plus5sec ||
+          prev.bonuses.vitesseEclair !== curr.bonuses.vitesseEclair ||
+          prev.bonuses.doubleChance !== curr.bonuses.doubleChance ||
+          prev.bonuses.extraLife !== curr.bonuses.extraLife;
+        
+        if (bonusesChanged || prev.lives !== curr.lives || prev.isEliminated !== curr.isEliminated) {
+          playerDeltas.push({ index: i, player: curr });
+          changeCount++;
+        }
       }
     }
     
-    if (hasPlayerChanges) {
+    if (playerDeltas.length > 0) {
       delta.players = playerDeltas;
     }
   }
   
-  // Comparer les mots utilisés
   if (prevState.usedWords.length !== currentState.usedWords.length) {
     delta.usedWords = currentState.usedWords;
     delta.newWords = currentState.usedWords.slice(prevState.usedWords.length);
+    changeCount++;
   }
   
-  // Comparer l'historique
-  if (prevState.history.length !== currentState.history.length) {
-    delta.history = currentState.history.slice(prevState.history.length);
-  }
-  
-  // Comparer les timers
   if (prevState.turnStartedAt !== currentState.turnStartedAt) {
     delta.turnStartedAt = currentState.turnStartedAt;
+    changeCount++;
   }
   
   if (prevState.turnDurationMs !== currentState.turnDurationMs) {
     delta.turnDurationMs = currentState.turnDurationMs;
+    changeCount++;
   }
   
-  // Si trop de changements, envoyer l'état complet
-  const deltaKeys = Object.keys(delta).filter(k => k !== 'full');
-  if (deltaKeys.length > 5) {
+  if (currentState.phase === 'GAME_OVER') {
+    const currentWinner = winner !== undefined ? winner : currentState.winner;
+    const prevWinner = prevState.winner;
+    
+    if (!prevWinner || 
+        (currentWinner && prevWinner?.id !== currentWinner?.id) ||
+        prevState.phase !== 'GAME_OVER') {
+      delta.winner = currentWinner;
+      changeCount++;
+    }
+  }
+  
+  // si trop de changements, on envoie l'etat complet (plus efficace)
+  if (changeCount > 3) {
     return { full: true, gameState: currentState };
   }
   
@@ -491,34 +745,53 @@ export function broadcastGameState(
   const currentState = engine.getState();
   const prevState = room.lastGameState;
   
-  // Calculer le delta ou envoyer l'état complet
+  if (!room.sequenceNumber) room.sequenceNumber = 0;
+  room.sequenceNumber++;
+  if (!room.stateVersion) room.stateVersion = 0;
+  room.stateVersion++;
+  
+  let winner: any = undefined;
+  if (currentState.phase === 'GAME_OVER') {
+    winner = engine.getWinner();
+  }
+  
+  const stateWithVersion = {
+    ...currentState,
+    winner: winner || undefined,
+    stateVersion: room.stateVersion,
+    sequenceNumber: room.sequenceNumber
+  };
+  
   let payload: any;
   if (forceFull || !prevState) {
-    // Premier état ou forcer l'état complet
     payload = {
       roomId,
-      gameState: currentState,
-      full: true
+      gameState: stateWithVersion,
+      full: true,
+      sequenceNumber: room.sequenceNumber,
+      stateVersion: room.stateVersion
     };
   } else {
-    // Envoyer seulement les changements
-    const delta = calculateStateDelta(prevState, currentState);
+    const delta = calculateStateDelta(prevState, currentState, winner);
     payload = {
       roomId,
       delta,
-      full: delta.full || false
+      full: delta.full || false,
+      sequenceNumber: room.sequenceNumber,
+      stateVersion: room.stateVersion
     };
     
-    // Si c'est un delta complet, inclure l'état pour compatibilité
     if (delta.full) {
-      payload.gameState = currentState;
+      payload.gameState = stateWithVersion;
     }
   }
   
-  // Stocker l'état actuel pour la prochaine comparaison
-  room.lastGameState = JSON.parse(JSON.stringify(currentState));
-  
-  console.log(`[BombParty DEBUG] broadcastGameState -> currentSyllable=${currentState.currentSyllable}, delta=${!forceFull && prevState ? 'yes' : 'no'}`);
+  // fallback pour anciens environnements sans structuredClone
+  if (typeof structuredClone !== 'undefined') {
+    room.lastGameState = structuredClone(currentState);
+  } else {
+    room.lastGameState = JSON.parse(JSON.stringify(currentState));
+  }
   
   broadcastToRoom(room, {
     event: 'bp:game:state',

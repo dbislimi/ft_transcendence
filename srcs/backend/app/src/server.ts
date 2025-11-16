@@ -52,11 +52,9 @@ async function main() {
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 
-	// DB (sqlite instance exported from ../index.js)
-	// dbPlugin is the sqlite Database object (not a Fastify plugin), decorate fastify with it
+	// db vient de ../index.js (sqlite)
 	fastify.decorate('db', dbPlugin as any);
 
-	// Ensure online statuses reset
 	await new Promise<void>((resolve, reject) => {
 		fastify.db.run("UPDATE users SET online = 0", (err: any) => {
 			if (err) {
@@ -83,9 +81,6 @@ async function main() {
 	await fastify.register(settingsPlugin);
 	await fastify.register(matchesPlugin);
 	await fastify.register(friendsPlugin);
-
-	// BombParty modules (keep existing functionality)
-	// gameController and chat are registered by wsController, avoid double-registration
 	await fastify.register(bombPartyWSHandlers);
 
 	console.log('[Stats] Enregistrement des routes de statistiques...');
@@ -530,3 +525,4 @@ function cleanupConnection(connection: any) {
 */
 
 // Removed duplicate listen; server is started inside main()
+

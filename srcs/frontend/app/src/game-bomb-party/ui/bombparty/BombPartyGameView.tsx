@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BombPartyHooksState } from './BombPartyHooks';
 import { BottomLeftDebugSuggestions } from './BombPartyUI';
+import { useBombPartyStore } from '../../../store/useBombPartyStore';
+import SettingsModal from '../SettingsModal';
 
 interface BombPartyGameViewProps {
   state: BombPartyHooksState;
@@ -16,7 +18,15 @@ interface BombPartyGameViewProps {
   gameMode: 'local' | 'multiplayer';
 }
 
-const SUGGESTIONS_ENABLED = true;
+function getSyllableDifficulty(availableWords: number): 'easy' | 'medium' | 'hard' {
+  if (availableWords >= 100) {
+    return 'easy';
+  } else if (availableWords >= 50) {
+    return 'medium';
+  } else {
+    return 'hard';
+  }
+}
 
 export default function BombPartyGameView({
   state,
@@ -31,17 +41,65 @@ export default function BombPartyGameView({
   gameMode
 }: BombPartyGameViewProps) {
   const { t } = useTranslation();
+  const { userPreferences } = useBombPartyStore();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const playersCountForLayout = state.gameState.players.length;
   const radiusBoost = Math.max(0, (playersCountForLayout - 8) * 15);
 
+  const filteredSuggestions = useMemo(() => {
+    if (!userPreferences.suggestionsEnabled || userPreferences.suggestionsCount === 0) {
+      return [];
+    }
+
+    if (state.gameState.phase !== 'TURN_ACTIVE' || !state.gameState.currentSyllable || !isCurrentPlayerTurn()) {
+      return [];
+    }
+
+    const syllableInfo = engine.getCurrentSyllableInfo();
+    const allSuggestions = engine.getWordSuggestions(10);
+
+    if (userPreferences.suggestionsDifficulty !== 'all' && syllableInfo) {
+      const syllableDifficulty = getSyllableDifficulty(syllableInfo.availableWords);
+      
+      if (syllableDifficulty !== userPreferences.suggestionsDifficulty) {
+        return [];
+      }
+    }
+
+    return allSuggestions.slice(0, userPreferences.suggestionsCount);
+  }, [
+    userPreferences.suggestionsEnabled,
+    userPreferences.suggestionsCount,
+    userPreferences.suggestionsDifficulty,
+    state.gameState.phase,
+    state.gameState.currentSyllable,
+    state.gameState.currentPlayerId,
+    engine
+  ]);
+
+  const syllableInfo = useMemo(() => {
+    if (state.gameState.phase === 'TURN_ACTIVE' && state.gameState.currentSyllable) {
+      return engine.getCurrentSyllableInfo();
+    }
+    return null;
+  }, [state.gameState.phase, state.gameState.currentSyllable, engine]);
+
+  const shouldShowSuggestions = 
+    userPreferences.suggestionsEnabled &&
+    userPreferences.suggestionsCount > 0 &&
+    state.gameState.phase === 'TURN_ACTIVE' &&
+    state.gameState.currentSyllable &&
+    isCurrentPlayerTurn() &&
+    filteredSuggestions.length > 0;
+
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {SUGGESTIONS_ENABLED && state.gameState.phase === 'TURN_ACTIVE' && state.gameState.currentSyllable && isCurrentPlayerTurn() && (
+      {shouldShowSuggestions && (
         <BottomLeftDebugSuggestions
           title={t('bombParty.hud.wordSuggestions')}
-          words={engine.getWordSuggestions(5)}
-          syllableInfo={engine.getCurrentSyllableInfo()}
+          words={filteredSuggestions}
+          syllableInfo={syllableInfo}
         />
       )}
 
@@ -52,6 +110,13 @@ export default function BombPartyGameView({
             className="px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-all duration-200"
           >
             {t('bombParty.backToMenu')}
+          </button>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition-all duration-200"
+            aria-label={t('bombParty.settings.open', 'Ouvrir les paramètres')}
+          >
+            ⚙️
           </button>
         </div>
 
@@ -67,6 +132,8 @@ export default function BombPartyGameView({
           </div>
         )}
       </div>
+
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

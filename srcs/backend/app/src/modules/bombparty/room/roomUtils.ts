@@ -11,10 +11,16 @@ export function broadcastToRoom(
   
   for (const [playerId, playerData] of room.players) {
     if (!excludePlayerIds.includes(playerId)) {
-      try {
-        playerData.ws.send(messageStr);
-      } catch (error) {
-        console.error('[BombParty] Erreur envoi message:', error);
+      const socketsToSend = playerData.sockets ? Array.from(playerData.sockets) : [playerData.ws];
+      
+      for (const ws of socketsToSend) {
+        try {
+          if (ws.readyState === 1) {
+            ws.send(messageStr);
+          }
+        } catch (error) {
+          console.error('[BombParty] Erreur envoi message:', error);
+        }
       }
     }
   }
@@ -40,16 +46,21 @@ export function validateRoomJoin(
     return { valid: false, error: 'Salle non trouvée' };
   }
 
-  if (player.roomId) {
-    return { valid: false, error: 'Déjà dans une salle' };
+  if (player.roomId && player.roomId !== room.id) {
+    return { valid: false, error: 'Déjà dans une autre salle' };
   }
 
   if (room.players.size >= room.maxPlayers) {
     return { valid: false, error: 'Salle pleine' };
   }
 
-  if (room.isPrivate && room.password !== password) {
-    return { valid: false, error: 'Mot de passe incorrect' };
+  if (room.isPrivate) {
+    if (!password || password.trim().length === 0) {
+      return { valid: false, error: 'Mot de passe requis pour ce lobby' };
+    }
+    if (room.password !== password) {
+      return { valid: false, error: 'Mot de passe incorrect' };
+    }
   }
 
   return { valid: true };
@@ -57,7 +68,9 @@ export function validateRoomJoin(
 
 export function validateRoomCreation(
   creator: PlayerConnection | undefined,
-  maxPlayers?: number
+  maxPlayers?: number,
+  roomName?: string,
+  password?: string
 ): { valid: boolean; error?: string; validMaxPlayers?: number } {
   if (!creator) {
     return { valid: false, error: 'Joueur non trouvé' };
@@ -65,6 +78,28 @@ export function validateRoomCreation(
 
   if (creator.roomId) {
     return { valid: false, error: 'Déjà dans une salle' };
+  }
+
+  if (roomName !== undefined) {
+    const trimmedName = roomName.trim();
+    if (trimmedName.length === 0) {
+      return { valid: false, error: 'Le nom du lobby ne peut pas être vide' };
+    }
+    if (trimmedName.length > 50) {
+      return { valid: false, error: 'Le nom du lobby ne peut pas dépasser 50 caractères' };
+    }
+    if (!/^[a-zA-Z0-9\s\-_àáâãäåèéêëìíîïòóôõöùúûüýÿçÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝŸÇ]+$/.test(trimmedName)) {
+      return { valid: false, error: 'Le nom du lobby contient des caractères invalides' };
+    }
+  }
+
+  if (password !== undefined && password !== null && password !== '') {
+    if (password.length < 3) {
+      return { valid: false, error: 'Le mot de passe doit contenir au moins 3 caractères' };
+    }
+    if (password.length > 20) {
+      return { valid: false, error: 'Le mot de passe ne peut pas dépasser 20 caractères' };
+    }
   }
 
   const validMaxPlayers = Math.max(2, Math.min(12, maxPlayers || 4));
@@ -87,18 +122,47 @@ export function cleanupEmptyRoom(
   room: Room,
   roomId: string,
   rooms: Map<string, Room>,
-  roomEngines: Map<string, any>
+  roomEngines: Map<string, any>,
+  gracePeriodMs: number = 0
 ): void {
   if (room.players.size === 0) {
-    // Nettoyer le roomEngine pour éviter les fuites mémoire
+    const hasGameInProgress = roomEngines.has(roomId);
+    
+    if (hasGameInProgress && gracePeriodMs > 0) {
+      console.log(`[RoomUtils] Room vide avec partie en cours - grace period de ${gracePeriodMs}ms avant suppression`, { roomId });
+      
+      if (!(room as any).emptyRoomTimeout) {
+        (room as any).emptyRoomTimeout = setTimeout(() => {
+          if (room.players.size === 0) {
+            console.log(`[RoomUtils] Grace period expiré - suppression de la room vide`, { roomId });
+            if (roomEngines.has(roomId)) {
+              roomEngines.delete(roomId);
+            }
+            room.lastGameState = undefined;
+            rooms.delete(roomId);
+            room.startedAt = undefined;
+          } else {
+            console.log(`[RoomUtils] Room n'est plus vide - annulation de la suppression`, { roomId, playerCount: room.players.size });
+          }
+          (room as any).emptyRoomTimeout = undefined;
+        }, gracePeriodMs);
+      }
+      return;
+    }
+    
+    console.log(`[RoomUtils] Suppression immédiate de la room vide`, { roomId, hasGame: hasGameInProgress });
+    
     if (roomEngines.has(roomId)) {
       roomEngines.delete(roomId);
     }
-    // Nettoyer l'état précédent
     room.lastGameState = undefined;
-    // Supprimer la room
     rooms.delete(roomId);
-    // Réinitialiser startedAt si défini
     room.startedAt = undefined;
+  } else {
+    if ((room as any).emptyRoomTimeout) {
+      console.log(`[RoomUtils] Room n'est plus vide - annulation du timeout de suppression`, { roomId, playerCount: room.players.size });
+      clearTimeout((room as any).emptyRoomTimeout);
+      (room as any).emptyRoomTimeout = undefined;
+    }
   }
 }
