@@ -40,6 +40,7 @@ export default function ChatWidget() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("en vrai 3echek montre t'a quoi en bien : ", data.users);
 
         // Mise à jour de la liste des utilisateurs en ligne
         if (data.type === "users") {
@@ -88,6 +89,9 @@ export default function ChatWidget() {
   };
 
   if (!user) return null;
+  console.log("user.id : ", user.id);
+  console.log("user.id : ", user);
+
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
@@ -117,7 +121,8 @@ export default function ChatWidget() {
                   view === "users" ? "bg-blue-800" : "hover:bg-blue-700"
                 }`}
               >
-                Utilisateurs en ligne
+                
+                chat privé
               </button>
             </div>
             <button onClick={() => setOpen(false)} className="hover:text-gray-200">

@@ -47,8 +47,9 @@ useEffect(() => {
     // Ne considérer l'utilisateur comme authentifié QUE si user ET token existent
     if (savedUser && savedToken) {
       try {
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         const userData = JSON.parse(savedUser);
-        
+        console.log("le user id de authcontext : ", userData.id + userData.name);
         // Vérifier si le token n'est pas expiré
         const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
         const expiresAt = tokenPayload.exp * 1000; // Convertir en millisecondes

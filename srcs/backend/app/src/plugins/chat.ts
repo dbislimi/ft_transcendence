@@ -29,10 +29,25 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     });
   }
 
+  // --- NOUVELLE FONCTION ---
+  // Récupère la liste des IDs bloqués PAR un utilisateur
+  async function getBlockedIds(blockerId: number): Promise<number[]> {
+    return new Promise((resolve, reject) => {
+      fastify.db.all(
+        "SELECT blockedId FROM blocks WHERE blockerId = ?",
+        [blockerId],
+        (err, rows: { blockedId: number }[]) => {
+          if (err) reject(err);
+          else resolve(rows.map(r => r.blockedId));
+        }
+      );
+    });
+  }
+
   // Envoi vers un client spécifique
   function sendToClient(client: Client, data: any) {
     try {
-      if (client.socket.readyState === 1) {
+      if (client.socket.readyState === 1) { // 1 = OPEN
         client.socket.send(JSON.stringify(data));
       }
     } catch (err) {
@@ -40,12 +55,32 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
   }
 
-  // Envoie la liste des utilisateurs connectés à tous
-  function broadcastUsers() {
-    const users = clients.map(c => ({ id: c.id, name: c.name }));
-    for (const c of clients) {
-      if (c.socket.readyState === 1) {
-        c.socket.send(JSON.stringify({ type: "users", users }));
+  // --- FONCTION MISE À JOUR ---
+  // Envoie la liste des utilisateurs connectés à tous (maintenant personnalisée)
+  async function broadcastUsers() {
+    // 1. Obtenir la liste de base de tous les utilisateurs connectés
+    const allUsers = clients.map(c => ({ id: c.id, name: c.name }));
+
+    // 2. Envoyer une liste personnalisée à chaque client
+    for (const client of clients) {
+      if (client.socket.readyState !== 1) continue; // 1 = OPEN
+
+      try {
+        // 3. Récupérer les IDs que CE client a bloqués
+        const blockedIds = await getBlockedIds(client.id);
+
+        // 4. Créer la liste personnalisée pour CE client
+        const usersForThisClient = allUsers.map(user => ({
+          ...user,
+          // Marquer comme bloqué si l'ID de l'utilisateur est dans la liste des bloqués
+          blocked: blockedIds.includes(user.id),
+        }));
+
+        // 5. Envoyer la liste personnalisée
+        sendToClient(client, { type: "users", users: usersForThisClient });
+
+      } catch (err) {
+        fastify.log.error(`Erreur broadcastUsers pour ${client.name}:`, err);
       }
     }
   }
@@ -64,7 +99,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
       fastify.log.info(`✅ ${client.name} connecté (${clients.length} clients)`);
 
-      // Envoie la liste des utilisateurs à tous
+      // Envoie la liste des utilisateurs à tous (maintenant personnalisée)
       broadcastUsers();
 
       // Réception de message
@@ -108,17 +143,29 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           if (data.type === "block") {
             fastify.db.run(
               "INSERT OR IGNORE INTO blocks (blockerId, blockedId) VALUES (?, ?)",
-              [client.id, data.userId]
+              [client.id, data.userId],
+              (err) => { // Ajout du callback
+                if (err) return fastify.log.error("Erreur DB block:", err);
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} bloqué` });
+                // --- AJOUT IMPORTANT ---
+                // Rediffuser la liste des utilisateurs pour que le statut "bloqué" soit à jour
+                broadcastUsers();
+              }
             );
-            sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} bloqué` });
           }
 
           if (data.type === "unblock") {
             fastify.db.run(
               "DELETE FROM blocks WHERE blockerId = ? AND blockedId = ?",
-              [client.id, data.userId]
+              [client.id, data.userId],
+              (err) => { // Ajout du callback
+                if (err) return fastify.log.error("Erreur DB unblock:", err);
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} débloqué` });
+                // --- AJOUT IMPORTANT ---
+                // Rediffuser la liste des utilisateurs
+                broadcastUsers();
+              }
             );
-            sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} débloqué` });
           }
         } catch (err) {
           fastify.log.error("Erreur message WS :", err);
@@ -127,8 +174,12 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
       socket.on("close", () => {
         const index = clients.findIndex(c => c.socket === socket);
-        if (index !== -1) clients.splice(index, 1);
-        fastify.log.info(`❌ ${client.name} déconnecté (${clients.length} restants)`);
+        if (index !== -1) {
+          const [removedClient] = clients.splice(index, 1);
+          fastify.log.info(`❌ ${removedClient.name} déconnecté (${clients.length} restants)`);
+        } else {
+            fastify.log.info(`❌ Client inconnu déconnecté`);
+        }
         broadcastUsers();
       });
     } catch (err) {

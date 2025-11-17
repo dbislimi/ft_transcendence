@@ -174,7 +174,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
           else resolve(row);
         });
       });
-      console.log("le user id que j'utilise moi " + user.id);
       if (!user) {
         return reply.code(401).send({ error: "Utilisateur non trouvé." });
       }
@@ -212,6 +211,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       JWT_SECRET,
       { expiresIn: "2h" }
     );
+    console.log("l'id au moment de la connection : ", user.id);
       /* dylan         user: {
           id: user.id,
           name: user.name,
