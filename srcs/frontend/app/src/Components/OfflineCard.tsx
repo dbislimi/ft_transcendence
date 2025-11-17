@@ -26,17 +26,21 @@ export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
 				<div className="space-y-6">
 					<ChoiceGroup
 						label="Players"
-						options={["solo", "duo", "training"]}
+						options={["solo", "duo"]}
 						value={gamemode}
 						onChange={(val) => setGamemode(val)}
-						columns={3}
+						columns={2}
 						color="cyan"
 						variant="lg"
 					/>
 					{gamemode !== "duo" && (
 						<ChoiceGroup
 							label="Bot Difficulty"
-							options={["easy", "medium", "hard"]}
+							options={[
+								"easy",
+								"medium",
+								"hard",
+							]}
 							value={botDifficulty || ""}
 							onChange={(val) => setBotDifficulty(val)}
 							columns={3}

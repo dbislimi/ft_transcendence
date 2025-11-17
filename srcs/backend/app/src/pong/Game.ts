@@ -14,7 +14,6 @@ export default class Game {
 	private clientsId: WeakMap<WebSocket, 0 | 1> = new WeakMap();
 	private timeoutId: ReturnType<typeof setTimeout> | null = null;
 	private prevTime!: number;
-	private maxScore: number = 5;
 	private static readonly TICK_RATE = 1000 / 60;
 	private onEnd: ((ws: WebSocket, winner: boolean) => void) | null;
 	private onResolve: (() => void) | undefined;
@@ -55,7 +54,7 @@ export default class Game {
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
 			this.board.Training = true;
-			GAMESPEED = 50;
+			GAMESPEED = 2.5;
 			this.board.connectBot(0, botDiff, true);
 			this.board.connectBot(1, "impossible");
 		}
@@ -165,7 +164,7 @@ export default class Game {
 			return;
 		}
 		this.board.update(deltaTime);
-		this.elapsedTime += deltaTime;
+		this.elaspedTime += deltaTime;
 		const data = {
 			event: "data",
 			body: {

@@ -18,7 +18,7 @@ export default class Ball {
 		this.speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
 		this.ballRadius = field.H / 70;
 	}
-	reset(field: Board) {
+	reset(field: Board, training: boolean = false) {
 		this.x = field.W / 2;
 		this.y = field.H / 2;
 		this.dx = Math.random() - 0.5 < 0.5 ? -30 : 30;

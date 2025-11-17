@@ -3,10 +3,46 @@ import Player from "./Player.ts";
 import np from "./MyNumpy/MyNumpy.ts";
 import * as fs from "fs";
 
-//export default interface BotController {
-//	update(player: Player, board: Board): void;
-//}
-//// alpha = learning_rate
+function simulateYAtX(
+	startX: number,
+	startY: number,
+	dx: number,
+	dy: number,
+	targetX: number,
+	height: number,
+	maxBounces: number = 10
+): number {
+	if (dx === 0 || (targetX - startX) / dx <= 0) return startY;
+
+	let simX = startX;
+	let simY = startY;
+	let simDx = dx;
+	let simDy = dy;
+	let bounces = 0;
+
+	while (Math.abs(simX - targetX) > 0.1 && bounces < maxBounces) {
+		const dt = (targetX - simX) / simDx;
+		const nextY = simY + simDy * dt;
+		if (nextY < 0) {
+			const timeToWall = -simY / simDy;
+			simX += simDx * timeToWall;
+			simY = 0;
+			simDy = -simDy;
+			bounces++;
+		} else if (nextY > height) {
+			const timeToWall = (height - simY) / simDy;
+			simX += simDx * timeToWall;
+			simY = height;
+			simDy = -simDy;
+			bounces++;
+		} else {
+			return nextY;
+		}
+	}
+	return Math.max(0, Math.min(height, simY));
+}
+
+// alpha = learning_rate
 // gamma = discount_factor
 // epsilon = explo
 export default abstract class BotController {
@@ -70,12 +106,11 @@ export default abstract class BotController {
 	protected chooseAction(state: string) {
 		if (!(state in this.qTable))
 			this.qTable[state] = Array(this.nbOfActions).fill(0);
-		let action: number;
-		if (this.training && Math.random() < this.epsilon)
-			action = Math.floor(Math.random() * this.nbOfActions);
-		else action = np.argmax(this.qTable[state]);
-		if (this.training) this.epsilonGreedy();
-		return action;
+		if (this.training && Math.random() < this.epsilon) {
+			this.epsilonGreedy();
+			return Math.floor(Math.random() * this.nbOfActions);
+		}
+		return np.argmax(this.qTable[state]);
 	}
 
 	protected updateQtable(
@@ -95,11 +130,27 @@ export default abstract class BotController {
 	}
 
 	public save(episode: number): void {
-		fs.writeFileSync(
-			`../AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${episode}.json`,
-			JSON.stringify(this.qTable, null, 2),
-			"utf-8"
-		);
+		try {
+			const dirPath = `../AI/qtable_saves/${this.type}`;
+			if (!fs.existsSync(dirPath)) {
+				fs.mkdirSync(dirPath, { recursive: true });
+			}
+			fs.writeFileSync(
+				`${dirPath}/qtable_${this.type}_episode_${episode}.json`,
+				JSON.stringify(this.qTable, null, 2),
+				"utf-8"
+			);
+			console.log(
+				`[SAVED] ${this.type} episode ${episode} (${
+					Object.keys(this.qTable).length
+				} states)`
+			);
+		} catch (error) {
+			console.error(
+				`[ERROR] Failed to save ${this.type} Q-table:`,
+				error
+			);
+		}
 	}
 
 	protected load() {
@@ -128,194 +179,38 @@ export default abstract class BotController {
 		return this.decisionsMade >= this.maxDecisions;
 	}
 	takeDecision(board: Board, player: Player) {
-		let reward = 0;
-		if (this.training) ++this.decisionsMade;
-		//console.log("time: ", timestamp - this.start);
 		const state = this.getState(board, player);
 		if (
 			this.training &&
 			this.lastState !== null &&
 			this.lastAction !== null
 		) {
-			reward = this.rewardsPolicy(board, player.id);
-			//console.log(`reward: ${reward}`);
-			this.updateQtable(this.lastState, this.lastAction, reward, state);
+			const actionReward = this.rewardsPolicy(board, player.id);
+			this.updateQtable(
+				this.lastState,
+				this.lastAction,
+				actionReward,
+				state
+			);
+			this.reward += actionReward;
 		}
 		this.action = this.chooseAction(state);
-		//console.log(
-		//	`[${this.type}] state: ${state}, action: ${this.action}, reward: ${reward}`
-		//);
 		this.lastAction = this.action;
 		this.lastState = state;
-		this.reward += reward;
 		this.scores = [...board.scores];
 	}
+
 	abstract getState(board: Board, player: Player): string;
 	abstract update(player: Player, board: Board, dt: number): void;
 	abstract rewardsPolicy(board: Board, id: number): number;
-}
-
-export class HardBot extends BotController {
-	targetZone: number | null = null;
-	nbOfActions: number = 10;
-	type = "hard";
-	qtable_nb = 300;
-	private lastBonusCollected: number = 0;
-	private predictedY: number = 0;
-	private lastDir: 0 | 1 = 0;
-	private oppZone: number | null = null;
-
-	constructor(options = {}) {
-		super({ ...options, maxDecisions: 300 });
-		if (this.training === false) this.load();
-	}
-
-	private predictY(board: Board, player: Player): number {
-		const xp = player.id === 0 ? player.x + player.width : player.x;
-		const { x: x0, y: y0, dx, dy } = board.ball;
-		if (dx === 0) return y0;
-		let predictedY = y0 + ((xp - x0) / dx) * dy;
-		while (predictedY < 0 || predictedY > board.H) {
-			if (predictedY < 0) predictedY = -predictedY;
-			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
-		}
-		return predictedY;
-	}
-
-	update(player: Player, board: Board, dt: number) {
-		if (this.action === null) return;
-		const segmentSize = player.size / this.nbOfActions;
-		let desiredY: number;
-		if (this.lastDir === 1) {
-			const targetCenter = this.predictedY;
-			desiredY =
-				targetCenter - (this.action * segmentSize + segmentSize / 2);
-		} else {
-			const zoneHeight = board.H / this.nbOfActions;
-			const zoneCenter = this.action * zoneHeight + zoneHeight / 2;
-			desiredY = zoneCenter - player.size / 2;
-		}
-		desiredY = Math.max(0, Math.min(board.H - player.size, desiredY));
-		const stopMargin = Math.max(1, player.speed * dt * 0.5);
-		if (player.y > desiredY + stopMargin) {
-			player.moveDown(false);
-			player.moveUp(true);
-		} else if (player.y < desiredY - stopMargin) {
-			player.moveDown(true);
-			player.moveUp(false);
-		} else {
-			player.moveDown(false);
-			player.moveUp(false);
-		}
-	}
-
-	rewardsPolicy(board: Board, id: number): number {
-		let rScore = 0;
-		let rBonus = 0;
-		let rPark = 0;
-		let rMove = 0;
-		let rAim = 0;
-
-		const prevMyScore = this.scores[id];
-		const prevOppScore = this.scores[(id + 1) % 2];
-		const myScore = board.scores[id];
-		const oppScore = board.scores[(id + 1) % 2];
-		if (myScore > prevMyScore) rScore += 1.5;
-		if (oppScore > prevOppScore) rScore -= 1;
-
-		const ballComingToMe =
-			(id === 0 && board.ball.dx < 0) || (id === 1 && board.ball.dx > 0);
-		const opponent = board.players[(id + 1) % 2];
-		if (!ballComingToMe && this.oppZone !== null && this.lastDir === 0) {
-			const y = this.predictY(board, opponent);
-			const yZone = Math.floor((y / board.H) * 2);
-			console.log(`AIM: y${yZone}, opp${this.oppZone}`);
-			if (yZone !== this.oppZone) rAim += 0.5;
-			this.oppZone = null;
-		}
-
-		const collected = board.players[id].bonusCollectedTotal;
-		if (collected > this.lastBonusCollected) {
-			const diff = collected - this.lastBonusCollected;
-			rBonus = 0.5 * diff;
-			this.lastBonusCollected = collected;
-		}
-
-		if (this.lastDir === 0) {
-			const player = board.players[id];
-			if (this.lastAction !== null) {
-				const zoneHeight = board.H / this.nbOfActions;
-				const zoneCenter =
-					this.lastAction * zoneHeight + zoneHeight / 2;
-				const playerCenter = player.y + player.size / 2;
-				const dist = Math.abs(playerCenter - zoneCenter);
-				const norm = Math.max(0, 1 - dist / (board.H / 2));
-				rPark = 0.02 * norm;
-			}
-			if (player.up || player.down) rMove = -0.005;
-		}
-
-		const reward = rScore + rBonus + rPark + rMove + rAim;
-		console.log(
-			`step=${this.decisionsMade} total=${reward.toFixed(
-				3
-			)} score=${rScore.toFixed(2)} bonus=${rBonus.toFixed(
-				2
-			)} park=${rPark.toFixed(3)} move=${rMove.toFixed(
-				3
-			)} aim=${rAim.toFixed(3)} eps=${this.epsilon.toFixed(3)}`
-		);
-		return reward;
-	}
-	getState(board: Board, player: Player): string {
-		const dir =
-			(player.id === 0 && board.ball.dx > 0) ||
-			(player.id === 1 && board.ball.dx < 0)
-				? 0
-				: 1;
-		this.lastDir = dir;
-		const firstBonusY = board.bonus[0]?.y;
-		const bonusZone =
-			firstBonusY === undefined
-				? -1
-				: Math.floor((firstBonusY / board.H) * this.nbOfActions);
-		const opponent = board.players[(player.id + 1) % 2];
-		if (dir === 1) {
-			this.predictedY = this.predictY(board, player);
-			const ballZone = Math.floor(
-				(this.predictedY / board.H) * this.nbOfActions
-			);
-			if (bonusZone !== -1) return `${ballZone}_${bonusZone}`;
-			const oppCenter = opponent.y + opponent.size / 2;
-			this.oppZone = Math.floor((oppCenter / board.H) * 2);
-			return `${ballZone}_${this.oppZone - 2}`;
-		}
-		this.predictedY = this.predictY(board, opponent);
-		const ballZone = Math.floor(
-			(this.predictedY / board.H) * this.nbOfActions
-		);
-		return `${ballZone}`;
-	}
 }
 
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
 	type = "medium2";
-	qtable_nb = 400;
+	qtable_nb = 600;
 	private predictedY: number = 0;
-
-	private predictY(board: Board, player: Player): number {
-		const xp = player.id === 0 ? player.x + player.width : player.x;
-		const { x: x0, y: y0, dx, dy } = board.ball;
-		if (dx === 0) return y0;
-		let predictedY = y0 + ((xp - x0) / dx) * dy;
-		while (predictedY < 0 || predictedY > board.H) {
-			if (predictedY < 0) predictedY = -predictedY;
-			if (predictedY > board.H) predictedY = 2 * board.H - predictedY;
-		}
-		return predictedY;
-	}
 
 	constructor(options = {}) {
 		super({ ...options });
@@ -388,13 +283,6 @@ export class MediumBot extends BotController {
 		if (oppScore > prevOppScore) rScore -= 1.0;
 
 		reward = rScore + rTouch + rTrack;
-		console.log(
-			`[medium][reward] step=${this.decisionsMade} total=${reward.toFixed(
-				3
-			)} track=${rTrack.toFixed(3)}, touch=${rTouch.toFixed(
-				3
-			)}, score=${rScore}`
-		);
 		return reward;
 	}
 	getState(board: Board, player: Player): string {
@@ -403,7 +291,15 @@ export class MediumBot extends BotController {
 			(player.id === 1 && board.ball.dx < 0)
 				? 0
 				: 1;
-		this.predictedY = this.predictY(board, player);
+		const xp = player.id === 0 ? player.x + player.width : player.x;
+		this.predictedY = simulateYAtX(
+			board.ball.x,
+			board.ball.y,
+			board.ball.dx,
+			board.ball.dy,
+			xp,
+			board.H
+		);
 		const ballZone = Math.floor(
 			(this.predictedY / board.H) * this.nbOfActions
 		);
@@ -413,9 +309,8 @@ export class MediumBot extends BotController {
 
 export class EasyBot extends BotController {
 	nbOfActions: number = 10;
-	type = "easy";
+	type = "easy1";
 	qtable_nb = 300;
-	timeAction: number = 0;
 
 	constructor(options = {}) {
 		super({ ...options });
@@ -428,33 +323,16 @@ export class EasyBot extends BotController {
 		const targetY = this.action * zoneHeight + zoneHeight / 2;
 		const playerCenter = player.y + player.size / 2;
 		const stopMargin = Math.max(1, player.speed * dt * 0.5);
-		const startMargin = stopMargin * 1.2;
-		const diff = targetY - playerCenter;
-		const moving = player.up || player.down;
-		if (moving) {
-			if (Math.abs(diff) <= stopMargin) {
-				player.moveUp(false);
-				player.moveDown(false);
-			} else if (diff > 0) {
-				player.moveUp(false);
-				player.moveDown(true);
-			} else {
-				player.moveUp(true);
-				player.moveDown(false);
-			}
+
+		if (playerCenter > targetY + stopMargin) {
+			player.moveUp(true);
+			player.moveDown(false);
+		} else if (playerCenter < targetY - stopMargin) {
+			player.moveUp(false);
+			player.moveDown(true);
 		} else {
-			if (Math.abs(diff) >= startMargin) {
-				if (diff > 0) {
-					player.moveUp(false);
-					player.moveDown(true);
-				} else {
-					player.moveUp(true);
-					player.moveDown(false);
-				}
-			} else {
-				player.moveUp(false);
-				player.moveDown(false);
-			}
+			player.moveUp(false);
+			player.moveDown(false);
 		}
 	}
 
@@ -485,5 +363,140 @@ export class EasyBot extends BotController {
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
 		console.log(`ballzone: ${ballZone}`);
 		return `${ballZone}`;
+	}
+}
+
+export class HardBot extends BotController {
+	nbOfActions: number = 13;
+	type = "hard_advanced1";
+	qtable_nb = 600;
+
+	private trainingPhase: number = 1;
+	private predictedY: number = 0;
+	private lastBonusCollected: number = 0;
+	private deferredPrecision: number = 0;
+	private deferredOpponentLanding: number = 0;
+
+	constructor(options = {}) {
+		super({ ...options });
+		if (this.training === false) this.load();
+	}
+
+	getState(board: Board, player: Player): string {
+		const xp = player.id === 0 ? player.x + player.width : player.x;
+		this.predictedY = simulateYAtX(
+			board.ball.x,
+			board.ball.y,
+			board.ball.dx,
+			board.ball.dy,
+			xp,
+			board.H
+		);
+		const bonusY = board.bonus.length > 0 ? board.bonus[0].y : null;
+		const bonusCut = 17;
+		const halfCut = (bonusCut - 1) / 2;
+
+		const wallCut = 5;
+		const wallZone = Math.floor((this.predictedY / board.H) * wallCut);
+		const clampedWallZone = Math.max(0, Math.min(wallCut - 1, wallZone));
+
+		if (bonusY !== null) {
+			const relativeBonusY = (bonusY - this.predictedY) / (board.H / 2);
+			const bonusBin =
+				Math.floor(
+					Math.max(
+						-halfCut,
+						Math.min(halfCut, relativeBonusY * halfCut)
+					)
+				) + halfCut;
+			return `b${bonusBin}_w${clampedWallZone}`;
+		}
+
+		const cut = 9;
+		const opponent = board.players[(player.id + 1) % 2];
+		const oppCenter = opponent.y + opponent.size / 2;
+		const oppZone = Math.floor((oppCenter / board.H) * cut);
+		const ballZone = Math.floor((this.predictedY / board.H) * cut);
+
+		return `o${oppZone}_b${ballZone}`;
+	}
+
+	update(player: Player, board: Board, dt: number): void {
+		if (this.action === null) return;
+
+		const step = player.size / (this.nbOfActions - 1);
+		const targetOffset = step * this.action;
+		const targetY = this.predictedY - targetOffset;
+		const stopMargin = Math.max(1, player.speed * dt * 0.5);
+
+		if (player.y > targetY + stopMargin) {
+			player.moveDown(false);
+			player.moveUp(true);
+		} else if (player.y < targetY - stopMargin) {
+			player.moveDown(true);
+			player.moveUp(false);
+		} else {
+			player.moveDown(false);
+			player.moveUp(false);
+		}
+	}
+
+	rewardsPolicy(board: Board, id: number): number {
+		let reward = 0;
+		let rScore = 0;
+		let rBonus = 0;
+		let rPrecision = 0;
+		let rOpponentLanding = 0;
+
+		if (this.trainingPhase === 4) {
+			rOpponentLanding += this.deferredOpponentLanding;
+			this.deferredOpponentLanding = 0;
+		} else {
+			const collected = board.players[id].bonusCollectedTotal;
+			if (collected > this.lastBonusCollected) {
+				rBonus = 1;
+				this.lastBonusCollected = collected;
+			}
+			rPrecision += this.deferredPrecision;
+			this.deferredPrecision = 0;
+		}
+		reward = rScore + rBonus + rPrecision + rOpponentLanding;
+		return reward;
+	}
+
+	onPaddleBounce(board: Board, player: Player): void {
+		if (this.trainingPhase === 4) {
+			const opponent = board.players[(player.id + 1) % 2];
+			const faceX =
+				opponent.id === 0 ? opponent.x + opponent.width : opponent.x;
+			const landingY = simulateYAtX(
+				board.ball.x,
+				board.ball.y,
+				board.ball.dx,
+				board.ball.dy,
+				faceX,
+				board.H
+			);
+			const oppCenter = opponent.y + opponent.size / 2;
+			const dist = Math.abs(landingY - oppCenter);
+			const normalizedDist = dist / 50;
+			const rOpponentLanding = normalizedDist * 0.5;
+			this.deferredOpponentLanding += rOpponentLanding;
+		} else {
+			const bonusY = board.bonus.length > 0 ? board.bonus[0].y : null;
+			if (bonusY === null) return;
+			const landingY = simulateYAtX(
+				board.ball.x,
+				board.ball.y,
+				board.ball.dx,
+				board.ball.dy,
+				board.W / 2,
+				board.H
+			);
+			const dist = Math.abs(landingY - bonusY);
+			const normalizedDist = Math.min(1, dist / 50);
+			const rPrecision = (1 - 2 * normalizedDist) * 2;
+			this.deferredPrecision += rPrecision;
+		}
 	}
 }

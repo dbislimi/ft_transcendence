@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 type Mode = "offline" | "online";
-export type Difficulty = "easy" | "medium" | "hard";
+export type Difficulty = "easy" | "medium" | "hard" | "hard_advanced";
 
 export default function usePongParams() {
 	const [searchParams, setSearchParams] = useSearchParams();

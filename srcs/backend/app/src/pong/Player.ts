@@ -1,7 +1,11 @@
 import Board from "./Board.ts";
 import Bonus from "./Bonus.ts";
 
-export type difficulty = "easy" | "medium" | "hard" | "impossible";
+export type difficulty =
+	| "easy"
+	| "medium"
+	| "hard"
+	| "impossible";
 
 export default class Player {
 	private static playerWidth: number;
@@ -40,7 +44,7 @@ export default class Player {
 	reset() {
 		//this.bot = undefined;
 		this.ActiveBonus = this.ActiveBonus.filter((bonus) => {
-			//bonus.remove(this);
+			bonus.remove(this);
 			return false;
 		});
 		this.y = this.boardHeight / 2 - this.size / 2;

@@ -182,7 +182,7 @@ export default function Pong() {
 		if (mode === "offline") {
 			if (gamemode === "solo") {
 				const validDiff =
-					diff && ["easy", "medium", "hard"].includes(diff);
+					diff && ["easy", "medium", "hard", "hard_advanced"].includes(diff);
 				if (!validDiff) {
 					setParams({
 						mode: "offline",
