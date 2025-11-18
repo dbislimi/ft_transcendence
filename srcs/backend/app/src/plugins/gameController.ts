@@ -9,6 +9,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	options
 ) => {
 	const games = new GamesManager();
+	games.setFastifyInstance(fastify); // AJOUT: Configurer l'instance fastify pour la sauvegarde
 
 	fastify.get("/game", { websocket: true }, (socket: any, req) => {
 		console.log("pong WS connected");
@@ -74,7 +75,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					);
 					break;
 				}
-				case "tournament":
+				case "tournament": {
 					const { action } = data.body;
 					switch (action) {
 						case "list":
@@ -113,6 +114,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 							break;
 					}
 					break;
+				}
 				case "rejoin":
 					if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
 					client.rejoinTimer = undefined;

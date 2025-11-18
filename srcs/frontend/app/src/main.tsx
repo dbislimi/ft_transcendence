@@ -6,7 +6,7 @@ import "./index.css";
 import * as pages from "./pages";
 import Layout from "./Components/Layout";
 import { BackgroundProvider } from "./contexts/BackgroundContext";
-import { WebSocketProvider } from "./context/WebSocketContext";
+import { WebSocketProvider, FriendsProvider } from "./context/WebSocketContext";
 import { UserProvider } from "./context/UserContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { GameSessionProvider } from "./context/GameSessionContext";
@@ -33,24 +33,23 @@ const router = createBrowserRouter([
 			{ path: "/about", element: <pages.About /> },
 			{ path: "/auth", element: <pages.auth /> },
 			{ path: "/Reglages", element: <pages.Reglages /> },
-			// { path: "/chat", element: <pages.chat /> },
 			{ path: "*", element: <pages.NotFoundPage /> },
 		],
 	},
 ]);
 
 createRoot(document.getElementById("root")!).render(
-	// <StrictMode>
 	<BackgroundProvider>
 		<UserProvider>
 			<WebSocketProvider>
-				<NotificationProvider>
-					<GameSessionProvider>
-						<RouterProvider router={router} />
-					</GameSessionProvider>
-				</NotificationProvider>
+					<FriendsProvider>
+						<NotificationProvider>
+							<GameSessionProvider>
+								<RouterProvider router={router} />
+							</GameSessionProvider>
+						</NotificationProvider>
+					</FriendsProvider>
 			</WebSocketProvider>
 		</UserProvider>
 	</BackgroundProvider>
-	// </StrictMode>
 );

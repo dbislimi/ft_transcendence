@@ -42,14 +42,12 @@ export function verifyToken(
   }
 }
 
-// Nouvelle fonction pour vérifier les tokens depuis query params (pour WebSocket)
 export function verifyTokenFromQuery(token: string): { id: number; name?: string; email?: string } | null {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: number;
       name?: string;
-      email?: string;
-    };
+      email?: string };
     return decoded;
   } catch (error) {
     console.error("Token JWT invalide depuis query:", {

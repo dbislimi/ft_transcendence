@@ -6,7 +6,6 @@ export default function Registration() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +28,7 @@ export default function Registration() {
   ];
 
   const handleNextStep = async () => {
-    if (!name || !email || !displayName || !password || !confirmPassword) {
+    if (!email || !displayName || !password || !confirmPassword) {
       setIsError(true);
       setMessage("Tous les champs sont obligatoires.");
       return;
@@ -38,13 +37,6 @@ export default function Registration() {
     if (password !== confirmPassword) {
       setIsError(true);
       setMessage("Les mots de passe ne correspondent pas.");
-      return;
-    }
-
-    const nameRegex = /^[A-Z][a-z]+$/;
-    if (!nameRegex.test(name)) {
-      setIsError(true);
-      setMessage("Le nom doit commencer par une majuscule suivie de lettres minuscules.");
       return;
     }
 
@@ -94,9 +86,8 @@ export default function Registration() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name,
-        email,
         displayName,
+        email,
         password,
         avatar,
       }),
@@ -162,19 +153,6 @@ export default function Registration() {
                 </h3>
                 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Nom
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Votre nom"
-                    />
-                  </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
                       Email

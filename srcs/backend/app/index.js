@@ -53,15 +53,20 @@ async function dbPlugin(fastify, opts) {
       avatar TEXT DEFAULT '',
       wins INTEGER DEFAULT 0,
       losses INTEGER DEFAULT 0,
-      online INTEGER DEFAULT 0
+      online INTEGER DEFAULT 0,
+      tournaments_won INTEGER DEFAULT 0
     );`);
   
     db.run(`CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       player1_id INTEGER NOT NULL,
-      player2_id INTEGER NOT NULL,
+      player2_id INTEGER,
       winner_id INTEGER,
       played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      is_bot INTEGER DEFAULT 0,
+      bot_difficulty TEXT,
+      scores TEXT,
+      match_type TEXT DEFAULT 'quick',
       FOREIGN KEY (player1_id) REFERENCES users(id),
       FOREIGN KEY (player2_id) REFERENCES users(id),
       FOREIGN KEY (winner_id) REFERENCES users(id)

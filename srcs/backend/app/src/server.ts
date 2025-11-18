@@ -12,7 +12,7 @@ import authPlugin from "./plugins/auth.ts";
 import authUtilsPlugin from "./utils/auth.ts";
 import userPlugin from "./plugins/user.ts";
 import wsFriends from "./plugins/ws-friends.ts";
-import matchesPlugin from "./plugins/matches.ts";
+import matchHistoryPlugin from "./plugins/matchHistory.ts";
 import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import Settings from "./plugins/settings.ts";
@@ -61,7 +61,7 @@ async function main() {
   await fastify.register(googleAuth);
   await fastify.register(userPlugin);
   await fastify.register(Settings);
-  await fastify.register(matchesPlugin);
+  await fastify.register(matchHistoryPlugin);
   
   await fastify.register(friendsPlugin);
 

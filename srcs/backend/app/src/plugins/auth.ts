@@ -49,29 +49,23 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
   });
 
   fastify.post("/register", async (request, reply) => {
-    const { name, email, password, displayName, avatar } = request.body as {
-      name: string;
+    const { displayName, email, password, avatar } = request.body as {
+      displayName: string;
       email: string;
       password: string;
-      displayName: string;
       avatar?: string;
     };
 
-    const nameRegex = /^[A-Z][a-z]+$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const displayNameRegex = /^[a-zA-Z0-9-]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
-    if (!nameRegex.test(name)) {
-      return reply.code(400).send({ error: "Le nom doit commencer par une majuscule suivie uniquement de lettres minuscules." });
+    if (!displayNameRegex.test(displayName)) {
+      return reply.code(400).send({ error: "Le pseudo doit contenir uniquement des lettres, chiffres ou tirets." });
     }
 
     if (!emailRegex.test(email)) {
       return reply.code(400).send({ error: "Email invalide." });
-    }
-
-    if (!displayNameRegex.test(displayName)) {
-      return reply.code(400).send({ error: "Le pseudo doit contenir uniquement des lettres, chiffres ou tirets." });
     }
 
     if (!passwordRegex.test(password)) {
@@ -108,18 +102,22 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
 
       const userId = await new Promise<number>((resolve, reject) => {
         db.run(
-          "INSERT INTO users (name, email, password, display_name, avatar, wins, losses, online, twoFAEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [name, email, hashedPassword, displayName, chosenAvatar, 0, 0, 0, 0],
+          "INSERT INTO users (email, password, name, display_name, avatar, wins, losses, online, twoFAEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [email, hashedPassword, displayName, displayName, chosenAvatar, 0, 0, 0, 0],
           function (this: any, err: any) {
-            if (err) reject(err);
-            else resolve(this.lastID);
+            if (err) {
+              console.error("Erreur insertion DB:", err);
+              reject(err);
+            } else {
+              console.log("Utilisateur créé avec ID:", this.lastID);
+              resolve(this.lastID);
+            }
           }
         );
       });
-      console.log("le lastid de  dylan : " + lastID);
 
       const token = jwt.sign(
-        { id: userId, name, email },
+        { id: userId, email, display_name: displayName },
         JWT_SECRET,
         { expiresIn: "2h" }
       );
@@ -129,15 +127,15 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         token,
         user: {
           id: userId,
-          name,
           email,
           display_name: displayName,
           avatar: chosenAvatar
         }
       });
-    } catch {
-      return reply.send({ success: true, name });
-}
+    } catch (err) {
+      console.error("Erreur lors de l'inscription:", err);
+      return reply.code(500).send({ error: "Erreur lors de la création du compte. Veuillez réessayer." });
+    }
   });
 
   fastify.post("/login", async (request, reply) => {
@@ -152,10 +150,12 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
           else resolve(row);
         });
       });
-      console.log("le user id que j'utilise moi " + user.id);
+      
       if (!user) {
         return reply.code(401).send({ error: "Utilisateur non trouvé." });
       }
+
+      console.log("le user id que j'utilise moi " + user.id);
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
@@ -163,42 +163,34 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       }
 
       if (user.twoFAEnabled === 1) {
-      const otp = fastify.generateOtp();
+        const otp = fastify.generateOtp();
 
-      await new Promise<void>((resolve, reject) => {
-        db.run(
-          'UPDATE users SET twoFAOtp = ? WHERE id = ?',
-          [otp, user.id],
-          (err: any) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+        await new Promise<void>((resolve, reject) => {
+          db.run(
+            'UPDATE users SET twoFAOtp = ? WHERE id = ?',
+            [otp, user.id],
+            (err: any) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
 
-      const emailSent = await fastify.send2faEmail(user.email, otp);
-      if (!emailSent) {
-        return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
-      }
-
-      return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
-      }
-
-    //console.log("EREN YEAGER");
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email },
-      JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-      /* dylan         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          display_name: user.display_name,
-          avatar: user.avatar
+        const emailSent = await fastify.send2faEmail(user.email, otp);
+        if (!emailSent) {
+          return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
         }
-          */
-      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1 });
+
+        return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
+      }
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email, display_name: user.display_name },
+        JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+
+      return reply.send({ success: true, token, display_name: user.display_name, enable2fa: user.twoFAEnabled === 1 });
     } catch (err) {
       console.error(err);
       return reply.code(500).send({ error: "Erreur serveur" });

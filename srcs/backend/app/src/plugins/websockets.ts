@@ -55,7 +55,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
-					name: string;
+					display_name: string; // CORRECTION: Utiliser display_name au lieu de name
 				};
 				let client = fastify.clients.get(decoded.id);
 				if (client) {
@@ -68,7 +68,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					client.id = decoded.id;
 				} else {
 					console.log("Nouvelle connexion");
-					client = { id: decoded.id, name: decoded.name, socket };
+					client = { id: decoded.id, name: decoded.display_name, socket }; // CORRECTION: Utiliser display_name
 					fastify.clients.set(decoded.id, client);
 				}
 				return client;
