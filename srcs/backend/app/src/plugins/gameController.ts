@@ -43,7 +43,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						const friend: Client | null =
 							fastify.findClientById(friendId);
 						if (friend) {
-							games.invite(client as any, friend as any);
+							games.invite(client, friend);
 						} else {
 							socket.send(
 								JSON.stringify({
@@ -55,22 +55,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						}
 						break;
 					}
-					if (
-						typeof invitationId !== "string" ||
-						invitationId.length === 0
-					) {
-						socket.send(
-							JSON.stringify({
-								event: "invitation_error",
-								to: "invitation_events",
-								body: { reason: "id_required" },
-							})
-						);
-						break;
-					}
 					games.doInvitationAction(
 						action,
-						client as any,
+						client,
 						invitationId
 					);
 					break;
@@ -138,7 +125,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				case "ready":
 					console.log("ready from", client.name);
 					if (data.body?.type === "player") {
-						games.markPlayerReady(client as any);
+						games.markPlayerReady(client);
 					} else {
 						if (client.winnerTimer)
 							clearTimeout(client.winnerTimer);
@@ -159,11 +146,11 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					}
 					switch (data.body.action) {
 						case "play_online":
-							games.startOnline(client as any);
+							games.startOnline(client);
 							break;
 						case "play_offline":
 							local = games.startOffline(
-								client as any,
+								client,
 								data.body.diff,
 								data.body.skipCountdown
 							);

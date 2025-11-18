@@ -279,7 +279,7 @@ export default class GamesManager {
 		return diff === null;
 	}
 
-	invite(client: GClient, friend: GClient, flag: boolean = false) {
+	invite(client: GClient, friend: GClient) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
 			client.socket?.send(
 				JSON.stringify({
