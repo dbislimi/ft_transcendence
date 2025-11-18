@@ -319,7 +319,10 @@ export default class GamesManager {
 	}
 
 	private startInvitedGame(sent: GClient, receiv: GClient) {
-		const onEnd = (c: GClient, didWin: boolean, scores: number[]) => {
+		const onEnd = async (c: GClient, didWin: boolean, scores: number[]) => {
+			const winner = didWin ? c : (c === sent ? receiv : sent);
+			console.log(`Invited game ended: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`);
+			
 			this.removeRoom(c);
 			if (!c.quit) {
 				c.socket?.send(
@@ -334,7 +337,9 @@ export default class GamesManager {
 						},
 					})
 				);
-			}
+				}
+			
+			this.saveGameResult(sent, receiv, winner, scores, undefined, 'quick');
 		};
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
