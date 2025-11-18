@@ -212,15 +212,14 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       { expiresIn: "2h" }
     );
     console.log("l'id au moment de la connection : ", user.id);
-      /* dylan         user: {
+
+      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1,     user: {
           id: user.id,
           name: user.name,
           email: user.email,
           display_name: user.display_name,
           avatar: user.avatar
-        }
-          */
-      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1 });
+        } });
     } catch (err) {
       console.error(err);
       return reply.code(500).send({ error: "Erreur serveur" });
