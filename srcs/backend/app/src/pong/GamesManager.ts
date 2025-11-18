@@ -1,5 +1,4 @@
 import Game from "./Game.ts";
-import WebSocket from "ws";
 import type { difficulty } from "./Player.ts";
 import plotRewards from "./chart.ts";
 import Tournament from "./Tournament.ts";
@@ -7,12 +6,10 @@ import type { Client } from "../plugins/websockets.ts";
 import InvitManager from "./InvitManager.ts";
 import type { Invitation } from "./InvitManager.ts";
 
-type GClient = Client & { quit?: boolean };
-
 export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
-	private rooms: WeakMap<GClient, Game> = new WeakMap();
-	private waitingClient: GClient | null = null;
+	private rooms: WeakMap<Client, Game> = new WeakMap();
+	private waitingClient: Client | null = null;
 	private countdowns: WeakMap<Game, { cancelled: boolean }> = new WeakMap();
 	private readyPhases: WeakMap<
 		Game,
@@ -29,6 +26,7 @@ export default class GamesManager {
 	private static readonly COUNTDOWN_SECONDS = 3;
 	private static readonly READY_PHASE_SECONDS = 30;
 	private fastify: any;
+	private onAbort: (() => void) | undefined;
 
 	constructor() {
 		this.invitManager = new InvitManager({
@@ -41,9 +39,18 @@ export default class GamesManager {
 		this.fastify = fastify;
 	}
 
-	private async saveGameResult(player1: GClient, player2: GClient | null, winner: GClient, scores: number[], botDifficulty?: string, matchType: string = 'quick') {
+	private async saveGameResult(
+		player1: Client,
+		player2: Client | null,
+		winner: Client,
+		scores: number[],
+		botDifficulty?: string,
+		matchType: string = "quick"
+	) {
 		if (!this.fastify) {
-			console.warn("Fastify instance not available for saving game result");
+			console.warn(
+				"Fastify instance not available for saving game result"
+			);
 			return;
 		}
 
@@ -51,16 +58,27 @@ export default class GamesManager {
 			const player1Id = player1.id;
 			const player2Id = player2?.id || null;
 			const winnerId = winner.id;
-			
-			await this.fastify.saveMatch(player1Id, player2Id, winnerId, scores, botDifficulty, matchType);
-			
-			console.log(`Game result processed: P1=${player1.name}, P2=${player2?.name || 'Bot'}, Winner=${winner.name}, Type=${matchType}`);
+
+			await this.fastify.saveMatch(
+				player1Id,
+				player2Id,
+				winnerId,
+				scores,
+				botDifficulty,
+				matchType
+			);
+
+			console.log(
+				`Game result processed: P1=${player1.name}, P2=${
+					player2?.name || "Bot"
+				}, Winner=${winner.name}, Type=${matchType}`
+			);
 		} catch (error) {
 			console.error("Error saving game result:", error);
 		}
 	}
 
-	private wsSend(client: GClient, payload: any) {
+	private wsSend(client: Client, payload: any) {
 		client.socket?.send(JSON.stringify(payload));
 	}
 
@@ -142,7 +160,7 @@ export default class GamesManager {
 	}
 
 	createTournament(
-		client: GClient,
+		client: Client,
 		id: string,
 		size: number,
 		passwd: string
@@ -207,11 +225,11 @@ export default class GamesManager {
 			}))
 			.filter((t) => !t.started);
 	}
-	async trainBot(ws: WebSocket, bot: difficulty, games: number) {
+	async trainBot(ws: any, bot: difficulty, games: number) {
 		const controller = new AbortController();
 		const { signal } = controller;
-
-		ws.on("close", () => controller.abort());
+		this.onAbort = () => controller.abort();
+		ws.on("close", this.onAbort);
 		const trainingClient: Client = { id: -1, name: "trainer", socket: ws };
 		const game = new Game({
 			p1: trainingClient,
@@ -231,24 +249,33 @@ export default class GamesManager {
 				break;
 			}
 		}
-		const controllerBot = game.board.botController[0];
-		if (controllerBot) plotRewards("rewards", controllerBot.rewards, bot);
+		if (game.board.botController[0] !== undefined)
+			plotRewards(
+				"rewards",
+				game.board.botController[0].rewards,
+				game.board.botController[0].type
+			);
 		console.log("Training loop ended.");
+		const totalSeconds = Math.floor(game.elaspedTime);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+		console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
 	}
-	startTraining(ws: WebSocket, bot: difficulty) {
+	startTraining(ws: any, bot: difficulty) {
 		this.trainBot(ws, bot, 100);
 		console.log("debug");
 		return { playerId: "train" };
 	}
 	startOffline(
-		client: GClient,
+		client: Client,
 		diff: difficulty | null,
 		skipCountdown?: boolean
 	): boolean {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
-			onEnd: async (c: GClient, didWin: boolean, scores: number[]) => {
+			onEnd: async (c: Client, didWin: boolean, scores: number[]) => {
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
@@ -264,12 +291,30 @@ export default class GamesManager {
 				}
 				if (diff !== null && !this.savedGames.has(game)) {
 					const winnerId = didWin ? c.id : -1;
-					console.log(`Saving bot match: ${c.name} vs Bot (${diff}), Winner: ${didWin ? c.name : `Bot (${diff})`}`);
-					await this.saveGameResult(c, null, { id: winnerId, name: didWin ? c.name : `Bot (${diff})` } as GClient, scores, diff, 'offline');
+					console.log(
+						`Saving bot match: ${
+							c.name
+						} vs Bot (${diff}), Winner: ${
+							didWin ? c.name : `Bot (${diff})`
+						}`
+					);
+					await this.saveGameResult(
+						c,
+						null,
+						{
+							id: winnerId,
+							name: didWin ? c.name : `Bot (${diff})`,
+						} as Client,
+						scores,
+						diff,
+						"offline"
+					);
 					this.savedGames.add(game);
 				} else if (diff !== null) {
-					console.log(`Bot match already saved for ${c.name} vs Bot (${diff})`);
-				}				
+					console.log(
+						`Bot match already saved for ${c.name} vs Bot (${diff})`
+					);
+				}
 				this.removeRoom(c);
 			},
 		});
@@ -279,7 +324,7 @@ export default class GamesManager {
 		return diff === null;
 	}
 
-	invite(client: GClient, friend: GClient) {
+	invite(client: Client, friend: Client) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
 			client.socket?.send(
 				JSON.stringify({
@@ -315,14 +360,14 @@ export default class GamesManager {
 
 	doInvitationAction(
 		action: "accept" | "decline" | "cancel",
-		client: GClient,
+		client: Client,
 		invitationId: string
 	) {
 		this.invitManager.do(action, client, invitationId);
 	}
 
-	private startInvitedGame(sent: GClient, receiv: GClient) {
-		const onEnd = (c: GClient, didWin: boolean, scores: number[]) => {
+	private startInvitedGame(sent: Client, receiv: Client) {
+		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 			if (!c.quit) {
 				c.socket?.send(
 					JSON.stringify({
@@ -378,15 +423,21 @@ export default class GamesManager {
 		);
 		this.startWithReadyPhase(game, [sent, receiv]);
 	}
-	startOnline(client: GClient) {
+	startOnline(client: Client) {
 		this.invitManager.removeForClient(client);
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
-			const onEnd = async (c: GClient, didWin: boolean, scores: number[]) => {
-				const winner = didWin ? c : (c === opponent ? client : opponent);
-				console.log(`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`);
-				
+			const onEnd = async (
+				c: Client,
+				didWin: boolean,
+				scores: number[]
+			) => {
+				const winner = didWin ? c : c === opponent ? client : opponent;
+				console.log(
+					`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
+				);
+
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
@@ -397,12 +448,19 @@ export default class GamesManager {
 								didWin,
 								scores,
 								opponent:
-								this.getRoom(c)?.getOpp(c)?.name ?? null,
+									this.getRoom(c)?.getOpp(c)?.name ?? null,
 							},
 						})
 					);
 				}
-				await this.saveGameResult(opponent, client, winner, scores, undefined, 'quick');				
+				await this.saveGameResult(
+					opponent,
+					client,
+					winner,
+					scores,
+					undefined,
+					"quick"
+				);
 				this.removeRoom(c);
 			};
 			const game = new Game({
@@ -530,7 +588,6 @@ export default class GamesManager {
 					readyState.p1Ready,
 					readyState.p2Ready
 				);
-				
 
 				await new Promise((resolve) =>
 					setTimeout(resolve, checkInterval)
@@ -551,7 +608,7 @@ export default class GamesManager {
 	/**
 	 * Marque un joueur comme prêt pendant la phase de préparation
 	 */
-	markPlayerReady(client: GClient) {
+	markPlayerReady(client: Client) {
 		const room = this.getRoom(client);
 		if (!room) return;
 
@@ -610,7 +667,7 @@ export default class GamesManager {
 		});
 		for (const client of clients) client?.socket?.send(payload);
 	}
-	setRoom(client: GClient, game: Game) {
+	setRoom(client: Client, game: Game) {
 		const room = this.rooms.get(client);
 		if (room) {
 			if (room.clients[0] && room.clients[1])
@@ -623,10 +680,10 @@ export default class GamesManager {
 		client.quit = false;
 		this.rooms.set(client, game);
 	}
-	getRoom(client: GClient) {
+	getRoom(client: Client) {
 		return this.rooms.get(client);
 	}
-	removeRoom(client: GClient) {
+	removeRoom(client: Client) {
 		console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
 		if (!game) return;
@@ -650,12 +707,12 @@ export default class GamesManager {
 			this.readyPhases.delete(game);
 		}
 	}
-	stop_offline(client: GClient) {
+	stop_offline(client: Client) {
 		client.quit = true;
 		// Fully remove the room to discard any lingering board state from training/offline games
 		this.removeRoom(client);
 	}
-	stop_online(client: GClient) {
+	stop_online(client: Client) {
 		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
@@ -687,7 +744,7 @@ export default class GamesManager {
 
 	// ...existing code...
 
-	playerReady(client: GClient) {
+	playerReady(client: Client) {
 		if (!client.tournament) return;
 		const t = this.tournaments[client.tournament.tournamentId];
 		if (!t) return;
@@ -695,7 +752,7 @@ export default class GamesManager {
 		t.playerReady(client);
 	}
 
-	handleRejoin(client: GClient) {
+	handleRejoin(client: Client) {
 		if (!client.tournament) return;
 		const t = this.tournaments[client.tournament.tournamentId];
 		if (!t) return;

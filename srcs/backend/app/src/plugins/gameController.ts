@@ -1,17 +1,15 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import type { Client } from "./websockets.ts";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
-	fastify: FastifyInstance,
-	options
-) => {
+	fastify: FastifyInstance) => {
 	const games = new GamesManager();
 	games.setFastifyInstance(fastify); // AJOUT: Configurer l'instance fastify pour la sauvegarde
 
-	fastify.get("/game", { websocket: true }, (socket: any, req) => {
+	fastify.get("/game", { websocket: true }, (socket: any, req: FastifyRequest<{ Querystring: { token?: string } }>) => {
 		console.log("pong WS connected");
 		const client = fastify.getClient(req, socket);
 		if (!client) return socket.close();

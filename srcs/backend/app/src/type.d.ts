@@ -6,7 +6,10 @@ declare module "fastify" {
 	interface FastifyInstance {
 		db: sqlite3.Database;
 		clients: Map<number, Client>;
-		getClient(req: FastifyRequest, socket: WebSocket): Client | null;
+		getClient(
+			req: FastifyRequest<{ Querystring: { token?: string } }>,
+			socket: any
+		): Client | null;
 		findClientByName(name: string): Client | null;
 		findClientById(id: number): Client | null;
 	}

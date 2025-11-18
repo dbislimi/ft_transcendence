@@ -1,5 +1,5 @@
 import Game from "./Game.ts";
-import type { Client } from "../plugins/gameController.ts";
+import type { Client } from "../plugins/websockets.ts";
 
 class Node {
 	game?: Game;

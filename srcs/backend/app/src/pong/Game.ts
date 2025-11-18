@@ -1,6 +1,6 @@
 import Board from "./Board.ts";
 import type { difficulty } from "./Player.ts";
-import type { Client } from "../plugins/gameController.ts";
+import type { Client } from "../plugins/websockets.ts";
 
 let GAMESPEED: number = 1;
 
@@ -17,7 +17,9 @@ export default class Game {
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
-	private winner: 0 | 1 | undefined = undefined;
+
+	elaspedTime: number = 0;
+	private winner:number | undefined = undefined;
 
 	constructor({
 		p1,
@@ -35,7 +37,10 @@ export default class Game {
 		train?: boolean;
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board((id: 0 | 1) => (this.winner = id));
+		this.board = new Board((id: number) => {
+			this.winner = id;
+			this.board.reset();
+		});
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
 		if (p2 !== undefined) {
@@ -50,17 +55,16 @@ export default class Game {
 		if (botDiff === null) return;
 		if (train === false) this.board.connectBot(1, botDiff);
 		else {
-			console.log("connectbot ", botDiff);
 			this.board.Training = true;
-			GAMESPEED = 100;
+			GAMESPEED = 2.5;
 			this.board.connectBot(0, botDiff, true);
-			this.board.connectBot(1, "hard");
+			this.board.connectBot(1, "impossible");
 		}
 	}
 
 	connectPlayer(p: Client) {
 		this.board.disconnectBot();
-		this.board.restart();
+		this.board.reset();
 		this.clients[1] = p;
 		p.inGameId = 1;
 		this.clientsId.set(p, 1);
@@ -104,7 +108,7 @@ export default class Game {
 		clearTimeout(this.timeoutId);
 		this.timeoutId = null;
 	}
-	private stop(winner: 0 | 1): void {
+	private stop(winner: number): void {
 		this.pause();
 		this.signal?.removeEventListener("abort", this.onAbort);
 		if (this.onResolve) {
@@ -126,7 +130,7 @@ export default class Game {
 	}
 	private restart() {
 		console.log("game restarted");
-		this.board.restart();
+		this.winner = undefined;
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {
@@ -134,6 +138,7 @@ export default class Game {
 			this.board.players[player].moveUp(true);
 		else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
+
 	}
 	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")
@@ -142,14 +147,6 @@ export default class Game {
 			this.board.players[player].moveDown(false);
 	}
 	move(type: string, dir: string, player: 0 | 1 | undefined) {
-		// console.log(player);
-		//if (typeof player === "object") {
-		//	if (this.clientsId.get(player) === undefined)
-		//		throw new Error("ClientsId undefined");
-		//	if (dir === "up") this.up(type, this.clientsId.get(player)!);
-		//	else this.down(type, this.clientsId.get(player)!);
-		//	return;
-		//}
 		if (player === undefined) {
 			console.log("PLAYER GAMEID UNDEFINED");
 			return;
@@ -181,7 +178,7 @@ export default class Game {
 	private gameLoop(): void {
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
-		const MAX_DELTA = 0.1;
+		const MAX_DELTA = 0.08;
 		deltaTime = Math.min(deltaTime, MAX_DELTA);
 		this.prevTime = now;
 
@@ -190,6 +187,7 @@ export default class Game {
 			return;
 		}
 		this.board.update(deltaTime);
+		this.elaspedTime += deltaTime;
 		const data = this.getData();
 		this.send(JSON.stringify(data));
 		const elapsed = performance.now() - now;

@@ -1,7 +1,6 @@
 import fp from "fastify-plugin";
-import WebSocket from "ws";
 import jwt from "jsonwebtoken";
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import websocket from "@fastify/websocket";
 import gameController from "./gameController.ts";
 import chat from "./chat.ts";
@@ -18,11 +17,12 @@ interface Tournament {
 export interface Client {
 	id: number;
 	name: string;
-	socket?: WebSocket;
+	socket?: any;
 	tournament?: Tournament;
 	inGameId?: 0 | 1;
 	winnerTimer?: ReturnType<typeof setTimeout>;
 	rejoinTimer?: ReturnType<typeof setTimeout>;
+	quit?: boolean;
 
 	removalTimer?: ReturnType<typeof setTimeout>;
 }
@@ -48,14 +48,17 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 	});
 	fastify.decorate(
 		"getClient",
-		(req: any, socket: WebSocket): Client | null => {
+		(
+			req: FastifyRequest<{ Querystring: { token?: string } }>,
+			socket: any
+		): Client | null => {
 			try {
 				const token = req.query?.token;
 				if (!token) return null;
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
-					display_name: string; // CORRECTION: Utiliser display_name au lieu de name
+					display_name: string;
 				};
 				let client = fastify.clients.get(decoded.id);
 				if (client) {
@@ -68,7 +71,11 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					client.id = decoded.id;
 				} else {
 					console.log("Nouvelle connexion");
-					client = { id: decoded.id, name: decoded.display_name, socket }; // CORRECTION: Utiliser display_name
+					client = {
+						id: decoded.id,
+						name: decoded.display_name,
+						socket,
+					};
 					fastify.clients.set(decoded.id, client);
 				}
 				return client;
