@@ -59,7 +59,6 @@ useEffect(() => {
           setIsAuthenticated(false);
           return;
         }
-        
         setUser(userData);
         setToken(savedToken);
         setIsAuthenticated(true);
