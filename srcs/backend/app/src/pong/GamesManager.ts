@@ -21,6 +21,7 @@ export default class GamesManager {
 			p2Ready: boolean;
 			cancelled: boolean;
 			timer: NodeJS.Timeout | null;
+			remaining: number;
 		}
 	> = new WeakMap();
 	private invitManager: InvitManager;
@@ -222,16 +223,20 @@ export default class GamesManager {
 			p1: client,
 			botDiff: diff,
 			onEnd: (c: GClient, didWin: boolean, scores: number[]) => {
-				this.removeRoom(c);
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
 							to: "pong",
-							body: { is: "offline", didWin, scores },
+							body: {
+								is: "offline",
+								didWin,
+								scores,
+							},
 						})
 					);
 				}
+				this.removeRoom(c);
 			},
 		});
 		this.setRoom(client, game);
@@ -284,7 +289,6 @@ export default class GamesManager {
 
 	private startInvitedGame(sent: GClient, receiv: GClient) {
 		const onEnd = (c: GClient, didWin: boolean, scores: number[]) => {
-			this.removeRoom(c);
 			if (!c.quit) {
 				c.socket?.send(
 					JSON.stringify({
@@ -299,6 +303,7 @@ export default class GamesManager {
 					})
 				);
 			}
+			this.removeRoom(c);
 		};
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
@@ -346,16 +351,22 @@ export default class GamesManager {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
 			const onEnd = (c: GClient, didWin: boolean, scores: number[]) => {
-				this.removeRoom(c);
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
 							to: "pong",
-							body: { is: "quick", didWin, scores },
+							body: {
+								is: "quick",
+								didWin,
+								scores,
+								opponent:
+								this.getRoom(c)?.getOpp(c)?.name ?? null,
+							},
 						})
 					);
 				}
+				this.removeRoom(c);
 			};
 			const game = new Game({
 				p1: opponent,
@@ -450,6 +461,7 @@ export default class GamesManager {
 			p2Ready: false,
 			cancelled: false,
 			timer: null as NodeJS.Timeout | null,
+			remaining: GamesManager.READY_PHASE_SECONDS,
 		};
 		this.readyPhases.set(game, readyState);
 
@@ -457,11 +469,10 @@ export default class GamesManager {
 		this.broadcastPlayersInfo(game, clients);
 
 		// Démarrer le timer de 30 secondes
-		let elapsed = 0;
-		const checkInterval = 100; // Vérifier toutes les 100ms
+		const checkInterval = 1000; // Vérifier toutes les 100ms
 
 		const checkReady = async () => {
-			while (elapsed < GamesManager.READY_PHASE_SECONDS * 1000) {
+			while (readyState.remaining > 0) {
 				if (readyState.cancelled) {
 					this.readyPhases.delete(game);
 					return;
@@ -475,24 +486,19 @@ export default class GamesManager {
 				}
 
 				// Broadcaster l'état toutes les secondes
-				if (elapsed % 1000 === 0) {
-					const remainingSeconds = Math.ceil(
-						(GamesManager.READY_PHASE_SECONDS * 1000 - elapsed) /
-							1000
-					);
-					this.broadcastReadyPhase(
-						game,
-						clients,
-						remainingSeconds,
-						readyState.p1Ready,
-						readyState.p2Ready
-					);
-				}
+				this.broadcastReadyPhase(
+					game,
+					clients,
+					readyState.remaining,
+					readyState.p1Ready,
+					readyState.p2Ready
+				);
+				
 
 				await new Promise((resolve) =>
 					setTimeout(resolve, checkInterval)
 				);
-				elapsed += checkInterval;
+				readyState.remaining -= 1;
 			}
 
 			// Les 30 secondes sont écoulées, démarrer le countdown même si tous ne sont pas prêts
@@ -526,7 +532,7 @@ export default class GamesManager {
 		this.broadcastReadyPhase(
 			room,
 			room.clients,
-			GamesManager.READY_PHASE_SECONDS,
+			readyState.remaining,
 			readyState.p1Ready,
 			readyState.p2Ready
 		);

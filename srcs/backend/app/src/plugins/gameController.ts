@@ -36,7 +36,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			console.log(`FROM: ${client.name}`);
 			console.log(data);
 			switch (data.event) {
-				case "invitation":
+				case "invitation": {
 					const { action, invitationId, friendId } = data.body;
 					if (action === "invite") {
 						const friend: Client | null =
@@ -73,7 +73,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						invitationId
 					);
 					break;
-				
+				}
 				case "tournament":
 					const { action } = data.body;
 					switch (action) {

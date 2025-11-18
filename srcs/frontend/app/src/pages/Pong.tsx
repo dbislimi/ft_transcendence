@@ -87,14 +87,22 @@ export default function Pong() {
 	const [view, setView] = useState<Ui>({ kind: "menu" });
 
 	const labels = useMemo((): PlayerLabels => {
+		console.log(`Labels: ${view.kind}, ${view.kind === "result" &&view.gameOver?.opponent}`);
 		if (view.kind === "training" && trainingLabelsRef.current)
 			return trainingLabelsRef.current;
+		if (view.kind === "result" && view.gameOver?.opponent) {
+			const defaultSelf = user?.name
+				? `${user.name} (You)`
+				: PLAYER_LABELS.self;
+			console.log(`OPPONENT: ${view.gameOver.opponent}`);
+			return { self: defaultSelf, opponent: view.gameOver.opponent };
+		}
 		if (session?.labels) return session.labels;
 		const defaultSelf = user?.name
 			? `${user.name} (You)`
 			: PLAYER_LABELS.self;
 		return { self: defaultSelf, opponent: PLAYER_LABELS.opponent };
-	}, [session, user, view.kind]);
+	}, [session, user, view.kind, view]);
 
 	const setControlsReady = useCallback((next: boolean) => {
 		controlsReadyRef.current = next;
@@ -121,7 +129,7 @@ export default function Pong() {
 
 	const onMessage = useCallback(
 		(data: any) => {
-			if (!data || !activeSessionRef.current) return;
+			if (!data) return;
 			let remaining;
 			switch (data.event) {
 				case "searching":
@@ -308,11 +316,9 @@ export default function Pong() {
 			gameOverData.tournamentDepth != null &&
 			gameOverData.didWin &&
 			!gameOverData.finalTournamentWin
-		) {
+		)
 			stop(true);
-			return;
-		}
-		localStop();
+		else localStop();
 		setView({ kind: "menu" });
 	}, [localStop, gameOverData, stop, resetGameState, clearSession]);
 
@@ -463,6 +469,7 @@ export default function Pong() {
 		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
 	});
 
+	console.log(`view: ${view.kind}`);
 	const isSearching = view.kind === "search";
 	const isTraining = view.kind === "training";
 	const showGameField = [
