@@ -55,6 +55,7 @@ export default class Tournament {
 	) => void;
 
 	private cancelCountdown: (game: Game) => void;
+	private fastify: any;
 
 	constructor({
 		rooms,
@@ -65,6 +66,7 @@ export default class Tournament {
 		startCountdown,
 		cancelCountdown,
 		setRoom,
+		fastify,
 	}: {
 		rooms: WeakMap<Client, Game>;
 		id: string;
@@ -74,6 +76,7 @@ export default class Tournament {
 		startCountdown: (game: Game, clients: (Client | undefined)[]) => void;
 		cancelCountdown: (game: Game) => void;
 		setRoom: (client: Client, game: Game) => void;
+		fastify?: any;
 	}) {
 		this.rooms = rooms;
 		this.password = password;
@@ -83,6 +86,7 @@ export default class Tournament {
 		this.startCountdown = startCountdown;
 		this.cancelCountdown = cancelCountdown;
 		this.setRoom = setRoom;
+		this.fastify = fastify;
 	}
 
 	private sendRejoinPrompt(client: Client, timeout: number = 10) {
@@ -225,6 +229,13 @@ export default class Tournament {
 
 		if (!parent) {
 			console.log("tournament winner");
+			
+			if (this.fastify && player) {
+				this.fastify.incrementTournamentsWon(player.id).catch((error: any) => {
+					console.error("Erreur lors de l'incrémentation des tournois gagnés:", error);
+				});
+			}
+			
 			if (player) this.removePlayer(player);
 			return;
 		}
@@ -238,15 +249,31 @@ export default class Tournament {
 		}
 		console.log("start");
 		if (parent.waiting) {
+			const waitingPlayer = parent.waiting;
+			const currentPlayer = player;
+			const parentNode = parent;
+			
 			parent.game = new Game({
-				p1: parent.waiting,
-				p2: player,
-				onEnd: (client, didWin, scores) => {
+				p1: waitingPlayer,
+				p2: currentPlayer,
+				onEnd: async (client, didWin, scores) => {
 					console.log("game onEnd");
+					
+					const opponent = client === waitingPlayer ? currentPlayer : waitingPlayer;
+					const winner = didWin ? client : opponent;
+					const finalScores = scores || [0, 0];
+					
+					// AJOUT: Sauvegarde du match de tournoi
+					try {
+						await this.saveTournamentMatch(waitingPlayer, currentPlayer, winner, finalScores);
+					} catch (error) {
+						console.error("Error saving tournament match:", error);
+					}
+					
 					this.rooms.delete(client);
 					if (!client.quit) {
-						const depth = parent.depth;
-						const opponentName = parent.game?.getOpp(client)?.name;
+						const depth = parentNode.depth;
+						const opponentName = parentNode.game?.getOpp(client)?.name;
 						client.socket?.send(
 							JSON.stringify({
 								event: "result",
@@ -254,7 +281,7 @@ export default class Tournament {
 								body: {
 									is: "tournament",
 									didWin,
-									scores,
+									scores: finalScores,
 									...(opponentName
 										? { opponent: opponentName }
 										: {}),
@@ -266,29 +293,29 @@ export default class Tournament {
 						);
 					}
 					if (didWin === true) {
-						parent.winner = client;
-						const depth = parent.depth;
+						parentNode.winner = client;
+						const depth = parentNode.depth;
 						const delay =
 							depth !== undefined && depth === 1 ? 0 : 15000;
 						if (client.winnerTimer)
 							clearTimeout(client.winnerTimer);
 						client.winnerTimer = setTimeout(() => {
-							if (parent.winner === client) {
+							if (parentNode.winner === client) {
 								client.winnerTimer = undefined;
-								this.joinMatch(parent!);
+								this.joinMatch(parentNode!);
 							}
 						}, delay);
 					} else {
-						parent.loser = client;
+						parentNode.loser = client;
 						this.removePlayer(client);
 					}
 				},
 			});
 			this.gameNode.set(parent.game, parent);
-			this.clientNode.set(parent.waiting!, parent);
-			this.clientNode.set(player, parent);
-			this.setRoom(player, parent.game);
-			this.setRoom(parent.waiting, parent.game);
+			this.clientNode.set(waitingPlayer!, parent);
+			this.clientNode.set(currentPlayer, parent);
+			this.setRoom(currentPlayer, parent.game);
+			this.setRoom(waitingPlayer, parent.game);
 			this.startCountdown(parent.game, parent.game.clients);
 			parent.waiting = undefined;
 		} else {
@@ -434,5 +461,22 @@ export default class Tournament {
 		if (!this.root) return;
 		const node = this.clientNode.get(client);
 		if (node && node.parent?.waiting !== client) this.joinMatch(node);
+	}
+
+	private async saveTournamentMatch(player1: Client, player2: Client, winner: Client, scores: number[]) {
+		if (!this.fastify) {
+			console.log("Warning: No fastify instance available for saving tournament match");
+			return;
+		}
+		
+		try {
+			console.log(`Saving tournament match: ${player1.name} (ID:${player1.id}) vs ${player2.name} (ID:${player2.id}), Winner: ${winner.name} (ID:${winner.id})`);
+			
+			await this.fastify.saveMatch(player1.id, player2.id, winner.id, scores, undefined, 'tournament');
+			
+			console.log(`Tournament match saved: ${player1.name} vs ${player2.name}, Winner: ${winner.name}`);
+		} catch (error) {
+			console.error("Error saving tournament match:", error);
+		}
 	}
 }

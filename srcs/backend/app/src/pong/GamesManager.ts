@@ -24,14 +24,39 @@ export default class GamesManager {
 		}
 	> = new WeakMap();
 	private invitManager: InvitManager;
+	private savedGames: WeakSet<Game> = new WeakSet();
 	private static readonly COUNTDOWN_SECONDS = 3;
 	private static readonly READY_PHASE_SECONDS = 30;
+	private fastify: any;
 
 	constructor() {
 		this.invitManager = new InvitManager({
 			ttlSeconds: 30,
 			onStateChange: (inv) => this.handleInvitationStateChange(inv),
 		});
+	}
+
+	setFastifyInstance(fastify: any) {
+		this.fastify = fastify;
+	}
+
+	private async saveGameResult(player1: GClient, player2: GClient | null, winner: GClient, scores: number[], botDifficulty?: string, matchType: string = 'quick') {
+		if (!this.fastify) {
+			console.warn("Fastify instance not available for saving game result");
+			return;
+		}
+
+		try {
+			const player1Id = player1.id;
+			const player2Id = player2?.id || null;
+			const winnerId = winner.id;
+			
+			await this.fastify.saveMatch(player1Id, player2Id, winnerId, scores, botDifficulty, matchType);
+			
+			console.log(`Game result processed: P1=${player1.name}, P2=${player2?.name || 'Bot'}, Winner=${winner.name}, Type=${matchType}`);
+		} catch (error) {
+			console.error("Error saving game result:", error);
+		}
 	}
 
 	private wsSend(client: GClient, payload: any) {
@@ -116,7 +141,7 @@ export default class GamesManager {
 	}
 
 	createTournament(
-		client: Client,
+		client: GClient,
 		id: string,
 		size: number,
 		passwd: string
@@ -158,6 +183,7 @@ export default class GamesManager {
 				}
 			},
 			setRoom: (client, game) => this.setRoom(client, game),
+			fastify: this.fastify,
 		});
 		this.joinTournament(client, id, passwd);
 		return true;
@@ -221,8 +247,18 @@ export default class GamesManager {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
-			onEnd: (c: GClient, didWin: boolean, scores: number[]) => {
+			onEnd: async (c: GClient, didWin: boolean, scores: number[]) => {
+				if (diff !== null && !this.savedGames.has(game)) {
+					const winnerId = didWin ? c.id : -1;
+					console.log(`Saving bot match: ${c.name} vs Bot (${diff}), Winner: ${didWin ? c.name : `Bot (${diff})`}`);
+					await this.saveGameResult(c, null, { id: winnerId, name: didWin ? c.name : `Bot (${diff})` } as GClient, scores, diff, 'offline');
+					this.savedGames.add(game);
+				} else if (diff !== null) {
+					console.log(`Bot match already saved for ${c.name} vs Bot (${diff})`);
+				}
+				
 				this.removeRoom(c);
+				
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
@@ -303,7 +339,6 @@ export default class GamesManager {
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
-		// Unified session-ready event for both clients
 		sent.socket?.send(
 			JSON.stringify({
 				event: "game_session_ready",
@@ -345,8 +380,14 @@ export default class GamesManager {
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
-			const onEnd = (c: GClient, didWin: boolean, scores: number[]) => {
+			const onEnd = async (c: GClient, didWin: boolean, scores: number[]) => {
+				const winner = didWin ? c : (c === opponent ? client : opponent);
+				console.log(`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`);
+				
+				await this.saveGameResult(opponent, client, winner, scores, undefined, 'quick');
+				
 				this.removeRoom(c);
+				
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({

@@ -121,7 +121,7 @@ export default function Pong() {
 
 	const onMessage = useCallback(
 		(data: any) => {
-			if (!data || !activeSessionRef.current) return;
+			if (!data) return;
 			let remaining;
 			switch (data.event) {
 				case "searching":

@@ -12,7 +12,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
     await dbRun("UPDATE users SET online = 1 WHERE id = ?", [decoded.id]);
-    const user = await dbGet('SELECT id, name, email, display_name, avatar, online FROM users WHERE id = ?', [decoded.id]);
+    const user = await dbGet('SELECT id, display_name, email, avatar, online, wins, losses FROM users WHERE id = ?', [decoded.id]);
     if (!user) return reply.code(404).send({ error: 'Utilisateur introuvable' });
     if (!user.avatar) user.avatar = '/avatars/avatar1.webp';
     return reply.send(user);
@@ -21,16 +21,9 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
   fastify.put('/me', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
-    const { name, email, password, display_name, avatar } = request.body as any;
+    const { email, password, display_name, avatar } = request.body as any;
     const updates: string[] = [];
     const values: any[] = [];
-
-    if (name && name.trim() !== '') {
-      const nameRegex = /^[A-Z][a-z]+$/;
-      if (!nameRegex.test(name.trim())) return reply.code(400).send({ error: 'Nom invalide' });
-      updates.push('name = ?');
-      values.push(name.trim());
-    }
 
     if (email && email.trim() !== '') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -50,7 +43,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
     }
 
     if (display_name && display_name.trim() !== '') {
-      const displayNameRegex = /^[a-z0-9-]+$/;
+      const displayNameRegex = /^[a-zA-Z0-9-]+$/;
       if (!displayNameRegex.test(display_name)) return reply.code(400).send({ error: 'Pseudo invalide' });
       const existing = await dbGet('SELECT id FROM users WHERE display_name = ? AND id != ?', [display_name.trim(), decoded.id]);
       if (existing) return reply.code(409).send({ error: 'Pseudo déjà utilisé' });
@@ -127,5 +120,3 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
     return reply.send({ success: true });
   });
 });
-
-//supprimer la route /me inutile et a la place recupere l'info du 2fa et l'envoyer au front home nn ?

@@ -6,7 +6,121 @@ import React, {
 	useState,
 } from "react";
 import { useUser } from "./UserContext";
-import { Friends } from "../pages";
+
+interface Friend {
+	id: number;
+	display_name: string;
+	avatar?: string;
+	online?: number | boolean;
+}
+
+interface FriendsContextType {
+	friends: Friend[];
+	setFriends: React.Dispatch<React.SetStateAction<Friend[]>>;
+	isOnline: (userId: number) => boolean;
+	isOnlineStatus: (online?: number | boolean) => boolean;
+	refreshFriends: () => Promise<void>;
+}
+
+const FriendsContext = createContext<FriendsContextType | null>(null);
+
+export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({
+	children,
+}) => {
+	const [friends, setFriends] = useState<Friend[]>([]);
+	const { token, user } = useUser();
+
+	const isOnline = (userId: number): boolean => {
+		const friend = friends.find(f => f.id === userId);
+		return friend ? (friend.online === true || friend.online === 1) : false;
+	};
+
+	const isOnlineStatus = (online?: number | boolean): boolean => {
+		return online === true || online === 1;
+	};
+
+	const refreshFriends = async (): Promise<void> => {
+		if (!token) return;
+		
+		try {
+			const res = await fetch("http://localhost:3000/friends", { 
+				headers: { Authorization: `Bearer ${token}` } 
+			});
+			if (res.ok) {
+				const data = await res.json();
+				setFriends(data);
+			}
+		} catch (err) {
+			console.error("Erreur lors du chargement des amis:", err);
+		}
+	};
+
+	useEffect(() => {
+		if (token && user?.id) {
+			refreshFriends();
+		} else {
+			setFriends([]);
+		}
+	}, [token, user?.id]);
+
+	useEffect(() => {
+		const handleFriendsMessage = (event: CustomEvent) => {
+			const data = event.detail;
+			
+			switch (data.type) {
+				case "connected":
+					console.log("Friends WebSocket: connecté");
+					break;
+				
+				case "friend_request_received":
+				case "friend_request_accepted": 
+				case "friend_request_rejected":
+				case "friend_removed":
+				case "user_blocked":
+					refreshFriends();
+					window.dispatchEvent(new CustomEvent('refreshFriendRequests'));
+					break;
+				
+				case "status_update":
+					setFriends(prev => prev.map(friend => 
+						friend.id === data.userId 
+							? { ...friend, online: data.online }
+							: friend
+					));
+					break;
+				
+				case "heartbeat":
+					break;
+			}
+		};
+
+		window.addEventListener('friendsWebSocketMessage', handleFriendsMessage as EventListener);
+		
+		return () => {
+			window.removeEventListener('friendsWebSocketMessage', handleFriendsMessage as EventListener);
+		};
+	}, [refreshFriends]);
+
+	return (
+		<FriendsContext.Provider value={{
+			friends,
+			setFriends,
+			isOnline,
+			isOnlineStatus,
+			refreshFriends,
+		}}>
+			{children}
+		</FriendsContext.Provider>
+	);
+};
+
+export function useFriends() {
+	const context = useContext(FriendsContext);
+	if (!context) {
+		throw new Error("useFriends must be used inside FriendsProvider");
+	}
+	return context;
+}
 
 interface Message {
 	from: { id: number; name: string };
@@ -18,6 +132,7 @@ interface Message {
 
 interface WebSocketContextType {
 	pongWsRef: React.MutableRefObject<WebSocket | null>;
+	friendsWsRef: React.MutableRefObject<WebSocket | null>;
 	messages: Message[];
 	sendMessage: (msg: {
 		type: string;
@@ -82,6 +197,19 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			setMessages((prev) => [...prev, data]);
 		};
 
+		friendsWsRef.current.onmessage = (event) => {
+			try {
+				const data = JSON.parse(event.data);
+				
+				window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', { 
+					detail: data 
+				}));
+				
+			} catch (err) {
+				console.error("Erreur parsing message WebSocket amis:", err);
+			}
+		};
+
 		pongWsRef.current.onmessage = (msg) => {
 			let parsed: any = null;
 			try {
@@ -138,6 +266,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		<WebSocketContext.Provider
 			value={{
 				pongWsRef,
+				friendsWsRef,
 				messages,
 				sendMessage,
 				addPongRoute,
