@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 type PongScoreboardProps = {
 	selfLabel: string;
@@ -13,12 +13,6 @@ export default function PongLabels({
 	preferredSide,
 	side,
 }: PongScoreboardProps) {
-	const selfLabelRef = useRef(selfLabel);
-
-	useEffect(() => {
-		if (selfLabel) selfLabelRef.current = selfLabel;
-	}, [selfLabel]);
-
 	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
 	const selfOnLeft =
 		(side === 0 && !shouldMirror) || (side === 1 && shouldMirror);
@@ -33,9 +27,7 @@ export default function PongLabels({
 						<div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-[10px] text-white">
 							{playerPaddle}
 						</div>
-						<span className="text-cyan-300">
-							{selfLabelRef.current}
-						</span>
+						<span className="text-cyan-300">{selfLabel}</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="text-pink-300">{opponentLabel}</span>
@@ -53,9 +45,7 @@ export default function PongLabels({
 						<span className="text-pink-300">{opponentLabel}</span>
 					</div>
 					<div className="flex items-center gap-2">
-						<span className="text-cyan-300">
-							{selfLabelRef.current}
-						</span>
+						<span className="text-cyan-300">{selfLabel}</span>
 						<div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-[10px] text-white">
 							{playerPaddle}
 						</div>

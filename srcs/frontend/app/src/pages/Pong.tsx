@@ -102,19 +102,21 @@ export default function Pong() {
 				view.kind === "result" && view.gameOver?.opponent
 			}`
 		);
-		if (view.kind === "training" && trainingLabelsRef.current)
-			return trainingLabelsRef.current;
-		if (view.kind === "result" && view.gameOver?.opponent) {
-			const defaultSelf = user?.name
-				? `${user.name} (You)`
-				: PLAYER_LABELS.self;
-			console.log(`OPPONENT: ${view.gameOver.opponent}`);
-			return { self: defaultSelf, opponent: view.gameOver.opponent };
-		}
-		if (session?.labels) return session.labels;
 		const defaultSelf = user?.name
 			? `${user.name} (You)`
 			: PLAYER_LABELS.self;
+		if (view.kind === "training" && trainingLabelsRef.current)
+			return trainingLabelsRef.current;
+		if (view.kind === "result") {
+			const self = session?.labels?.self || defaultSelf;
+			const opponent =
+				view.gameOver?.opponent ||
+				session?.labels?.opponent ||
+				PLAYER_LABELS.opponent;
+			console.log(`OPPONENT: ${opponent}`);
+			return { self, opponent };
+		}
+		if (session?.labels) return session.labels;
 		return { self: defaultSelf, opponent: PLAYER_LABELS.opponent };
 	}, [session, user, view.kind, view]);
 
@@ -228,7 +230,6 @@ export default function Pong() {
 							opponent: opponentFromResult,
 						},
 					});
-					clearSession();
 					break;
 				case "error":
 					if (data.msg === "tournamentId")
@@ -271,14 +272,16 @@ export default function Pong() {
 	}, [mode, view.kind]);
 
 	useEffect(() => {
-		return () =>
+		return () => {
 			pongWsRef?.current?.send(
 				JSON.stringify({
 					event: "stop",
 					body: { type: "online" },
 				})
 			);
-	}, []);
+			clearSession();
+		};
+	}, [clearSession]);
 
 	const gameOverData = view.kind === "result" ? view.gameOver : null;
 
@@ -549,6 +552,7 @@ export default function Pong() {
 					onCancel={() => {
 						setParams(null);
 						sessionMetaRef.current.sessionType = null;
+						clearSession();
 					}}
 					onConfirm={handleOfflineConfirm}
 				/>
@@ -559,6 +563,7 @@ export default function Pong() {
 						setParams(null);
 						sessionMetaRef.current.sessionType = null;
 						sessionMetaRef.current.isTournament = false;
+						clearSession();
 					}}
 					onConfirm={handleOnlineConfirm}
 				/>

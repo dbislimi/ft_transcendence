@@ -35,7 +35,7 @@ export default class InvitManager {
 	private readonly events: InvitEvents;
 
 	constructor(opts: { ttlSeconds?: number } & InvitEvents) {
-		this.ttlMs = (opts.ttlSeconds ?? 30) * 1000; 
+		this.ttlMs = (opts.ttlSeconds ?? 30) * 1000;
 		this.events = opts;
 	}
 
@@ -65,6 +65,13 @@ export default class InvitManager {
 	}
 
 	create(sent: Client, receiv: Client): void {
+		const sentList = this.sentInvit.get(sent.id);
+		if (sentList) {
+			const existing = sentList.find(
+				(i) => i.state === "pending" && i.receiv.id === receiv.id
+			);
+			if (existing) return;
+		}
 		const received = this.receivInvit.get(sent.id);
 		if (received) {
 			const same = received.find(
@@ -108,11 +115,9 @@ export default class InvitManager {
 		invitId: string
 	): void {
 		let list: Invitation[] | undefined;
-		if (action === "cancel") 
-			list = this.sentInvit.get(client.id);
-		else 
-			list = this.receivInvit.get(client.id);
-		
+		if (action === "cancel") list = this.sentInvit.get(client.id);
+		else list = this.receivInvit.get(client.id);
+
 		if (!list) return;
 		const inv = list.find((i) => i.id === invitId && i.state === "pending");
 		if (!inv) return;
@@ -120,8 +125,7 @@ export default class InvitManager {
 		this.clearTimeout(inv);
 		this.events.onStateChange(inv);
 		this.removeInvitation(inv);
-		if (action === "accept") 
-			this.cleanupOnAcceptance(inv);
+		if (action === "accept") this.cleanupOnAcceptance(inv);
 	}
 
 	expire(invitation: Invitation) {
@@ -160,15 +164,13 @@ export default class InvitManager {
 		const sentList = this.sentInvit.get(inv.sent.id);
 		if (sentList) {
 			const newTab = sentList.filter((x) => x !== inv);
-			if (newTab.length > 0)
-				this.sentInvit.set(inv.sent.id, newTab);
+			if (newTab.length > 0) this.sentInvit.set(inv.sent.id, newTab);
 			else this.sentInvit.delete(inv.sent.id);
 		}
 		const receivList = this.receivInvit.get(inv.receiv.id);
 		if (receivList) {
 			const newTab = receivList.filter((x) => x !== inv);
-			if (newTab.length > 0)
-				this.receivInvit.set(inv.receiv.id, newTab);
+			if (newTab.length > 0) this.receivInvit.set(inv.receiv.id, newTab);
 			else this.receivInvit.delete(inv.receiv.id);
 		}
 	}

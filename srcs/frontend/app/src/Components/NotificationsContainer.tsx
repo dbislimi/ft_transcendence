@@ -49,7 +49,6 @@ function Toast({
 	item: NotificationItem;
 	onClose: () => void;
 }) {
-	const [hovered, setHovered] = useState(false);
 	const [remaining, setRemaining] = useState(item.duration ?? 0);
 	const startRef = useRef<number | null>(null);
 	const rafRef = useRef<number | null>(null);
@@ -61,7 +60,7 @@ function Toast({
 			if (startRef.current == null) startRef.current = now;
 			const elapsed = now - startRef.current;
 			const base = typeof item.duration === "number" ? item.duration : 0;
-			const left = Math.max(0, (remaining || base) - elapsed);
+			const left = Math.max(0, base - elapsed);
 			setRemaining(left);
 			if (left <= 0) {
 				onClose();
@@ -70,17 +69,14 @@ function Toast({
 			rafRef.current = requestAnimationFrame(tick);
 		};
 
-		if (!hovered) {
-			startRef.current = performance.now();
-			rafRef.current = requestAnimationFrame(tick);
-		}
+		startRef.current = performance.now();
+		rafRef.current = requestAnimationFrame(tick);
 
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
-			if (!hovered) setRemaining((r) => r);
 		};
-	}, [hovered, item.duration]);
+	}, [item.duration]);
 
 	const variantClasses = getVariantClasses(item.variant);
 
@@ -91,8 +87,6 @@ function Toast({
 	return (
 		<div
 			className={`w-80 max-w-[90vw] rounded-lg border shadow-lg overflow-hidden ${variantClasses.container}`}
-			onMouseEnter={() => setHovered(true)}
-			onMouseLeave={() => setHovered(false)}
 			role="status"
 		>
 			<div className={`px-4 py-3 ${variantClasses.header}`}>

@@ -23,17 +23,9 @@ function PongCanvas({
 }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
-	const lastOpponentPaddleColorRef = useRef<string | undefined>(
-		opponentPaddleColor
-	);
 
 	const shouldMirror =
 		cosmetics.preferredSide === "right" ? side === 0 : side === 1;
-
-	useEffect(() => {
-		if (opponentPaddleColor)
-			lastOpponentPaddleColorRef.current = opponentPaddleColor;
-	}, [opponentPaddleColor]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -102,7 +94,7 @@ function PongCanvas({
 			c.rect(p1X, players.p1.y * scale, playerWidth, p1Size);
 			const isP1Opponent = side !== 0;
 			c.fillStyle = isP1Opponent
-				? lastOpponentPaddleColorRef.current ?? "#ffffff"
+				? opponentPaddleColor ?? "#ffffff"
 				: cosmetics.paddleColor;
 			c.shadowBlur = 10;
 			c.shadowColor = "white";
@@ -112,7 +104,7 @@ function PongCanvas({
 			c.rect(p2X, players.p2.y * scale, playerWidth, p2Size);
 			const isP2Opponent = side !== 1;
 			c.fillStyle = isP2Opponent
-				? lastOpponentPaddleColorRef.current ?? "#ffffff"
+				? opponentPaddleColor ?? "#ffffff"
 				: cosmetics.paddleColor;
 			c.shadowBlur = 10;
 			c.shadowColor = "white";

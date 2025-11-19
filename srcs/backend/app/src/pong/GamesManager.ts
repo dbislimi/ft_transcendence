@@ -104,17 +104,7 @@ export default class GamesManager {
 				break;
 			}
 			case "accepted": {
-				this.wsSend(inv.sent, {
-					event: "invitation_accepted",
-					to: "invitation_events",
-					body: { by: inv.receiv.name, invitationId: inv.id },
-				});
-				this.wsSend(inv.receiv, {
-					event: "invitation_accepted",
-					to: "invitation_events",
-					body: { inviter: inv.sent.name, invitationId: inv.id },
-				});
-				this.startInvitedGame(inv.sent, inv.receiv);
+				this.startInvitedGame(inv.sent, inv.receiv, inv.id);
 				break;
 			}
 			case "declined": {
@@ -148,11 +138,6 @@ export default class GamesManager {
 					event: "invitation_expired",
 					to: "invitation_events",
 					body: { to: inv.receiv.name, invitationId: inv.id },
-				});
-				this.wsSend(inv.receiv, {
-					event: "invitation_expired",
-					to: "invitation_events",
-					body: { from: inv.sent.name, invitationId: inv.id },
 				});
 				break;
 			}
@@ -213,6 +198,7 @@ export default class GamesManager {
 		if (tournament.password && (!passwd || passwd !== tournament.password))
 			return;
 		tournament.join(client);
+		this.invitManager.removeForClient(client);
 	}
 	listTournaments() {
 		return Object.values(this.tournaments)
@@ -335,16 +321,6 @@ export default class GamesManager {
 			);
 			return;
 		}
-		if (client.id === friend.id) {
-			client.socket?.send(
-				JSON.stringify({
-					event: "invitation_error",
-					to: "invitation_events",
-					body: { reason: "self" },
-				})
-			);
-			return;
-		}
 		if (this.waitingClient === client || this.waitingClient === friend) {
 			client.socket?.send(
 				JSON.stringify({
@@ -366,7 +342,11 @@ export default class GamesManager {
 		this.invitManager.do(action, client, invitationId);
 	}
 
-	private startInvitedGame(sent: Client, receiv: Client) {
+	private startInvitedGame(
+		sent: Client,
+		receiv: Client,
+		invitationId?: string
+	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 			if (!c.quit) {
 				c.socket?.send(
@@ -384,6 +364,8 @@ export default class GamesManager {
 			}
 			this.removeRoom(c);
 		};
+		this.invitManager.removeForClient(sent);
+		this.invitManager.removeForClient(receiv);
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
@@ -426,6 +408,16 @@ export default class GamesManager {
 				},
 			})
 		);
+		this.wsSend(sent, {
+			event: "invitation_game_found",
+			to: "invitation_events",
+			body: { opponent: receiv.name, invitationId },
+		});
+		this.wsSend(receiv, {
+			event: "invitation_game_found",
+			to: "invitation_events",
+			body: { opponent: sent.name },
+		});
 		this.startWithReadyPhase(game, [sent, receiv]);
 	}
 	startOnline(client: Client) {
@@ -433,6 +425,7 @@ export default class GamesManager {
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
+			this.invitManager.removeForClient(opponent);
 			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				const winner = didWin ? c : c === opponent ? client : opponent;
 				console.log(
