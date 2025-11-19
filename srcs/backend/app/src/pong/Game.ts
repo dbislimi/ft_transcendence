@@ -27,6 +27,7 @@ export default class Game {
 		onEnd,
 		botDiff,
 		train = false,
+		options = {},
 	}: {
 		p1: Client;
 		p2?: Client;
@@ -35,10 +36,21 @@ export default class Game {
 			| null;
 		botDiff?: difficulty | null;
 		train?: boolean;
+		options?: {
+			maxScore?: number;
+			height?: number;
+			width?: number;
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		};
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board((id: number) => {
-			this.winner = id;
+		this.board = new Board({
+			onWin: (id: number) => {
+				this.winner = id;
+			},
+			...options,
 		});
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;

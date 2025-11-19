@@ -52,6 +52,11 @@ export default class Tournament {
 
 	private cancelCountdown: (game: Game) => void;
 	private fastify: any;
+	private options?: {
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	};
 
 	constructor({
 		rooms,
@@ -63,6 +68,7 @@ export default class Tournament {
 		cancelCountdown,
 		setRoom,
 		fastify,
+		options,
 	}: {
 		rooms: WeakMap<Client, Game>;
 		id: string;
@@ -73,6 +79,11 @@ export default class Tournament {
 		cancelCountdown: (game: Game) => void;
 		setRoom: (client: Client, game: Game) => void;
 		fastify?: any;
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		};
 	}) {
 		this.rooms = rooms;
 		this.password = password;
@@ -83,6 +94,7 @@ export default class Tournament {
 		this.cancelCountdown = cancelCountdown;
 		this.setRoom = setRoom;
 		this.fastify = fastify;
+		this.options = options;
 	}
 
 	private sendRejoinPrompt(client: Client, timeout: number = 10) {
@@ -257,6 +269,7 @@ export default class Tournament {
 			parent.game = new Game({
 				p1: waitingPlayer,
 				p2: currentPlayer,
+				options: this.options,
 				onEnd: async (client, didWin, scores) => {
 					console.log("game onEnd");
 

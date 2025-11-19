@@ -66,12 +66,13 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				console.log(data);
 				switch (data.event) {
 					case "invitation": {
-						const { action, invitationId, friendId } = data.body;
+						const { action, invitationId, friendId, options } =
+							data.body;
 						if (action === "invite") {
 							const friend: Client | null =
 								fastify.findClientById(friendId);
 							if (friend) {
-								games.invite(client, friend);
+								games.invite(client, friend, options);
 							} else {
 								socket.send(
 									JSON.stringify({
@@ -104,7 +105,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 										client,
 										data.body.id,
 										data.body.size,
-										data.body.passwd
+										data.body.passwd,
+										data.body.options
 									)
 								)
 									client.tournament = {
@@ -180,7 +182,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 								local = games.startOffline(
 									client,
 									data.body.diff,
-									data.body.skipCountdown
+									data.body.skipCountdown,
+									data.body.options
 								);
 								break;
 							case "trainbot":
@@ -234,8 +237,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 							currentCosmetics.ballColor !==
 								newCosmetics.ballColor;
 
-						if (!hasChanged) 
-							return;
+						if (!hasChanged) return;
 						client.cosmetics = newCosmetics;
 						fastify.db.run(
 							`UPDATE users SET preferred_side = ?, paddle_color = ?, ball_color = ? WHERE id = ?`,

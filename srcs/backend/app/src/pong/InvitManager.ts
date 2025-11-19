@@ -15,6 +15,11 @@ export interface Invitation {
 	expiresAt: number;
 	state: InvitationState;
 	timeoutRef: ReturnType<typeof setTimeout> | null;
+	options?: {
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	};
 }
 
 type Action = "accept" | "decline" | "cancel";
@@ -64,7 +69,15 @@ export default class InvitManager {
 		return !this.hasPendingOutgoing(client);
 	}
 
-	create(sent: Client, receiv: Client): void {
+	create(
+		sent: Client,
+		receiv: Client,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
+	): void {
 		const sentList = this.sentInvit.get(sent.id);
 		if (sentList) {
 			const existing = sentList.find(
@@ -94,6 +107,7 @@ export default class InvitManager {
 			expiresAt: now + this.ttlMs,
 			state: "pending",
 			timeoutRef: null,
+			options,
 		};
 		const outList = this.sentInvit.get(sent.id);
 		if (!outList) this.sentInvit.set(sent.id, [invitation]);

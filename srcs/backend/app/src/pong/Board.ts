@@ -32,19 +32,49 @@ export default class Board {
 	normHitpoint: number = 0;
 	private onWin: (id: 0 | 1) => void;
 
-	constructor(
-		onWin: (id: number) => void,
-		maxScore: number = 2,
-		height: number = 100,
-		width: number = 200
-	) {
+	constructor(options: {
+		onWin: (id: number) => void;
+		maxScore?: number;
+		height?: number;
+		width?: number;
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	}) {
+		const {
+			onWin,
+			maxScore = 2,
+			height = 100,
+			width = 200,
+			bonusNb,
+			bonusTypes,
+			playerSpeed,
+		} = options;
 		this.onWin = onWin;
 		this.maxScore = maxScore;
 		this.height = height;
 		this.width = width;
 		this.ball = new Ball(this);
-		this.players = [new Player(this, 0), new Player(this, 1)];
+		this.players = [
+			new Player(this, 0, playerSpeed),
+			new Player(this, 1, playerSpeed),
+		];
 		this.botController = [];
+		if (bonusNb !== undefined) this.bonusNb = bonusNb;
+		if (bonusTypes) {
+			this.bonusTypes = bonusTypes.map((name) => {
+				switch (name) {
+					case "Bigger":
+						return Bigger;
+					case "Smaller":
+						return Smaller;
+					case "Faster":
+						return Faster;
+					default:
+						return Bigger;
+				}
+			});
+		}
 	}
 
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {

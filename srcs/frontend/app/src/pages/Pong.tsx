@@ -20,6 +20,10 @@ import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
 import { useUser } from "../context/UserContext";
 import { useGameSession } from "../context/GameSessionContext";
+import { useGameSettings } from "../context/GameSettingsContext";
+import GameSettingsModal, {
+	type GameSettings,
+} from "../Components/GameSettingsModal";
 
 type PlayerLabels = {
 	self: string;
@@ -52,7 +56,8 @@ type Ui =
 	  }
 	| { kind: "countdown"; value: number }
 	| { kind: "result"; gameOver: GameOverData }
-	| { kind: "cosmetics" };
+	| { kind: "cosmetics" }
+	| { kind: "gameSettings" };
 
 const PLAYER_LABELS = {
 	self: "You",
@@ -89,6 +94,8 @@ export default function Pong() {
 	}>({ sessionType: null, isTournament: false, tournamentDepth: null });
 
 	const [view, setView] = useState<Ui>({ kind: "menu" });
+
+	const { settings: gameSettings, updateSettings } = useGameSettings();
 
 	const cosmetics = user?.cosmetics || {
 		preferredSide: "left",
@@ -457,6 +464,7 @@ export default function Pong() {
 							id,
 							size,
 							passwd,
+							options: gameSettings,
 						},
 					})
 				);
@@ -493,7 +501,11 @@ export default function Pong() {
 			resetGameState();
 			setControlsReady(false);
 			activeSessionRef.current = true;
-			sendStartEvent({ action: "play_offline", diff });
+			sendStartEvent({
+				action: "play_offline",
+				diff,
+				options: gameSettings,
+			});
 		},
 		[
 			setParams,
@@ -566,6 +578,17 @@ export default function Pong() {
 						}
 						title="Paramètres"
 						subtitle="Personnalisez votre jeu"
+					/>
+					<ActionButton
+						onClick={() => setView({ kind: "gameSettings" })}
+						color="blue"
+						icon={
+							<span role="img" aria-label="settings">
+								⚙️
+							</span>
+						}
+						title="Paramètres de jeu"
+						subtitle="Bonus et vitesse"
 					/>
 				</div>
 			)}
@@ -643,6 +666,15 @@ export default function Pong() {
 				<CosmeticsModal
 					onClose={() => setView({ kind: "menu" })}
 					cosmetics={cosmetics}
+				/>
+			)}
+			{view.kind === "gameSettings" && (
+				<GameSettingsModal
+					onClose={() => setView({ kind: "menu" })}
+					onConfirm={(settings) => {
+						updateSettings(settings);
+						setView({ kind: "menu" });
+					}}
 				/>
 			)}
 		</div>

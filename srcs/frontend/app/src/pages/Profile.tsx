@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { useWebSocket } from "../context/WebSocketContext";
+import { useGameSettings } from "../context/GameSettingsContext";
 import SpaceBackground from "../Components/SpaceBackground";
 
 interface Friend {
@@ -53,6 +54,7 @@ export default function Profile() {
 	const navigate = useNavigate();
 	const { user, refreshUser, token } = useUser();
 	const { pongWsRef, friendsWsRef } = useWebSocket();
+	const { settings: gameSettings } = useGameSettings();
 	const [activeTab, setActiveTab] = useState("overview");
 	const [friendsSubTab, setFriendsSubTab] = useState<
 		"list" | "requests" | "blocked"
@@ -1221,6 +1223,8 @@ export default function Profile() {
 																									action: "invite",
 																									friendId:
 																										friend.id,
+																									options:
+																										gameSettings,
 																								},
 																							}
 																						)

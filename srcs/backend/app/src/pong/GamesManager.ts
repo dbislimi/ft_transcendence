@@ -104,7 +104,12 @@ export default class GamesManager {
 				break;
 			}
 			case "accepted": {
-				this.startInvitedGame(inv.sent, inv.receiv, inv.id);
+				this.startInvitedGame(
+					inv.sent,
+					inv.receiv,
+					inv.id,
+					inv.options
+				);
 				break;
 			}
 			case "declined": {
@@ -148,7 +153,12 @@ export default class GamesManager {
 		client: Client,
 		id: string,
 		size: number,
-		passwd: string
+		passwd: string,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
 	): boolean {
 		if (this.tournaments[id]) {
 			client.socket?.send(
@@ -188,6 +198,7 @@ export default class GamesManager {
 			},
 			setRoom: (client, game) => this.setRoom(client, game),
 			fastify: this.fastify,
+			options,
 		});
 		this.joinTournament(client, id, passwd);
 		return true;
@@ -256,7 +267,12 @@ export default class GamesManager {
 	startOffline(
 		client: Client,
 		diff: difficulty | null,
-		skipCountdown?: boolean
+		skipCountdown?: boolean,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
 	): boolean {
 		const game = new Game({
 			p1: client,
@@ -303,6 +319,7 @@ export default class GamesManager {
 				}
 				this.removeRoom(c);
 			},
+			options,
 		});
 		this.setRoom(client, game);
 		if (skipCountdown) game.start();
@@ -310,7 +327,15 @@ export default class GamesManager {
 		return diff === null;
 	}
 
-	invite(client: Client, friend: Client) {
+	invite(
+		client: Client,
+		friend: Client,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
+	) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
 			client.socket?.send(
 				JSON.stringify({
@@ -331,7 +356,7 @@ export default class GamesManager {
 			);
 			return;
 		}
-		this.invitManager.create(client, friend);
+		this.invitManager.create(client, friend, options);
 	}
 
 	doInvitationAction(
@@ -345,7 +370,12 @@ export default class GamesManager {
 	private startInvitedGame(
 		sent: Client,
 		receiv: Client,
-		invitationId?: string
+		invitationId?: string,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 			if (!c.quit) {
@@ -366,7 +396,7 @@ export default class GamesManager {
 		};
 		this.invitManager.removeForClient(sent);
 		this.invitManager.removeForClient(receiv);
-		const game = new Game({ p1: sent, p2: receiv, onEnd });
+		const game = new Game({ p1: sent, p2: receiv, onEnd, options });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
 		this.wsSend(sent, {
