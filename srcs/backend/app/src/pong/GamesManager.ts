@@ -170,7 +170,7 @@ export default class GamesManager {
 				console.log("onEnd tour called");
 			},
 			startCountdown: (game, clients) =>
-				this.startWithReadyPhase(game, clients),
+				this.startWithReadyPhase(game, clients, "tournament"),
 			cancelCountdown: (game) => {
 				const entry = this.countdowns.get(game);
 				if (entry) {
@@ -369,45 +369,6 @@ export default class GamesManager {
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
-
-		sent.socket?.send(
-			JSON.stringify({
-				event: "game_session_ready",
-				to: "game_session",
-				body: {
-					sessionId: `${sent.id}:${receiv.id}`,
-					sessionType: "invite",
-					opponent: receiv.name,
-					opponentPaddleColor:
-						receiv.cosmetics?.paddleColor ?? "#ffffff",
-					self: sent.name,
-					side: sent.inGameId ?? null,
-					labels: {
-						self: `${sent.name} (You)`,
-						opponent: receiv.name,
-					},
-				},
-			})
-		);
-		receiv.socket?.send(
-			JSON.stringify({
-				event: "game_session_ready",
-				to: "game_session",
-				body: {
-					sessionId: `${sent.id}:${receiv.id}`,
-					sessionType: "invite",
-					opponent: sent.name,
-					opponentPaddleColor:
-						sent.cosmetics?.paddleColor ?? "#ffffff",
-					self: receiv.name,
-					side: receiv.inGameId ?? null,
-					labels: {
-						self: `${receiv.name} (You)`,
-						opponent: sent.name,
-					},
-				},
-			})
-		);
 		this.wsSend(sent, {
 			event: "invitation_game_found",
 			to: "invitation_events",
@@ -418,7 +379,7 @@ export default class GamesManager {
 			to: "invitation_events",
 			body: { opponent: sent.name },
 		});
-		this.startWithReadyPhase(game, [sent, receiv]);
+		this.startWithReadyPhase(game, [sent, receiv], "invite");
 	}
 	startOnline(client: Client) {
 		this.invitManager.removeForClient(client);
@@ -464,7 +425,7 @@ export default class GamesManager {
 			});
 			this.setRoom(opponent, game);
 			this.setRoom(client, game);
-			this.startWithReadyPhase(game, [opponent, client]);
+			this.startWithReadyPhase(game, [opponent, client], "quick");
 			return;
 		}
 		client.socket?.send(JSON.stringify({ event: "searching", to: "pong" }));
@@ -476,11 +437,12 @@ export default class GamesManager {
 			this.waitingClient = null;
 		}
 	}
-	private broadcastPlayersInfo(game: Game, clients: (Client | undefined)[]) {
+	private broadcastPlayersInfo(
+		game: Game,
+		clients: (Client | undefined)[],
+		sessionType: string
+	) {
 		const anyClient = clients.find((c) => !!c);
-		const sessionType: "tournament" | "quick" = anyClient?.tournament
-			? "tournament"
-			: "quick";
 		let tournamentDepth: number | undefined = undefined;
 		if (sessionType === "tournament" && anyClient?.tournament) {
 			const t = this.tournaments[anyClient.tournament.tournamentId];
@@ -547,7 +509,8 @@ export default class GamesManager {
 
 	private async startWithReadyPhase(
 		game: Game,
-		clients: (Client | undefined)[]
+		clients: (Client | undefined)[],
+		sessionType: string
 	) {
 		const readyState = {
 			p1Ready: false,
@@ -557,7 +520,7 @@ export default class GamesManager {
 			remaining: GamesManager.READY_PHASE_SECONDS,
 		};
 		this.readyPhases.set(game, readyState);
-		this.broadcastPlayersInfo(game, clients);
+		this.broadcastPlayersInfo(game, clients, sessionType);
 		const checkInterval = 1000;
 		const checkReady = async () => {
 			while (readyState.remaining > 0) {

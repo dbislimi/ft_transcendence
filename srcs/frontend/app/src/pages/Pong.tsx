@@ -357,7 +357,27 @@ export default function Pong() {
 			[k: string]: unknown;
 		} | null;
 		resetGameState();
+		console.log(
+			`session.sessionType: ${session?.sessionType}, session.sessionId: ${session?.sessionId}, user.id: ${user?.id}`
+		);
+		if (
+			session?.sessionType === "invite" &&
+			session.sessionId &&
+			user?.id
+		) {
+			const [id1, id2] = session.sessionId.split(":").map(Number);
+			const opponentId = id1 === user.id ? id2 : id1;
+			pongWsRef.current?.send(
+				JSON.stringify({
+					event: "invitation",
+					body: { action: "invite", friendId: opponentId },
+				})
+			);
+			setView({ kind: "menu" });
+			return;
+		}
 		if (payload && payload.action) {
+			console.log("PAYLOAAAADD");
 			if (payload.action === "play_offline") {
 				const diff = payload.diff ?? null;
 				const offlineLabels: PlayerLabels = diff
@@ -394,6 +414,8 @@ export default function Pong() {
 		localStop,
 		user,
 		setSession,
+		session,
+		pongWsRef,
 	]);
 
 	const handleContinueFromOverlay = useCallback(() => {

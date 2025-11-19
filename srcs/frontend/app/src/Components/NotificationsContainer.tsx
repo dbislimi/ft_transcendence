@@ -15,7 +15,7 @@ export default function NotificationsContainer({
 	const { notifications, dismiss } = useNotifications();
 
 	const containerPosition = useMemo(() => {
-		const base = "fixed z-50 p-4 gap-3 flex flex-col";
+		const base = "fixed z-[100] p-4 gap-3 flex flex-col";
 		switch (position) {
 			case "top-left":
 				return `${base} top-4 left-4`;
