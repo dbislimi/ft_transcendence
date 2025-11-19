@@ -14,6 +14,11 @@ interface User {
 	avatar?: string;
 	wins?: number;
 	losses?: number;
+	cosmetics: {
+		preferredSide: string;
+		paddleColor: string;
+		ballColor: string;
+	};
 }
 
 interface UserContextType {
@@ -25,6 +30,7 @@ interface UserContextType {
 	login: (userData: User, token: string) => void;
 	logout: () => void;
 	isAuthenticated: boolean;
+	setUser: (user: User | null) => void;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -36,6 +42,7 @@ const UserContext = createContext<UserContextType>({
 	login: () => {},
 	logout: () => {},
 	isAuthenticated: false,
+	setUser: () => {},
 });
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -157,6 +164,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				login,
 				logout,
 				isAuthenticated,
+				setUser,
 			}}
 		>
 			{children}

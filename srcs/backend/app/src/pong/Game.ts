@@ -19,7 +19,7 @@ export default class Game {
 	private signal: AbortSignal | undefined = undefined;
 
 	elaspedTime: number = 0;
-	private winner:number | undefined = undefined;
+	private winner: number | undefined = undefined;
 
 	constructor({
 		p1,
@@ -39,7 +39,6 @@ export default class Game {
 		this.onEnd = onEnd;
 		this.board = new Board((id: number) => {
 			this.winner = id;
-			this.board.reset();
 		});
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
@@ -138,7 +137,6 @@ export default class Game {
 			this.board.players[player].moveUp(true);
 		else if (this.board.players[player].up && type === "release")
 			this.board.players[player].moveUp(false);
-
 	}
 	private down(type: string, player: 0 | 1) {
 		if (!this.board.players[player].down && type === "press")

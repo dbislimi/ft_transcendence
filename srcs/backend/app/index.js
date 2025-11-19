@@ -54,8 +54,28 @@ async function dbPlugin(fastify, opts) {
       wins INTEGER DEFAULT 0,
       losses INTEGER DEFAULT 0,
       online INTEGER DEFAULT 0,
-      tournaments_won INTEGER DEFAULT 0
+      tournaments_won INTEGER DEFAULT 0,
+      preferred_side TEXT DEFAULT 'left',
+      paddle_color TEXT DEFAULT '#ffffff',
+      ball_color TEXT DEFAULT '#ff0000'
     );`);
+    
+    // Ajouter les colonnes de cosmetics si elles n'existent pas (migration)
+    db.run(`ALTER TABLE users ADD COLUMN preferred_side TEXT DEFAULT 'left'`, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        console.log('Erreur lors de l\'ajout de preferred_side:', err.message);
+      }
+    });
+    db.run(`ALTER TABLE users ADD COLUMN paddle_color TEXT DEFAULT '#ffffff'`, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        console.log('Erreur lors de l\'ajout de paddle_color:', err.message);
+      }
+    });
+    db.run(`ALTER TABLE users ADD COLUMN ball_color TEXT DEFAULT '#ff0000'`, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        console.log('Erreur lors de l\'ajout de ball_color:', err.message);
+      }
+    });
   
     db.run(`CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

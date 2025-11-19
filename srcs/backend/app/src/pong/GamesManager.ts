@@ -275,7 +275,7 @@ export default class GamesManager {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
-			onEnd: async (c: Client, didWin: boolean, scores: number[]) => {
+			onEnd: (c: Client, didWin: boolean, scores: number[]) => {
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
@@ -298,7 +298,7 @@ export default class GamesManager {
 							didWin ? c.name : `Bot (${diff})`
 						}`
 					);
-					await this.saveGameResult(
+					this.saveGameResult(
 						c,
 						null,
 						{
@@ -387,6 +387,7 @@ export default class GamesManager {
 		const game = new Game({ p1: sent, p2: receiv, onEnd });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
+
 		sent.socket?.send(
 			JSON.stringify({
 				event: "game_session_ready",
@@ -395,6 +396,8 @@ export default class GamesManager {
 					sessionId: `${sent.id}:${receiv.id}`,
 					sessionType: "invite",
 					opponent: receiv.name,
+					opponentPaddleColor:
+						receiv.cosmetics?.paddleColor ?? "#ffffff",
 					self: sent.name,
 					side: sent.inGameId ?? null,
 					labels: {
@@ -412,6 +415,8 @@ export default class GamesManager {
 					sessionId: `${sent.id}:${receiv.id}`,
 					sessionType: "invite",
 					opponent: sent.name,
+					opponentPaddleColor:
+						sent.cosmetics?.paddleColor ?? "#ffffff",
 					self: receiv.name,
 					side: receiv.inGameId ?? null,
 					labels: {
@@ -428,11 +433,7 @@ export default class GamesManager {
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
-			const onEnd = async (
-				c: Client,
-				didWin: boolean,
-				scores: number[]
-			) => {
+			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				const winner = didWin ? c : c === opponent ? client : opponent;
 				console.log(
 					`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
@@ -453,7 +454,7 @@ export default class GamesManager {
 						})
 					);
 				}
-				await this.saveGameResult(
+				this.saveGameResult(
 					opponent,
 					client,
 					winner,
@@ -498,6 +499,8 @@ export default class GamesManager {
 		for (const client of clients) {
 			if (!client?.socket) continue;
 			const opponent = game.getOpp(client)?.name ?? "Opponent";
+			const opponentPaddleColor =
+				game.getOpp(client)?.cosmetics?.paddleColor ?? "#ffffff";
 			client.socket.send(
 				JSON.stringify({
 					event: "game_session_ready",
@@ -508,6 +511,7 @@ export default class GamesManager {
 						}`,
 						sessionType,
 						opponent,
+						opponentPaddleColor,
 						self: client.name,
 						side: client.inGameId ?? null,
 						labels: { self: `${client.name} (You)`, opponent },
@@ -528,25 +532,26 @@ export default class GamesManager {
 		p1Ready: boolean,
 		p2Ready: boolean
 	) {
-		// Envoyer un message personnalisé à chaque joueur
 		for (const client of clients) {
 			if (!client?.socket) continue;
 			const selfReady = client.inGameId === 0 ? p1Ready : p2Ready;
 			const opponentReady = client.inGameId === 0 ? p2Ready : p1Ready;
+			const opponentClient = clients[1 - client.inGameId];
 			client.socket.send(
 				JSON.stringify({
 					event: "ready_phase",
 					to: "pong",
-					body: { remaining, selfReady, opponentReady },
+					body: {
+						remaining,
+						selfReady,
+						opponentReady,
+						opponentName: opponentClient?.name || "Opponent",
+					},
 				})
 			);
 		}
 	}
 
-	/**
-	 * Démarre la phase de préparation de 30 secondes.
-	 * La partie commence avec le countdown si les deux joueurs sont prêts OU si les 30 secondes sont écoulées.
-	 */
 	private async startWithReadyPhase(
 		game: Game,
 		clients: (Client | undefined)[]
@@ -559,28 +564,19 @@ export default class GamesManager {
 			remaining: GamesManager.READY_PHASE_SECONDS,
 		};
 		this.readyPhases.set(game, readyState);
-
-		// Envoyer les infos de session
 		this.broadcastPlayersInfo(game, clients);
-
-		// Démarrer le timer de 30 secondes
-		const checkInterval = 1000; // Vérifier toutes les 100ms
-
+		const checkInterval = 1000;
 		const checkReady = async () => {
 			while (readyState.remaining > 0) {
 				if (readyState.cancelled) {
 					this.readyPhases.delete(game);
 					return;
 				}
-
-				// Si les deux joueurs sont prêts, démarrer le countdown
 				if (readyState.p1Ready && readyState.p2Ready) {
 					this.readyPhases.delete(game);
 					await this.startWithCountdown(game, clients);
 					return;
 				}
-
-				// Broadcaster l'état toutes les secondes
 				this.broadcastReadyPhase(
 					game,
 					clients,
@@ -594,8 +590,6 @@ export default class GamesManager {
 				);
 				readyState.remaining -= 1;
 			}
-
-			// Les 30 secondes sont écoulées, démarrer le countdown même si tous ne sont pas prêts
 			if (!readyState.cancelled) {
 				this.readyPhases.delete(game);
 				await this.startWithCountdown(game, clients);
@@ -605,24 +599,17 @@ export default class GamesManager {
 		checkReady();
 	}
 
-	/**
-	 * Marque un joueur comme prêt pendant la phase de préparation
-	 */
 	markPlayerReady(client: Client) {
 		const room = this.getRoom(client);
 		if (!room) return;
 
 		const readyState = this.readyPhases.get(room);
-		if (!readyState) return; // Pas dans une ready phase
-
-		// Déterminer quel joueur est prêt
+		if (!readyState) return;
 		if (client.inGameId === 0) {
 			readyState.p1Ready = true;
 		} else if (client.inGameId === 1) {
 			readyState.p2Ready = true;
 		}
-
-		// Broadcaster immédiatement le nouvel état
 		this.broadcastReadyPhase(
 			room,
 			room.clients,
@@ -639,7 +626,6 @@ export default class GamesManager {
 	) {
 		const entry = { cancelled: false };
 		this.countdowns.set(game, entry);
-		// Note: session info already broadcast during ready phase; avoid duplicate game_session_ready here
 		for (let remaining = seconds; remaining > 0; remaining--) {
 			if (entry.cancelled) {
 				this.countdowns.delete(game);
@@ -687,7 +673,6 @@ export default class GamesManager {
 		console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
 		if (!game) return;
-		// Ensure game loop is stopped before discarding the room to avoid stale data emissions
 		try {
 			game.pause();
 		} catch {}
@@ -697,7 +682,6 @@ export default class GamesManager {
 			countdown.cancelled = true;
 			this.countdowns.delete(game);
 		}
-		// Annuler également la phase de préparation si elle est en cours
 		const readyPhase = this.readyPhases.get(game);
 		if (readyPhase) {
 			readyPhase.cancelled = true;
@@ -709,7 +693,6 @@ export default class GamesManager {
 	}
 	stop_offline(client: Client) {
 		client.quit = true;
-		// Fully remove the room to discard any lingering board state from training/offline games
 		this.removeRoom(client);
 	}
 	stop_online(client: Client) {
@@ -722,13 +705,11 @@ export default class GamesManager {
 			this.removeFromQueue(client);
 			const room = this.getRoom(client);
 			if (room) {
-				// Annule tout countdown en cours pour cette partie (sinon elle démarrerait malgré le quit)
 				const cd = this.countdowns.get(room);
 				if (cd) {
 					cd.cancelled = true;
 					this.countdowns.delete(room);
 				}
-				// Annule également la phase de préparation si elle est en cours
 				const readyPhase = this.readyPhases.get(room);
 				if (readyPhase) {
 					readyPhase.cancelled = true;
@@ -741,8 +722,6 @@ export default class GamesManager {
 			}
 		}
 	}
-
-	// ...existing code...
 
 	playerReady(client: Client) {
 		if (!client.tournament) return;

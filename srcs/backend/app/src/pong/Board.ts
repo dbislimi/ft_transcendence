@@ -34,7 +34,7 @@ export default class Board {
 
 	constructor(
 		onWin: (id: number) => void,
-		maxScore: number = 5,
+		maxScore: number = 2,
 		height: number = 100,
 		width: number = 200
 	) {

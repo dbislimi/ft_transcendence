@@ -8,12 +8,14 @@ import WaitingOverlay from "../Components/WaitingOverlay";
 import { ReadyButton } from "../Components/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
+import CosmeticsModal from "../Components/CosmeticsModal";
 import usePongParams from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { OnlineCard } from "../Components/OnlineCard";
 import { useWebSocket } from "../context/WebSocketContext";
 import PongModeSelection from "../Components/PongModeSelection";
 import PongGameArea from "../Components/PongGameArea";
+import ActionButton from "../Components/ActionButton";
 import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
 import { useUser } from "../context/UserContext";
@@ -46,9 +48,11 @@ type Ui =
 			remaining: number;
 			selfReady: boolean;
 			opponentReady: boolean;
+			opponentName: string;
 	  }
 	| { kind: "countdown"; value: number }
-	| { kind: "result"; gameOver: GameOverData };
+	| { kind: "result"; gameOver: GameOverData }
+	| { kind: "cosmetics" };
 
 const PLAYER_LABELS = {
 	self: "You",
@@ -58,7 +62,7 @@ const PLAYER_LABELS = {
 const SCALE = 4;
 
 const initGameState = (): GameState => ({
-	ball: { radius: 100 / 70, x: 100, y: 50, speed: 0 },
+	ball: { radius: 100 / 70, x: 100, y: 50 },
 	players: {
 		p1: { size: 25, y: 37.5, score: 0 },
 		p2: { size: 25, y: 37.5, score: 0 },
@@ -86,8 +90,18 @@ export default function Pong() {
 
 	const [view, setView] = useState<Ui>({ kind: "menu" });
 
+	const cosmetics = user?.cosmetics || {
+		preferredSide: "left",
+		paddleColor: "#ffffff",
+		ballColor: "#ff0000",
+	};
+
 	const labels = useMemo((): PlayerLabels => {
-		console.log(`Labels: ${view.kind}, ${view.kind === "result" &&view.gameOver?.opponent}`);
+		console.log(
+			`Labels: ${view.kind}, ${
+				view.kind === "result" && view.gameOver?.opponent
+			}`
+		);
 		if (view.kind === "training" && trainingLabelsRef.current)
 			return trainingLabelsRef.current;
 		if (view.kind === "result" && view.gameOver?.opponent) {
@@ -152,6 +166,7 @@ export default function Pong() {
 					remaining = data.body?.remaining;
 					const selfReady = data.body?.selfReady ?? false;
 					const opponentReady = data.body?.opponentReady ?? false;
+					const opponentNameReady = data.body?.opponentName;
 					trainingRef.current = false;
 					trainingLabelsRef.current = null;
 					resetGameState();
@@ -161,6 +176,7 @@ export default function Pong() {
 							remaining,
 							selfReady,
 							opponentReady,
+							opponentName: opponentNameReady,
 						});
 					}
 					break;
@@ -446,7 +462,7 @@ export default function Pong() {
 				sessionType: "offline",
 				opponent: offlineLabels.opponent,
 				self: offlineLabels.self,
-				side: null,
+				side: 0,
 				labels: offlineLabels,
 			});
 			resetGameState();
@@ -467,6 +483,8 @@ export default function Pong() {
 	usePongControls({
 		isEnabled: isControlsReady,
 		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
+		preferredSide: cosmetics.preferredSide,
+		side: session?.side ?? null,
 	});
 
 	console.log(`view: ${view.kind}`);
@@ -497,6 +515,8 @@ export default function Pong() {
 				onQuit={handleOnQuitGameover}
 				onReplay={handleReplayFromOverlay}
 				onContinue={handleContinueFromOverlay}
+				preferredSide={cosmetics.preferredSide}
+				side={session?.side ?? 0}
 			/>
 			{waitingView && showGameField && (
 				<WaitingOverlay opponentName={waitingView.opponentName} />
@@ -507,9 +527,22 @@ export default function Pong() {
 				</div>
 			)}
 			{view.kind === "menu" && !mode && (
-				<PongModeSelection
-					onSelect={(nextMode) => setParams({ mode: nextMode })}
-				/>
+				<div className="flex flex-col items-center justify-center gap-8">
+					<PongModeSelection
+						onSelect={(nextMode) => setParams({ mode: nextMode })}
+					/>
+					<ActionButton
+						onClick={() => setView({ kind: "cosmetics" })}
+						color="purple"
+						icon={
+							<span role="img" aria-label="cosmetics">
+								🎨
+							</span>
+						}
+						title="Paramètres"
+						subtitle="Personnalisez votre jeu"
+					/>
+				</div>
 			)}
 			{mode === "offline" && view.kind === "menu" && (
 				<OfflineCard
@@ -564,12 +597,26 @@ export default function Pong() {
 					remaining={readyView.remaining}
 					selfReady={readyView.selfReady}
 					opponentReady={readyView.opponentReady}
+					opponentName={readyView.opponentName}
 					onReady={handlePlayerReady}
 				/>
 			)}
 			{countdownView && <Countdown value={countdownView.value} />}
 			{showGameField && (
-				<PongGameArea labels={labels} gameRef={gameRef} scale={SCALE} />
+				<PongGameArea
+					labels={labels}
+					gameRef={gameRef}
+					scale={SCALE}
+					cosmetics={cosmetics}
+					opponentPaddleColor={session?.opponentPaddleColor}
+					side={session?.side ?? 0}
+				/>
+			)}
+			{view.kind === "cosmetics" && (
+				<CosmeticsModal
+					onClose={() => setView({ kind: "menu" })}
+					cosmetics={cosmetics}
+				/>
 			)}
 		</div>
 	);
