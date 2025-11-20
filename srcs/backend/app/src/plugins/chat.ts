@@ -12,8 +12,34 @@ interface Client {
   socket: WebSocket;
 }
 
+const clients: Client[] = [];
+
+export function sendTournamentMessage(
+  playerIds: (number | undefined)[],
+  message: string
+) {
+  if (playerIds == undefined)
+      return;
+  const ids = playerIds.filter(Boolean) as number[];
+
+  const payload = {
+    type: "info",
+    message,
+    date: new Date().toISOString(),
+  };
+
+  for (const c of clients) {
+    if (ids.includes(c.id) && c.socket.readyState === 1) {
+      try {
+        c.socket.send(JSON.stringify(payload));
+      } catch (err) {
+        console.error("Erreur envoi WS tournoi :", err);
+      }
+    }
+  }
+}
+
 export default fp(async function Chat(fastify: FastifyInstance) {
-  const clients: Client[] = [];
 
   // Vérifie si un utilisateur bloque un autre
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
@@ -182,25 +208,4 @@ export default fp(async function Chat(fastify: FastifyInstance) {
       socket.close();
     }
   });
-  fastify.decorate("chatClients", clients);
 });
-
-export function sendTournamentMessage(
-  fastify: FastifyInstance,
-  playerIds: number[],
-  message: string
-) {
-  const clients: Client[] = fastify.chatClients;
-
-  const payload = {
-    type: "info",
-    message,
-    date: new Date().toISOString(),
-  };
-
-  for (const c of clients) {
-    if (playerIds.includes(c.id) && c.socket.readyState === 1) {
-      c.socket.send(JSON.stringify(payload));
-    }
-  }
-}

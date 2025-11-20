@@ -93,8 +93,8 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
     );
 
     fastify.register(websocket);
-    fastify.register(gameController);
     fastify.register(chat);
+    fastify.register(gameController);
 };
 
 export default fp(wsController);

@@ -1,6 +1,6 @@
 import Game from "./Game.ts";
 import type { Client } from "../plugins/gameController.ts";
-import sendTournamentMessage from "../plugins/chat.ts";
+import { sendTournamentMessage } from "../plugins/chat.ts";
 
 class Node {
 	game?: Game;
@@ -138,7 +138,7 @@ export default class Tournament {
 			return;
 		}
 		console.log("start");
-		sendTournamentMessage(fastify, [parent.waiting?.id, player.id], ` Nouveau match de juif : ${parent.waiting?.name} VS ${player.name}`);
+		sendTournamentMessage([parent.waiting?.id, player.id], ` Nouveau match de juif : ${parent.waiting?.name} VS ${player.name}`);
 		if (parent.waiting) {
 			parent.game = new Game({
 				p1: parent.waiting,
