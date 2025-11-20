@@ -139,8 +139,81 @@ export class BombPartyStatsService {
   }
 
   async getUserProgress(userId: number): Promise<DBResult<UserProgress>> {
-    // table supprimee, retour vide
-    return Promise.resolve({ success: false, error: 'progress not available' });
+    return new Promise((resolve) => {
+      this.db.get(
+        'SELECT * FROM bp_user_progress WHERE user_id = ?',
+        [userId],
+        (err, row: any) => {
+          if (err) {
+            console.error('[StatsService] Error fetching user progress:', err);
+            resolve({ success: false, error: err.message });
+            return;
+          }
+
+          if (!row) {
+            // Créer un profil par défaut si inexistant
+            this.db.run(
+              `INSERT INTO bp_user_progress (user_id) VALUES (?)`,
+              [userId],
+              (insertErr) => {
+                if (insertErr) {
+                  console.error('[StatsService] Error creating default progress:', insertErr);
+                  resolve({ success: false, error: insertErr.message });
+                  return;
+                }
+
+                // Retourner les valeurs par défaut
+                const levelInfo = calculateLevel(0);
+                resolve({
+                  success: true,
+                  data: {
+                    userId,
+                    level: 1,
+                    currentXp: 0,
+                    totalXp: 0,
+                    xpToNextLevel: levelInfo.xpToNext,
+                    badges: [],
+                    unlockedThemes: ['default'],
+                    unlockedAvatars: ['default'],
+                    currentTheme: 'default',
+                    currentAvatar: 'default',
+                    streak: 0,
+                    longestStreak: 0,
+                    lastWinStreak: 0
+                  }
+                });
+              }
+            );
+            return;
+          }
+
+          // Mapper les données existantes
+          const badges: Badge[] = JSON.parse(row.badges || '[]');
+          const unlockedThemes: string[] = JSON.parse(row.unlocked_themes || '["default"]');
+          const unlockedAvatars: string[] = JSON.parse(row.unlocked_avatars || '["default"]');
+          const levelInfo = calculateLevel(row.total_xp);
+
+          resolve({
+            success: true,
+            data: {
+              userId: row.user_id,
+              level: row.level,
+              currentXp: levelInfo.currentXp,
+              totalXp: row.total_xp,
+              xpToNextLevel: levelInfo.xpToNext,
+              badges,
+              unlockedThemes,
+              unlockedAvatars,
+              currentTheme: row.current_theme || 'default',
+              currentAvatar: row.current_avatar || 'default',
+              streak: row.streak || 0,
+              longestStreak: row.longest_streak || 0,
+              lastWinStreak: row.last_win_streak || 0
+            }
+          });
+        }
+      );
+    });
   }
 
 
@@ -162,10 +235,139 @@ export class BombPartyStatsService {
       bestStreak: number;
     }
   ): Promise<DBResult<{ newBadges: Badge[]; levelUp: boolean }>> {
-    // table supprimee, retour vide
-    return Promise.resolve({ 
-      success: true, 
-      data: { newBadges: [], levelUp: false } 
+    return new Promise(async (resolve) => {
+      try {
+        // Récupérer la progression actuelle
+        const progressResult = await this.getUserProgress(userId);
+        if (!progressResult.success || !progressResult.data) {
+          resolve({ success: false, error: 'Could not fetch user progress' });
+          return;
+        }
+
+        const currentProgress = progressResult.data;
+        const xpGain = this.calculateXpGain(matchData);
+        const newTotalXp = currentProgress.totalXp + xpGain;
+        const oldLevel = currentProgress.level;
+        const newLevelInfo = calculateLevel(newTotalXp);
+        const levelUp = newLevelInfo.level > oldLevel;
+
+        // Mettre à jour le streak
+        let newStreak = currentProgress.streak;
+        let newLongestStreak = currentProgress.longestStreak;
+        if (matchData.isWin) {
+          newStreak += 1;
+          newLongestStreak = Math.max(newLongestStreak, newStreak);
+        } else {
+          newStreak = 0;
+        }
+
+        // Vérifier les nouveaux badges
+        const currentBadges = currentProgress.badges;
+        const newBadges: Badge[] = [];
+        const badgeTypes = Object.keys(BADGE_DEFINITIONS) as BadgeType[];
+
+        for (const badgeType of badgeTypes) {
+          // Vérifier si le badge est déjà débloqué
+          if (currentBadges.some(b => b.type === badgeType)) {
+            continue;
+          }
+
+          // Vérifier les conditions pour débloquer le badge
+          let shouldUnlock = false;
+          switch (badgeType) {
+            case 'first_win':
+              shouldUnlock = userStats.totalWins >= 1;
+              break;
+            case 'streak_10':
+              shouldUnlock = newStreak >= 10;
+              break;
+            case 'streak_20':
+              shouldUnlock = newStreak >= 20;
+              break;
+            case 'perfect_game':
+              shouldUnlock = matchData.isWin && matchData.finalLives === 3;
+              break;
+            case 'speed_demon':
+              shouldUnlock = userStats.averageResponseTime < 2000;
+              break;
+            case 'word_master':
+              shouldUnlock = userStats.totalValidWords >= 1000;
+              break;
+            case 'survivor':
+              shouldUnlock = matchData.isWin && matchData.finalLives === 1;
+              break;
+            case 'centurion':
+              shouldUnlock = userStats.totalMatches >= 100;
+              break;
+            case 'undefeated':
+              shouldUnlock = userStats.totalWins >= 50;
+              break;
+            case 'trigram_expert':
+              const accuracy = userStats.totalValidWords > 0 
+                ? (userStats.totalValidWords / (userStats.totalValidWords + (userStats.totalMatches * 2))) * 100 
+                : 0;
+              shouldUnlock = accuracy > 90;
+              break;
+          }
+
+          if (shouldUnlock) {
+            const badgeDef = BADGE_DEFINITIONS[badgeType];
+            const newBadge: Badge = {
+              id: `${badgeType}_${Date.now()}`,
+              type: badgeType,
+              name: badgeDef.name,
+              description: badgeDef.description,
+              icon: badgeDef.icon,
+              rarity: badgeDef.rarity as BadgeRarity,
+              unlockedAt: new Date()
+            };
+            newBadges.push(newBadge);
+            currentBadges.push(newBadge);
+          }
+        }
+
+        // Mettre à jour dans la base de données
+        this.db.run(
+          `UPDATE bp_user_progress 
+           SET level = ?, 
+               total_xp = ?, 
+               current_xp = ?,
+               badges = ?, 
+               streak = ?, 
+               longest_streak = ?,
+               last_win_streak = ?,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = ?`,
+          [
+            newLevelInfo.level,
+            newTotalXp,
+            newLevelInfo.currentXp,
+            JSON.stringify(currentBadges),
+            newStreak,
+            newLongestStreak,
+            matchData.isWin ? newStreak : currentProgress.lastWinStreak,
+            userId
+          ],
+          (err) => {
+            if (err) {
+              console.error('[StatsService] Error updating progress:', err);
+              resolve({ success: false, error: err.message });
+              return;
+            }
+
+            resolve({
+              success: true,
+              data: { newBadges, levelUp }
+            });
+          }
+        );
+      } catch (error) {
+        console.error('[StatsService] Error in updateProgress:', error);
+        resolve({ 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+      }
     });
   }
 
@@ -174,8 +376,40 @@ export class BombPartyStatsService {
     userId: number,
     preferences: { theme?: string; avatar?: string }
   ): Promise<DBResult<void>> {
-    // table supprimee, retour ok
-    return Promise.resolve({ success: true });
+    return new Promise((resolve) => {
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (preferences.theme !== undefined) {
+        updates.push('current_theme = ?');
+        values.push(preferences.theme);
+      }
+
+      if (preferences.avatar !== undefined) {
+        updates.push('current_avatar = ?');
+        values.push(preferences.avatar);
+      }
+
+      if (updates.length === 0) {
+        resolve({ success: true });
+        return;
+      }
+
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      values.push(userId);
+
+      const sql = `UPDATE bp_user_progress SET ${updates.join(', ')} WHERE user_id = ?`;
+
+      this.db.run(sql, values, (err) => {
+        if (err) {
+          console.error('[StatsService] Error updating preferences:', err);
+          resolve({ success: false, error: err.message });
+          return;
+        }
+
+        resolve({ success: true });
+      });
+    });
   }
 }
 

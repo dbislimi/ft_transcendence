@@ -76,7 +76,15 @@ class BombPartyStatsService {
     try {
       const token = this.getAuthToken();
       
-      if (token && stats.userId) {
+      console.log('[bombPartyStatsService] saveGameStats:', {
+        hasToken: !!token,
+        userId: stats.userId,
+        userIdType: typeof stats.userId,
+        condition: !!(token && stats.userId)
+      });
+      
+      if (token && stats.userId && stats.userId !== 'local') {
+        console.log('[bombPartyStatsService] Sauvegarde avec authentification');
         await this.fetchWithAuth(`${this.baseUrl}/stats/update`, {
           method: 'POST',
           body: JSON.stringify(stats)
@@ -91,6 +99,7 @@ class BombPartyStatsService {
 
         console.log('Statistiques sauvegardées avec succès (utilisateur authentifié)');
       } else {
+        console.log('[bombPartyStatsService] Sauvegarde en mode local/guest');
         const playerName = stats.playerName || `Guest_${Date.now()}`;
         
         const response = await fetch(`${this.baseUrl}/stats/update-local`, {

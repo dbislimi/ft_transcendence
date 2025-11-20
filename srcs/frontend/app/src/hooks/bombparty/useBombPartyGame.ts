@@ -151,6 +151,13 @@ export function useBombPartyGame(user: any) {
       const player = gameState.players.find(p => p.id === playerId);
       const playerName = player?.name || `Guest_${playerId}`;
       
+      console.log('[useBombPartyGame] Sauvegarde stats:', {
+        userId: user?.id,
+        userObject: user,
+        hasToken: !!localStorage.getItem('token'),
+        stats: stats
+      });
+      
       bombPartyStatsService.saveGameStats({
         ...stats,
         playerName: playerName

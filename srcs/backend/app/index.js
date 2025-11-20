@@ -77,6 +77,26 @@ db.serialize(() => {
 		);
 	`);
 
+	db.run(`
+		CREATE TABLE IF NOT EXISTS bp_user_progress (
+			user_id INTEGER PRIMARY KEY,
+			level INTEGER DEFAULT 1,
+			current_xp INTEGER DEFAULT 0,
+			total_xp INTEGER DEFAULT 0,
+			badges TEXT DEFAULT '[]',
+			unlocked_themes TEXT DEFAULT '["default"]',
+			unlocked_avatars TEXT DEFAULT '["default"]',
+			current_theme TEXT DEFAULT 'default',
+			current_avatar TEXT DEFAULT 'default',
+			streak INTEGER DEFAULT 0,
+			longest_streak INTEGER DEFAULT 0,
+			last_win_streak INTEGER DEFAULT 0,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users (id)
+		);
+	`);
+
 	
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_user_stats_user_id ON bp_user_stats (user_id);`);
 	
@@ -84,6 +104,8 @@ db.serialize(() => {
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_match_id ON bp_match_history (match_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_played_at ON bp_match_history (played_at);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_user_played ON bp_match_history (user_id, played_at DESC);`);
+	
+	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_user_progress_user_id ON bp_user_progress (user_id);`);
 
 	console.log("Bomb Party tables and statistics initialized");
 });

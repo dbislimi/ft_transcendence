@@ -206,7 +206,7 @@ export class StatsPersistence {
           END as win_rate
         FROM bp_user_stats s
         JOIN users u ON s.user_id = u.id
-        WHERE s.total_matches >= 5 // filtre les joueurs avec trop peu de matchs
+          WHERE s.total_matches >= 5 -- filtre les joueurs avec trop peu de matchs
         ORDER BY s.total_wins DESC, win_rate DESC, s.best_streak DESC
         LIMIT ?`,
         [limit],
