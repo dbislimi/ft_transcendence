@@ -8,7 +8,6 @@ interface CountdownProps {
 
 export default function Countdown({ count, isActive }: CountdownProps) {
   const { t } = useTranslation();
-
   if (!isActive || count <= 0) return null;
 
   return (
@@ -17,7 +16,7 @@ export default function Countdown({ count, isActive }: CountdownProps) {
         <div className="text-2xl text-slate-300 mb-4">
           {t('bombParty.game.countdown')}
         </div>
-        <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse">
+        <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 animate-countdown-pulse">
           {count}
         </div>
       </div>

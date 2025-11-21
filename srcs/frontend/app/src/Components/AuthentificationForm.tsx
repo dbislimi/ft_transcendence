@@ -43,7 +43,7 @@ export default function Form({ type }: Props) {
     const info: UserInfos = { name, email, password };
 
     try {
-      const response = await fetch('http://localhost:3000/register', {
+  const response = await fetch('http://localhost:3001/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(info),
@@ -74,7 +74,6 @@ export default function Form({ type }: Props) {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name field */}
           <div>
             <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
               Name
@@ -91,7 +90,6 @@ export default function Form({ type }: Props) {
             </div>
           </div>
 
-          {/* Email field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-900">
               Email
@@ -108,7 +106,6 @@ export default function Form({ type }: Props) {
             </div>
           </div>
 
-          {/* Password field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-900">
               Password
@@ -126,7 +123,6 @@ export default function Form({ type }: Props) {
             </div>
           </div>
 
-          {/* Confirm Password field */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
               Confirm Password
@@ -144,7 +140,6 @@ export default function Form({ type }: Props) {
             </div>
           </div>
 
-          {/* Submit button */}
           <div>
             <button
               type="submit"

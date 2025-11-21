@@ -1,31 +1,33 @@
 import type { GameState, Player } from './types';
-import trigramWordsData from '../data/trigram_words.json';
 
-/**
- * Classe contenant tous les getters du BombPartyEngine
- * Séparés pour une meilleure organisation du code
- */
 export class BombPartyEngineGetters {
   private state: GameState;
-  private currentTrigramUsageCount: number;
+  private currentSyllableUsageCount: number;
   private totalPlayersInRound: number;
 
   constructor(
     state: GameState,
-    currentTrigramUsageCount: number,
+    currentSyllableUsageCount: number,
     totalPlayersInRound: number
   ) {
     this.state = state;
-    this.currentTrigramUsageCount = currentTrigramUsageCount;
+    this.currentSyllableUsageCount = currentSyllableUsageCount;
     this.totalPlayersInRound = totalPlayersInRound;
   }
 
   getState(): GameState {
-    return { ...this.state };
+    return { 
+      ...this.state,
+      players: this.state.players.map(p => ({
+        ...p,
+        bonuses: { ...p.bonuses },
+        pendingEffects: { ...p.pendingEffects }
+      }))
+    };
   }
 
-  getCurrentTrigramUsageCount(): number {
-    return this.currentTrigramUsageCount;
+  getCurrentSyllableUsageCount(): number {
+    return this.currentSyllableUsageCount;
   }
 
   getTotalPlayersInRound(): number {
@@ -51,30 +53,40 @@ export class BombPartyEngineGetters {
   }
 
   getWordSuggestions(maxSuggestions: number = 5): string[] {
-    if (!this.state.currentTrigram) return [];
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    return list
-      .filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase()))
-      .slice(0, maxSuggestions);
+    if (!this.state.currentSyllable) return [];
+    return [];
   }
 
-  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
-    if (!this.state.currentTrigram) {
-      return { trigram: '', availableWords: 0, totalWords: 0 };
+  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
+    if (!this.state.currentSyllable) {
+      return { syllable: '', availableWords: 0, totalWords: 0 };
     }
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const list = map[this.state.currentTrigram] || [];
-    const availableWords = list.filter((w: string) => !this.state.usedWords.includes((w || '').toLowerCase())).length;
-    return { trigram: this.state.currentTrigram, availableWords, totalWords: list.length };
+    return { syllable: this.state.currentSyllable, availableWords: 0, totalWords: 0 };
   }
 
   getTurnDurationForCurrentPlayer(): number {
-    const base = this.state.baseTurnSeconds * 1000;
     const currentId = this.state.players[this.state.currentPlayerIndex]?.id;
+    
     if (currentId && this.state.pendingFastForNextPlayerId === currentId) {
       return 3000;
     }
-    return base;
+    
+    const difficulty = this.state.currentSyllableDifficulty || 'medium';
+    let baseDuration: number;
+    
+    switch (difficulty) {
+      case 'easy':
+        baseDuration = 12000;
+        break;
+      case 'hard':
+        baseDuration = 19000;
+        break;
+      case 'medium':
+      default:
+        baseDuration = 15000;
+        break;
+    }
+    
+    return Math.min(baseDuration, 25000);
   }
 }

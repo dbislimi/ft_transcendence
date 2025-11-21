@@ -1,30 +1,36 @@
 import React, { useMemo, useState } from 'react';
-import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
+import { useBackground, type BackgroundKey } from '../contexts/BackgroundContext';
 import { useTranslation } from 'react-i18next';
 
 type Card = {
-  key: string;
+  key: BackgroundKey;
   label: string;
   previewUrl: string | null;
 };
 
 export default function BackgroundPicker({ game }: { game?: 'bombparty' | 'pong' }) {
   const { t } = useTranslation();
-  const { currentBackground, setBackground, availableBackgrounds } = useGlobalBackground();
+  const { getBackgroundFor, setBackgroundFor, setGlobalBackground, getBackgroundUrl, getGlobalBackgroundKey } = useBackground();
   const [applyAll, setApplyAll] = useState(false);
 
-  const current = currentBackground.id;
+  const current = game ? getBackgroundFor(game) : getGlobalBackgroundKey();
 
   const cards: Card[] = useMemo(() => {
-    return availableBackgrounds.map((bg: any) => ({
-      key: bg.id,
-      label: bg.name,
-      previewUrl: bg.url,
+    const keys: BackgroundKey[] = ['default', 'space', '42', 'halloween', 'matrix42', 'snow'];
+    return keys.map((k) => ({
+      key: k,
+      label: t(`ui.background.${k}`),
+      previewUrl: k === 'default' ? null : getBackgroundUrl(k),
     }));
-  }, [availableBackgrounds]);
+  }, [t, getBackgroundUrl]);
 
-  const onSelect = (k: string) => {
-    setBackground(k);
+  const onSelect = (k: BackgroundKey) => {
+    if (!game) {
+      setGlobalBackground(k);
+      return;
+    }
+    if (applyAll) setGlobalBackground(k);
+    setBackgroundFor(game, k);
   };
 
   return (
@@ -74,5 +80,3 @@ export default function BackgroundPicker({ game }: { game?: 'bombparty' | 'pong'
     </div>
   );
 }
-
-

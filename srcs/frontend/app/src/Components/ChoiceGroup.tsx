@@ -1,7 +1,5 @@
 import React from "react";
 
-// Removed ChoiceOption interface since label and value are merged into a single value
-
 interface ChoiceGroupProps<T extends string | number> {
 	label?: string;
 	options: T[];

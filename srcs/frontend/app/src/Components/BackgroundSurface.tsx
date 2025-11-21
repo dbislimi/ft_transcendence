@@ -27,5 +27,3 @@ export default function BackgroundSurface({ game, className = '', children }: Ba
     </div>
   );
 }
-
-

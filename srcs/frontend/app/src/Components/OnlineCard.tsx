@@ -25,7 +25,7 @@ interface Tournament {
 
 export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 	const { t } = useTranslation();
-	const [mode, setMode] = useState("Quick Match");
+	const [mode, setMode] = useState<"Tournament" | "Quick Match" | null>(null);
 	const [variant, setVariant] = useState("Create");
 	const [size, setSize] = useState(4);
 	const [name, setName] = useState("");
@@ -59,28 +59,39 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 			wsRef.current?.removeEventListener("message", handler);
 		};
 	}, [mode, variant, wsRef]);
-	const disable =
+	const disableTournament =
 		variant === "Create"
-			? (!priv && !name.trim()) ||
-			  (priv && (!name.trim() || !password.trim()))
+			? (!priv && !name.trim()) || (priv && (!name.trim() || !password.trim()))
 			: priv
 			? !name.trim() || !password.trim()
 			: !name.trim();
-	const onSubmit = () => onConfirm(mode, variant, size, name, password);
+	const onSubmit = () => {
+		if (!mode) return;
+		onConfirm(mode, variant, size, name, password);
+	};
+	const wsOpen = wsRef?.current?.readyState === WebSocket.OPEN;
+
+	const canStart = (() => {
+		if (!mode) return false;
+		if (mode === "Quick Match") return !!wsOpen;
+		return !disableTournament;
+	})();
 	return (
 		<div className="absolute inset-0 flex items-center justify-center p-4">
 			<GameCard
 				title="Online Mode"
+				confirmLabel="Start"
+				actionsDirection="vertical"
 				onCancel={onCancel}
 				onConfirm={onSubmit}
-				disabledConfirm={mode !== "Quick Match" ? disable : false}
+				disabledConfirm={!canStart}
 			>
 				<div className="space-y-5">
 					<ChoiceGroup
 						label="Mode"
 						options={["Tournament", "Quick Match"]}
 						value={mode}
-						onChange={setMode}
+						onChange={(v) => setMode(v as any)}
 						columns={2}
 						color="cyan"
 						variant="lg"
@@ -163,7 +174,9 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 														</span>
 														<div className="ml-auto flex items-center gap-1">
 															{tour.private && (
-																<span>🔒</span>
+																<svg className="w-3 h-3 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																	<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+																</svg>
 															)}
 															<span className="text-xs text-cyan-200 font-semibold">
 																{tour.players}/
@@ -205,6 +218,11 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 									})}
 								</div>
 							)}
+						</div>
+					)}
+					{mode === "Quick Match" && (
+						<div className="text-xs text-slate-400">
+							Click Start to enter matchmaking.
 						</div>
 					)}
 				</div>

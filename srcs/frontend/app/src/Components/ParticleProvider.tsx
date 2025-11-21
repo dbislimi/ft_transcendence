@@ -31,7 +31,6 @@ export default function ParticleProvider() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Configuration
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -78,7 +77,6 @@ export default function ParticleProvider() {
       }
     };
 
-    // Gestionnaire de souris
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;

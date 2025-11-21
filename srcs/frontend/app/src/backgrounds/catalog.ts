@@ -1,4 +1,4 @@
-// backgrounds avec Vite global
+import { fortniteBackgrounds, type FortniteBackgroundItem } from './fortnite-catalog';
 
 const backgroundFiles = import.meta.glob('/img/background/*.{svg,webp,png,jpg,jpeg}', { 
   eager: true, 
@@ -18,7 +18,6 @@ export interface BackgroundItem {
 function generateNameFromFilename(filename: string): string {
   const basename = filename.split('/').pop()?.replace(/\.(svg|webp|png|jpg|jpeg)$/, '') || '';
   
-  // Mappings speciaux pour les noms connus
   const specialNames: Record<string, string> = {
     '42background': '42',
     'hallowenn_background': 'Halloween',
@@ -32,9 +31,9 @@ function generateNameFromFilename(filename: string): string {
     'the_last_of_us': 'The Last of Us',
     'windows95': 'Windows 95',
     'bit_cloud': 'Bit Cloud',
-    'theft': 'Theft',
+    'Gta 5': 'Gta 5',
     'kitti': 'Kitti',
-    '1': 'Gradient 1',
+    '1': 'Interstellar',
     'pexels-padrinan-19670': 'Paysage Naturel',
     'pexels-umkreisel-app-956999': 'Ciel Étoilé'
   };
@@ -59,9 +58,9 @@ function generateDescription(name: string, filename: string): string {
     'The Last of Us': 'Post-apocalyptique',
     'Windows 95': 'Nostalgie',
     'Bit Cloud': 'Nuages pixelisés',
-    'Theft': 'Ambiance urbaine nocturne',
+    'Gta 5': 'Ambiance urbaine nocturne',
     'Kitti': 'Chaton',
-    'Gradient 1': 'Dégradé coloré moderne',
+    'Interstellar': 'Voyage à travers les étoiles', 
     'Paysage Naturel': 'Vue panoramique de la nature',
     'Ciel Étoilé': 'Nuit étoilée'
   };
@@ -69,12 +68,10 @@ function generateDescription(name: string, filename: string): string {
   return descriptions[name] || `Arrière-plan ${name.toLowerCase()}`;
 }
 
-// Determine le type de fichier
 function getFileType(filename: string): 'image' | 'svg' {
   return filename.endsWith('.svg') ? 'svg' : 'image';
 }
 
-// Construit le catalog a partir des fichiers découverts
 function buildCatalog(): BackgroundItem[] {
   const items: BackgroundItem[] = [];
   items.push({
@@ -105,7 +102,6 @@ function buildCatalog(): BackgroundItem[] {
     });
   }
 
-  // on l'adore ce Dylan
   const theme42Path = Object.keys(backgroundFiles).find(path => path.includes('42background'));
   if (theme42Path) {
     const theme42Url = backgroundFiles[theme42Path] as string;
@@ -122,45 +118,52 @@ function buildCatalog(): BackgroundItem[] {
   return items;
 }
 
-// Catalog complet des arrière-plans
 
 export const backgroundCatalog: BackgroundItem[] = buildCatalog();
 
-// Trouve un background par ID
+const fortniteBackgroundItems: BackgroundItem[] = fortniteBackgrounds.map(fb => ({
+  id: fb.id,
+  name: fb.name,
+  url: fb.url,
+  type: 'image' as const,
+  description: fb.description,
+  tags: fb.tags
+}));
+
+export const allBackgrounds: BackgroundItem[] = [...backgroundCatalog, ...fortniteBackgroundItems];
 export function getBackgroundById(id: string): BackgroundItem | undefined {
-  return backgroundCatalog.find(bg => bg.id === id);
+  return allBackgrounds.find(bg => bg.id === id);
 }
 
-// Obtient l'URL d'un background par ID
 export function getBackgroundUrl(id: string): string | null {
   const bg = getBackgroundById(id);
   return bg?.url || null;
 }
 
 export function getBackgroundsByType(type: 'image' | 'svg' | 'default'): BackgroundItem[] {
-  return backgroundCatalog.filter(bg => bg.type === type);
+  return allBackgrounds.filter(bg => bg.type === type);
 }
 
-// Tag backgrounds
 export function searchBackgrounds(query: string): BackgroundItem[] {
   const lowerQuery = query.toLowerCase();
-  return backgroundCatalog.filter(bg => 
+  return allBackgrounds.filter(bg => 
     bg.name.toLowerCase().includes(lowerQuery) ||
     bg.description.toLowerCase().includes(lowerQuery) ||
     bg.tags?.some(tag => tag.includes(lowerQuery))
   );
 }
 
-//    Log de debug
 export function logCatalog(): void {
-  console.log('🖼️ [Backgrounds] Catalog loaded:', {
-    total: backgroundCatalog.length,
+  console.log('[Backgrounds] Catalog loaded:', {
+    total: allBackgrounds.length,
+    general: backgroundCatalog.length,
+    fortnite: fortniteBackgroundItems.length,
     types: {
       default: getBackgroundsByType('default').length,
       svg: getBackgroundsByType('svg').length,
       image: getBackgroundsByType('image').length
     },
-    items: backgroundCatalog.map(bg => ({
+    items: allBackgrounds.map(bg => ({
       id: bg.id,
       name: bg.name,
       type: bg.type
@@ -168,7 +171,6 @@ export function logCatalog(): void {
   });
 }
 
-// Log automatique en developpement
 if (import.meta.env.DEV) {
   logCatalog();
 }

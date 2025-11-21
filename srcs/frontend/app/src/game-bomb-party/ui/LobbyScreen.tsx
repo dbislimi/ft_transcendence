@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../../Components/SpaceBackground";
 import BackgroundSurface from "../../Components/BackgroundSurface";
-// BackgroundPicker removed
+import LobbyList from "./LobbyList";
+import PlayersCountDropdown from "./PlayersCountDropdown";
+import { useBombPartyStore } from "../../store/useBombPartyStore";
 
 interface LobbyMeta {
 	name: string;
@@ -16,21 +18,17 @@ interface LobbyScreenProps {
 	onJoin: (name: string, password?: string) => void;
 	onBack?: () => void;
 	isAuthenticated?: boolean;
+	client?: any;
 }
 
-export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated = false }: LobbyScreenProps) {
+export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated = false, client }: LobbyScreenProps) {
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<"create" | "join">("create");
-
-	// Create state
+	const { connection } = useBombPartyStore();
 	const [name, setName] = useState("");
 	const [isPrivate, setIsPrivate] = useState(false);
 	const [password, setPassword] = useState("");
 	const [maxPlayers, setMaxPlayers] = useState(4);
-
-	// Join state
-	const [joinName, setJoinName] = useState("");
-	const [joinPassword, setJoinPassword] = useState("");
 
 	return (
 		<BackgroundSurface game="bombparty">
@@ -42,6 +40,18 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							{t("bombParty.lobby.title")}
 						</h1>
 						<div className="flex items-center gap-2">
+							<div className="flex items-center gap-2">
+								<div className={`w-2 h-2 rounded-full ${
+									connection.state === 'connected' ? 'bg-green-400' :
+									connection.state === 'connecting' ? 'bg-yellow-400' :
+									'bg-red-400'
+								}`}></div>
+								<span className="text-xs text-slate-400">
+									{connection.state === 'connected' ? t('bombParty.lobby.connected') :
+									 connection.state === 'connecting' ? t('bombParty.lobby.connecting') :
+									 t('bombParty.lobby.disconnected')}
+								</span>
+							</div>
 						{onBack && (
 							<button
 								type="button"
@@ -55,18 +65,31 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 						</div>
 					</div>
 
+					{connection.lastError && (
+						<div className="mb-4 p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-300 text-sm">
+							{connection.lastError}
+						</div>
+					)}
 					<div className="flex gap-2 mb-4">
 						<button
 							type="button"
 							onClick={() => setTab("create")}
-							className={`px-4 py-2 rounded-lg border ${tab === "create" ? "border-cyan-400 text-cyan-300" : "border-slate-600 text-slate-400"}`}
+							className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+								tab === "create" 
+									? "border-cyan-400 text-cyan-300 bg-cyan-400/10" 
+									: "border-slate-600 text-slate-400 hover:border-slate-500"
+							}`}
 						>
 							{t("bombParty.lobby.createTab")}
 						</button>
 						<button
 							type="button"
 							onClick={() => setTab("join")}
-							className={`px-4 py-2 rounded-lg border ${tab === "join" ? "border-cyan-400 text-cyan-300" : "border-slate-600 text-slate-400"}`}
+							className={`px-4 py-2 rounded-lg border transition-all duration-200 ${
+								tab === "join" 
+									? "border-cyan-400 text-cyan-300 bg-cyan-400/10" 
+									: "border-slate-600 text-slate-400 hover:border-slate-500"
+							}`}
 						>
 							{t("bombParty.lobby.joinTab")}
 						</button>
@@ -79,33 +102,24 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 								<input
 									value={name}
 									onChange={(e) => setName(e.target.value)}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white focus:outline-none focus:border-cyan-400 transition-colors"
 								/>
 							</div>
-							<div>
-								<label className="block text-slate-300 text-sm mb-2">{t("bombParty.lobby.playersCount")}</label>
-								<select
-									value={maxPlayers}
-									onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								>
-									<option value={2}>2 joueurs</option>
-									<option value={3}>3 joueurs</option>
-									<option value={4}>4 joueurs</option>
-									<option value={6}>6 joueurs</option>
-									<option value={8}>8 joueurs</option>
-									<option value={10}>10 joueurs</option>
-									<option value={12}>12 joueurs</option>
-								</select>
-							</div>
+							<PlayersCountDropdown
+								value={maxPlayers}
+								onChange={setMaxPlayers}
+								options={[2, 3, 4, 6, 8, 10, 12]}
+								label={t("bombParty.lobby.playersCount")}
+							/>
 							<div className="flex items-center gap-2">
 								<input
 									id="isPrivate"
 									type="checkbox"
 									checked={isPrivate}
 									onChange={(e) => setIsPrivate(e.target.checked)}
+									className="w-4 h-4 rounded border-slate-600 bg-slate-700/60 text-cyan-500 focus:ring-cyan-400"
 								/>
-								<label htmlFor="isPrivate" className="text-slate-300">{t("bombParty.lobby.private")}</label>
+								<label htmlFor="isPrivate" className="text-slate-300 cursor-pointer">{t("bombParty.lobby.private")}</label>
 							</div>
 							{isPrivate && (
 								<div>
@@ -114,27 +128,25 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 										type="password"
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+										className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white focus:outline-none focus:border-cyan-400 transition-colors"
 									/>
 								</div>
 							)}
 						<button
 							type="button"
 							onClick={() => {
-								console.log('🎯 [Frontend-LobbyScreen] Création lobby avec maxPlayers:', maxPlayers);
 								onCreate({ name, isPrivate, password: isPrivate ? password : undefined, maxPlayers });
 							}}
-							disabled={!name.trim() || !isAuthenticated}
+							disabled={!name.trim() || connection.state !== 'connected' || !connection.playerId}
 								className={`w-full py-3 px-6 font-semibold rounded-lg transition-all duration-200 ${
-									name.trim() && isAuthenticated
-										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
+									name.trim() && connection.state === 'connected' && connection.playerId
+										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl"
 										: "bg-slate-600 text-slate-400 cursor-not-allowed"
-								}`}
-							>
-								{!isAuthenticated ? (
+								}`} >
+								{connection.state !== 'connected' || !connection.playerId ? (
 									<div className="flex items-center justify-center gap-2">
 										<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-										{t("bombParty.lobby.connecting")}
+										{connection.state === 'connecting' ? t("bombParty.lobby.connecting") : t("bombParty.lobby.connectionRequired")}
 									</div>
 								) : (
 									t("bombParty.lobby.create")
@@ -142,47 +154,14 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							</button>
 						</div>
 					) : (
-						<div className="space-y-4">
-							<div>
-								<label className="block text-slate-300 text-sm mb-1">{t("bombParty.lobby.lobbyId")}</label>
-								<input
-									value={joinName}
-									onChange={(e) => setJoinName(e.target.value)}
-									placeholder={t("bombParty.lobby.lobbyIdPlaceholder")}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								/>
-								<p className="text-xs text-slate-400 mt-1">
-									{t("bombParty.lobby.lobbyIdHelp")}
-								</p>
-							</div>
-							<div>
-								<label className="block text-slate-300 text-sm mb-1">{t("bombParty.lobby.lobbyId")}</label>
-								<input
-									type="password"
-									value={joinPassword}
-									onChange={(e) => setJoinPassword(e.target.value)}
-									placeholder={t("bombParty.lobby.passwordPlaceholder")}
-									className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
-								/>
-							</div>
-							<button
-								type="button"
-								onClick={() => onJoin(joinName, joinPassword || undefined)}
-								disabled={!joinName.trim() || !isAuthenticated}
-								className={`w-full py-3 px-6 font-semibold rounded-lg transition-all duration-200 ${
-									joinName.trim() && isAuthenticated
-										? "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
-										: "bg-slate-600 text-slate-400 cursor-not-allowed"
-								}`}
-							>
-								{!isAuthenticated ? t("bombParty.lobby.connecting") : t("bombParty.lobby.join")}
-							</button>
-						</div>
+						<LobbyList 
+							onJoinLobby={onJoin}
+							isAuthenticated={isAuthenticated}
+							client={client}
+						/>
 					)}
 				</div>
 			</div>
-
-			{/* Background picker modal removed */}
 		</BackgroundSurface>
 	);
 }

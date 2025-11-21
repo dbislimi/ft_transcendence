@@ -1,49 +1,85 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { backgroundCatalog, getBackgroundById, type BackgroundItem } from '../backgrounds/catalog';
-import { analyzeBackground, applyColorScheme, type ColorScheme } from '../utils/colorAdaptation';
+import { allBackgrounds, getBackgroundById, type BackgroundItem } from '../backgrounds/catalog';
+import { analyzeBackground, applyColorScheme, type ColorScheme, isBackgroundDark } from '../utils/colorAdaptation';
+import { useSettings } from './SettingsContext';
 
 interface GlobalBackgroundContextValue {
   currentBackground: BackgroundItem;
   setBackground: (id: string) => void;
+  setBackgroundForTheme: (id: string, theme: 'light' | 'dark') => void;
   availableBackgrounds: BackgroundItem[];
+  lightBackgrounds: BackgroundItem[];
+  darkBackgrounds: BackgroundItem[];
+  lightBackgroundId: string;
+  darkBackgroundId: string;
   isLoading: boolean;
   currentColorScheme: ColorScheme | null;
 }
 
 const GlobalBackgroundContext = createContext<GlobalBackgroundContextValue | undefined>(undefined);
 
-const STORAGE_KEY = 'ui.background.global';
+const STORAGE_KEY_LIGHT = 'ui.background.global.light';
+const STORAGE_KEY_DARK = 'ui.background.global.dark';
 const CSS_CLASS_PREFIX = 'bg-active-';
 
 export function GlobalBackgroundProvider({ children }: { children: ReactNode }) {
-  const [currentBackgroundId, setCurrentBackgroundId] = useState<string>('default');
+  const { settings } = useSettings();
+  const currentTheme = settings.display.theme;
+  
+  const [lightBackgroundId, setLightBackgroundId] = useState<string>('default');
+  const [darkBackgroundId, setDarkBackgroundId] = useState<string>('default');
+  const [lastUsedBackgroundId, setLastUsedBackgroundId] = useState<string>('default');
   const [isLoading, setIsLoading] = useState(false);
   const [currentColorScheme, setCurrentColorScheme] = useState<ColorScheme | null>(null);
 
   useEffect(() => {
     try {
-      const savedId = localStorage.getItem(STORAGE_KEY);
-      if (savedId && getBackgroundById(savedId)) {
-        setCurrentBackgroundId(savedId);
+      const savedLightId = localStorage.getItem(STORAGE_KEY_LIGHT);
+      const savedDarkId = localStorage.getItem(STORAGE_KEY_DARK);
+      
+      if (savedLightId && getBackgroundById(savedLightId)) {
+        setLightBackgroundId(savedLightId);
       }
+      if (savedDarkId && getBackgroundById(savedDarkId)) {
+        setDarkBackgroundId(savedDarkId);
+      }
+      
+      const initialBackgroundId = currentTheme === 'light' 
+        ? (savedLightId && getBackgroundById(savedLightId) ? savedLightId : 'default')
+        : (savedDarkId && getBackgroundById(savedDarkId) ? savedDarkId : 'default');
+      setLastUsedBackgroundId(initialBackgroundId);
     } catch (error) {
       console.error('Erreur lors du chargement de l\'arrière-plan:', error);
     }
   }, []);
 
+  const currentBackgroundId = useMemo(() => {
+    if (settings.display.autoChangeBackground) {
+      return currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
+    }
+    return lastUsedBackgroundId;
+  }, [currentTheme, lightBackgroundId, darkBackgroundId, settings.display.autoChangeBackground, lastUsedBackgroundId]);
+
+  useEffect(() => {
+    if (settings.display.autoChangeBackground) {
+      const themeBackgroundId = currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
+      setLastUsedBackgroundId(themeBackgroundId);
+    } else {
+      const currentThemeBackgroundId = currentTheme === 'light' ? lightBackgroundId : darkBackgroundId;
+      setLastUsedBackgroundId(prev => {
+        if (!prev || prev === 'default' || prev !== currentThemeBackgroundId) {
+          return currentThemeBackgroundId;
+        }
+        return prev;
+      });
+    }
+  }, [settings.display.autoChangeBackground, currentTheme, lightBackgroundId, darkBackgroundId]);
+
   useEffect(() => {
     const background = getBackgroundById(currentBackgroundId);
     if (!background) return;
 
-    console.log('🖼️ [Background] Application:', {
-      id: background.id,
-      name: background.name,
-      type: background.type
-    });
-
     const analysis = analyzeBackground(background.id, background.url || undefined);
-    console.log('🎨 [Color] Analyse du fond:', analysis);
-    
     applyColorScheme(analysis.recommendedScheme);
     setCurrentColorScheme(analysis.recommendedScheme);
 
@@ -70,58 +106,98 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
     }
 
     try {
-      localStorage.setItem(STORAGE_KEY, currentBackgroundId);
+      if (currentTheme === 'light') {
+        localStorage.setItem(STORAGE_KEY_LIGHT, currentBackgroundId);
+      } else {
+        localStorage.setItem(STORAGE_KEY_DARK, currentBackgroundId);
+      }
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde de l\'arrière-plan:', error);
+      console.error('Error saving background:', error);
     }
-  }, [currentBackgroundId]);
+  }, [currentBackgroundId, currentTheme]);
 
-  const setBackground = useCallback(async (id: string) => {
-    console.log('🖼️ [Background] setBackground appelé avec ID:', id);
+  const setBackgroundForTheme = useCallback(async (id: string, theme: 'light' | 'dark') => {
     const background = getBackgroundById(id);
     if (!background) {
-      console.warn('🖼️ [Background] ID non trouvé:', id);
-      console.log('🖼️ [Background] Catalog disponible:', backgroundCatalog.map(bg => bg.id));
       return;
     }
 
-    console.log('🖼️ [Background] Background trouvé:', background);
     setIsLoading(true);
     
     try {
       if (background.url && background.type === 'image') {
-        console.log('🖼️ [Background] Préchargement de l\'image:', background.url);
         const img = new Image();
         await new Promise((resolve, reject) => {
           img.onload = () => {
-            console.log('🖼️ [Background] Image préchargée avec succès');
             resolve(true);
           };
           img.onerror = (error) => {
-            console.error('🖼️ [Background] Erreur de préchargement:', error);
             reject(error);
           };
           img.src = background.url!;
         });
       }
       
-      console.log('🖼️ [Background] Mise à jour de currentBackgroundId vers:', id);
-      setCurrentBackgroundId(id);
+      if (theme === 'light') {
+        setLightBackgroundId(id);
+        localStorage.setItem(STORAGE_KEY_LIGHT, id);
+      } else {
+        setDarkBackgroundId(id);
+        localStorage.setItem(STORAGE_KEY_DARK, id);
+      }
+      
+      if (settings.display.autoChangeBackground) {
+        if (theme === currentTheme) {
+          setLastUsedBackgroundId(id);
+        }
+      } else {
+        if (theme === currentTheme) {
+          setLastUsedBackgroundId(id);
+        }
+      }
     } catch (error) {
-      console.error('🖼️ [Background] Erreur lors du chargement:', error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  const setBackground = useCallback(async (id: string) => {
+    const background = getBackgroundById(id);
+    if (!background) {
+      return;
+    }
+
+    const isDark = isBackgroundDark(id);
+    const targetTheme = isDark ? 'dark' : 'light';
+    
+    await setBackgroundForTheme(id, targetTheme);
+    
+    if (!settings.display.autoChangeBackground) {
+      setLastUsedBackgroundId(id);
+    }
+  }, [setBackgroundForTheme, settings.display.autoChangeBackground]);
+
   const currentBackground = useMemo(() => {
-    return getBackgroundById(currentBackgroundId) || backgroundCatalog[0];
+    return getBackgroundById(currentBackgroundId) || allBackgrounds[0];
   }, [currentBackgroundId]);
+
+  const lightBackgrounds = useMemo(() => {
+    return allBackgrounds.filter(bg => bg.id === 'default' || !isBackgroundDark(bg.id));
+  }, []);
+
+  const darkBackgrounds = useMemo(() => {
+    return allBackgrounds.filter(bg => bg.id === 'default' || isBackgroundDark(bg.id));
+  }, []);
 
   const value: GlobalBackgroundContextValue = {
     currentBackground,
     setBackground,
-    availableBackgrounds: backgroundCatalog,
+    setBackgroundForTheme,
+    availableBackgrounds: allBackgrounds,
+    lightBackgrounds,
+    darkBackgrounds,
+    lightBackgroundId,
+    darkBackgroundId,
     isLoading,
     currentColorScheme,
   };
@@ -140,8 +216,6 @@ export function useGlobalBackground() {
   }
   return context;
 }
-
-// Hook pour obtenir le background actuel (compatible avec l'ancien systeme)
 
 export function useCurrentBackground(): BackgroundItem {
   const { currentBackground } = useGlobalBackground();

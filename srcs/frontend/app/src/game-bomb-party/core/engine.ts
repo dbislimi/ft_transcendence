@@ -1,13 +1,14 @@
-import type { GameState, GamePhase, Player, GameConfig, BonusKey } from './types';
+import type { GameState, GamePhase, Player, GameConfig, BonusKey, PlayerBonuses } from './types';
 import { STREAK_FOR_BONUS } from './types';
 import { validateWithDictionary, validateLocal } from '../data/validator';
-import trigramWordsData from '../data/trigram_words.json';
 import { BombPartyEngineGetters } from './engine-getters';
+import { getRandomSyllable } from '../data/syllableLoader';
+import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '@shared/bombparty/types';
 
 export class BombPartyEngine {
   private state: GameState;
-  private lastTrigram: string = '';
-  private currentTrigramUsageCount: number = 0;
+  private lastSyllable: string = '';
+  private currentSyllableUsageCount: number = 0;
   private totalPlayersInRound: number = 0;
   private doubleChanceConsumedThisTurn: boolean = false;
   private getters!: BombPartyEngineGetters;
@@ -20,7 +21,7 @@ export class BombPartyEngine {
   private updateGetters(): void {
     this.getters = new BombPartyEngineGetters(
       this.state,
-      this.currentTrigramUsageCount,
+      this.currentSyllableUsageCount,
       this.totalPlayersInRound
     );
   }
@@ -30,8 +31,11 @@ export class BombPartyEngine {
       phase: 'LOBBY',
       players: [],
       currentPlayerIndex: 0,
-      currentTrigram: '',
+      currentPlayerId: '',
+      currentSyllable: '',
       usedWords: [],
+      turnStartedAt: 0,
+      turnDurationMs: 15000,
       turnEndsAt: 0,
       turnOrder: [],
       turnDirection: 1,
@@ -59,8 +63,11 @@ export class BombPartyEngine {
       phase: 'COUNTDOWN',
       players,
       currentPlayerIndex: 0,
-      currentTrigram: '',
+      currentPlayerId: players[0]?.id || '',
+      currentSyllable: '',
       usedWords: [],
+      turnStartedAt: 0,
+      turnDurationMs: config.turnDurationMs,
       turnEndsAt: 0,
       turnOrder: players.map(p => p.id),
       turnDirection: 1,
@@ -70,9 +77,8 @@ export class BombPartyEngine {
     };
 
     // Init
-    this.currentTrigramUsageCount = 0;
+    this.currentSyllableUsageCount = 0;
     this.totalPlayersInRound = config.playersCount;
-    console.log('🎯 Nouveau système de trigrammes: nouveau trigramme à chaque tour');
   }
 
   startCountdown(): void {
@@ -80,56 +86,41 @@ export class BombPartyEngine {
   }
 
   startTurn(): void {
-    // Check que le joueur actuel est vivant
     if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
-      console.log('⚠️ Joueur actuel éliminé, passage au suivant');
       this.nextPlayer();
       if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
-        // Tous les joueurs sont éliminés
         this.state.phase = 'GAME_OVER';
         return;
       }
     }
 
-    this.state.currentTrigram = this.getNewTrigram();
-    this.currentTrigramUsageCount = 1;
+    this.state.currentSyllable = this.getNewSyllable();
+    this.currentSyllableUsageCount = 1;
     this.totalPlayersInRound = this.state.players.length;
     this.state.phase = 'TURN_ACTIVE';
     this.doubleChanceConsumedThisTurn = false;
 
     const duration = this.getTurnDurationForCurrentPlayer();
-    const now = performance.now();
+    const now = Date.now();
+    this.state.turnStartedAt = now;
+    this.state.turnDurationMs = duration;
     this.state.turnEndsAt = now + duration;
     this.state.activeTurnEndsAt = this.state.turnEndsAt;
     const curId = this.state.players[this.state.currentPlayerIndex]?.id;
     if (curId && this.state.pendingFastForNextPlayerId === curId) {
       this.state.pendingFastForNextPlayerId = undefined;
     }
-    console.log('🔄 Tour démarré pour:', this.state.players[this.state.currentPlayerIndex]?.name, 'Trigramme:', this.state.currentTrigram);
   }
 
-  private getNewTrigram(): string {
-    const newTrigram = this.selectRandomTrigram();
-    this.lastTrigram = newTrigram;
-    return newTrigram;
-  }
-
-  // Selection de trigramme depuis le JSON (mapping trigram -> mots[])
-  private selectRandomTrigram(): string {
-    const map = trigramWordsData as unknown as Record<string, string[]>;
-    const candidates = Object.keys(map);
-    const filtered = candidates.filter(t => t !== this.lastTrigram);
-    const pool = filtered.length > 0 ? filtered : candidates;
-    if (pool.length === 0) return '';
-    return pool[Math.floor(Math.random() * pool.length)];
+  private getNewSyllable(): string {
+    const newSyllable = getRandomSyllable(this.lastSyllable);
+    this.lastSyllable = newSyllable;
+    return newSyllable;
   }
 
   submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-    console.log('🔍 Validation du mot:', word, 'pour le trigramme:', this.state.currentTrigram);
-    const validation = validateWithDictionary(word, this.state.currentTrigram, this.state.usedWords);
-    console.log('📋 Résultat de validation:', validation);
+    const validation = validateWithDictionary(word, this.state.currentSyllable, this.state.usedWords);
     if (validation.ok) {
-      console.log('✅ Mot valide accepté:', word);
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
@@ -145,7 +136,6 @@ export class BombPartyEngine {
       this.state.phase = 'RESOLVE';
       return { ok: true };
     } else {
-      console.log('❌ Mot invalide rejeté:', word, 'Raison:', validation.reason);
       this.state.history.push({
         playerId: this.state.players[this.state.currentPlayerIndex].id,
         word,
@@ -164,25 +154,31 @@ export class BombPartyEngine {
   }
 
   resolveTurn(wordValid: boolean, timeExpired: boolean): void {
-    console.log('🔄 Résolution du tour - Mot valide:', wordValid, 'Temps expiré:', timeExpired);
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
-      console.error('❌ Erreur: Aucun joueur ou index invalide');
+      console.error('Erreur: Aucun joueur ou index invalide');
       return;
     }
 
     const currentPlayer = this.state.players[this.state.currentPlayerIndex];
     if (!currentPlayer) {
-      console.error('❌ Erreur: Joueur actuel non trouvé');
+      console.error('Erreur: Joueur actuel non trouvé');
       return;
     }
 
-    console.log('👤 Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives);
+    const livesBefore = currentPlayer.lives;
+    console.log('Joueur actuel:', currentPlayer.name, 'Vies restantes:', currentPlayer.lives, 'wordValid:', wordValid, 'timeExpired:', timeExpired);
     if (!wordValid || timeExpired) {
       currentPlayer.streak = 0;
       currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
+      console.log('[BombPartyEngine] Perte de vie:', {
+        playerName: currentPlayer.name,
+        livesBefore,
+        livesAfter: currentPlayer.lives,
+        reason: timeExpired ? 'Timer expiré' : 'Mot invalide'
+      });
       if (currentPlayer.lives === 0) {
-        console.log('💀 Joueur éliminé:', currentPlayer.name);
         currentPlayer.isEliminated = true;
+        console.log('[BombPartyEngine] Joueur éliminé:', currentPlayer.name);
       }
     }
 
@@ -191,12 +187,11 @@ export class BombPartyEngine {
       this.state.phase = 'GAME_OVER';
       return;
     }
-    this.currentTrigramUsageCount++;
+    this.currentSyllableUsageCount++;
     this.nextPlayer();
     this.startTurn();
   }
 
-  // why private = Changement de joueur sans validation
   private nextPlayer(): void {
     if (this.state.players.length === 0) return;
     let attempts = 0;
@@ -207,25 +202,24 @@ export class BombPartyEngine {
       this.state.currentPlayerIndex = (this.state.currentPlayerIndex + step + len) % len;
       attempts++;
       if (attempts > maxAttempts) {
-        console.error('❌ Erreur: Impossible de trouver le prochain joueur');
+        console.error('Erreur: Impossible de trouver le prochain joueur');
         break;
       }
     } while (this.state.players[this.state.currentPlayerIndex]?.isEliminated);
     if (!this.state.players[this.state.currentPlayerIndex]) {
-      console.error('❌ Erreur: Aucun joueur valide trouvé');
+      console.error('Erreur: Aucun joueur valide trouvé');
       this.state.phase = 'GAME_OVER';
     }
   }
 
-  // Getters délégués à la classe BombPartyEngineGetters
   getState(): GameState {
     this.updateGetters();
     return this.getters.getState();
   }
 
-  getCurrentTrigramUsageCount(): number {
+  getCurrentSyllableUsageCount(): number {
     this.updateGetters();
-    return this.getters.getCurrentTrigramUsageCount();
+    return this.getters.getCurrentSyllableUsageCount();
   }
 
   getTotalPlayersInRound(): number {
@@ -258,9 +252,9 @@ export class BombPartyEngine {
     return this.getters.getWordSuggestions(maxSuggestions);
   }
 
-  getCurrentTrigramInfo(): { trigram: string; availableWords: number; totalWords: number } {
+  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
     this.updateGetters();
-    return this.getters.getCurrentTrigramInfo();
+    return this.getters.getCurrentSyllableInfo();
   }
 
   getTurnDurationForCurrentPlayer(): number {
@@ -270,17 +264,46 @@ export class BombPartyEngine {
 
   reset(): void {
     this.state = this.getInitialState();
-    this.lastTrigram = '';
+    this.lastSyllable = '';
     this.updateGetters();
   }
 
-  // --- Bonuses mechanics ---
+  private selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
+    const availableBonuses = BONUS_WEIGHTS.filter(([key]) => {
+      const currentCount = playerBonuses[key] || 0;
+      return currentCount < MAX_BONUS_PER_TYPE;
+    });
+
+    if (availableBonuses.length === 0) {
+      return null;
+    }
+
+    const totalWeight = availableBonuses.reduce((sum, [, weight]) => sum + weight, 0);
+    
+    let random = Math.random() * totalWeight;
+    
+    for (const [key, weight] of availableBonuses) {
+      random -= weight;
+      if (random <= 0) {
+        return key;
+      }
+    }
+    
+    return availableBonuses[0][0];
+  }
+
   private giveRandomBonus(playerId: string): void {
     const p = this.state.players.find(pl => pl.id === playerId);
     if (!p) return;
-    const keys: BonusKey[] = ['inversion', 'plus5sec', 'vitesseEclair', 'doubleChance', 'extraLife'];
-    const key = keys[Math.floor(Math.random() * keys.length)];
-    p.bonuses[key] = (p.bonuses[key] || 0) + 1;
+    
+    const selectedBonus = this.selectWeightedBonus(p.bonuses);
+    
+    if (selectedBonus) {
+      const currentCount = p.bonuses[selectedBonus] || 0;
+      if (currentCount < MAX_BONUS_PER_TYPE) {
+        p.bonuses[selectedBonus] = currentCount + 1;
+      }
+    }
   }
 
   activateBonus(playerId: string, bonusKey: BonusKey): { ok: boolean; meta?: any } {
@@ -302,7 +325,6 @@ export class BombPartyEngine {
         }
         return { ok: false };
       case 'vitesseEclair':
-        // target next player alive
         const targetIdx = this.peekNextAliveIndex();
         const targetId = targetIdx >= 0 ? this.state.players[targetIdx].id : undefined;
         if (targetId) {

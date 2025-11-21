@@ -1,0 +1,1 @@
+need to fix the stat page, error Erreur 500: Internal Server Error

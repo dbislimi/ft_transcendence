@@ -1,86 +1,233 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import type WebSocket from "ws";
-import { v4 as uuidv4 } from "uuid";
+import type { Client } from "./websockets.ts";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
+import type WebSocket from "ws";
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance,
 	options
 ) => {
-	const games: GamesManager = new GamesManager();
-	fastify.get("/game/ws", { websocket: true }, (socket: WebSocket, req) => {
-		const clientId = uuidv4();
-		let tournamentId: string | undefined = undefined;
+	const games = new GamesManager();
+	// Configuration de l'instance fastify pour la sauvegarde (Logique Version B, compatible car méthode existante)
+	games.setFastifyInstance(fastify);
+
+	fastify.get("/game", { websocket: true }, (socket: any, req) => {
+		console.log("pong WS connected");
+		const client = fastify.getClient(req, socket);
+		if (!client) return socket.close();
+
+		if (client.rejoinTimer) {
+			console.log(
+				`Client ${client.name} reconnected while tournament rejoin timer active`
+			);
+			socket.send(
+				JSON.stringify({
+					event: "tournament_rejoin_prompt",
+					to: "tournament_rejoin_prompt",
+					body: {
+						tournamentId: client.tournament?.tournamentId,
+						timeout: 10,
+					},
+				})
+			);
+		}
+
+		console.log("client:", client.name);
 		let local: boolean = false;
-		let status: boolean = false;
-		socket.on("message", (message) => {
+		socket.on("message", (message: any) => {
 			const data = JSON.parse(message.toString());
+			console.log(`FROM: ${client.name}`);
 			console.log(data);
-			if (data.event === "stop") {
-				console.log("stop called");
-				if (!status) return;
-				console.log("debug0");
-				games.quit(socket, tournamentId);
-				tournamentId = undefined;
-				status = false;
-				local = false;
-			} else if (data.event === "start" && status === false) {
-				// console.log(data.body.action);
-				switch (data.body.action) {
-					case "list_tournaments":
-						// one-shot list response
+			switch (data.event) {
+				case "invitation": {
+					const { action, invitationId, friendId } = data.body;
+					if (action === "invite") {
+						const friend: Client | null =
+							fastify.findClientById(friendId);
+						if (friend) {
+							games.invite(client as any, friend as any);
+						} else {
+							socket.send(
+								JSON.stringify({
+									event: "invitation_error",
+									to: "invitation_events",
+									body: { reason: "friend_not_found" },
+								})
+							);
+						}
+						break;
+					}
+					if (
+						typeof invitationId !== "string" ||
+						invitationId.length === 0
+					) {
 						socket.send(
 							JSON.stringify({
-								event: "tournaments",
-								body: games.listTournaments(),
+								event: "invitation_error",
+								to: "invitation_events",
+								body: { reason: "id_required" },
 							})
 						);
-						return; // do not flip status
-					case "play_online":
-						games.startOnline(clientId, socket);
 						break;
-					case "play_offline":
-						local = games.startOffline(socket, data.body.diff);
-						break;
-					case "trainbot":
-						games.trainBot(socket, data.body.diff, 1000);
-						break;
-					case "create_tournament":
-						games.createTournament(
-							socket,
-							data.body.id,
-							data.body.size,
-							data.body.passwd
-						);
-						tournamentId = data.body.id;
-						break;
-					case "join_tournament":
-						games.joinTournament(
-							socket,
-							data.body.id,
-							data.body.passwd
-						);
-						tournamentId = data.body.id;
-						break;
+					}
+					games.doInvitationAction(
+						action,
+						client as any,
+						invitationId
+					);
+					break;
 				}
-				status = true;
-			} else if (data.event === "play" && status === true) {
-				if (local === true)
-					games
-						.getRoom(socket)
-						?.move(data.body.type, data.body.dir, data.body.id);
-				else
-					games
-						.getRoom(socket)
-						?.move(data.body.type, data.body.dir, socket);
+
+				case "tournament": {
+					const { action } = data.body;
+					switch (action) {
+						case "list":
+							socket.send(
+								JSON.stringify({
+									event: "tournaments",
+									to: "online_card",
+									body: games.listTournaments(),
+								})
+							);
+							break;
+						case "create":
+							if (
+								games.createTournament(
+									client,
+									data.body.id,
+									data.body.size,
+									data.body.passwd
+								)
+							)
+								client.tournament = {
+									tournamentId: data.body.id,
+									allowReconnect: true,
+								};
+							break;
+						case "join":
+							client.tournament = {
+								tournamentId: data.body.id,
+								allowReconnect: true,
+							};
+							games.joinTournament(
+								client,
+								data.body.id,
+								data.body.passwd
+							);
+							break;
+					}
+					break;
+				}
+				case "rejoin":
+					if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+					client.rejoinTimer = undefined;
+					if (data.body?.type === "tournament") {
+						console.log("rejoin_tournament from", client.name);
+						games.handleRejoin(client);
+					} else if (data.body?.type === "dismiss") {
+						console.log("dismiss_rejoin_prompt from", client.name);
+						if (client.tournament) games.stop_online(client);
+					}
+					break;
+				case "stop":
+					console.log("stop called");
+					if (data.body?.type === "offline") {
+						games.stop_offline(client);
+						local = false;
+					} else {
+						games.stop_online(client);
+					}
+					break;
+
+				case "ready":
+					console.log("ready from", client.name);
+					if (data.body?.type === "player") {
+						games.markPlayerReady(client as any);
+					} else {
+						if (client.winnerTimer)
+							clearTimeout(client.winnerTimer);
+						if (client.tournament) {
+						games.playerReady(client); 
+						}
+					}
+					break;
+
+				case "start":
+					if (games.getRoom(client)) break;
+					if (client.rejoinTimer) {
+						clearTimeout(client.rejoinTimer);
+						client.rejoinTimer = undefined;
+						if (client.tournament) {
+							client.tournament.allowReconnect = false;
+							games.stop_online(client);
+						}
+					}
+					switch (data.body.action) {
+						case "play_online":
+							games.startOnline(client as any);
+							break;
+						case "play_offline":
+							local = games.startOffline(
+								client as any,
+								data.body.diff,
+								data.body.skipCountdown 
+							);
+							break;
+						case "trainbot":
+							games.trainBot(socket, data.body.diff, 1000);
+							break;
+					}
+					break;
+
+				case "play":
+					const room = games.getRoom(client);
+					if (!room) break;
+					if (local === true)
+						games
+							.getRoom(client)
+							?.move(data.body.type, data.body.dir, data.body.id);
+					else
+						games
+							.getRoom(client)
+							?.move(
+								data.body.type,
+								data.body.dir,
+								client.inGameId
+							);
+					break;
+
+				case "error":
+					console.log("Erreur reçue:", data);
+					break;
+
+				default:
+					break;
 			}
 		});
+
 		socket.on("close", () => {
-			console.log("close ", clientId);
-			if (!status) return;
-			games.quit(socket, tournamentId);
+			console.log("close ", client.name);
+			games.stop_online(client);
+			client.socket = undefined;
+			if (client.rejoinTimer) {
+				if (client.removalTimer) clearTimeout(client.removalTimer);
+				client.removalTimer = setTimeout(() => {
+					const c = fastify.clients.get(client.id);
+					if (c && !c.socket) {
+						console.log(
+							`Removing client ${c.name} (id=${client.id}) after reconnect timeout`
+						);
+						fastify.clients.delete(client.id);
+					}
+				}, 12000);
+			} else {
+				console.log(
+					`Removing client ${client.name} (id=${client.id}) on disconnect`
+				);
+				fastify.clients.delete(client.id);
+			}
 		});
 	});
 };

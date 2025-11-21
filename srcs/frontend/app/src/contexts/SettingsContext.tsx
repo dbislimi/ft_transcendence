@@ -1,13 +1,8 @@
-/**
- * Context global des réglages de l'application
- * Gère tous les paramètres utilisateur avec persistance localStorage
- */
-
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type Theme = 'light' | 'dark';
-export type ContrastLevel = number; // 0.5 à 2.0
+export type ContrastLevel = number;
 export type FontSize = 'small' | 'medium' | 'large';
 export type Language = 'fr' | 'en' | 'es' | 'ar' | 'ru';
 
@@ -18,6 +13,7 @@ export interface DisplaySettings {
   fontSize: FontSize;
   animations: boolean;
   energySaver: boolean;
+  autoChangeBackground: boolean;
 }
 
 export interface GameSettings {
@@ -29,6 +25,7 @@ export interface GameSettings {
   preferences: {
     showFPS: boolean;
     reducedMotion: boolean;
+    soundsEnabled: boolean;
   };
 }
 
@@ -39,6 +36,9 @@ export interface AccountSettings {
   };
   security: {
     twoFactorEnabled: boolean;
+  };
+  preferences: {
+    showBackgroundPreview: boolean;
   };
 }
 
@@ -57,7 +57,6 @@ export interface AppSettings {
   advanced: AdvancedSettings;
 }
 
-// Valeurs par défaut
 const DEFAULT_SETTINGS: AppSettings = {
   display: {
     theme: 'dark',
@@ -66,6 +65,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     fontSize: 'medium',
     animations: true,
     energySaver: false,
+    autoChangeBackground: true,
   },
   game: {
     controls: {
@@ -76,6 +76,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     preferences: {
       showFPS: false,
       reducedMotion: false,
+      soundsEnabled: true,
     },
   },
   account: {
@@ -85,6 +86,9 @@ const DEFAULT_SETTINGS: AppSettings = {
     },
     security: {
       twoFactorEnabled: false,
+    },
+    preferences: {
+      showBackgroundPreview: true,
     },
   },
   advanced: {
@@ -140,22 +144,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { theme, contrast, language, fontSize, animations, energySaver } = settings.display;
-    // Thème
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.body.classList.toggle('dark', theme === 'dark');
-    // Contraste (de 0.5 à 2.0)
     document.documentElement.style.setProperty('--contrast-level', contrast.toString());
-    // Ajuster la luminosité du texte selon le contraste
     const textBrightness = Math.min(1.0, 0.5 + (contrast - 0.5) * 0.5);
     document.documentElement.style.setProperty('--text-brightness', textBrightness.toString());
-    // Taille de police
     document.documentElement.classList.remove('text-small', 'text-medium', 'text-large');
     document.documentElement.classList.add(`text-${fontSize}`);
-    // Animations
     document.documentElement.classList.toggle('reduce-motion', !animations);
-    // Mode economie d´energie
     document.documentElement.classList.toggle('energy-saver', energySaver);
-    // Langue
     i18n.changeLanguage(language);
   }, [settings.display, i18n]);
 

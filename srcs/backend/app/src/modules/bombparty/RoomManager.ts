@@ -1,70 +1,119 @@
-/**
- * Room Manager pour Bomb Party
- * 
- * Gère les lobbies, les salles de jeu et les connexions WebSocket
- */
-
 import type WebSocket from 'ws';
-// Types locaux
-export interface Room {
-  id: string;
-  name: string;
-  isPrivate: boolean;
-  password?: string;
-  maxPlayers: number;
-  players: Map<string, PlayerConnection>;
-  createdAt: number;
-}
-
-export interface BPServerMessage {
-  event: string;
-  payload: any;
-}
-
-export interface BPGameEndMessage {
-  event: 'bp:game:end';
-  payload: {
-    roomId: string;
-    winner?: {
-      id: string;
-      name: string;
-    };
-    finalStats: any;
-  };
-}
-
-import type { Player } from './GameEngine.ts';
 import { BombPartyEngine } from './GameEngine.ts';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  type Room,
+  type PlayerConnection,
+  type CreateRoomResult,
+  type JoinRoomResult,
+  type LeaveRoomResult,
+  type StartGameResult,
+  type GameInputResult,
+  type ActivateBonusResult,
+  type RoomDetailsResult,
+  type RoomInfo,
+  handleCreateRoom,
+  handleJoinRoom,
+  handleLeaveRoom,
+  handleStartGame,
+  handleGameInput,
+  handleActivateBonus,
+  handlePlayerDisconnect,
+  startTurnCheckInterval,
+  cleanupInterval
+} from './room/index.ts';
+import { broadcastToRoom } from './room/roomUtils.ts';
+import { broadcastTurnStartedWithState, broadcastGameState } from './room/roomHandlers.ts';
 
-interface PlayerConnection {
-  id: string;
-  name: string;
-  ws: WebSocket;
-  roomId?: string;
-}
-
-/**
- * Gestionnaire des salles Bomb Party
- * 
- * Responsabilités:
- * - Création et gestion des lobbies
- * - Connexion/déconnexion des joueurs
- * - Lancement des parties
- * - Broadcasting des messages
- */
 export class BombPartyRoomManager {
   private rooms = new Map<string, Room>();
   private players = new Map<string, PlayerConnection>();
   private roomEngines = new Map<string, BombPartyEngine>();
+  private turnCheckInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private gameEndCallbacks = new Map<string, (roomId: string, winnerId?: string) => void>();
+  private roomInputLocks = new Map<string, Promise<void>>();
+  private disconnectionGracePeriods = new Map<string, NodeJS.Timeout>();
+  
+  private readonly INACTIVE_ROOM_TIMEOUT = 30 * 60 * 1000;
+  private readonly EMPTY_ROOM_TIMEOUT = 5 * 60 * 1000;
 
   constructor() {
-    console.log('🏠 [BombParty] RoomManager initialisé');
+    this.turnCheckInterval = this.startTurnCheckInterval();
+    this.cleanupInterval = this.startCleanupInterval();
   }
 
-  /**
-   * Enregistre une nouvelle connexion joueur
-   */
+  registerGameEndCallback(roomId: string, callback: (roomId: string, winnerId?: string) => void): void {
+    this.gameEndCallbacks.set(roomId, callback);
+  }
+
+  unregisterGameEndCallback(roomId: string): void {
+    this.gameEndCallbacks.delete(roomId);
+  }
+
+  private triggerGameEndCallback(roomId: string, winnerId?: string): void {
+    const callback = this.gameEndCallbacks.get(roomId);
+    if (callback) {
+      callback(roomId, winnerId);
+      this.gameEndCallbacks.delete(roomId);
+    }
+  }
+
+  private startTurnCheckInterval(): NodeJS.Timeout {
+    return setInterval(() => {
+      for (const [roomId, engine] of this.roomEngines) {
+        if (engine.checkAndEndExpiredTurn()) {
+          console.log('[RoomManager] Tour expiré détecté, broadcast de l\'état mis à jour');
+          const room = this.rooms.get(roomId);
+          if (room) {
+            const gameState = engine.getState();
+            console.log('[RoomManager] État du jeu après expiration:', {
+              roomId,
+              phase: gameState.phase,
+              currentPlayer: gameState.players[gameState.currentPlayerIndex]?.name,
+              currentPlayerLives: gameState.players[gameState.currentPlayerIndex]?.lives,
+              playersLives: gameState.players.map((p: any) => ({ name: p.name, lives: p.lives, isEliminated: p.isEliminated }))
+            });
+            
+            if (gameState.phase === 'TURN_ACTIVE') {
+              broadcastTurnStartedWithState(roomId, this.roomEngines, this.rooms);
+            } else {
+              broadcastGameState(roomId, this.roomEngines, this.rooms);
+            }
+            console.log('[RoomManager] bp:game:state envoyé aux clients');
+          }
+
+          if (engine.isGameOver()) {
+            const winner = engine.getWinner();
+            const winnerId = winner?.id;
+
+            this.triggerGameEndCallback(roomId, winnerId);
+
+            const finalStats = engine.getFinalStats();
+            if (room) {
+              broadcastToRoom(room, {
+                event: 'bp:game:end',
+                payload: {
+                  roomId,
+                  winner: winner || undefined,
+                  finalStats
+                }
+              });
+            }
+
+            this.roomEngines.delete(roomId);
+            if (room) {
+              room.startedAt = undefined;
+            }
+            
+            if (room && room.players.size === 0) {
+              this.rooms.delete(roomId);
+            }
+          }
+        }
+      }
+    }, 150);
+  }
+
   registerPlayer(ws: WebSocket, playerId: string, playerName: string): void {
     const player: PlayerConnection = {
       id: playerId,
@@ -75,519 +124,111 @@ export class BombPartyRoomManager {
 
     this.players.set(playerId, player);
     
-    console.log('👤 [BombParty] Joueur enregistré:', {
-      id: playerId,
-      name: playerName
-    });
-
-    // Cleanup on disconnect
     ws.on('close', () => {
-      this.handlePlayerDisconnect(playerId);
+      handlePlayerDisconnect(playerId, this.players, this.rooms, this.roomEngines);
     });
   }
 
-  /**
-   * Crée une nouvelle salle de jeu
-   */
-  createRoom(creatorId: string, roomName: string, isPrivate: boolean, password?: string, maxPlayers?: number): {
-    success: boolean;
-    roomId?: string;
-    maxPlayers?: number;
-    error?: string;
-  } {
-    console.log('🎯 [Backend-RoomManager] createRoom appelé avec maxPlayers:', maxPlayers);
+  createRoom(creatorId: string, roomName: string, isPrivate: boolean, password?: string, maxPlayers?: number): CreateRoomResult {
+    return handleCreateRoom(creatorId, roomName, isPrivate, password, maxPlayers, this.players, this.rooms);
+  }
+
+  joinRoom(playerId: string, roomId: string, password?: string): JoinRoomResult {
+    return handleJoinRoom(playerId, roomId, password, this.players, this.rooms);
+  }
+
+  leaveRoom(playerId: string, roomId: string, ws?: WebSocket): LeaveRoomResult {
+    return handleLeaveRoom(playerId, roomId, this.players, this.rooms, this.roomEngines, ws);
+  }
+
+  startGame(playerId: string, roomId: string): StartGameResult {
+    const inputLock = this.roomInputLocks.get(roomId);
+    if (inputLock) {
+      return { success: false, error: 'Action en cours, veuillez réessayer' };
+    }
     
-    const creator = this.players.get(creatorId);
-    if (!creator) {
-      return { success: false, error: 'Joueur non trouvé' };
-    }
-
-    if (creator.roomId) {
-      return { success: false, error: 'Déjà dans une salle' };
-    }
-
-    // Valider et limiter maxPlayers entre 2 et 12
-    const validMaxPlayers = Math.max(2, Math.min(12, maxPlayers || 4));
-    console.log('🎯 [Backend-RoomManager] validMaxPlayers calculé:', validMaxPlayers, '(reçu:', maxPlayers, ')');
-
-    const roomId = uuidv4();
-    const room: Room = {
-      id: roomId,
-      name: roomName,
-      isPrivate,
-      password,
-      maxPlayers: validMaxPlayers,
-      players: new Map(),
-      createdAt: Date.now()
-    };
-
-    // Ajouter le créateur à la salle
-    room.players.set(creatorId, {
-      id: creatorId,
-      name: creator.name,
-      ws: creator.ws
-    });
-
-    creator.roomId = roomId;
-    this.rooms.set(roomId, room);
-
-    console.log('🏠 [BombParty] Salle créée:', {
-      roomId,
-      name: roomName,
-      creator: creator.name,
-      isPrivate,
-      maxPlayers: validMaxPlayers
-    });
-
-    return { success: true, roomId, maxPlayers: validMaxPlayers };
-  }
-
-  /**
-   * Fait rejoindre un joueur à une salle
-   */
-  joinRoom(playerId: string, roomId: string, password?: string): {
-    success: boolean;
-    players?: Array<{ id: string; name: string }>;
-    maxPlayers?: number;
-    error?: string;
-  } {
-    const player = this.players.get(playerId);
-    const room = this.rooms.get(roomId);
-
-    if (!player) {
-      return { success: false, error: 'Joueur non trouvé' };
-    }
-
-    if (!room) {
-      return { success: false, error: 'Salle non trouvée' };
-    }
-
-    if (player.roomId) {
-      return { success: false, error: 'Déjà dans une salle' };
-    }
-
-    if (room.players.size >= room.maxPlayers) {
-      return { success: false, error: 'Salle pleine' };
-    }
-
-    if (room.isPrivate && room.password !== password) {
-      return { success: false, error: 'Mot de passe incorrect' };
-    }
-
-    // Ajouter le joueur à la salle
-    room.players.set(playerId, {
-      id: playerId,
-      name: player.name,
-      ws: player.ws
-    });
-
-    player.roomId = roomId;
-
-    const playersList = Array.from(room.players.values()).map(p => ({
-      id: p.id,
-      name: p.name
-    }));
-
-    console.log('👥 [BombParty] Joueur rejoint salle:', {
-      player: player.name,
-      roomId,
-      playersCount: room.players.size,
-      maxPlayers: room.maxPlayers
-    });
-
-    // Notifier les autres joueurs
-    this.broadcastToRoom(roomId, {
-      event: 'bp:lobby:joined',
-      payload: {
-        roomId,
-        playerId,
-        players: playersList,
-        maxPlayers: room.maxPlayers
-      }
-    }, [playerId]);
-
-    return { success: true, players: playersList, maxPlayers: room.maxPlayers };
-  }
-
-  /**
-   * Fait quitter un joueur d'une salle
-   */
-  leaveRoom(playerId: string, roomId: string): {
-    success: boolean;
-    error?: string;
-  } {
-    const player = this.players.get(playerId);
-    const room = this.rooms.get(roomId);
-
-    if (!player) {
-      return { success: false, error: 'Joueur non trouvé' };
-    }
-
-    if (!room) {
-      return { success: false, error: 'Salle non trouvée' };
-    }
-
-    if (player.roomId !== roomId) {
-      return { success: false, error: 'Pas dans cette salle' };
-    }
-
-    // Retirer le joueur de la salle
-    room.players.delete(playerId);
-    player.roomId = undefined;
-
-    const playersList = Array.from(room.players.values()).map(p => ({
-      id: p.id,
-      name: p.name
-    }));
-
-    console.log('👋 [BombParty] Joueur a quitté la salle:', {
-      player: player.name,
-      roomId,
-      playersCount: room.players.size
-    });
-
-    // Si c'était le dernier joueur, supprimer la salle
-    if (room.players.size === 0) {
-      this.rooms.delete(roomId);
-      if (this.roomEngines.has(roomId)) {
-        this.roomEngines.delete(roomId);
-      }
-      console.log('🏠 [BombParty] Salle supprimée (vide):', roomId);
-    } else {
-      // Notifier les autres joueurs
-      this.broadcastToRoom(roomId, {
-        event: 'bp:lobby:left',
-        payload: {
-          roomId,
-          playerId,
-          players: playersList
-        }
-      });
-    }
-
-    return { success: true };
-  }
-
-  /**
-   * Démarre une partie dans une salle
-   */
-  startGame(playerId: string, roomId: string): {
-    success: boolean;
-    error?: string;
-  } {
-    const room = this.rooms.get(roomId);
-    if (!room) {
-      return { success: false, error: 'Salle non trouvée' };
-    }
-
-    if (room.players.size < 2) {
-      return { success: false, error: 'Minimum 2 joueurs requis' };
-    }
-
     if (this.roomEngines.has(roomId)) {
       return { success: false, error: 'Partie déjà en cours' };
     }
-
-    // Créer le moteur de jeu
-    const engine = new BombPartyEngine();
-    const players = Array.from(room.players.values()).map(p => ({
-      id: p.id,
-      name: p.name
-    }));
-
-    engine.initializeGame(players);
-    this.roomEngines.set(roomId, engine);
     
-    room.startedAt = Date.now();
-
-    console.log('🎮 [BombParty] Partie démarrée:', {
-      roomId,
-      players: players.length,
-      starter: playerId
-    });
-
-    // Notifier tous les joueurs
-    this.broadcastToRoom(roomId, {
-      event: 'bp:game:state',
-      payload: {
-        roomId,
-        gameState: engine.getState()
-      }
-    });
-
-    // Démarrer le compte à rebours
-    setTimeout(() => {
-      const gameEngine = this.roomEngines.get(roomId);
-      if (gameEngine) {
-        gameEngine.startCountdown();
-        this.broadcastGameState(roomId);
-        
-        // Démarrer le premier tour après le compte à rebours
-        setTimeout(() => {
-          if (this.roomEngines.has(roomId)) {
-            gameEngine.startTurn();
-            this.broadcastGameState(roomId);
-          }
-        }, 3000);
-      }
-    }, 1000);
-
-    return { success: true };
+    return handleStartGame(playerId, roomId, this.rooms, this.roomEngines);
   }
 
-  /**
-   * Traite une entrée de mot dans le jeu
-   */
-  handleGameInput(playerId: string, roomId: string, word: string, msTaken: number): {
-    success: boolean;
-    error?: string;
-  } {
-    const engine = this.roomEngines.get(roomId);
-    if (!engine) {
-      return { success: false, error: 'Partie non trouvée' };
-    }
-
-    const currentPlayer = engine.getCurrentPlayer();
-    if (!currentPlayer || currentPlayer.id !== playerId) {
-      return { success: false, error: 'Pas votre tour' };
-    }
-
-    const result = engine.submitWord(word, msTaken);
+  async handleGameInput(playerId: string, roomId: string, word: string, msTaken: number): Promise<GameInputResult> {
+    const previousLock = this.roomInputLocks.get(roomId);
     
-    if (result.ok || result.consumedDoubleChance) {
-      if (result.ok) {
-        // Mot valide, résoudre le tour
-        engine.resolveTurn(true, false);
-      }
-      // Si consumedDoubleChance, on continue le tour
-    } else {
-      // Mot invalide, résoudre le tour
-      engine.resolveTurn(false, false);
-    }
-
-    this.broadcastGameState(roomId);
-
-    // Vérifier la fin de partie
-    if (engine.isGameOver()) {
-      this.handleGameEnd(roomId);
-    }
-
-    return { success: true };
-  }
-
-  /**
-   * Active un bonus pour un joueur
-   */
-  activateBonus(playerId: string, roomId: string, bonusKey: any): {
-    success: boolean;
-    error?: string;
-    meta?: any;
-  } {
-    const engine = this.roomEngines.get(roomId);
-    if (!engine) {
-      return { success: false, error: 'Partie non trouvée' };
-    }
-
-    const result = engine.activateBonus(playerId, bonusKey);
+    let result: GameInputResult;
     
-    if (result.ok) {
-      // Notifier tous les joueurs
-      this.broadcastToRoom(roomId, {
-        event: 'bp:bonus:applied',
-        payload: {
-          roomId,
-          playerId,
-          bonusKey,
-          appliedAt: Date.now(),
-          meta: result.meta
-        }
+    const currentLock = (previousLock || Promise.resolve()).then(async () => {
+      return new Promise<void>((resolve) => {
+        handleGameInput(playerId, roomId, word, msTaken, this.roomEngines, this.rooms).then((res) => {
+          result = res;
+          process.nextTick(() => {
+            resolve();
+          });
+        });
       });
-
-      this.broadcastGameState(roomId);
-    }
-
-    return { success: result.ok, meta: result.meta };
-  }
-
-  /**
-   * Gère la fin d'une partie
-   */
-  private handleGameEnd(roomId: string): void {
-    const engine = this.roomEngines.get(roomId);
-    const room = this.rooms.get(roomId);
-    
-    if (!engine || !room) return;
-
-    const winner = engine.getWinner();
-    const finalStats = engine.getFinalStats();
-
-    console.log('🏆 [BombParty] Fin de partie:', {
-      roomId,
-      winner: winner?.name,
-      stats: finalStats
     });
-
-    const endMessage: BPGameEndMessage = {
-      event: 'bp:game:end',
-      payload: {
-        roomId,
-        winner: winner || undefined,
-        reason: 'VICTORY',
-        finalStats
-      }
-    };
-
-    this.broadcastToRoom(roomId, endMessage);
-
-    // Nettoyer la partie (mais garder la salle pour une éventuelle nouvelle partie)
-    this.roomEngines.delete(roomId);
-    room.startedAt = undefined;
-  }
-
-  /**
-   * Gère la déconnexion d'un joueur
-   */
-  private handlePlayerDisconnect(playerId: string): void {
-    const player = this.players.get(playerId);
-    if (!player) return;
-
-    console.log('❌ [BombParty] Joueur déconnecté:', player.name);
-
-    if (player.roomId) {
-      const room = this.rooms.get(player.roomId);
-      const engine = this.roomEngines.get(player.roomId);
-      
-      if (room) {
-        room.players.delete(playerId);
-        
-        // Si c'était le dernier joueur, supprimer la salle
-        if (room.players.size === 0) {
-          this.rooms.delete(player.roomId);
-          if (engine) {
-            this.roomEngines.delete(player.roomId);
-          }
-          console.log('🏠 [BombParty] Salle supprimée (vide):', player.roomId);
-        } else if (engine && engine.getCurrentPlayer()?.id === playerId) {
-          // Si c'était le tour du joueur déconnecté, passer au suivant
-          engine.resolveTurn(false, true);
-          this.broadcastGameState(player.roomId);
-          
-          if (engine.isGameOver()) {
-            this.handleGameEnd(player.roomId);
-          }
-        }
-      }
-    }
-
-    this.players.delete(playerId);
-  }
-
-  /**
-   * Diffuse l'état du jeu à tous les joueurs d'une salle
-   */
-  private broadcastGameState(roomId: string): void {
-    const engine = this.roomEngines.get(roomId);
-    if (!engine) return;
-
-    this.broadcastToRoom(roomId, {
-      event: 'bp:game:state',
-      payload: {
-        roomId,
-        gameState: engine.getState()
-      }
-    });
-  }
-
-  /**
-   * Diffuse un message à tous les joueurs d'une salle
-   */
-  private broadcastToRoom(roomId: string, message: BPServerMessage, excludePlayerIds: string[] = []): void {
-    const room = this.rooms.get(roomId);
-    if (!room) return;
-
-    const messageStr = JSON.stringify(message);
     
-    for (const [playerId, playerData] of room.players) {
-      if (!excludePlayerIds.includes(playerId)) {
-        try {
-          playerData.ws.send(messageStr);
-        } catch (error) {
-          console.error('❌ [BombParty] Erreur envoi message:', error);
-        }
-      }
+    this.roomInputLocks.set(roomId, currentLock);
+    
+    await currentLock;
+    
+    if (this.roomInputLocks.get(roomId) === currentLock) {
+      this.roomInputLocks.delete(roomId);
     }
+    
+    return result!;
   }
 
-  /**
-   * Obtient les informations d'une salle
-   */
+  activateBonus(playerId: string, roomId: string, bonusKey: any): ActivateBonusResult {
+    const inputLock = this.roomInputLocks.get(roomId);
+    if (inputLock) {
+      return { success: false, error: 'Action en cours, veuillez réessayer' };
+    }
+    
+    return handleActivateBonus(playerId, roomId, bonusKey, this.roomEngines, this.rooms);
+  }
+
+
   getRoomInfo(roomId: string): Room | undefined {
     return this.rooms.get(roomId);
   }
 
-  /**
-   * Obtient les informations d'un joueur
-   */
   getPlayerInfo(playerId: string): PlayerConnection | undefined {
     return this.players.get(playerId);
   }
 
-  /**
-   * Liste des salles publiques disponibles
-   */
-  getPublicRooms(): Array<{
-    id: string;
-    name: string;
-    players: number;
-    maxPlayers: number;
-    isStarted: boolean;
-    createdAt: number;
-  }> {
-    const publicRooms: Array<{
-      id: string;
-      name: string;
-      players: number;
-      maxPlayers: number;
-      isStarted: boolean;
-      createdAt: number;
-    }> = [];
+  getAllRooms(): RoomInfo[] {
+    const allRooms: RoomInfo[] = [];
 
     for (const [roomId, room] of this.rooms) {
-      if (!room.isPrivate) {
-        publicRooms.push({
-          id: roomId,
-          name: room.name,
-          players: room.players.size,
-          maxPlayers: room.maxPlayers,
-          isStarted: this.roomEngines.has(roomId),
-          createdAt: room.createdAt
-        });
-      }
+      allRooms.push({
+        id: roomId,
+        name: room.name,
+        players: room.players.size,
+        maxPlayers: room.maxPlayers,
+        isPrivate: room.isPrivate,
+        isStarted: this.roomEngines.has(roomId),
+        createdAt: room.createdAt
+      });
     }
 
-    // Trier par date de création (plus récentes en premier)
-    return publicRooms.sort((a, b) => b.createdAt - a.createdAt);
+    return allRooms.sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  /**
-   * Obtient les détails d'une salle spécifique
-   */
-  getRoomDetails(roomId: string): {
-    success: boolean;
-    room?: {
-      id: string;
-      name: string;
-      isPrivate: boolean;
-      players: Array<{ id: string; name: string }>;
-      maxPlayers: number;
-      isStarted: boolean;
-      createdAt: number;
-    };
-    error?: string;
-  } {
+  getPublicRooms(): RoomInfo[] {
+    return this.getAllRooms().filter(room => !room.isPrivate);
+  }
+
+  getRoom(roomId: string): Room | undefined {
+    return this.rooms.get(roomId);
+  }
+
+  getRoomDetails(roomId: string): RoomDetailsResult {
     const room = this.rooms.get(roomId);
     if (!room) {
-      return { success: false, error: 'Salle non trouvée' };
+      return { success: false, error: 'Room not found' };
     }
 
     return {
@@ -607,13 +248,137 @@ export class BombPartyRoomManager {
     };
   }
 
-  /**
-   * Nettoie les ressources (pour les tests)
-   */
+  hasGameInProgress(roomId: string): boolean {
+    return this.roomEngines.has(roomId);
+  }
+
+  getRoomStateForReconnect(playerId: string, roomId: string): { 
+    success: boolean; 
+    gameState?: any; 
+    sequenceNumber?: number; 
+    stateVersion?: number; 
+    error?: string 
+  } {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      return { success: false, error: 'Room not found' };
+    }
+
+    if (!room.players.has(playerId)) {
+      return { success: false, error: 'Player not in room' };
+    }
+
+    const engine = this.roomEngines.get(roomId);
+    if (!engine) {
+      return { 
+        success: true, 
+        gameState: null,
+        sequenceNumber: room.sequenceNumber || 0,
+        stateVersion: room.stateVersion || 0
+      };
+    }
+
+    const gameState = engine.getState();
+    const stateWithVersion = {
+      ...gameState,
+      stateVersion: room.stateVersion || 0,
+      sequenceNumber: room.sequenceNumber || 0
+    };
+
+    return {
+      success: true,
+      gameState: stateWithVersion,
+      sequenceNumber: room.sequenceNumber || 0,
+      stateVersion: room.stateVersion || 0
+    };
+  }
+
+  private startCleanupInterval(): NodeJS.Timeout {
+    return setInterval(() => {
+      this.cleanupInactiveRooms();
+    }, 60000);
+  }
+
+  private cleanupInactiveRooms(): void {
+    const now = Date.now();
+    const roomsToDelete: string[] = [];
+
+    for (const [roomId, room] of this.rooms) {
+      const hasGameInProgress = this.roomEngines.has(roomId);
+      const isEmpty = room.players.size === 0;
+      const roomAge = now - room.createdAt;
+      const lastActivity = room.startedAt || room.createdAt;
+      const timeSinceLastActivity = now - lastActivity;
+
+      if (isEmpty && roomAge > this.EMPTY_ROOM_TIMEOUT) {
+        roomsToDelete.push(roomId);
+        continue;
+      }
+
+      if (!hasGameInProgress && !isEmpty && timeSinceLastActivity > this.INACTIVE_ROOM_TIMEOUT) {
+        roomsToDelete.push(roomId);
+        continue;
+      }
+
+      if (hasGameInProgress) {
+        const engine = this.roomEngines.get(roomId);
+        if (engine && engine.isGameOver()) {
+          const gameEndTime = room.startedAt || room.createdAt;
+          if (now - gameEndTime > 10 * 60 * 1000) {
+            roomsToDelete.push(roomId);
+          }
+        }
+      }
+    }
+
+    for (const roomId of roomsToDelete) {
+      const room = this.rooms.get(roomId);
+      if (room) {
+        if (room.players.size > 0) {
+          broadcastToRoom(room, {
+            event: 'bp:lobby:closed',
+            payload: {
+              roomId,
+              reason: 'Lobby inactif supprimé'
+            }
+          });
+        }
+        
+        this.roomEngines.delete(roomId);
+        this.rooms.delete(roomId);
+        console.log(`[RoomManager] Lobby inactif supprimé: ${roomId}`);
+      }
+    }
+
+    if (roomsToDelete.length > 0) {
+      this.broadcastLobbyListUpdate();
+    }
+  }
+
+  private broadcastLobbyListCallback: (() => void) | null = null;
+
+  setBroadcastLobbyListCallback(callback: () => void): void {
+    this.broadcastLobbyListCallback = callback;
+  }
+
+  broadcastLobbyListUpdate(): void {
+    if (this.broadcastLobbyListCallback) {
+      this.broadcastLobbyListCallback();
+    }
+  }
+
   cleanup(): void {
+    if (this.turnCheckInterval) {
+      clearInterval(this.turnCheckInterval);
+      this.turnCheckInterval = null;
+    }
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
     this.rooms.clear();
     this.players.clear();
     this.roomEngines.clear();
-    console.log('🧹 [BombParty] RoomManager nettoyé');
+    this.gameEndCallbacks.clear();
   }
 }
