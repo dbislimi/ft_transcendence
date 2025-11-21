@@ -18,8 +18,8 @@ export function sendTournamentMessage(
   playerIds: (number | undefined)[],
   message: string
 ) {
-  if (playerIds == undefined)
-      return;
+  /*if (playerIds == undefined) fait un ptit bail pour ne pas afficher le undefined
+      return;*/
   const ids = playerIds.filter(Boolean) as number[];
 
   const payload = {
