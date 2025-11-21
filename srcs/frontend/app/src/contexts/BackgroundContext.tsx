@@ -3,6 +3,7 @@ import bg42 from '../../img/42background.svg?url';
 import bghalloween from '../../img/hallowenn_background.svg?url';
 import bgmatrix42 from '../../img/matrix_42_background.svg?url';
 import bgsnow from '../../img/snow_background.svg?url';
+
 export type BackgroundKey = 'default' | 'space' | '42' | 'halloween' | 'matrix42' | 'snow';
 export type GameKey = 'bombparty' | 'pong';
 

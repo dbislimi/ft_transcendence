@@ -1,8 +1,3 @@
-/**
- * Système d'adaptation des couleurs selon l'arrière-plan
- * Analyse les couleurs dominantes et génère des schémas adaptatifs
- */
-
 export interface ColorScheme {
   primary: string;
   secondary: string;
@@ -24,11 +19,7 @@ export interface BackgroundAnalysis {
   recommendedScheme: ColorScheme;
 }
 
-/**
- * Schémas de couleurs prédéfinis pour différents types de fonds
- */
 const COLOR_SCHEMES: Record<string, ColorScheme> = {
-  // Fonds sombres
   'dark-blue': {
     primary: '#3B82F6',
     secondary: '#1E40AF',
@@ -40,8 +31,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#475569',
     background: '#0F172A',
     card: '#1E293B'
-  },
-  'dark-matrix': {
+  }, 'dark-matrix': {
     primary: '#10B981',
     secondary: '#059669',
     accent: '#34D399',
@@ -52,8 +42,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#374151',
     background: '#111827',
     card: '#1F2937'
-  },
-  'dark-halloween': {
+  }, 'dark-halloween': {
     primary: '#F59E0B',
     secondary: '#D97706',
     accent: '#FBBF24',
@@ -64,8 +53,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#451A03',
     background: '#1C1917',
     card: '#292524'
-  },
-  'dark-snow': {
+  }, 'dark-snow': {
     primary: '#06B6D4',
     secondary: '#0891B2',
     accent: '#22D3EE',
@@ -77,8 +65,6 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: '#0F172A',
     card: '#1E293B'
   },
-  
-  // Fonds clairs
   'light-nature': {
     primary: '#059669',
     secondary: '#047857',
@@ -90,8 +76,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#A7F3D0',
     background: '#F0FDF4',
     card: '#ECFDF5'
-  },
-  'light-sky': {
+  }, 'light-sky': {
     primary: '#2563EB',
     secondary: '#1D4ED8',
     accent: '#3B82F6',
@@ -102,8 +87,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#BFDBFE',
     background: '#EFF6FF',
     card: '#F8FAFC'
-  },
-  'light-gradient': {
+  }, 'light-gradient': {
     primary: '#7C3AED',
     secondary: '#6D28D9',
     accent: '#8B5CF6',
@@ -115,8 +99,6 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     background: '#FAF5FF',
     card: '#F3E8FF'
   },
-  
-  // Fonds neutres
   'neutral-dark': {
     primary: '#6B7280',
     secondary: '#4B5563',
@@ -128,10 +110,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#6B7280',
     background: '#111827',
     card: '#1F2937'
-  },
-  
-  // Fond par défaut spécial
-  'default-dark': {
+  }, 'default-dark': {
     primary: '#3B82F6',
     secondary: '#1E40AF',
     accent: '#60A5FA',
@@ -142,8 +121,7 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
     border: '#475569',
     background: '#0F172A',
     card: '#1E293B'
-  },
-  'neutral-light': {
+  }, 'neutral-light': {
     primary: '#6B7280',
     secondary: '#4B5563',
     accent: '#9CA3AF',
@@ -157,13 +135,8 @@ const COLOR_SCHEMES: Record<string, ColorScheme> = {
   }
 };
 
-/**
- * Analyse un fond et détermine le schéma de couleurs approprié
- */
 export function analyzeBackground(backgroundId: string, backgroundUrl?: string): BackgroundAnalysis {
-  // Mapping des fonds vers leurs schémas recommandés
   const backgroundMappings: Record<string, string> = {
-    // Fonds sombres
     'default': 'default-dark',
     '42': 'dark-blue',
     'matrix-42': 'dark-matrix',
@@ -173,19 +146,41 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
     'batman': 'dark-blue',
     'dark-souls': 'dark-halloween',
     'the-last-of-us': 'dark-halloween',
-    'theft': 'dark-blue',
-    
-    // Fonds clairs
+    'Gta 5': 'dark-blue',
+    'grace': 'dark-blue',
+    'pexels-umkreisel-app-956999': 'dark-blue',
+    '1': 'dark-blue',
     'forest': 'light-nature',
-    'grace': 'light-sky',
     'kitti': 'light-gradient',
-    '1': 'light-gradient',
     'pexels-padrinan-19670': 'light-nature',
-    'pexels-umkreisel-app-956999': 'light-sky',
-    
-    // Fonds neutres
+    'cyberpunk2077': 'light-sky',
+    'CyberPunk2077': 'light-sky',
+    'gta6': 'light-sky',
+    'theft': 'light-sky',
     'windows95': 'neutral-light',
-    'bit-cloud': 'neutral-dark'
+    'bit-cloud': 'neutral-dark',
+    'fortnite-halloween_01_fortnitemares_2017': 'dark-halloween',
+    'fortnite-halloween_02_fortnitemares_2018': 'dark-halloween',
+    'fortnite-halloween_03_cube_queen': 'dark-halloween',
+    'fortnite-halloween_04_fortnitemares_2024': 'dark-halloween',
+    'fortnite-noel_01_winterfest_2017': 'dark-snow',
+    'fortnite-noel_02_winterfest_2019': 'dark-snow',
+    'fortnite-season_00_pre_season': 'dark-blue',
+    'fortnite-season_04': 'dark-blue',
+    'fortnite-season_06': 'dark-halloween',
+    'fortnite-season_07': 'dark-snow',
+    'fortnite-season_05_no_rift': 'light-sky',
+    'fortnite-season_08': 'light-sky',
+    'fortnite-chapter_03_season_02': 'light-sky',
+    'fortnite-chapter_04_season_03': 'light-nature',
+    'fortnite-chapter_04_season_og': 'dark-blue',
+    'fortnite-event_avatar_elements': 'light-nature',
+    'fortnite-event_find_the_force': 'dark-blue',
+    'fortnite-event_star_wars_day_2024': 'dark-blue',
+    'fortnite-event_galactic_battle': 'light-sky',
+    'fortnite-event_the_big_bang': 'dark-blue',
+    'fortnite-event_mecha_team_leader': 'dark-blue',
+    'fortnite-location_loot_lake': 'dark-blue'
   };
 
   const schemeKey = backgroundMappings[backgroundId] || 'neutral-dark';
@@ -200,9 +195,60 @@ export function analyzeBackground(backgroundId: string, backgroundUrl?: string):
   };
 }
 
-/**
- * Détermine la couleur dominante à partir de la clé du schéma
- */
+export function isBackgroundDark(backgroundId: string): boolean {
+  if (backgroundId === 'default') {
+    return false;
+  }
+  
+  const backgroundMappings: Record<string, string> = {
+    '42': 'dark-blue',
+    'matrix-42': 'dark-matrix',
+    'hallowenn-background': 'dark-halloween',
+    'snow-background': 'dark-snow',
+    'matrix': 'dark-matrix',
+    'batman': 'dark-blue',
+    'dark-souls': 'dark-halloween',
+    'the-last-of-us': 'dark-halloween',
+    'Gta 5': 'dark-blue',
+    'bit-cloud': 'neutral-dark',
+    'grace': 'dark-blue',
+    'pexels-umkreisel-app-956999': 'dark-blue',
+    '1': 'dark-blue',
+    'forest': 'light-nature',
+    'kitti': 'light-gradient',
+    'pexels-padrinan-19670': 'light-nature',
+    'windows95': 'neutral-light',
+    'cyberpunk2077': 'light-sky',
+    'CyberPunk2077': 'light-sky',
+    'gta6': 'light-sky',
+    'theft': 'light-sky',
+    'fortnite-halloween_01_fortnitemares_2017': 'dark-halloween',
+    'fortnite-halloween_02_fortnitemares_2018': 'dark-halloween',
+    'fortnite-halloween_03_cube_queen': 'dark-halloween',
+    'fortnite-halloween_04_fortnitemares_2024': 'dark-halloween',
+    'fortnite-noel_01_winterfest_2017': 'dark-snow',
+    'fortnite-noel_02_winterfest_2019': 'dark-snow',
+    'fortnite-season_00_pre_season': 'dark-blue',
+    'fortnite-season_04': 'dark-blue',
+    'fortnite-season_06': 'dark-halloween',
+    'fortnite-season_07': 'dark-snow',
+    'fortnite-chapter_04_season_og': 'dark-blue',
+    'fortnite-event_find_the_force': 'dark-blue',
+    'fortnite-event_star_wars_day_2024': 'dark-blue',
+    'fortnite-event_the_big_bang': 'dark-blue',
+    'fortnite-event_mecha_team_leader': 'dark-blue',
+    'fortnite-location_loot_lake': 'dark-blue',
+    'fortnite-chapter_04_season_03': 'light-nature',
+    'fortnite-event_avatar_elements': 'light-nature',
+    'fortnite-season_05_no_rift': 'light-sky',
+    'fortnite-season_08': 'light-sky',
+    'fortnite-chapter_03_season_02': 'light-sky',
+    'fortnite-event_galactic_battle': 'light-sky'
+  };
+  const schemeKey = backgroundMappings[backgroundId] || 'neutral-dark';
+  return schemeKey.includes('dark') || schemeKey.includes('matrix') || schemeKey.includes('halloween') || schemeKey.includes('snow');
+}
+
 function getDominantColorFromScheme(schemeKey: string): BackgroundAnalysis['dominantColor'] {
   if (schemeKey.includes('blue')) return 'blue';
   if (schemeKey.includes('green') || schemeKey.includes('nature')) return 'green';
@@ -213,22 +259,15 @@ function getDominantColorFromScheme(schemeKey: string): BackgroundAnalysis['domi
   return 'neutral';
 }
 
-/**
- * Détermine le niveau de contraste
- */
 function getContrastLevel(schemeKey: string): BackgroundAnalysis['contrast'] {
   if (schemeKey.includes('matrix') || schemeKey.includes('halloween')) return 'high';
   if (schemeKey.includes('dark') || schemeKey.includes('light')) return 'medium';
   return 'low';
 }
 
-/**
- * Applique un schéma de couleurs au document
- */
 export function applyColorScheme(scheme: ColorScheme): void {
   const root = document.documentElement;
-  
-  // Appliquer les variables CSS
+
   root.style.setProperty('--color-primary', scheme.primary);
   root.style.setProperty('--color-secondary', scheme.secondary);
   root.style.setProperty('--color-accent', scheme.accent);
@@ -239,8 +278,12 @@ export function applyColorScheme(scheme: ColorScheme): void {
   root.style.setProperty('--color-border', scheme.border);
   root.style.setProperty('--color-background', scheme.background);
   root.style.setProperty('--color-card', scheme.card);
-  
-  // Ajouter une classe pour identifier le schéma actuel
+  root.style.setProperty('--btn-primary-bg', `linear-gradient(135deg, ${scheme.button}, ${scheme.secondary})`);
+  root.style.setProperty('--btn-primary-hover', `linear-gradient(135deg, ${scheme.buttonHover}, ${scheme.button})`);
+  root.style.setProperty('--accent-primary', scheme.accent);
+  root.style.setProperty('--color-button-rgb', hexToRgb(scheme.button));
+  root.style.setProperty('--color-button-hover-rgb', hexToRgb(scheme.buttonHover));
+  root.style.setProperty('--color-secondary-rgb', hexToRgb(scheme.secondary));
   document.body.className = document.body.className
     .split(' ')
     .filter(cls => !cls.startsWith('color-scheme-'))
@@ -248,79 +291,59 @@ export function applyColorScheme(scheme: ColorScheme): void {
     .join(' ');
 }
 
-/**
- * Génère des couleurs adaptatives basées sur l'URL d'une image
- * (Pour une future implémentation avec analyse d'image réelle)
- */
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '30, 64, 175';
+}
+
 export function generateAdaptiveColors(imageUrl: string): Promise<ColorScheme> {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
+    img.crossOrigin = 'anonymous';    
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
       if (!ctx) {
         resolve(COLOR_SCHEMES['neutral-dark']);
         return;
       }
-      
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-      
-      // Analyser les couleurs dominantes (simplifié)
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const colors = analyzeImageColors(imageData);
-      
-      // Générer un schéma basé sur l'analyse
       const scheme = generateSchemeFromColors(colors);
       resolve(scheme);
     };
-    
     img.onerror = () => {
       resolve(COLOR_SCHEMES['neutral-dark']);
     };
-    
     img.src = imageUrl;
   });
 }
 
-/**
- * Analyse les couleurs d'une image (simplifié)
- */
 function analyzeImageColors(imageData: ImageData): { r: number; g: number; b: number; brightness: number }[] {
   const data = imageData.data;
   const colors: { r: number; g: number; b: number; brightness: number }[] = [];
-  
-  // Échantillonner les pixels (tous les 100 pixels)
   for (let i = 0; i < data.length; i += 400) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
     const brightness = (r + g + b) / 3;
-    
     colors.push({ r, g, b, brightness });
   }
-  
   return colors;
 }
 
-/**
- * Génère un schéma de couleurs à partir de l'analyse des couleurs
- */
 function generateSchemeFromColors(colors: { r: number; g: number; b: number; brightness: number }[]): ColorScheme {
   const avgBrightness = colors.reduce((sum, color) => sum + color.brightness, 0) / colors.length;
   const isDark = avgBrightness < 128;
-  
-  // Couleur dominante basée sur la moyenne
+
   const avgR = colors.reduce((sum, color) => sum + color.r, 0) / colors.length;
   const avgG = colors.reduce((sum, color) => sum + color.g, 0) / colors.length;
   const avgB = colors.reduce((sum, color) => sum + color.b, 0) / colors.length;
   
   const primary = `rgb(${Math.round(avgR)}, ${Math.round(avgG)}, ${Math.round(avgB)})`;
-  
   if (isDark) {
     return {
       primary,
@@ -350,9 +373,6 @@ function generateSchemeFromColors(colors: { r: number; g: number; b: number; bri
   }
 }
 
-/**
- * Ajuste la luminosité d'une couleur RGB
- */
 function adjustBrightness(rgb: string, amount: number): string {
   const match = rgb.match(/rgb\((\d+), (\d+), (\d+)\)/);
   if (!match) return rgb;
@@ -360,6 +380,5 @@ function adjustBrightness(rgb: string, amount: number): string {
   const r = Math.max(0, Math.min(255, parseInt(match[1]) + amount));
   const g = Math.max(0, Math.min(255, parseInt(match[2]) + amount));
   const b = Math.max(0, Math.min(255, parseInt(match[3]) + amount));
-  
   return `rgb(${r}, ${g}, ${b})`;
 }

@@ -1,15 +1,23 @@
 import GameCard from "./GameCard";
 import ChoiceGroup from "./ChoiceGroup";
 import { useState } from "react";
-import type { Difficulty } from "../hooks/usePongParams";
+
+type Difficulty = "easy" | "medium" | "hard";
+
+export type OfflineConfig = {
+	gamemode: string;
+	botDiff: Difficulty;
+};
+
 interface OfflineCardProps {
 	onCancel: () => void;
-	onConfirm: (cfg: { gamemode: string; botDifficulty?: Difficulty }) => void;
+	onConfirm: ({ gamemode, botDiff }: OfflineConfig) => void;
 }
 
 export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
 	const [gamemode, setGamemode] = useState<string>("solo");
-	const [botDifficulty, setBotDifficulty] = useState<string | null>("medium");
+	const [botDifficulty, setBotDifficulty] = useState<Difficulty>("medium");
+
 	return (
 		<div className="absolute inset-0 flex items-center justify-center p-4">
 			<GameCard
@@ -18,7 +26,7 @@ export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
 				onConfirm={() =>
 					onConfirm({
 						gamemode: gamemode,
-						botDifficulty: botDifficulty as Difficulty,
+						botDiff: botDifficulty,
 					})
 				}
 			>
@@ -37,7 +45,9 @@ export function OfflineCard({ onCancel, onConfirm }: OfflineCardProps) {
 							label="Bot Difficulty"
 							options={["easy", "medium", "hard"]}
 							value={botDifficulty || ""}
-							onChange={(val) => setBotDifficulty(val)}
+							onChange={(val) =>
+								setBotDifficulty(val as Difficulty)
+							}
 							columns={3}
 							color="purple"
 							variant="sm"

@@ -1,22 +1,103 @@
 import { useState, useEffect, useCallback } from 'react';
+import { computeRemainingTime } from './timerUtils';
 
 export class TurnTimer {
-  private turnEndsAt: number = 0;
+  private turnStartedAt: number = 0;
+  private turnDurationMs: number = 0;
   private isActive: boolean = false;
+  private serverTimeOffset: number = 0;
+  private lastSyncTime: number = 0;
+  private driftHistory: number[] = [];
 
-  startTurn(durationMs: number): void {
-    this.turnEndsAt = performance.now() + durationMs;
+  startTurn(turnStartedAt: number, turnDurationMs: number, clientNow: number = Date.now()): void {
+    console.log('[TurnTimer] startTurn appelé', {
+      turnStartedAt,
+      turnDurationMs,
+      clientNow,
+      serverTimeOffset: turnStartedAt - clientNow
+    });
+    this.turnStartedAt = turnStartedAt;
+    this.turnDurationMs = turnDurationMs;
+    this.serverTimeOffset = turnStartedAt - clientNow;
+    this.lastSyncTime = clientNow;
+    this.driftHistory = [];
     this.isActive = true;
+  }
+
+  updateServerTime(serverNow: number, clientNow: number = Date.now()): void {
+    const newOffset = serverNow - clientNow;
+    const drift = newOffset - this.serverTimeOffset;
+    
+    this.driftHistory.push(drift);
+    if (this.driftHistory.length > 10) {
+      this.driftHistory.shift();
+    }
+    
+    const avgDrift = this.driftHistory.reduce((a, b) => a + b, 0) / this.driftHistory.length;
+    this.serverTimeOffset += avgDrift * 0.3;
+    this.lastSyncTime = clientNow;
+  }
+
+  getEstimatedDrift(): number {
+    if (this.driftHistory.length === 0) return 0;
+    const avgDrift = this.driftHistory.reduce((a, b) => a + b, 0) / this.driftHistory.length;
+    return avgDrift;
   }
 
   extend(ms: number): void {
     if (!this.isActive) return;
-    this.turnEndsAt += ms;
+    this.turnDurationMs += ms;
+  }
+
+  extendTurn(ms: number): void {
+    this.extend(ms);
   }
 
   getRemainingMs(): number {
-    if (!this.isActive) return 0;
-    return Math.max(0, this.turnEndsAt - performance.now());
+    if (!this.isActive) {
+      console.warn('[TurnTimer] getRemainingMs appelé mais timer inactif', {
+        isActive: this.isActive,
+        turnStartedAt: this.turnStartedAt,
+        turnDurationMs: this.turnDurationMs
+      });
+      return 0;
+    }
+    
+    const now = Date.now();
+    const remaining = computeRemainingTime(
+      this.turnStartedAt,
+      this.turnDurationMs,
+      now,
+      this.serverTimeOffset
+    );
+    
+    if (remaining === 0 || remaining < 0) {
+      const serverNow = now + this.serverTimeOffset;
+      const turnEndsAt = this.turnStartedAt + this.turnDurationMs;
+      const elapsed = serverNow - this.turnStartedAt;
+      console.warn('[TurnTimer] getRemainingMs retourne 0 ou négatif', {
+        remaining,
+        turnStartedAt: this.turnStartedAt,
+        turnDurationMs: this.turnDurationMs,
+        serverTimeOffset: this.serverTimeOffset,
+        now,
+        serverNow,
+        turnEndsAt,
+        elapsed,
+        shouldRemain: turnEndsAt - serverNow
+      });
+    }
+    
+    if (remaining < 0 || remaining > this.turnDurationMs + 1000) {
+      console.warn('[TurnTimer] getRemainingMs - Calcul suspect', {
+        remaining,
+        turnStartedAt: this.turnStartedAt,
+        turnDurationMs: this.turnDurationMs,
+        serverTimeOffset: this.serverTimeOffset
+      });
+    }
+    
+    return remaining;
   }
 
   isExpired(): boolean {
@@ -27,7 +108,6 @@ export class TurnTimer {
     this.isActive = false;
   }
 
-  // Méthode publique pour vérifier si le timer est actif
   isTimerActive(): boolean {
     return this.isActive;
   }
@@ -37,8 +117,29 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
   const [remainingMs, setRemainingMs] = useState(0);
 
   const updateTimer = useCallback(() => {
+    console.log('[useTurnTimer] updateTimer appelé', {
+      isActive,
+      timerIsActive: timer.isTimerActive(),
+      turnStartedAt: (timer as any).turnStartedAt,
+      turnDurationMs: (timer as any).turnDurationMs
+    });
+    
     if (isActive) {
-      setRemainingMs(timer.getRemainingMs());
+      const remaining = timer.getRemainingMs();
+      const finalRemaining = Math.max(0, remaining);
+      
+      if (finalRemaining === 0 && timer.isTimerActive()) {
+        console.warn('[useTurnTimer] Timer actif mais remaining = 0', {
+          isActive,
+          timerIsActive: timer.isTimerActive(),
+          remaining,
+          finalRemaining
+        });
+      }
+      
+      setRemainingMs(finalRemaining);
+    } else {
+      setRemainingMs(0);
     }
   }, [timer, isActive]);
 
@@ -48,13 +149,10 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
       return;
     }
 
-    // Mise à jour initiale
     updateTimer();
 
-    // Mise à jour toutes les 200ms (réduit de moitié la fréquence pour améliorer les performances)
-    const interval = setInterval(updateTimer, 200);
+    const interval = setInterval(updateTimer, 100);
 
-    // Gestion de la visibilité de l'onglet
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         updateTimer();

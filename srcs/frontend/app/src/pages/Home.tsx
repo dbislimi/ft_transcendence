@@ -24,22 +24,17 @@ export default function Home() {
       className="relative min-h-screen overflow-hidden"
       onMouseMove={handleMouseMove}
     >
-      {/* Ancien fond interactif désactivé pour éviter le double fond */}
-      
-      {/* Contenu principal avec animation d'entrée */}
       <div className={`relative z-10 min-h-screen transition-all duration-1000 ${
         isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
         <div className="text-center max-w-6xl mx-auto px-6 flex flex-col items-center justify-center min-h-screen">
           
-          {/* Logo/Titre principal */}
           <div className="relative mb-12">
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-wider">
+            <h1 className="text-5xl md:text-7xl cyberpunk-title cyberpunk-glitch" data-text="TRANSCENDENCE">
               TRANSCENDENCE
             </h1>
           </div>
           
-          {/* Message de bienvenue si connecté */}
           {isAuthenticated && user && (
             <div className="mb-8">
               <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
@@ -51,7 +46,6 @@ export default function Home() {
             </div>
           )}
           
-          {/* Sous-titre avec animation */}
           <div className="mb-16">
             <p className="text-xl md:text-2xl home-subtitle-adaptive font-light leading-relaxed max-w-3xl mx-auto">
               {t('home.subtitle')}
@@ -67,12 +61,10 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Grille des boutons améliorée */}
           <div className={`grid gap-8 max-w-5xl mx-auto ${
-            isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+            isAuthenticated ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
           }`}>
             
-            {/* Boutons de connexion et inscription seulement si non connecté */}
             {!isAuthenticated && (
               <>
                 {/* Bouton Connexion */}
@@ -107,7 +99,6 @@ export default function Home() {
               </>
             )}
             
-            {/* Bouton Pong */}
             <Link to={"/pong"} className="action-btn-aesthetic">
               <div className="flex flex-col items-center gap-3">
                 <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,10 +113,11 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* Bouton Boutique */}
             <button className="action-btn-aesthetic" onClick={() => setOpenShop(true)}>
               <div className="flex flex-col items-center gap-3">
-                <span className="text-2xl">🛒</span>
+                <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
                 <h3 className="text-lg font-semibold btn-text-aesthetic">
                   {t('shop.title')}
                 </h3>
@@ -135,10 +127,11 @@ export default function Home() {
               </div>
             </button>
 
-            {/* Bouton Bomb Party */}
             <Link to={"/bomb-party"} className="action-btn-aesthetic">
               <div className="flex flex-col items-center gap-3">
-                <span className="text-2xl">💣</span>
+                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
                 <h3 className="text-lg font-semibold btn-text-aesthetic">
                   {t('home.bombPartyTitle')}
                 </h3>
@@ -148,7 +141,6 @@ export default function Home() {
               </div>
             </Link>
             
-            {/* Bouton À propos */}
             <Link to={"/about"} className="action-btn-aesthetic">
               <div className="flex flex-col items-center gap-3">
                 <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +157,6 @@ export default function Home() {
             
           </div>
           
-          {/* Message d'encouragement */}
           <div className="mt-16">
             <p className="text-lg text-gray-300 font-medium">
               {t('home.readyToTranscend')}
@@ -178,11 +169,10 @@ export default function Home() {
         </div>
       </div>
       
-      {/* Modal de boutique */}
       {openShop && (
         <ShopModal isOpen={openShop} onClose={() => setOpenShop(false)} />
       )}
     </div>
     </>
   );
-}
+} 

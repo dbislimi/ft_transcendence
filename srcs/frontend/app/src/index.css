@@ -1,3 +1,7 @@
+/* ********************************* */
+/*         css variables              */
+/* ********************************* */
+
 @import "tailwindcss";
 
 :root {
@@ -19,158 +23,115 @@
 }
 
 :root:not(.dark) {
-  /* Arierre-planc */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #e2e8f0;
   --bg-card: #ffffff;
-  --bg-header: rgba(248, 250, 252, 0.95);
-  
-  /* Textes */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  
-  /* Bordures */
+  --bg-header: rgba(226, 232, 240, 0.6);
+
+  --text-primary: #000000;
+  --text-secondary: #1e293b;
+  --text-muted: #334155;
+
   --border-color: #cbd5e1;
   --border-hover: #94a3b8;
-  
-  /* Accents */
+
   --accent-primary: #3b82f6;
   --accent-secondary: #8b5cf6;
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
   --accent-error: #ef4444;
-  
-  /* Boutons */
+
   --btn-primary-bg: linear-gradient(135deg, #3b82f6, #1d4ed8);
   --btn-primary-hover: linear-gradient(135deg, #2563eb, #1e40af);
   --btn-secondary-bg: #f1f5f9;
   --btn-secondary-hover: #e2e8f0;
   --btn-secondary-text: #334155;
-  
-  /* Ombres */
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  --color-text: #000000;
+  --color-text-secondary: #1e293b;
+  --color-button: #3b82f6;
+  --color-button-hover: #2563eb;
+  --color-secondary: #1e40af;
+  --color-primary: #3b82f6;
+  --color-accent: #3b82f6;
+  --color-border: #cbd5e1;
+  --color-background: #ffffff;
+  --color-card: #ffffff;
 }
 
-/* ===== THeME SOMBRE ===== */
 :root.dark {
-  /* Arriere-plans */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
   --bg-card: #1e293b;
-  --bg-header: rgba(15, 23, 42, 0.95);
-  
-  /* Textes */
+  --bg-header: rgba(15, 23, 42, 0.7);
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  
-  /* Bordures */
   --border-color: #475569;
   --border-hover: #64748b;
-  
-  /* Accents */
   --accent-primary: #60a5fa;
   --accent-secondary: #a78bfa;
   --accent-success: #34d399;
   --accent-warning: #fbbf24;
   --accent-error: #f87171;
-  
-  /* Boutons */
   --btn-primary-bg: linear-gradient(135deg, #60a5fa, #3b82f6);
   --btn-primary-hover: linear-gradient(135deg, #3b82f6, #2563eb);
   --btn-secondary-bg: #334155;
   --btn-secondary-hover: #475569;
   --btn-secondary-text: #cbd5e1;
-  
-  /* Ombres */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-button: #1e40af;
+  --color-button-hover: #1d4ed8;
+  --color-secondary: #1e293b;
+  --color-primary: #60a5fa;
+  --color-accent: #60a5fa;
+  --color-border: #475569;
+  --color-background: #0f172a;
+  --color-card: #1e293b;
 }
 
-/* Application des couleurs */
+/* ********************************* */
+/*      theme color overrides         */
+/* ********************************* */
+
 .dark .bg-gradient-to-br {
   background: linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary));
-}
-
-.dark .text-gray-900 {
+} .dark .text-gray-900 {
   color: var(--text-primary);
-}
-
-.dark .text-gray-500 {
+} .dark .text-gray-500 {
   color: var(--text-secondary);
-}
-
-.dark .border-gray-300 {
+} .dark .border-gray-300 {
   border-color: var(--border-color);
-}
-
-.dark .bg-gray-100 {
+} .dark .bg-gray-100 {
   background-color: var(--bg-secondary);
-}
-
-/* Classes pour le contraste */
-.contrast-150 {
+} .contrast-150 {
   filter: contrast(150%);
-}
-
-.contrast-200 {
+} .contrast-200 {
   filter: contrast(200%);
 }
 
-.form {
-  max-width: 400px;
-}
+/* ********************************* */
+/*          base styles               */
+/* ********************************* */
 
 html, body {
   height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@keyframes shooting-star {
-  0% {
-    transform: translateX(-100px) translateY(0px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(calc(100vw + 100px)) translateY(100px);
-    opacity: 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-  }
-}
-
-.animate-shooting-star {
-  animation: shooting-star 8s linear infinite;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* ===== TAILLE DE POLICE DYNAMIQUE ===== */
 .text-small {
   font-size: var(--font-size-small) !important;
-}
-
-.text-small * {
+} .text-small * {
   font-size: inherit !important;
 }
 
@@ -186,63 +147,12 @@ html, body {
   font-size: inherit !important;
 }
 
-/* ===== CONTRASTE ADAPTATIF ===== */
-:root {
-  --contrast-level: 1.0;
-  --text-brightness: 1.0;
-}
-
-html {
-  filter: contrast(var(--contrast-level));
-}
-
-.text-contrast-adaptive {
-  filter: brightness(var(--text-brightness));
-}
-
-.text-adaptive {
-  color: var(--color-text);
-}
-
-.text-adaptive-secondary {
-  color: var(--color-text-secondary);
-}
-
-.bg-adaptive {
-  background-color: var(--color-background);
-}
-
-.bg-adaptive-card {
-  background-color: var(--color-card);
-}
-
-.border-adaptive {
-  border-color: var(--color-border);
-}
+/* ********************************* */
+/*         button styles              */
+/* ********************************* */
 
 .accent-adaptive {
   color: var(--color-accent);
-}
-
-
-.home-card-adaptive {
-  background: linear-gradient(135deg, var(--color-card), var(--color-background));
-  border: 2px solid var(--color-border);
-  color: var(--color-text);
-  backdrop-filter: blur(10px);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.home-card-adaptive:hover {
-  border-color: var(--color-accent);
-  box-shadow: 
-    0 0 30px var(--color-accent),
-    0 0 0 1px var(--color-accent),
-    0 8px 32px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
 }
 
 .nav-btn-aesthetic {
@@ -251,10 +161,8 @@ html {
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -268,28 +176,32 @@ html {
   text-decoration: none;
 }
 
+:root:not(.dark) .nav-btn-aesthetic {
+  text-shadow: none;
+  color: #ffffff !important;
+}
+
+.dark .nav-btn-aesthetic {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .nav-btn-aesthetic:hover {
   background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 .action-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: var(--btn-primary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md) !important;
+  backdrop-filter: blur(15px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -300,27 +212,31 @@ html {
   text-align: center;
 }
 
+:root:not(.dark) .action-btn-aesthetic {
+  text-shadow: none;
+  color: #ffffff !important;
+}
+
+.dark .action-btn-aesthetic {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .action-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
 .close-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: var(--btn-secondary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-sm) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -336,82 +252,22 @@ html {
 }
 
 .close-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-secondary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-md) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
-.home-title-adaptive {
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px var(--color-accent);
-  filter: drop-shadow(0 0 20px var(--color-accent));
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  position: relative;
-  animation: titleShimmer 3s ease-in-out infinite;
-}
-
-@keyframes titleShimmer {
-  0%, 100% {
-    background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px var(--color-accent);
-    filter: drop-shadow(0 0 20px var(--color-accent));
-  }
-  50% {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-accent));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 50px var(--color-accent);
-    filter: drop-shadow(0 0 30px var(--color-accent));
-  }
-}
-
-/* Version statique du titre (quand animations desactivees) */
-.reduce-motion .home-title-adaptive {
-  animation: none;
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent), var(--color-primary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px var(--color-accent);
-  filter: drop-shadow(0 0 20px var(--color-accent));
-}
+/* ********************************* */
+/*         text styles                */
+/* ********************************* */
 
 .home-subtitle-adaptive {
   color: var(--color-text-secondary);
   font-weight: 300;
   letter-spacing: 0.025em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Typographie esthetique avancee */
-.text-aesthetic-primary {
-  background: linear-gradient(135deg, var(--color-text), var(--color-accent));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 600;
-  letter-spacing: 0.025em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.text-aesthetic-secondary {
-  color: var(--color-text-secondary);
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .text-aesthetic-accent {
@@ -424,31 +280,6 @@ html {
   text-shadow: 0 0 20px var(--color-accent);
 }
 
-.text-aesthetic-glow {
-  color: var(--color-text);
-  text-shadow: 
-    0 0 10px var(--color-accent),
-    0 0 20px var(--color-accent),
-    0 0 30px var(--color-accent);
-  font-weight: 600;
-}
-
-.text-aesthetic-gradient {
-  background: linear-gradient(45deg, var(--color-primary), var(--color-accent), var(--color-secondary));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease-in-out infinite;
-  font-weight: 700;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Effets de texte pour les boutons */
 .btn-text-aesthetic {
   color: var(--color-text);
   font-weight: 600;
@@ -462,7 +293,6 @@ html {
   transform: translateY(-1px);
 }
 
-/* Effets pour les titres de section */
 .section-title-aesthetic {
   background: linear-gradient(135deg, var(--color-text), var(--color-accent));
   background-clip: text;
@@ -485,7 +315,6 @@ html {
   border-radius: 1px;
 }
 
-/* Effets pour les descriptions */
 .description-aesthetic {
   color: var(--color-text-secondary);
   font-weight: 300;
@@ -494,7 +323,10 @@ html {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Effets pour les labels */
+:root:not(.dark) .description-aesthetic {
+  text-shadow: none;
+}
+
 .label-aesthetic {
   color: var(--color-text);
   font-weight: 500;
@@ -502,39 +334,14 @@ html {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Effets pour les badges */
-.badge-aesthetic {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
-  color: var(--color-text);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+:root:not(.dark) .label-aesthetic {
+  text-shadow: none;
 }
 
-/* Classes pour differents niveaux de contraste */
-.contrast-low { --contrast-level: 0.7; --text-brightness: 0.8; }
-.contrast-normal { --contrast-level: 1.0; --text-brightness: 1.0; }
-.contrast-high { --contrast-level: 1.5; --text-brightness: 1.2; }
-.contrast-very-high { --contrast-level: 2.0; --text-brightness: 1.4; }
+/* ********************************* */
+/*      accessibility & performance   */
+/* ********************************* */
 
-/* Textes adaptatifs au contraste */
-.text-adaptive-primary {
-  color: var(--text-primary);
-  filter: brightness(var(--text-brightness));
-}
-
-.text-adaptive-secondary {
-  color: var(--text-secondary);
-  filter: brightness(calc(var(--text-brightness) * 0.9));
-}
-
-.text-adaptive-muted {
-  color: var(--text-muted);
-  filter: brightness(calc(var(--text-brightness) * 0.8));
-}
-
-/* Animations reduites */
 .reduce-motion *,
 .reduce-motion *::before,
 .reduce-motion *::after {
@@ -544,7 +351,6 @@ html {
   scroll-behavior: auto !important;
 }
 
-/* Mode economie d'energie */
 .energy-saver {
   --animation-duration: 0.1s;
 }
@@ -560,7 +366,6 @@ html {
   animation-play-state: paused !important;
 }
 
-/* Reduire les effets de particules en mode economie */
 .energy-saver canvas {
   opacity: 0.3 !important;
 }
@@ -569,37 +374,31 @@ html {
   filter: blur(4px) !important;
 }
 
-.energy-saver .animate-shooting-star,
-.energy-saver .animate-float {
+.energy-saver .animate-shooting-star {
   animation-play-state: paused !important;
 }
 
-/* Styles pour les composants de reglages */
+/* ********************************* */
+/*         settings modal             */
+/* ********************************* */
+
 .settings-modal {
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
+  color: var(--text-primary);
 }
 
 .settings-section {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   transition: all var(--animation-duration) var(--animation-timing);
 }
 
 .settings-section:hover {
-  border-color: rgba(148, 163, 184, 0.4);
-  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
 }
 
-.settings-toggle {
-  transition: all var(--animation-duration) var(--animation-timing);
-}
-
-.settings-slider {
-  transition: all var(--animation-duration) var(--animation-timing);
-}
-
-/* Animation pour les modales de reglages */
 @keyframes settingsSlideIn {
   from {
     opacity: 0;
@@ -615,72 +414,118 @@ html {
   animation: settingsSlideIn var(--animation-duration) var(--animation-timing);
 }
 
-/* ===== APPLICATION DES VARIABLES DE THEME ===== */
+/* ********************************* */
+/*      theme application             */
+/* ********************************* */
 
-/* Corps de la page */
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--animation-duration), color var(--animation-duration);
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color var(--animation-duration), color var(--animation-duration);
 }
 
-/* Cartes et conteneurs */
-.theme-card {
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
+#root {
+  background-color: var(--bg-primary);
   color: var(--text-primary);
-  box-shadow: var(--shadow-md);
 }
 
-.theme-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Header avec theme */
-.theme-header {
-  background: var(--bg-header);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* Textes avec theme */
-.text-theme-primary { color: var(--text-primary); }
-.text-theme-secondary { color: var(--text-secondary); }
-.text-theme-muted { color: var(--text-muted); }
-
-/* Inputs avec theme */
-.input-theme {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  transition: all var(--animation-duration);
-}
-
-.input-theme:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Modales avec theme */
-.modal-theme {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Override des classes Tailwind pour le theme */
 .bg-slate-800 { background-color: var(--bg-secondary) !important; }
 .bg-slate-700 { background-color: var(--bg-tertiary) !important; }
+.bg-slate-900 { background-color: var(--bg-primary) !important; }
+.bg-slate-600 { background-color: var(--bg-tertiary) !important; }
+.bg-gray-800 { background-color: var(--bg-secondary) !important; }
+.bg-gray-700 { background-color: var(--bg-tertiary) !important; }
+.bg-gray-100 { background-color: var(--bg-secondary) !important; }
 .text-white { color: var(--text-primary) !important; }
 .text-gray-300 { color: var(--text-secondary) !important; }
 .text-gray-400 { color: var(--text-muted) !important; }
+.text-gray-500 { color: var(--text-muted) !important; }
+.text-slate-300 { color: var(--text-secondary) !important; }
+.text-slate-400 { color: var(--text-muted) !important; }
+.text-slate-100 { color: var(--text-primary) !important; }
+.text-slate-200 { color: var(--text-secondary) !important; }
+
+:root:not(.dark) .text-white {
+  color: #000000 !important;
+}
+
+:root:not(.dark) .text-slate-100 {
+  color: #000000 !important;
+}
+
 .border-gray-600 { border-color: var(--border-color) !important; }
 .border-gray-500 { border-color: var(--border-hover) !important; }
+.border-gray-300 { border-color: var(--border-color) !important; }
+.border-slate-600 { border-color: var(--border-color) !important; }
+.border-slate-500 { border-color: var(--border-hover) !important; }
+.border-slate-700 { border-color: var(--border-color) !important; }
+.border-purple-500 { border-color: var(--accent-secondary) !important; }
 
-/* ===== BOUTONS ===== */
+button[class*="bg-blue"], button[class*="bg-cyan"], button[class*="bg-purple"], 
+button[class*="bg-green"], button[class*="bg-red"], button[class*="bg-yellow"] {
+  transition: all 0.3s ease;
+}
 
-/* Boutons de navigation */
+button.bg-gradient-to-r.from-cyan-600.to-purple-600,
+.bg-gradient-to-r.from-cyan-600.to-purple-600 {
+  background: var(--btn-primary-bg) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-gradient-to-r.from-cyan-600.to-purple-600:hover,
+.bg-gradient-to-r.from-cyan-600.to-purple-600:hover {
+  background: var(--btn-primary-hover) !important;
+}
+
+button.border-slate-600,
+.border-slate-600 {
+  border-color: var(--border-color) !important;
+}
+
+button.border-slate-600:hover,
+.border-slate-600:hover {
+  border-color: var(--border-hover) !important;
+}
+
+button.bg-blue-600, .bg-blue-600 {
+  background-color: var(--accent-primary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-blue-600:hover, .bg-blue-600:hover {
+  background-color: var(--color-button-hover) !important;
+}
+
+button.bg-cyan-600, .bg-cyan-600 {
+  background-color: var(--accent-primary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-purple-600, .bg-purple-600 {
+  background-color: var(--accent-secondary) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-green-600, .bg-green-600 {
+  background-color: var(--accent-success) !important;
+  color: var(--color-text) !important;
+}
+
+button.bg-red-600, .bg-red-600 {
+  background-color: var(--accent-error) !important;
+  color: var(--color-text) !important;
+}
+
+/* ********************************* */
+/*      duplicate button styles       */
+/* ********************************* */
+
 .nav-btn-aesthetic {
   background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
   color: var(--color-text) !important;
@@ -715,7 +560,6 @@ body {
   text-shadow: 0 0 10px var(--color-accent);
 }
 
-/* Effets pour les labels */
 .label-aesthetic {
   color: var(--color-text);
   font-weight: 500;
@@ -723,17 +567,18 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Boutons d'action esthetiques */
 .action-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.15), 
+    rgba(29, 78, 216, 0.15)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.25) !important;
   color: var(--color-text) !important;
-  border: 2px solid var(--color-border) !important;
+  border: 2px solid rgba(148, 163, 184, 0.4) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-md) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -748,23 +593,61 @@ body {
   cursor: pointer;
 }
 
-.action-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
-  transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+.dark .action-btn-aesthetic {
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.15), 
+    rgba(59, 130, 246, 0.15)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.25) !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
 }
 
-/* Textes des boutons */
+:root:not(.dark) .action-btn-aesthetic {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.12), 
+    rgba(29, 78, 216, 0.12)
+  ) !important;
+  background-color: rgba(248, 250, 252, 0.2) !important;
+  border-color: rgba(203, 213, 225, 0.4) !important;
+}
+
+.action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.25), 
+    rgba(29, 78, 216, 0.25)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.35) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-2px) scale(1.02);
+  text-shadow: 0 0 10px var(--accent-primary);
+}
+
+.dark .action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, 
+    rgba(96, 165, 250, 0.22), 
+    rgba(59, 130, 246, 0.22)
+  ) !important;
+  background-color: rgba(30, 41, 59, 0.32) !important;
+}
+
+:root:not(.dark) .action-btn-aesthetic:hover {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.18), 
+    rgba(29, 78, 216, 0.18)
+  ) !important;
+  background-color: rgba(248, 250, 252, 0.28) !important;
+}
+
 .btn-text-aesthetic {
   color: var(--color-text);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+:root:not(.dark) .btn-text-aesthetic {
+  text-shadow: none;
 }
 
 .description-aesthetic {
@@ -774,7 +657,6 @@ body {
   opacity: 0.9;
 }
 
-/* Boutique et modales */
 .section-title-aesthetic {
   color: var(--color-text);
   font-weight: 700;
@@ -783,15 +665,13 @@ body {
 }
 
 .close-btn-aesthetic {
-  background: linear-gradient(135deg, var(--color-button), var(--color-secondary)) !important;
+  background: var(--btn-secondary-bg) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-sm) !important;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -800,24 +680,24 @@ body {
   border-radius: 0.75rem;
   font-size: 0.875rem;
   min-width: 40px;
-  text-align: center;
-  display: inline-block;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 .close-btn-aesthetic:hover {
-  background: linear-gradient(135deg, var(--color-button-hover), var(--color-button)) !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    0 0 20px var(--color-accent),
-    0 0 0 1px var(--color-accent) !important;
+  background: var(--btn-secondary-hover) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: var(--shadow-md) !important;
   transform: translateY(-2px) scale(1.02);
-  text-shadow: 0 0 10px var(--color-accent);
+  text-shadow: 0 0 10px var(--accent-primary);
 }
 
-/* ===== SLIDER DE CONTRASTE ===== */
+/* ********************************* */
+/*      slider de contraste           */
+/* ********************************* */
+
 .slider-contrast {
   -webkit-appearance: none;
   appearance: none;
@@ -864,23 +744,277 @@ body {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-/* ===== ARRIeRE-PLANS GLOBAUX ===== */
+/* ********************************* */
+/*      background styles             */
+/* ********************************* */
 
-/* Classe par defaut pour l'arriere-plan */
 .bg-active-default {
+  background: var(--bg-primary);
+}
+
+.dark .bg-active-default {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
 }
 
-/* Classes pour les arriere-plans avec images */
+.cyberpunk-title {
+  font-family: 'Arial Black', 'Arial Bold', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  position: relative;
+  display: inline-block;
+  padding: 1.5rem 3rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: rgba(0, 0, 0, 0.8);
+  border: 3px solid var(--color-button, #1e40af);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(30, 64, 175, 0.3),
+    inset 0 0 15px rgba(30, 64, 175, 0.05);
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.cyberpunk-glitch {
+  position: relative;
+}
+
+.cyberpunk-glitch:hover,
+.cyberpunk-glitch {
+  animation: cyberpunk-glitch-anim 4s infinite;
+}
+
+@keyframes cyberpunk-glitch-anim {
+  0%, 90%, 100% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  } 90.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(-2px, 0);
+    filter: hue-rotate(0deg);
+  } 91% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 18px) 0,
+      100% 18px,
+      100% 100%,
+      22px 100%,
+      0 calc(100% - 22px)
+    );
+    transform: translate(2px, 2px);
+    filter: hue-rotate(90deg) invert(0.1);
+  } 91.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 22px) 0,
+      100% 22px,
+      100% 100%,
+      18px 100%,
+      0 calc(100% - 18px)
+    );
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg) invert(0.2);
+  } 92% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(3px, 0);
+    filter: hue-rotate(270deg) invert(0.1);
+  } 92.5% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(-3px, 0);
+    filter: hue-rotate(360deg);
+  } 93% {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 20px) 0,
+      100% 20px,
+      100% 100%,
+      20px 100%,
+      0 calc(100% - 20px)
+    );
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+.cyberpunk-title::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--color-button, #1e40af);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  z-index: -1;
+  opacity: 0;
+  animation: cyberpunk-glitch-text 4s infinite;
+  pointer-events: none;
+  text-shadow: 
+    2px 0 var(--color-button, #1e40af),
+    -2px 0 var(--color-button, #1e40af);
+}
+
+@keyframes cyberpunk-glitch-text {
+  0%, 90%, 100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  } 90.5% {
+    opacity: 0.8;
+    transform: translate(2px, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    color: var(--color-button, #1e40af);
+  } 91% {
+    opacity: 0.6;
+    transform: translate(-2px, 0);
+    clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    color: var(--color-button, #1e40af);
+  } 91.5% {
+    opacity: 0.4;
+    transform: translate(0, 2px);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    color: var(--color-button, #1e40af);
+  } 92% {
+    opacity: 0;
+    transform: translate(0);
+  }
+}
+
+.cyberpunk-title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(30, 64, 175, 0.08) 0%,
+    transparent 50%,
+    rgba(30, 64, 175, 0.08) 100%
+  );
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  z-index: -1;
+  animation: cyberpunk-inner-glow 3s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-inner-glow {
+  0%, 100% {
+    opacity: 0.3;
+  } 50% {
+    opacity: 0.6;
+  }
+}
+
+:root:not(.dark) .cyberpunk-title {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: var(--color-button, #3b82f6);
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(59, 130, 246, 0.3),
+    inset 0 0 15px rgba(59, 130, 246, 0.05);
+}
+:root:not(.dark) .cyberpunk-title::before {
+  background: var(--color-button, #3b82f6);
+}
+:root:not(.dark) .cyberpunk-title::after {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.08) 0%,
+    transparent 50%,
+    rgba(59, 130, 246, 0.08) 100%
+  );
+}
+
+.dark .cyberpunk-title {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: var(--color-button, #1e40af);
+  color: #ffffff;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 0 15px rgba(30, 64, 175, 0.3),
+    inset 0 0 15px rgba(30, 64, 175, 0.05);
+}
+
+.dark .cyberpunk-title::before {
+  background: var(--color-button, #1e40af);
+}
+
+.dark .cyberpunk-title::after {
+  background: linear-gradient(135deg, 
+    rgba(30, 64, 175, 0.08) 0%,
+    transparent 50%,
+    rgba(30, 64, 175, 0.08) 100%
+  );
+}
+
+:root:not(.dark) .bg-active-default {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+}
+
 .bg-active-42background,
 .bg-active-hallowenn-background,
 .bg-active-matrix-42-background,
 .bg-active-snow-background {
-  /* Les styles background-image sont appliques via JS */
   position: relative;
 }
 
-/* Overlay pour ameliorer la lisibilite du texte sur les images */
 .bg-active-42background::before,
 .bg-active-hallowenn-background::before,
 .bg-active-matrix-42-background::before,
@@ -896,13 +1030,11 @@ body {
   pointer-events: none;
 }
 
-/* Assurer que le contenu reste au-dessus */
 #root {
   position: relative;
   z-index: 1;
 }
 
-/* Ameliorer la lisibilite sur les arriere-plans d'image */
 body[class*="bg-active-"]:not(.bg-active-default) .text-white {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }

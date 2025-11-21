@@ -1,22 +1,15 @@
-import { useEffect, useRef } from "react";
-import { memo } from "react";
-import type { Players, Ball, Bonus } from "../pages/Pong";
-
-interface GameRefShape {
-	ball: Ball;
-	players: Players;
-	bonus: Bonus;
-}
+import { memo, useEffect, useRef } from "react";
+import type { RefObject } from "react";
+import type { GameState } from "../types/GameState";
 
 interface Props {
-	gameRef: React.RefObject<GameRefShape>;
+	gameRef: RefObject<GameState>;
 	scale: number;
 }
 
 function PongCanvas({ gameRef, scale }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
-	console.log("pong rendered");
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const fieldHeight = 100 * scale;
@@ -29,13 +22,13 @@ function PongCanvas({ gameRef, scale }: Props) {
 		if (!c) return;
 		const loop = () => {
 			if (!gameRef.current) return;
-			const { players, ball, bonus } = gameRef.current;
+			const { players, ball, bonuses } = gameRef.current;
 			const p1Size = players.p1.size * scale;
 			const p2Size = players.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();
 			c.font = "300px Audiowide";
-			c.fillStyle = "black";
+			c.fillStyle = "white";
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(
@@ -48,11 +41,12 @@ function PongCanvas({ gameRef, scale }: Props) {
 				(canvas.width * 3) / 4,
 				canvas.height / 2 + 30
 			);
-			for (const bonuses of bonus.bonuses) {
+			for (const bonus of bonuses.bonuses) {
+				c.beginPath();
 				c.arc(
 					100 * 4,
-					bonuses.y * 4,
-					bonuses.radius * scale,
+					bonus.y * 4,
+					bonus.radius * scale,
 					0,
 					2 * Math.PI,
 					false
@@ -96,6 +90,7 @@ function PongCanvas({ gameRef, scale }: Props) {
 			frameIdRef.current = requestAnimationFrame(loop);
 		};
 		frameIdRef.current = requestAnimationFrame(loop);
+
 		return () => cancelAnimationFrame(frameIdRef.current);
 	}, [gameRef, scale]);
 	return (

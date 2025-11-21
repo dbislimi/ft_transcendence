@@ -1,13 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings, type Theme, type ContrastLevel, type FontSize, type Language } from '../contexts/SettingsContext';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
-
-/*
-  Modal complete des reglages d'affichage
-  Inclut : Theme, Contraste, Langue, Arriere-plan, Taille du texte, Animations, economie d'energie
- */
 
 interface DisplaySettingsModalProps {
   isOpen: boolean;
@@ -17,8 +12,27 @@ interface DisplaySettingsModalProps {
 export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySettingsModalProps) {
   const { t } = useTranslation();
   const { settings, updateDisplaySettings } = useSettings();
-  const { currentBackground, setBackground, availableBackgrounds, isLoading } = useGlobalBackground();
+  const { currentBackground, setBackground, setBackgroundForTheme, availableBackgrounds, lightBackgrounds, darkBackgrounds, lightBackgroundId, darkBackgroundId, isLoading } = useGlobalBackground();
+
+  const getBackgroundName = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.name`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.name;
+  };
+
+  const getBackgroundDescription = (bg: typeof lightBackgrounds[0]) => {
+    const translationKey = `shop.backgrounds.${bg.id}.description`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : bg.description;
+  };
   const [activeSection, setActiveSection] = useState<string>('theme');
+  const [backgroundTab, setBackgroundTab] = useState<'light' | 'dark'>(settings.display.theme);
+  
+  useEffect(() => {
+    if (activeSection === 'background') {
+      setBackgroundTab(settings.display.theme);
+    }
+  }, [activeSection, settings.display.theme]);
 
   if (!isOpen) return null;
 
@@ -70,9 +84,9 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
     updateDisplaySettings({ energySaver });
   };
 
-  const handleBackgroundChange = (backgroundId: string) => {
-    console.log('🖼️ [Background] Changement vers:', backgroundId);
-    setBackground(backgroundId);
+  const handleBackgroundChange = (backgroundId: string, theme: 'light' | 'dark') => {
+    console.log('[Background] Changement vers:', backgroundId, 'pour le thème:', theme);
+    setBackgroundForTheme(backgroundId, theme);
   };
 
   return (
@@ -88,8 +102,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
         className="settings-modal rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden animate-settings-slide"
         onClick={(e) => e.stopPropagation()}
       >
-        
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-600/30">
           <h2 className="text-2xl font-bold section-title-aesthetic flex items-center gap-3">
             <span className="text-3xl">👁️</span>
@@ -106,8 +118,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
         </div>
 
         <div className="flex h-[600px]">
-          
-          {/* Sidebar */}
           <div className="w-64 bg-gray-800/50 border-r border-gray-600/30 p-4">
             <nav className="space-y-2">
               {sections.map((section) => (
@@ -127,15 +137,11 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
             </nav>
           </div>
 
-          {/* Content */}
           <div className="flex-1 p-6 overflow-y-auto">
-            
-            {/* Section Theme */}
             {activeSection === 'theme' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.appearance') || 'Apparence'}</h3>
                 
-                {/* Theme Clair/Sombre */}
                 <div className="settings-section rounded-xl p-6">
                   <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.theme') || 'Thème'}</h4>
                   <div className="grid grid-cols-2 gap-4">
@@ -163,9 +169,30 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       <span className="btn-text-aesthetic text-sm">{t('settings.display.themeDark') || 'Sombre'}</span>
                     </button>
                   </div>
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-medium text-white mb-2">
+                          {t('settings.display.autoChangeBackground') || 'Changement automatique de fond'}
+                        </h4>
+                        <p className="text-sm text-gray-400">
+                          {t('settings.display.autoChangeBackgroundDesc') || 'Change automatiquement le fond d\'écran lorsque vous basculez entre les modes clair et sombre'}
+                        </p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer ml-4">
+                        <input
+                          type="checkbox"
+                          checked={settings.display.autoChangeBackground}
+                          onChange={(e) => updateDisplaySettings({ autoChangeBackground: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Taille du texte */}
                 <div className="settings-section rounded-xl p-6">
                   <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.fontSize') || 'Taille du texte'}</h4>
                   <div className="grid grid-cols-3 gap-3">
@@ -193,12 +220,10 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Accessibilite */}
             {activeSection === 'accessibility' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.accessibility') || 'Accessibilité'}</h3>
                 
-                {/* Contraste reglable */}
                 <div className="settings-section rounded-xl p-6">
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -211,26 +236,23 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       {t('settings.display.contrastDesc') || 'Ajuste le contraste et la luminosité du texte'}
                     </p>
                     
-                    {/* Slider de contraste */}
                     <div className="space-y-4">
                       <input
                         type="range"
-                        min="0.5"
-                        max="2.0"
+                        min="0.2"
+                        max="3.0"
                         step="0.1"
                         value={settings.display.contrast}
                         onChange={(e) => handleContrastChange(parseFloat(e.target.value))}
                         className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-contrast"
                       />
                       
-                      {/* Indicateurs */}
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{t('settings.display.contrastLow') || 'Faible'}</span>
                         <span>{t('settings.display.contrastNormal') || 'Normal'}</span>
                         <span>{t('settings.display.contrastHigh') || 'Élevé'}</span>
                       </div>
                       
-                      {/* Aperçu du contraste */}
                       <div className="mt-4 p-3 rounded-lg bg-gray-700/50 border border-gray-600">
                         <p className="text-sm" style={{ filter: `contrast(${settings.display.contrast}) brightness(${Math.min(1.0, 0.5 + (settings.display.contrast - 0.5) * 0.5)})` }}>
                           {t('settings.display.contrastPreview') || 'Aperçu du texte avec ce niveau de contraste'}
@@ -242,7 +264,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Langue */}
             {activeSection === 'language' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.language') || 'Langue'}</h3>
@@ -276,90 +297,115 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
               </div>
             )}
 
-            {/* Section Arriere-plan */}
             {activeSection === 'background' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.background') || 'Arrière-plan'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
+                  <div className="flex gap-2 mb-6 bg-gray-800/50 rounded-lg p-1">
+                    <button
+                      onClick={() => setBackgroundTab('light')}
+                      className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 ${
+                        backgroundTab === 'light'
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {t('settings.display.lightMode') || '☀️ Mode Clair'}
+                    </button>
+                    <button
+                      onClick={() => setBackgroundTab('dark')}
+                      className={`flex-1 py-2 px-4 rounded-md transition-all duration-200 ${
+                        backgroundTab === 'dark'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {t('settings.display.darkMode') || '🌙 Mode Sombre'}
+                    </button>
+                  </div>
+
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {availableBackgrounds.map((bg) => (
-                      <button
-                        key={bg.id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleBackgroundChange(bg.id);
-                        }}
-                        disabled={isLoading}
-                        className={`group relative rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                          currentBackground.id === bg.id
-                            ? 'border-blue-500 shadow-lg shadow-blue-500/25'
-                            : 'border-gray-600 hover:border-gray-500 hover:shadow-lg'
-                        }`}
-                      >
-                        <div className="aspect-video w-full relative">
-                          {bg.url ? (
-                            <div
-                              className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                              style={{ backgroundImage: `url(${bg.url})` }}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800">
-                              <span className="text-gray-400 text-xs">{bg.name}</span>
-                            </div>
-                          )}
+                    {(backgroundTab === 'light' ? lightBackgrounds : darkBackgrounds).map((bg) => {
+                      const isActive = backgroundTab === 'light' 
+                        ? lightBackgroundId === bg.id 
+                        : darkBackgroundId === bg.id;
+                      
+                      return (
+                        <button
+                          key={bg.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleBackgroundChange(bg.id, backgroundTab);
+                          }}
+                          disabled={isLoading}
+                          className={`group relative rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isActive
+                              ? 'border-blue-500 shadow-lg shadow-blue-500/25'
+                              : 'border-gray-600 hover:border-gray-500 hover:shadow-lg'
+                          }`}
+                        >
+                          <div className="aspect-video w-full relative">
+                            {bg.url ? (
+                              <div
+                                className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                                style={{ backgroundImage: `url(${bg.url})` }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800">
+                                <span className="text-gray-400 text-xs">{bg.name}</span>
+                              </div>
+                            )}
+                            
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                            
+                            {isLoading && isActive && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                          </div>
                           
-                          {/* Overlay au hover */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                          <div className="p-3 text-center bg-gray-800/90">
+                            <h5 className="text-white text-sm font-medium mb-1">
+                              {getBackgroundName(bg)}
+                            </h5>
+                            <p className="text-gray-400 text-xs">
+                              {getBackgroundDescription(bg)}
+                            </p>
+                          </div>
                           
-                          {/* Indicateur de chargement */}
-                          {isLoading && currentBackground.id === bg.id && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                            </div>
+                          {isActive && (
+                            <>
+                              <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div className="absolute bottom-3 left-3 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">
+                                {t('settings.display.equipped') || 'Équipé'}
+                              </div>
+                            </>
                           )}
-                        </div>
-                        
-                        <div className="p-3 text-center bg-gray-800/90">
-                          <h5 className="text-white text-sm font-medium mb-1">{bg.name}</h5>
-                          <p className="text-gray-400 text-xs">{bg.description}</p>
-                        </div>
-                        
-                        {/* Badge "Equipe" */}
-                        {currentBackground.id === bg.id && (
-                          <>
-                            <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="absolute bottom-3 left-3 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">
-                              Équipé
-                            </div>
-                          </>
-                        )}
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                   
-                  {/* Info sur les arrière-plans */}
                   <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <p className="text-blue-300 text-sm">
-                      💡 <strong>Astuce :</strong> L'arrière-plan sélectionné s'applique à toute l'application. 
-                      Certains arrière-plans incluent des animations qui peuvent être désactivées dans la section Performance.
+                      {t('settings.display.backgroundTip') || '💡 Astuce : Choisissez un arrière-plan pour le mode clair et un pour le mode sombre. L\'arrière-plan changera automatiquement lorsque vous basculerez entre les modes.'}
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Section Performance */}
             {activeSection === 'performance' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.performance') || 'Performance et animations'}</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.performanceTitle') || t('settings.display.performance') || 'Performance et animations'}</h3>
                 
-                {/* Animations */}
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -378,7 +424,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                   </div>
                 </div>
 
-                {/* Mode économie d'énergie */}
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -401,7 +446,6 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-600/30">
           <div className="text-sm text-gray-400">
             {t('settings.display.autoSave') || 'Les modifications sont sauvegardées automatiquement'}

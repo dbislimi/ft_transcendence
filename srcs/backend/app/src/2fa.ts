@@ -24,7 +24,7 @@ async function Send2faMail() {
 
     const Message = {
         from: '"TEST" <Transcendance06000@gmail.com',
-        to: 'poymail',//le mail du poy a recup dans la db ?
+        to: 'poymail', // Get user email from database
         subject: 'votre code a 6 chiffres:',
         text: 'code : ' + otp,
     };

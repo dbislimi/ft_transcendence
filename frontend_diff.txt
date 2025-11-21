@@ -1,0 +1,120 @@
+Only in srcs/frontend/app/src/Components: AccountSettingsModal.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ActionButton.tsx and srcs/frontend/app/src/Components/ActionButton.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/AuthentificationForm.tsx and srcs/frontend/app/src/Components/AuthentificationForm.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/BackToMenuButton.tsx and srcs/frontend/app/src/Components/BackToMenuButton.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/BackgroundSurface.tsx and srcs/frontend/app/src/Components/BackgroundSurface.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/BombPartyInfoSidebar.tsx and srcs/frontend/app/src/Components/BombPartyInfoSidebar.tsx differ
+Only in srcs/frontend/app/src/Components: BombPartyStats.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/Chat.tsx and srcs/frontend/app/src/Components/Chat.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ChoiceGroup.tsx and srcs/frontend/app/src/Components/ChoiceGroup.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ContrastToggle.tsx and srcs/frontend/app/src/Components/ContrastToggle.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/Countdown.tsx and srcs/frontend/app/src/Components/Countdown.tsx differ
+Only in srcs/frontend/app/src/Components: DisplaySettingsModal.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/GameOverOverlay.tsx and srcs/frontend/app/src/Components/GameOverOverlay.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/GameOverlay.tsx and srcs/frontend/app/src/Components/GameOverlay.tsx differ
+Only in srcs/frontend/app/src/Components: GameSettingsModal.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/Header.tsx and srcs/frontend/app/src/Components/Header.tsx differ
+Only in srcs/frontend/app/src/Components: LanguageDropdown.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/Layout.tsx and srcs/frontend/app/src/Components/Layout.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/NotificationsContainer.tsx and srcs/frontend/app/src/Components/NotificationsContainer.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/OnlineCard.tsx and srcs/frontend/app/src/Components/OnlineCard.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ParallaxScroll.tsx and srcs/frontend/app/src/Components/ParallaxScroll.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ParticleProvider.tsx and srcs/frontend/app/src/Components/ParticleProvider.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/PlayerProfileModal.tsx and srcs/frontend/app/src/Components/PlayerProfileModal.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/PongCanvas.tsx and srcs/frontend/app/src/Components/PongCanvas.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/PongGameArea.tsx and srcs/frontend/app/src/Components/PongGameArea.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/PongModeSelection.tsx and srcs/frontend/app/src/Components/PongModeSelection.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/PongScoreboard.tsx and srcs/frontend/app/src/Components/PongScoreboard.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ProtectedRoute.tsx and srcs/frontend/app/src/Components/ProtectedRoute.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/RealtimeNotifications.tsx and srcs/frontend/app/src/Components/RealtimeNotifications.tsx differ
+Only in srcs/frontend/app/src/Components: ShopModal.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/SpaceBackground.tsx and srcs/frontend/app/src/Components/SpaceBackground.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/ThemeToggle.tsx and srcs/frontend/app/src/Components/ThemeToggle.tsx differ
+Only in ft_transcendenceGame-back/srcs/frontend/app/src/Components: TournamentRejoinPrompt.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/Components/WaitingOverlay.tsx and srcs/frontend/app/src/Components/WaitingOverlay.tsx differ
+Only in srcs/frontend/app/src/Components: bombparty
+Files ft_transcendenceGame-back/srcs/frontend/app/src/api/player.ts and srcs/frontend/app/src/api/player.ts differ
+Only in ft_transcendenceGame-back/srcs/frontend/app/src: app.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/assets/logo.png and srcs/frontend/app/src/assets/logo.png differ
+Only in srcs/frontend/app/src: backgrounds
+Only in ft_transcendenceGame-back/srcs/frontend/app/src: context
+Only in srcs/frontend/app/src/contexts: AuthContext.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/contexts/BackgroundContext.tsx and srcs/frontend/app/src/contexts/BackgroundContext.tsx differ
+Only in srcs/frontend/app/src/contexts: GameSessionContext.tsx
+Only in srcs/frontend/app/src/contexts: GlobalBackgroundContext.tsx
+Only in srcs/frontend/app/src/contexts: NotificationContext.tsx
+Only in srcs/frontend/app/src/contexts: SettingsContext.tsx
+Only in srcs/frontend/app/src/contexts: UserContext.tsx
+Only in srcs/frontend/app/src/contexts: WebSocketContext.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/fetchData.ts and srcs/frontend/app/src/fetchData.ts differ
+Only in ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party: README.md
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/RulesScreen.tsx and srcs/frontend/app/src/game-bomb-party/RulesScreen.tsx differ
+Only in srcs/frontend/app/src/game-bomb-party/core: engine-getters.ts
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/core/engine.ts and srcs/frontend/app/src/game-bomb-party/core/engine.ts differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/core/timer.ts and srcs/frontend/app/src/game-bomb-party/core/timer.ts differ
+Only in srcs/frontend/app/src/game-bomb-party/core: timerUtils.ts
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/core/types.ts and srcs/frontend/app/src/game-bomb-party/core/types.ts differ
+Only in srcs/frontend/app/src/game-bomb-party/data: francais.json
+Only in srcs/frontend/app/src/game-bomb-party/data: syllabes.json
+Only in srcs/frontend/app/src/game-bomb-party/data: syllableExtractor.ts
+Only in srcs/frontend/app/src/game-bomb-party/data: syllableLoader.ts
+Only in ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/data: trigram_words.json
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/data/validator.ts and srcs/frontend/app/src/game-bomb-party/data/validator.ts differ
+Only in srcs/frontend/app/src/game-bomb-party/ui: Animations.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/BombPartyPage.tsx and srcs/frontend/app/src/game-bomb-party/ui/BombPartyPage.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/BombTimer.tsx and srcs/frontend/app/src/game-bomb-party/ui/BombTimer.tsx differ
+Only in srcs/frontend/app/src/game-bomb-party/ui: BonusNotification.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/Countdown.tsx and srcs/frontend/app/src/game-bomb-party/ui/Countdown.tsx differ
+Only in srcs/frontend/app/src/game-bomb-party/ui: LobbyList.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/LobbyScreen.tsx and srcs/frontend/app/src/game-bomb-party/ui/LobbyScreen.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/Menu.tsx and srcs/frontend/app/src/game-bomb-party/ui/Menu.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/PlayerCircle.tsx and srcs/frontend/app/src/game-bomb-party/ui/PlayerCircle.tsx differ
+Only in srcs/frontend/app/src/game-bomb-party/ui: PlayersCountDropdown.tsx
+Only in srcs/frontend/app/src/game-bomb-party/ui: PlayersScreen.tsx
+Only in srcs/frontend/app/src/game-bomb-party/ui: SettingsModal.tsx
+Only in srcs/frontend/app/src/game-bomb-party/ui: SpectatorView.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/game-bomb-party/ui/WordInput.tsx and srcs/frontend/app/src/game-bomb-party/ui/WordInput.tsx differ
+Only in srcs/frontend/app/src/game-bomb-party/ui: bombparty
+Only in srcs/frontend/app/src/game-bomb-party/ui: useSoundEffects.ts
+Files ft_transcendenceGame-back/srcs/frontend/app/src/hook/usePlayerProfile.ts and srcs/frontend/app/src/hook/usePlayerProfile.ts differ
+Only in srcs/frontend/app/src/hooks: bombparty
+Files ft_transcendenceGame-back/srcs/frontend/app/src/hooks/useGameWebsocket.ts and srcs/frontend/app/src/hooks/useGameWebsocket.ts differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/hooks/usePongControls.ts and srcs/frontend/app/src/hooks/usePongControls.ts differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/hooks/usePongParams.ts and srcs/frontend/app/src/hooks/usePongParams.ts differ
+Only in srcs/frontend/app/src/hooks: useRafTick.ts
+Files ft_transcendenceGame-back/srcs/frontend/app/src/i18n.ts and srcs/frontend/app/src/i18n.ts differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/index.css and srcs/frontend/app/src/index.css differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/locales/ar.json and srcs/frontend/app/src/locales/ar.json differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/locales/en.json and srcs/frontend/app/src/locales/en.json differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/locales/es.json and srcs/frontend/app/src/locales/es.json differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/locales/fr.json and srcs/frontend/app/src/locales/fr.json differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/locales/ru.json and srcs/frontend/app/src/locales/ru.json differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/main.tsx and srcs/frontend/app/src/main.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/About.tsx and srcs/frontend/app/src/pages/About.tsx differ
+Only in srcs/frontend/app/src/pages: BombPartyProfilePage.tsx
+Only in srcs/frontend/app/src/pages: BombPartyStatsPage.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Connection.tsx and srcs/frontend/app/src/pages/Connection.tsx differ
+Only in srcs/frontend/app/src/pages: Dashboard.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Friends.tsx and srcs/frontend/app/src/pages/Friends.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Home.tsx and srcs/frontend/app/src/pages/Home.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/NotFoundPage.tsx and srcs/frontend/app/src/pages/NotFoundPage.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Pong.tsx and srcs/frontend/app/src/pages/Pong.tsx differ
+Only in srcs/frontend/app/src/pages: PongStatsPage.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Profile.tsx and srcs/frontend/app/src/pages/Profile.tsx differ
+Only in srcs/frontend/app/src/pages: Registr.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Registration.tsx and srcs/frontend/app/src/pages/Registration.tsx differ
+Only in ft_transcendenceGame-back/srcs/frontend/app/src/pages: Reglages.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/Settings.tsx and srcs/frontend/app/src/pages/Settings.tsx differ
+Only in srcs/frontend/app/src/pages: StatsPage.tsx
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/auth.tsx and srcs/frontend/app/src/pages/auth.tsx differ
+Files ft_transcendenceGame-back/srcs/frontend/app/src/pages/index.ts and srcs/frontend/app/src/pages/index.ts differ
+Only in srcs/frontend/app/src/services: bombPartyService.ts
+Only in srcs/frontend/app/src/services: bombPartyStatsService.ts
+Only in srcs/frontend/app/src/services: timerService.ts
+Only in srcs/frontend/app/src/services/ws: WebSocketCoordinator.ts
+Files ft_transcendenceGame-back/srcs/frontend/app/src/services/ws/bombPartyClient.ts and srcs/frontend/app/src/services/ws/bombPartyClient.ts differ
+Only in srcs/frontend/app/src/services/ws: types.ts
+Only in srcs/frontend/app/src: shared
+Only in srcs/frontend/app/src: store
+Only in srcs/frontend/app/src: utils
+Files ft_transcendenceGame-back/srcs/frontend/app/src/vite-env.d.ts and srcs/frontend/app/src/vite-env.d.ts differ

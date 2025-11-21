@@ -1,74 +1,81 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
+import { Application, Graphics, Sprite, Container, Texture } from "pixi.js";
 
-const colors = ["#F23041", "#F241E6", "#8C2A86", "#162059", "#41F2F2"];
+const colors = [0xf23041, 0xf241e6, 0x8c2a86, 0x162059, 0x41f2f2];
+const STAR_DENSITY_PER_MEGAPIXEL = 2000;
 
 class Star {
 	x: number;
 	y: number;
 	z: number;
-	private color: string;
-	private height: number;
-	private width: number;
-	private maxDepth: number = 10000;
-	private speed: number = 10;
+	color: number;
+	width: number;
+	height: number;
+	core: Sprite;
+	glow: Sprite;
+	static readonly maxDepth: number = 10000;
+	static readonly speed: number = 10;
 
-	constructor(canvas: HTMLCanvasElement) {
-		this.height = canvas.height;
-		this.width = canvas.width;
+	constructor(
+		width: number,
+		height: number,
+		coreTexture: Texture,
+		glowTexture: Texture
+	) {
+		this.width = width;
+		this.height = height;
 		this.x = Math.random() * this.width - this.width / 2;
 		this.y = Math.random() * this.height - this.height / 2;
-		this.z = Math.random() * this.maxDepth;
+		this.z = Math.random() * Star.maxDepth;
 		this.color = colors[Math.floor(Math.random() * colors.length)];
+
+		this.core = new Sprite(coreTexture);
+		this.core.anchor.set(0.5);
+
+		this.glow = new Sprite(glowTexture);
+		this.glow.anchor.set(0.5);
+		this.glow.tint = this.color;
+		this.glow.alpha = 0.9;
 	}
-	getScreenCoords(z: number){
-		const offsetX = this.maxDepth / 2 * (this.x / z) + this.width / 2;
-		const offsetY = this.maxDepth / 2 * (this.y / z) + this.height / 2;
-		return {offsetX, offsetY};
+
+	getScreenCoords(z: number) {
+		const offsetX = (Star.maxDepth / 2) * (this.x / z) + this.width / 2;
+		const offsetY = (Star.maxDepth / 2) * (this.y / z) + this.height / 2;
+		return { x: offsetX, y: offsetY };
 	}
-	update(){
-		this.z -= this.speed;
-		if (this.z <= 10)
-			this.reset();
+
+	isOffscreen({ x, y }: { x: number; y: number }, padding: number = 0) {
+		return (
+			x < -padding ||
+			x > this.width + padding ||
+			y < -padding ||
+			y > this.height + padding
+		);
 	}
+
+	update() {
+		this.z -= Star.speed;
+		if (this.z <= 10) this.reset();
+	}
+
 	reset() {
 		this.x = Math.random() * this.width - this.width / 2;
 		this.y = Math.random() * this.height - this.height / 2;
-		this.z = Math.random() * this.maxDepth;
+		this.z = Star.maxDepth;
 		this.color = colors[Math.floor(Math.random() * colors.length)];
-	}
-	draw(c: CanvasRenderingContext2D){
-		const {offsetX:x1, offsetY:y1} = this.getScreenCoords(this.z);
-		const minRadius = 0.2;
-		const maxRadius = 2;
-		const normZ = (this.maxDepth - this.z) / this.maxDepth;
-		const radius =  minRadius + normZ * (maxRadius - minRadius);
-		const blur = normZ * 10;
-		c.shadowBlur = blur;
-		c.shadowColor = this.color;
-		if (normZ > 0.4){
-			const {offsetX:x2, offsetY:y2} = this.getScreenCoords(this.z + normZ * 100);
-			c.beginPath();
-			c.moveTo(x2, y2);
-			c.lineTo(x1, y1);
-			c.strokeStyle = 'rgba(255,255,255,0.6)';
-			c.lineWidth = radius;
-			c.stroke();
-		}
-		c.beginPath();
-		c.arc(x1, y1, radius, 0, 2 * Math.PI, false);
-		c.fillStyle = 'white';
-		c.fill();
-		c.shadowBlur = 0;
+		this.glow.tint = this.color;
 	}
 }
 
 export default function SpaceBackground() {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const frameIdRef = useRef<number>(0);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const appRef = useRef<Application | null>(null);
+	const starsRef = useRef<Star[]>([]);
 	const location = useLocation();
 	const { currentBackground } = useGlobalBackground();
+
 	const shouldRender = useMemo(() => {
 		const path = location.pathname || '';
 		if (path.startsWith('/pong') || path.startsWith('/bomb-party')) {
@@ -76,40 +83,164 @@ export default function SpaceBackground() {
 		}
 		return currentBackground.id === 'default' || currentBackground.id === 'space';
 	}, [location.pathname, currentBackground.id]);
-	
+
 	useEffect(() => {
 		if (!shouldRender) return;
-		const canvas = canvasRef.current;
-		if (!canvas) return;
-		let Stars: Star[] = [];
-		const resize = () => {
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight;
-			Stars = [];
-			for (let i = 0; i < 500; ++i) {
-				Stars.push(new Star(canvas));
+		const e = containerRef.current;
+		if (!e) return;
+
+		let cancelled = false;
+		let loop: (() => void) | null = null;
+		let onResize: (() => void) | null = null;
+		let handleVisibility: (() => void) | null = null;
+		const app = new Application();
+
+		const init = async () => {
+			await app.init({
+				width: window.innerWidth,
+				height: window.innerHeight,
+				antialias: false,
+				backgroundAlpha: 0,
+				resolution: 1,
+				autoStart: false,
+			});
+			if (cancelled) {
+				app.destroy(true);
+				return;
 			}
+			appRef.current = app;
+			e.appendChild(app.canvas);
+
+			const makeCoreTexture = () => {
+				const g = new Graphics();
+				g.circle(0, 0, 2).fill(0xffffff);
+				const tex = app.renderer.generateTexture(g);
+				g.destroy();
+				return tex;
+			};
+
+			const makeGlowTexture = () => {
+				const g = new Graphics();
+				const steps = 4;
+				const base = 3;
+				for (let i = steps; i >= 1; i--) {
+					const r = base * i;
+					const alpha = 0.15 * (i / steps);
+					g.circle(0, 0, r).fill({ color: 0xffffff, alpha });
+				}
+				const tex = app.renderer.generateTexture(g);
+				g.destroy();
+				return tex;
+			};
+
+			const coreTexture = makeCoreTexture();
+			const glowTexture = makeGlowTexture();
+
+			const starsLayer = new Container();
+			app.stage.addChild(starsLayer);
+
+			const attachSprites = (s: Star) => {
+				starsLayer.addChild(s.glow);
+				starsLayer.addChild(s.core);
+			};
+
+			const detachSprites = () => {
+				const removed = starsLayer.removeChildren();
+				for (const child of removed) child.destroy();
+			};
+
+			const init_stars = () => {
+				const w = app.renderer.width;
+				const h = app.renderer.height;
+				const stars: Star[] = [];
+				detachSprites();
+				const area = w * h;
+				const target = Math.max(
+					0,
+					Math.round((area / 1000000) * STAR_DENSITY_PER_MEGAPIXEL)
+				);
+				for (let i = 0; i < target; i++) {
+					const s = new Star(w, h, coreTexture, glowTexture);
+					attachSprites(s);
+					stars.push(s);
+				}
+				starsRef.current = stars;
+			};
+
+			init_stars();
+
+			loop = () => {
+				const stars = starsRef.current;
+				const w = app.renderer.width;
+				const h = app.renderer.height;
+
+				for (const s of stars) {
+					s.width = w;
+					s.height = h;
+					s.update();
+
+					const minRadius = 0.2;
+					const maxRadius = 2;
+					const normZ = (Star.maxDepth - s.z) / Star.maxDepth;
+					const radius = minRadius + normZ * (maxRadius - minRadius);
+					const pos = s.getScreenCoords(s.z);
+
+					if (s.isOffscreen(pos, 500)) {
+						s.reset();
+						continue;
+					}
+
+					s.core.position.set(pos.x, pos.y);
+					s.core.scale.set(radius / 2);
+					s.core.alpha = Math.min(1, 0.4 + 0.6 * normZ);
+
+					s.glow.position.set(pos.x, pos.y);
+					s.glow.scale.set(radius / 3);
+					s.glow.alpha = Math.min(1, 0.3 + 0.6 * normZ);
+				}
+			};
+
+			app.ticker.add(loop);
+
+			onResize = () => {
+				app.renderer.resize(window.innerWidth, window.innerHeight);
+				init_stars();
+			};
+			handleVisibility = () => {
+				if (document.hidden) app.ticker.maxFPS = 10;
+				else app.ticker.maxFPS = 50;
+			};
+			app.start();
+			document.addEventListener("visibilitychange", handleVisibility);
+			window.addEventListener("resize", onResize);
+			app.ticker.maxFPS = 50;
 		};
-		const c = canvas.getContext("2d");
-		if (!c) return;
-		const loop = () => {
-			c.fillStyle = "rgba(0,0,0,0.3)";
-			c.fillRect(0, 0, canvas.width, canvas.height);
-			for (let i = 0; i < Stars.length; ++i) {
-				c.fillStyle = "white";
-				Stars[i].update();
-				Stars[i].draw(c);
-			}
-			frameIdRef.current = requestAnimationFrame(loop);
-		};
-		window.addEventListener("resize", resize);
-		resize();
-		frameIdRef.current = requestAnimationFrame(loop);
+
+		init();
+
 		return () => {
-			window.removeEventListener("resize", resize);
-			cancelAnimationFrame(frameIdRef.current);
+			cancelled = true;
+			const a = appRef.current;
+			if (onResize) window.removeEventListener("resize", onResize);
+			if (handleVisibility)
+				document.removeEventListener(
+					"visibilitychange",
+					handleVisibility
+				);
+			if (a) {
+				if (loop) a.ticker.remove(loop);
+				a.stop();
+				a.destroy(true);
+				appRef.current = null;
+			}
 		};
 	}, [shouldRender]);
+
 	if (!shouldRender) return null;
-	return <canvas className="fixed inset-0 w-full h-full pointer-events-none z-0" ref={canvasRef} />;
+	return (
+		<div
+			ref={containerRef}
+			className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black"
+		/>
+	);
 }

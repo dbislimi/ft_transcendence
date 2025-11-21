@@ -7,7 +7,12 @@ import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
+import { BackgroundProvider } from "./contexts/BackgroundContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import { UserProvider } from "./contexts/UserContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import { WebSocketProvider } from "./contexts/WebSocketContext";
+import { GameSessionProvider } from "./contexts/GameSessionContext";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +23,12 @@ const router = createBrowserRouter([
       { path: "/Registration", element: <pages.Registration /> },
       { path: "/pong", element: <pages.Pong /> },
       { path: "/bomb-party", element: <pages.BombParty /> },
+      { path: "/stats", element: <pages.StatsPage /> },
+      { path: "/stats/bombparty", element: <pages.StatsPage /> },
+      { path: "/stats/pong", element: <pages.StatsPage /> },
+      { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
+      { path: "/bomb-party/profile", element: <pages.BombPartyProfilePage /> },
+      { path: "/profile", element: <pages.Profile /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
       { path: "/settings", element: <pages.Settings /> },
@@ -30,9 +41,19 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SettingsProvider>
       <GlobalBackgroundProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <BackgroundProvider>
+          <AuthProvider>
+            <UserProvider>
+              <WebSocketProvider>
+                <NotificationProvider>
+                  <GameSessionProvider>
+                    <RouterProvider router={router} />
+                  </GameSessionProvider>
+                </NotificationProvider>
+              </WebSocketProvider>
+            </UserProvider>
+          </AuthProvider>
+        </BackgroundProvider>
       </GlobalBackgroundProvider>
     </SettingsProvider>
   </StrictMode>

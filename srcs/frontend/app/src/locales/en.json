@@ -1,7 +1,27 @@
 {
-    "nav": { "signin": "Sign in", "settings": "Settings" },
-    "home": { "connectBtn": "Connect", "registrationBtn": "Registration", "gameBtn": "Game", "aboutBtn": "About Us", "subtitle": "Challenge your limits in the Pong universe" },
-    "game": { "start": "start", "stop": "stop", "speedUnit": "km/h" },
+  "nav": {
+    "signin": "Sign in",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "home": {
+    "connectBtn": "Connect",
+    "registrationBtn": "Registration",
+    "aboutBtn": "About Us",
+    "welcome": "Welcome",
+    "subtitle": "Challenge your limits",
+    "connectDesc": "Access your account",
+    "registrationDesc": "Join the adventure",
+    "pongTitle": "Pong",
+    "pongDesc": "Launch Pong",
+    "shopDesc": "Customize the experience",
+    "bombPartyTitle": "Bomb Party",
+    "bombPartyDesc": "Launch Bomb Party",
+    "aboutDesc": "Discover the team",
+    "readyToTranscend": "Ready to transcend your limits?",
+    "optimalPerformance": "Optimal performance"
+  },
   "about": {
     "title": "Our Team",
     "subtitle": "Discover the talents behind Transcendence",
@@ -11,10 +31,10 @@
     "linkedin": "LinkedIn",
     "portfolio": "Portfolio",
     "descriptions": {
-      "thomas": "Developer passionate about modern web technologies and innovation. Specialized in full-stack development with a creative and methodical approach.",
-      "bilal": "Expert in backend development and software architecture. Passionate about performance and application scalability.",
-      "dylan": "Creative frontend developer with an eye for design and user experience. Specialized in modern and reactive interfaces.",
-      "dren": "Versatile developer with expertise in DevOps and robust application development. Passionate about automation and efficiency."
+      "thomas": "Built the second game and the site's frontend (pages, navigation, integrations). Also drives real‑time architecture and turns ideas into reliable features.",
+      "bilal": "Implemented the real‑time chat and Google sign‑up (OAuth). Ensures backend security and performance.",
+      "dylan": "Designed the end‑to‑end user experience (UX/UI): reactive interfaces, animations, accessibility and visual consistency.",
+      "dren": "Led the entire Pong game with its AI and laid the project's foundations (structure, tooling, CI/CD) for controlled deployments."
     }
   },
   "bombParty": {
@@ -23,7 +43,6 @@
       "openAria": "Open game information",
       "closeAria": "Close information sidebar",
       "howToGetTitle": "How to earn bonuses",
-      "streakRule": "Earn a random bonus every {{n}} valid words in a row.",
       "bonusesTitle": "Bonuses"
     },
     "lobby": {
@@ -33,32 +52,60 @@
       "name": "Name",
       "private": "Private",
       "password": "Password",
-      "passwordOpt": "Optional password",
       "create": "Create",
-      "join": "Join"
+      "join": "Join",
+      "connecting": "Connecting...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connectionRequired": "Connection required",
+      "playersCount": "Number of players",
+      "availableLobbies": "Available Lobbies",
+      "noLobbies": "No lobby available",
+      "noLobbiesDesc": "Create a new lobby to start playing!",
+      "refresh": "Refresh",
+      "joinPrivate": "Join a private lobby",
+      "privatePasswordDesc": "This lobby is password-protected. Please enter the password to join.",
+      "enterPassword": "Enter the password",
+      "cancel": "Cancel",
+      "inProgress": "In progress",
+      "full": "Full",
+      "waiting": "Waiting",
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} min ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
     },
-    "debug": { "show": "Show debug", "hide": "Hide debug" },
+    "debug": {
+      "show": "Show debug",
+      "hide": "Hide debug"
+    },
     "chat": {
       "placeholder": "Type here...",
       "send": "Send",
       "inputAria": "Chat input",
-      "sendAria": "Send message",
-      "system": { "joined": "{{name}} joined", "left": "{{name}} left", "you": "You" }
+      "sendAria": "Send message"
     },
     "bonus": {
-      "title": "Bonus",
-      "inversion": { "name": "Inversion", "desc": "Reverse the turn order." },
-      "plus5sec": { "name": "+5 seconds", "desc": "Add 5s to the current timer." },
-      "vitesseEclair": { "name": "Lightning speed", "desc": "Next player has only 3s." },
-      "doubleChance": { "name": "Double chance", "desc": "Two tries on your next turn." }
-      ,
-      "extraLife": { "name": "Extra life", "desc": "Gain one extra life (max 9)." }
+      "inversion": {
+        "name": "Inversion"
+      },
+      "plus5sec": {
+        "name": "+5 seconds"
+      },
+      "vitesseEclair": {
+        "name": "Lightning speed"
+      },
+      "doubleChance": {
+        "name": "Double chance"
+      },
+      "extraLife": {
+        "name": "Extra life"
+      }
     },
     "menu": {
       "title": "Bomb Party",
       "subtitle": "Find words containing the given trigram before time runs out!",
       "playersCount": "Number of players",
-      "players": "players",
       "startGame": "Start Game",
       "rules": {
         "title": "Game Rules",
@@ -68,6 +115,9 @@
         "rule4": "Last survivor wins!"
       }
     },
+    "game": {
+      "countdown": "Starting in"
+    },
     "rules": {
       "title": "Game Rules",
       "languageNotice": "This game is played only in French. Only valid French words are accepted.",
@@ -75,8 +125,14 @@
       "rule2": "Each turn is timed. If time runs out, you lose a life.",
       "rule3": "No duplicate words.",
       "rule4": "Last player standing wins.",
-      "continue": "I understand, continue",
-      "continueAria": "Continue to lobby"
+      "modeSelection": "Mode Selection",
+      "localMode": "Local Mode",
+      "multiplayerMode": "Multiplayer Mode",
+      "localPlayers": "Local Players",
+      "localModeDesc": "Play alone or with others on the same screen",
+      "multiplayerModeDesc": "Play online with other players",
+      "players": "players",
+      "startLocalGame": "Start Local Game"
     },
     "input": {
       "instruction": "Find a word containing:",
@@ -84,16 +140,25 @@
       "submit": "Submit",
       "recentWords": "Recent words:",
       "errors": {
-        "tooShort": "Word must be at least 3 letters long",
-        "noTrigram": "Word must contain the trigram",
-        "duplicate": "Word already used",
-        "notInDictionary": "This word is not in the French dictionary"
+        "tooShort": "The word must contain at least 3 letters",
+        "duplicate": "This word has already been used in this game"
       }
     },
     "gameOver": {
       "title": "Game Over!",
-      "winner": "Winner: {{name}}",
-      "backToMenu": "Back to Menu"
+      "backToMenu": "Back to Menu",
+      "victory": "Victory!",
+      "gameFinished": "Game finished!"
+    },
+    "players": {
+      "title": "Waiting Players",
+      "players": "players",
+      "roomId": "Lobby ID",
+      "waiting": "Waiting",
+      "host": "Host",
+      "waitingForPlayers": "Waiting for more players...",
+      "leave": "Leave",
+      "start": "Start Game"
     },
     "hud": {
       "yourTurn": "Your turn",
@@ -102,39 +167,239 @@
       "fastTurn": "Fast turn",
       "wordSuggestions": "Word suggestions"
     },
-    "backToMenu": "Back to Menu"
-  }
-  ,
-  "profile": {
-    "title": "Profile",
-    "memberSince": "Member since {{date}}",
+    "backToMenu": "Back to Menu",
     "stats": {
-      "games": "Games",
-      "wins": "Wins",
-      "winrate": "Win rate",
-      "playtime": "Play time"
-    },
-    "badges": { "title": "Badges" },
-    "loading": "Loading profile...",
-    "error": "Failed to load profile",
-    "retry": "Retry",
-    "closeAria": "Close profile modal"
+      "title": "Bomb Party Statistics",
+      "subtitle": "Discover your performance and compare yourself with other players",
+      "subtitleGuest": "Check the ranking of the best players",
+      "loading": "Loading statistics...",
+      "error": "Error",
+      "retry": "Retry",
+      "back": "Back",
+      "loginPrompt": "Log in for more statistics",
+      "loginPromptDesc": "Create an account to track your personal performance, game history and favorite trigrams.",
+      "reconnectPrompt": "Reconnect to see your personal statistics",
+      "tabs": {
+        "overview": "Overview",
+        "history": "History",
+        "trigrams": "Trigrams",
+        "ranking": "Ranking"
+      },
+      "overview": {
+        "matchStats": "Match statistics",
+        "totalMatches": "Games played",
+        "totalWins": "Victories",
+        "winRate": "Win rate",
+        "bestStreak": "Best streak",
+        "wordStats": "Word statistics",
+        "totalWordsSubmitted": "Words submitted",
+        "totalValidWords": "Valid words",
+        "accuracy": "Accuracy",
+        "averageResponseTime": "Average response time",
+        "otherStats": "Other statistics",
+        "totalPlayTime": "Total playtime",
+        "favoriteTrigramTitle": "Favorite trigram",
+        "none": "None"
+      },
+      "history": {
+        "title": "Match history",
+        "date": "Date",
+        "position": "Position",
+        "words": "Words",
+        "livesRemaining": "Lives remaining",
+        "duration": "Duration",
+        "result": "Result",
+        "victory": "Victory",
+        "defeat": "Defeat"
+      },
+      "trigrams": {
+        "title": "Trigram statistics",
+        "trigram": "Trigram",
+        "attempts": "Attempts",
+        "successRate": "Success rate",
+        "averageTime": "Average time"
+      },
+      "ranking": {
+        "title": "Global ranking",
+        "rank": "Rank",
+        "player": "Player",
+        "wins": "Wins",
+        "games": "Games",
+        "winRate": "Win rate",
+        "bestStreak": "Best streak",
+        "you": "(You)"
+      },
+      "charts": {
+        "trigramDistribution": "Trigram distribution"
+      }
+    }
   },
-  "common": { "back": "Back", "backAria": "Go back" },
-  "accessibility": { "languageSwitcher": "Language selector" },
+  "shop": {
+    "title": "Shop",
+    "items": {
+      "available": "available"
+    },
+    "equipped": "Equipped",
+    "select": "Select",
+    "backgrounds": {
+      "default": {
+        "name": "Default",
+        "description": "Simple and clean background"
+      },
+      "42": {
+        "name": "42",
+        "description": "Iconic 42 logo"
+      },
+      "42background": {
+        "name": "42",
+        "description": "Iconic 42 logo"
+      },
+      "halloween": {
+        "name": "Halloween",
+        "description": "Mysterious Halloween atmosphere"
+      },
+      "matrix-42": {
+        "name": "Matrix 42",
+        "description": "Matrix style with code"
+      },
+      "snow": {
+        "name": "Snow",
+        "description": "Animated snowflakes"
+      },
+      "matrix": {
+        "name": "Matrix",
+        "description": "Digital Matrix effect"
+      },
+      "forest": {
+        "name": "Forest",
+        "description": "Natural forest landscape"
+      },
+      "grace": {
+        "name": "Grace",
+        "description": "Graceful and elegant atmosphere"
+      },
+      "batman": {
+        "name": "Batman",
+        "description": "Dark Gotham universe"
+      },
+      "dark-souls": {
+        "name": "Dark Souls",
+        "description": "Epic and mysterious atmosphere"
+      },
+      "the-last-of-us": {
+        "name": "The Last of Us",
+        "description": "Post-apocalyptic"
+      },
+      "windows95": {
+        "name": "Windows 95",
+        "description": "Nostalgia"
+      },
+      "bit-cloud": {
+        "name": "Bit Cloud",
+        "description": "Pixelated clouds"
+      },
+      "gta-5": {
+        "name": "Gta 5",
+        "description": "Urban night atmosphere"
+      },
+      "kitti": {
+        "name": "Kitti",
+        "description": "Kitten"
+      },
+      "interstellar": {
+        "name": "Interstellar",
+        "description": "Journey through the stars"
+      },
+      "pexels-padrinan-19670": {
+        "name": "Natural Landscape",
+        "description": "Panoramic nature view"
+      },
+      "pexels-umkreisel-app-956999": {
+        "name": "Starry Sky",
+        "description": "Starry night"
+      }
+    }
+  },
+  "settings": {
+    "display": {
+      "title": "Display Settings",
+      "theme": "Theme",
+      "accessibility": "Accessibility",
+      "language": "Language",
+      "background": "Background",
+      "performance": "Performance",
+      "appearance": "Appearance",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "fontSize": "Text Size",
+      "fontSmall": "Small",
+      "fontMedium": "Medium",
+      "fontLarge": "Large",
+      "contrast": "Contrast",
+      "contrastDesc": "Adjust text contrast and brightness",
+      "contrastVeryLow": "Very Low",
+      "contrastLow": "Low",
+      "contrastNormal": "Normal",
+      "contrastHigh": "High",
+      "contrastVeryHigh": "Very High",
+      "contrastPreview": "Text preview with this contrast level",
+      "animations": "Animations",
+      "animationsDesc": "Enable visual effects and transitions",
+      "energySaver": "Energy Saver Mode",
+      "energySaverDesc": "Reduce visual effects to save battery",
+      "autoSave": "Changes are saved automatically",
+      "close": "Close",
+      "description": "Theme, contrast, language, background, animations",
+      "lightMode": "☀️ Light Mode",
+      "darkMode": "🌙 Dark Mode",
+      "equipped": "Equipped",
+      "backgroundTip": "💡 Tip: Choose a background for light mode and one for dark mode. The background will automatically change when you switch between modes.",
+      "performanceTitle": "Performance and animations",
+      "autoChangeBackground": "Automatic background change",
+      "autoChangeBackgroundDesc": "Automatically changes the wallpaper when switching between light and dark modes"
+    },
+    "game": {
+      "title": "Game",
+      "description": "Controls and preferences",
+      "soundsEnabled": "Sounds enabled",
+      "soundsEnabledDesc": "Enable game sound effects",
+      "reducedMotion": "Reduce animations",
+      "reducedMotionDesc": "Reduce animations to improve performance",
+      "showFPS": "Show FPS",
+      "showFPSDesc": "Display frames per second",
+      "autoSave": "Changes are saved automatically",
+      "close": "Close"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Background previews",
+      "preferences": "Preferences",
+      "backgroundPreview": "Background preview",
+      "backgroundPreviewDesc": "Previews of selected backgrounds for each mode",
+      "lightModeBackground": "Light Mode",
+      "darkModeBackground": "Dark Mode"
+    },
+    "advanced": {
+      "title": "Advanced",
+      "description": "Technical options"
+    },
+    "home": {
+      "description": "Return to home",
+      "subtitle": "Return to the main page"
+    },
+    "close": "Close"
+  },
+  "common": {
+    "back": "Back",
+    "backAria": "Go back",
+    "close": "Close"
+  },
+  "accessibility": {
+    "languageSwitcher": "Language selector"
+  },
   "ui": {
     "background": {
-      "title": "Backgrounds",
-      "open": "Backgrounds",
-      "openAria": "Open background picker",
-      "selectAria": "Select background {{name}}",
-      "default": "Default",
-      "space": "Space (animated)",
       "defaultPreview": "Keep game's default",
-      "42": "42",
-      "halloween": "Halloween",
-      "matrix42": "Matrix 42",
-      "snow": "Snow",
       "active": "Active",
       "applyAll": "Use for all games"
     }

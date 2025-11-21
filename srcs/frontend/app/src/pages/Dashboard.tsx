@@ -13,8 +13,7 @@ export default function Dashboard() {
       return;
     }
 
-    // Vérifie le token avec la route /profile // TODO a modifier lors du deployement. 
-    fetch("http://localhost:3000/profile", {
+  fetch("http://localhost:3001/profile", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -22,7 +21,6 @@ export default function Dashboard() {
         return res.json();
       })
       .then((data) => {
-        // data.message = "Bonjour {nom}"
         const match = data.message.match(/Bonjour (.+)/);
         setUsername(match ? match[1] : "Utilisateur");
       })

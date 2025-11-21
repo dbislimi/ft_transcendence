@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
+import GameSettingsModal from "../Components/GameSettingsModal";
+import AccountSettingsModal from "../Components/AccountSettingsModal";
 
 
 const PlaceholderModal = ({ 
@@ -48,17 +50,15 @@ export default function Settings() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center max-w-4xl mx-auto px-6">
           
-          {/* Titre principal */}
+          {/* titre principal */}
           <div className="relative mb-12">
             <h1 className="text-6xl md:text-8xl font-black text-white tracking-wider">
               {t('nav.settings') || 'RÉGLAGES'}
             </h1>
           </div>
           
-          {/* Grille des options de réglages */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             
-            {/* Réglages d'affichage */}
             <button
               onClick={() => openModal('display')}
               className="action-btn-aesthetic"
@@ -77,7 +77,7 @@ export default function Settings() {
               </div>
             </button>
             
-            {/* Réglages de jeu */}
+            {/* reglages de jeu */}
             <button
               onClick={() => openModal('game')}
               className="action-btn-aesthetic"
@@ -95,7 +95,7 @@ export default function Settings() {
               </div>
             </button>
             
-            {/* Réglages de compte */}
+            {/* reglages de compte */}
             <button
               onClick={() => openModal('account')}
               className="action-btn-aesthetic"
@@ -113,7 +113,6 @@ export default function Settings() {
               </div>
             </button>
             
-            {/* Réglages avancés */}
             <button
               onClick={() => openModal('advanced')}
               className="action-btn-aesthetic"
@@ -132,7 +131,7 @@ export default function Settings() {
               </div>
             </button>
             
-            {/* Retour à l'accueil */}
+            {/* retour à l'accueil */}
             <Link to="/" className="action-btn-aesthetic">
               <div className="flex flex-col items-center gap-3">
                 <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +141,7 @@ export default function Settings() {
                   {t('settings.home.description') || 'Retour à l\'accueil'}
                 </h3>
                 <p className="text-sm description-aesthetic">
-                  Retourner à la page principale
+                  {t('settings.home.subtitle') || 'Retourner à la page principale'}
                 </p>
               </div>
             </Link>
@@ -158,20 +157,16 @@ export default function Settings() {
       )}
       
       {activeModal === 'game' && (
-        <PlaceholderModal
+        <GameSettingsModal
           isOpen={true}
           onClose={closeModal}
-          title={t('settings.game.title') || 'Réglages de jeu'}
-          description={t('settings.game.description') || 'Contrôles et préférences de jeu'}
         />
       )}
       
       {activeModal === 'account' && (
-        <PlaceholderModal
+        <AccountSettingsModal
           isOpen={true}
           onClose={closeModal}
-          title={t('settings.account.title') || 'Réglages de compte'}
-          description={t('settings.account.description') || 'Gestion du profil et de la sécurité'}
         />
       )}
       

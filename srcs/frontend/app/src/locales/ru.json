@@ -1,19 +1,26 @@
 {
-  "nav": { 
-    "signin": "Регистрация", 
-    "settings": "Настройки" 
+  "nav": {
+    "signin": "Регистрация",
+    "settings": "Настройки",
+    "profile": "Профиль",
+    "logout": "Выйти"
   },
-  "home": { 
-    "connectBtn": "Подключение", 
-    "registrationBtn": "Регистрация", 
-    "gameBtn": "Игра",
+  "home": {
+    "connectBtn": "Подключение",
+    "registrationBtn": "Регистрация",
     "aboutBtn": "О нас",
-    "subtitle": "Брось вызов своим пределам во вселенной Понга"
-  },
-  "game": { 
-    "start": "начать", 
-    "stop": "остановить", 
-    "speedUnit": "км/ч" 
+    "subtitle": "Бросьте вызов своим ограничениям",
+    "welcome": "добро пожаловать",
+    "connectDesc": "Войти в аккаунт",
+    "registrationDesc": "Присоединиться к приключению",
+    "pongTitle": "Pong",
+    "pongDesc": "Запустить Понг",
+    "shopDesc": "Настроить опыт",
+    "bombPartyTitle": "Bomb Party",
+    "bombPartyDesc": "Запустить Bomb Party",
+    "aboutDesc": "Узнать о команде",
+    "readyToTranscend": "Готов преодолеть свои пределы?",
+    "optimalPerformance": "Оптимальная производительность"
   },
   "about": {
     "title": "Наша Команда",
@@ -36,7 +43,6 @@
       "openAria": "Открыть информацию об игре",
       "closeAria": "Закрыть боковую панель информации",
       "howToGetTitle": "Как получать бонусы",
-      "streakRule": "Получайте случайный бонус за каждые {{n}} верных слов подряд.",
       "bonusesTitle": "Бонусы"
     },
     "lobby": {
@@ -46,48 +52,71 @@
       "name": "Название",
       "private": "Приватный",
       "password": "Пароль",
-      "passwordOpt": "Пароль (необязательно)",
       "create": "Создать",
-      "join": "Войти"
+      "join": "Войти",
+      "connecting": "Подключение...",
+      "connected": "Подключено",
+      "disconnected": "Отключено",
+      "connectionRequired": "Требуется подключение",
+      "playersCount": "Количество игроков",
+      "availableLobbies": "Доступные лобби",
+      "noLobbies": "Нет доступных лобби",
+      "noLobbiesDesc": "Создайте новое лобби, чтобы начать играть!",
+      "refresh": "Обновить",
+      "joinPrivate": "Присоединиться к приватному лобби",
+      "privatePasswordDesc": "Это лобби защищено паролем. Пожалуйста, введите пароль для входа.",
+      "enterPassword": "Введите пароль",
+      "cancel": "Отмена",
+      "inProgress": "В процессе",
+      "full": "Полно",
+      "waiting": "Ожидание",
+      "justNow": "Только что",
+      "minutesAgo": "{minutes} мин назад",
+      "hoursAgo": "{hours}ч назад",
+      "daysAgo": "{days}д назад"
     },
-    "debug": { "show": "Показать отладку", "hide": "Скрыть отладку" },
+    "debug": {
+      "show": "Показать отладку",
+      "hide": "Скрыть отладку"
+    },
     "chat": {
       "placeholder": "Пишите здесь...",
       "send": "Отправить",
       "inputAria": "Поле чата",
-      "sendAria": "Отправить сообщение",
-      "system": { "joined": "{{name}} присоединился", "left": "{{name}} вышел", "you": "Вы" }
+      "sendAria": "Отправить сообщение"
     },
     "bonus": {
-      "title": "Бонусы",
-      "inversion": { "name": "Инверсия", "desc": "Изменить направление очереди." },
-      "plus5sec": { "name": "+5 секунд", "desc": "Добавить 5с к текущему таймеру." },
-      "vitesseEclair": { "name": "Молниеносно", "desc": "У следующего игрока только 3с." },
-      "doubleChance": { "name": "Второй шанс", "desc": "Две попытки в следующий ход." },
-      "extraLife": { "name": "Доп. жизнь", "desc": "Получите одну жизнь (макс 9)." }
+      "inversion": {
+        "name": "Инверсия"
+      },
+      "plus5sec": {
+        "name": "+5 секунд"
+      },
+      "vitesseEclair": {
+        "name": "Молниеносно"
+      },
+      "doubleChance": {
+        "name": "Второй шанс"
+      },
+      "extraLife": {
+        "name": "Доп. жизнь"
+      }
     },
     "menu": {
       "title": "Bomb Party",
       "subtitle": "Найдите слова, содержащие триграмму, прежде чем истечет время!",
       "playersCount": "Количество игроков",
-      "players": "игроков",
       "startGame": "Начать игру",
       "rules": {
         "title": "Правила игры",
         "rule1": "Найдите слова, содержащие показанную триграмму",
         "rule2": "Каждый игрок начинает с 3 жизнями",
         "rule3": "15 секунд на ход для ответа",
-        "rule4": "Последний выживший выигрывает игру!",
-        "rule5": "Игра проходит только на французском языке. Принимаются только действительные французские слова."
+        "rule4": "Последний выживший выигрывает игру!"
       }
     },
     "game": {
-      "countdown": "Начинается через",
-      "turnIndicator": "Ход",
-      "timeRemaining": "Оставшееся время",
-      "wordSuggestions": "Предложения",
-      "suggestionsEnabled": "Предложения включены",
-      "suggestionsDisabled": "Предложения отключены"
+      "countdown": "Начинается через"
     },
     "rules": {
       "title": "Правила игры",
@@ -96,8 +125,14 @@
       "rule2": "Каждый ход ограничен по времени. Если время вышло, вы теряете жизнь.",
       "rule3": "Запрещены повторяющиеся слова.",
       "rule4": "Побеждает последний оставшийся игрок.",
-      "continue": "Понятно, продолжить",
-      "continueAria": "Перейти в лобби"
+      "modeSelection": "Выбор режима",
+      "localMode": "Локальный режим",
+      "multiplayerMode": "Многопользовательский режим",
+      "localPlayers": "Локальные игроки",
+      "localModeDesc": "Играть одному или с другими на одном экране",
+      "multiplayerModeDesc": "Играть онлайн с другими игроками",
+      "players": "игроков",
+      "startLocalGame": "Начать локальную игру"
     },
     "hud": {
       "yourTurn": "Ваш ход",
@@ -105,39 +140,266 @@
       "eliminated": "Выбыл",
       "fastTurn": "Быстрый ход",
       "wordSuggestions": "Подсказки слов"
-    }
-  }
-  ,
-  "profile": {
-    "title": "Профиль",
-    "memberSince": "С нами с {{date}}",
-    "stats": {
-      "games": "Игры",
-      "wins": "Победы",
-      "winrate": "Процент побед",
-      "playtime": "Время в игре"
     },
-    "badges": { "title": "Значки" },
-    "loading": "Загрузка профиля...",
-    "error": "Не удалось загрузить профиль",
-    "retry": "Повторить",
-    "closeAria": "Закрыть модальное окно профиля"
+    "input": {
+      "instruction": "Найдите слово, содержащее:",
+      "placeholder": "Введите ваше слово...",
+      "submit": "Отправить",
+      "recentWords": "Недавние слова:",
+      "errors": {
+        "tooShort": "Слово должно содержать минимум 3 буквы",
+        "duplicate": "Слово уже использовано"
+      }
+    },
+    "gameOver": {
+      "title": "Игра окончена!",
+      "backToMenu": "Вернуться в меню",
+      "victory": "Победа!",
+      "gameFinished": "Игра завершена!"
+    },
+    "players": {
+      "title": "Ожидающие игроки",
+      "players": "игроков",
+      "roomId": "ID лобби",
+      "waiting": "Ожидание",
+      "host": "Хост",
+      "waitingForPlayers": "Ожидание дополнительных игроков...",
+      "leave": "Покинуть",
+      "start": "Начать игру"
+    },
+    "backToMenu": "Вернуться в меню",
+    "stats": {
+      "title": "Статистика Bomb Party",
+      "subtitle": "Узнайте свои результаты и сравните себя с другими игроками",
+      "subtitleGuest": "Посмотрите рейтинг лучших игроков",
+      "loading": "Загрузка статистики...",
+      "error": "Ошибка",
+      "retry": "Повторить",
+      "back": "Назад",
+      "loginPrompt": "Войдите для просмотра дополнительной статистики",
+      "loginPromptDesc": "Создайте аккаунт, чтобы отслеживать личные результаты, историю игр и любимые триграммы.",
+      "reconnectPrompt": "Переподключитесь, чтобы увидеть личную статистику",
+      "tabs": {
+        "overview": "Обзор",
+        "history": "История",
+        "trigrams": "Триграммы",
+        "ranking": "Рейтинг"
+      },
+      "overview": {
+        "matchStats": "Статистика матчей",
+        "totalMatches": "Сыгранные игры",
+        "totalWins": "Победы",
+        "winRate": "Процент побед",
+        "bestStreak": "Лучшая серия",
+        "wordStats": "Статистика слов",
+        "totalWordsSubmitted": "Отправленные слова",
+        "totalValidWords": "Правильные слова",
+        "accuracy": "Точность",
+        "averageResponseTime": "Среднее время ответа",
+        "otherStats": "Другая статистика",
+        "totalPlayTime": "Общее время игры",
+        "favoriteTrigramTitle": "Любимая триграмма",
+        "none": "Нет"
+      },
+      "history": {
+        "title": "История матчей",
+        "date": "Дата",
+        "position": "Позиция",
+        "words": "Слова",
+        "livesRemaining": "Оставшиеся жизни",
+        "duration": "Продолжительность",
+        "result": "Результат",
+        "victory": "Победа",
+        "defeat": "Поражение"
+      },
+      "trigrams": {
+        "title": "Статистика по триграммам",
+        "trigram": "Триграмма",
+        "attempts": "Попытки",
+        "successRate": "Процент успеха",
+        "averageTime": "Среднее время"
+      },
+      "ranking": {
+        "title": "Глобальный рейтинг",
+        "rank": "Ранг",
+        "player": "Игрок",
+        "wins": "Победы",
+        "games": "Игры",
+        "winRate": "Процент побед",
+        "bestStreak": "Лучшая серия",
+        "you": "(Вы)"
+      },
+      "charts": {
+        "trigramDistribution": "Распределение триграмм"
+      }
+    }
   },
-  "common": { "back": "Назад", "backAria": "Вернуться назад" },
-  "accessibility": { "languageSwitcher": "Выбор языка" },
+  "shop": {
+    "title": "Магазин",
+    "items": {
+      "available": "доступно"
+    },
+    "equipped": "Установлено",
+    "select": "Выбрать",
+    "backgrounds": {
+      "default": {
+        "name": "По умолчанию",
+        "description": "Простой и чистый фон"
+      },
+      "42": {
+        "name": "42",
+        "description": "Знаковый логотип 42"
+      },
+      "42background": {
+        "name": "42",
+        "description": "Знаковый логотип 42"
+      },
+      "halloween": {
+        "name": "Хэллоуин",
+        "description": "Таинственная атмосфера Хэллоуина"
+      },
+      "matrix-42": {
+        "name": "Матрица 42",
+        "description": "Стиль Матрицы с кодом"
+      },
+      "snow": {
+        "name": "Снег",
+        "description": "Анимированные снежинки"
+      },
+      "matrix": {
+        "name": "Матрица",
+        "description": "Цифровой эффект Матрицы"
+      },
+      "forest": {
+        "name": "Лес",
+        "description": "Природный лесной пейзаж"
+      },
+      "grace": {
+        "name": "Grace",
+        "description": "Изящная и элегантная атмосфера"
+      },
+      "batman": {
+        "name": "Бэтмен",
+        "description": "Темная вселенная Готэма"
+      },
+      "dark-souls": {
+        "name": "Dark Souls",
+        "description": "Эпическая и загадочная атмосфера"
+      },
+      "the-last-of-us": {
+        "name": "The Last of Us",
+        "description": "Постапокалиптический"
+      },
+      "windows95": {
+        "name": "Windows 95",
+        "description": "Ностальгия"
+      },
+      "bit-cloud": {
+        "name": "Bit Cloud",
+        "description": "Пиксельные облака"
+      },
+      "gta-5": {
+        "name": "Gta 5",
+        "description": "Городская ночная атмосфера"
+      },
+      "kitti": {
+        "name": "Kitti",
+        "description": "Котенок"
+      },
+      "interstellar": {
+        "name": "Интерстеллар",
+        "description": "Путешествие сквозь звезды"
+      },
+      "pexels-padrinan-19670": {
+        "name": "Природный Пейзаж",
+        "description": "Панорамный вид природы"
+      },
+      "pexels-umkreisel-app-956999": {
+        "name": "Звездное Небо",
+        "description": "Звездная ночь"
+      }
+    }
+  },
+  "settings": {
+    "display": {
+      "title": "Настройки отображения",
+      "theme": "Тема",
+      "accessibility": "Доступность",
+      "language": "Язык",
+      "background": "Фон",
+      "performance": "Производительность",
+      "appearance": "Внешний вид",
+      "themeLight": "Светлая",
+      "themeDark": "Темная",
+      "fontSize": "Размер текста",
+      "fontSmall": "Маленький",
+      "fontMedium": "Средний",
+      "fontLarge": "Большой",
+      "contrast": "Контраст",
+      "contrastDesc": "Настройте контраст и яркость текста",
+      "contrastVeryLow": "Очень низкий",
+      "contrastLow": "Низкий",
+      "contrastNormal": "Нормальный",
+      "contrastHigh": "Высокий",
+      "contrastVeryHigh": "Очень высокий",
+      "contrastPreview": "Предварительный просмотр текста с этим уровнем контраста",
+      "animations": "Анимации",
+      "animationsDesc": "Включить визуальные эффекты и переходы",
+      "energySaver": "Режим энергосбережения",
+      "energySaverDesc": "Уменьшить визуальные эффекты для экономии батареи",
+      "autoSave": "Изменения сохраняются автоматически",
+      "close": "Закрыть",
+      "description": "Тема, контраст, язык, фон, анимации",
+      "lightMode": "☀️ Светлый режим",
+      "darkMode": "🌙 Темный режим",
+      "equipped": "Установлено",
+      "backgroundTip": "💡 Совет: Выберите фон для светлого режима и один для темного режима. Фон будет автоматически меняться при переключении между режимами.",
+      "performanceTitle": "Производительность и анимации",
+      "autoChangeBackground": "Автоматическая смена фона",
+      "autoChangeBackgroundDesc": "Автоматически меняет обои при переключении между светлым и темным режимами"
+    },
+    "game": {
+      "title": "Игра",
+      "description": "Управление и предпочтения",
+      "soundsEnabled": "Звуки включены",
+      "soundsEnabledDesc": "Включить звуковые эффекты игры",
+      "reducedMotion": "Уменьшить анимации",
+      "reducedMotionDesc": "Уменьшить анимации для улучшения производительности",
+      "showFPS": "Показать FPS",
+      "showFPSDesc": "Отображать кадры в секунду",
+      "autoSave": "Изменения сохраняются автоматически",
+      "close": "Закрыть"
+    },
+    "account": {
+      "title": "Аккаунт",
+      "description": "Предпросмотр фонов",
+      "preferences": "Предпочтения",
+      "backgroundPreview": "Предварительный просмотр фона",
+      "backgroundPreviewDesc": "Предварительный просмотр выбранных фонов для каждого режима",
+      "lightModeBackground": "Светлый режим",
+      "darkModeBackground": "Темный режим"
+    },
+    "advanced": {
+      "title": "Дополнительно",
+      "description": "Технические опции"
+    },
+    "home": {
+      "description": "Вернуться на главную",
+      "subtitle": "Вернуться на главную страницу"
+    },
+    "close": "Закрыть"
+  },
+  "common": {
+    "back": "Назад",
+    "backAria": "Вернуться назад",
+    "close": "Закрыть"
+  },
+  "accessibility": {
+    "languageSwitcher": "Выбор языка"
+  },
   "ui": {
     "background": {
-      "title": "Фоны",
-      "open": "Фоны",
-      "openAria": "Открыть выбор фона",
-      "selectAria": "Выбрать фон {{name}}",
-      "default": "По умолчанию",
-      "space": "Космос (аним.)",
       "defaultPreview": "Сохранить фон игры",
-      "42": "42",
-      "halloween": "Хэллоуин",
-      "matrix42": "Матрица 42",
-      "snow": "Снег",
       "active": "Активный",
       "applyAll": "Использовать для всех игр"
     }

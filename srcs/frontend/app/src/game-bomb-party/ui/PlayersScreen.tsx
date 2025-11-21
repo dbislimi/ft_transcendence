@@ -19,81 +19,34 @@ interface PlayersScreenProps {
 
 export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onStart, onLeave }: PlayersScreenProps) {
   const { t } = useTranslation();
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(0);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
-
   const canStart = players.length >= 2 && isHost;
-  const shouldAutoStart = players.length >= 2 && !isCountingDown;
-
-  // Logs désactivés pour améliorer les performances
-  // console.log('🎮 PlayersScreen - players.length:', players.length, 'isHost:', isHost, 'isCountingDown:', isCountingDown);
-  // console.log('🎮 PlayersScreen - canStart:', canStart, 'shouldAutoStart:', shouldAutoStart);
-
-  // Démarrer automatiquement le décompte quand il y a assez de joueurs
   useEffect(() => {
-    // console.log('🎮 useEffect - players.length:', players.length, 'maxPlayers:', maxPlayers, 'hasStarted:', hasStartedRef.current);
-    
-    // Si on n'a plus assez de joueurs, arrêter le décompte
-    if (players.length < maxPlayers && hasStartedRef.current) {
-      // console.log('🎮 Arrêt du décompte - pas assez de joueurs');
-      hasStartedRef.current = false;
-      setIsCountingDown(false);
-      setCountdown(0);
+    return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+    };
+  }, []);
+  const handleStart = () => {
+    if (!canStart || isCountingDown || hasStartedRef.current) {
       return;
     }
-    
-    // Ne démarrer que si on a exactement le nombre maximum de joueurs configuré et qu'on n'a pas encore démarré
-    if (players.length === maxPlayers && !hasStartedRef.current) {
-      // console.log('🎮 Démarrage du décompte automatique');
-      hasStartedRef.current = true;
-      setIsCountingDown(true);
-      setCountdown(3);
-      
-      intervalRef.current = setInterval(() => {
-        setCountdown(prev => {
-          // console.log('🎮 Décompte:', prev);
-          if (prev <= 1) {
-            // console.log('🎮 Fin du décompte, appel de onStart()');
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
-            setIsCountingDown(false); // Arrêter le décompte
-            onStart();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    
-    return () => {
-      // Ne nettoyer l'intervalle que lors du démontage final du composant
-      if (intervalRef.current && players.length < 2) {
-        // console.log('🎮 Nettoyage de l\'intervalle (composant démonté)');
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [players.length, onStart]);
-
-  const handleStart = () => {
-    if (!canStart) return;
-    
-    // Démarrer le compte à rebours
+    hasStartedRef.current = true;
     setIsCountingDown(true);
     setCountdown(3);
-    const interval = setInterval(() => {
+    intervalRef.current = window.setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          clearInterval(interval);
-          setIsCountingDown(false); // Arrêter le décompte
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          setIsCountingDown(false);
           onStart();
           return 0;
         }
@@ -115,14 +68,10 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               {players.length}/{maxPlayers} {t("bombParty.players.players")}
             </div>
           </div>
-
-          {/* ID du lobby */}
           <div className="mb-6 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
             <div className="text-slate-300 text-sm mb-1">{t("bombParty.players.roomId")}</div>
             <div className="text-cyan-400 font-mono text-lg">{roomId}</div>
           </div>
-
-          {/* Liste des joueurs */}
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-300 mb-4">
               {t("bombParty.players.waiting")}
@@ -131,8 +80,7 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               {players.map((player, index) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600"
-                >
+                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
                       {index + 1}
@@ -148,8 +96,6 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               ))}
             </div>
           </div>
-
-          {/* Messages d'attente */}
           {players.length < maxPlayers && (
             <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <div className="text-yellow-400 text-center">
@@ -157,22 +103,18 @@ export default function PlayersScreen({ roomId, players, maxPlayers, isHost, onS
               </div>
             </div>
           )}
-
-          {/* Compte à rebours */}
-          {countdown > 0 && (
-            <div className="mb-6 text-center">
-              <div className="text-6xl font-bold text-cyan-400 mb-2">{countdown}</div>
-              <div className="text-slate-300">{t("bombParty.players.startingIn")}</div>
-            </div>
-          )}
-
-          {/* Boutons d'action */}
           <div className="flex gap-4">
-            {/* Le décompte automatique se charge de démarrer la partie quand il y a assez de joueurs */}
+            {isHost && (
+              <button
+                onClick={handleStart}
+                disabled={!canStart || isCountingDown}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold rounded-lg hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                {isCountingDown ? `${countdown}...` : t("bombParty.players.start")}
+              </button>
+            )}
             <button
               onClick={onLeave}
-              className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all duration-200"
-            >
+              className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all duration-200">
               {t("bombParty.players.leave")}
             </button>
           </div>

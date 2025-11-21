@@ -5,9 +5,10 @@ import SpaceBackground from '../../Components/SpaceBackground';
 
 interface MenuProps {
   onStart: (config: GameConfig) => void;
+  onBack?: () => void;
 }
 
-export default function Menu({ onStart }: MenuProps) {
+export default function Menu({ onStart, onBack }: MenuProps) {
   const { t } = useTranslation();
   const [playersCount, setPlayersCount] = useState<number>(2);
 
@@ -18,13 +19,22 @@ export default function Menu({ onStart }: MenuProps) {
       playersCount
     };
     onStart(config);
-  };
+};
 
   return (
     <>
       <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen p-6">
-        <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl">
+        <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl relative">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute top-4 left-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 rounded-lg text-slate-300 hover:text-white transition-all duration-200 flex items-center gap-2"
+            >
+              <span>←</span>
+              <span>Retour</span>
+            </button>
+          )}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-4">
@@ -35,9 +45,7 @@ export default function Menu({ onStart }: MenuProps) {
               {t('bombParty.menu.subtitle')}
             </p>
           </div>
-
           <div className="space-y-6">
-            {/* Sélection du nombre de joueurs */}
             <div className="space-y-3">
               <label className="block text-slate-300 text-sm font-medium">
                 {t('bombParty.menu.playersCount')}
@@ -58,8 +66,6 @@ export default function Menu({ onStart }: MenuProps) {
                 ))}
               </div>
             </div>
-
-            {/* Règles du jeu */}
             <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600/30">
               <h3 className="text-slate-200 font-medium mb-2">
                 {t('bombParty.menu.rules.title')}
@@ -71,12 +77,9 @@ export default function Menu({ onStart }: MenuProps) {
                 <li>• {t('bombParty.menu.rules.rule4')}</li>
               </ul>
             </div>
-
-            {/* Bouton de démarrage */}
             <button
               onClick={handleStart}
-              className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
+              className="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
               {t('bombParty.menu.startGame')}
             </button>
           </div>
