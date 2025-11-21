@@ -110,7 +110,7 @@ export function handleJoinRoom(
       name: player!.name,
       ws: player!.ws,
       sockets: new Set([player!.ws])
-    }); // gestion multi-onglets: meme joueur, nouveau websocket
+    });
   }
   player!.roomId = roomId;
   
@@ -724,7 +724,6 @@ function calculateStateDelta(prevState: any, currentState: any, winner?: any): a
     }
   }
   
-  // si trop de changements, on envoie l'etat complet (plus efficace)
   if (changeCount > 3) {
     return { full: true, gameState: currentState };
   }

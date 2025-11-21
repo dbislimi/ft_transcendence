@@ -8,7 +8,7 @@ export type InvitationState =
 	| "expired";
 
 export interface Invitation {
-	id: string; // sentId:receivId
+	id: string;
 	sent: Client;
 	receiv: Client;
 	createdAt: number;

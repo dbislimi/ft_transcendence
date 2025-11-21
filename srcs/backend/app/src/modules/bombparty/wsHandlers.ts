@@ -572,13 +572,13 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
         setTimeout(() => {
           const room = roomManager.getRoom(roomId);
           if (!room) {
-            bombPartyLogger.debug({ playerId, roomId }, 'Room inexistante après grace period');
+            bombPartyLogger.debug({ playerId, roomId }, 'Room inexistante apres grace period');
             return;
           }
           
           const roomPlayer = room.players.get(playerId);
           if (!roomPlayer) {
-            bombPartyLogger.debug({ playerId, roomId }, 'Joueur déjà parti de la room');
+            bombPartyLogger.debug({ playerId, roomId }, 'Joueur deja parti de la room');
             return;
           }
           

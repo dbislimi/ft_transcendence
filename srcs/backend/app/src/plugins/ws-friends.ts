@@ -70,7 +70,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.send(JSON.stringify({
         type: "connected",
-        message: "Connecté au système d'amis"
+        message: "Connecte au systeme d'amis"
       }));
 
       connection.on('message', (message) => {

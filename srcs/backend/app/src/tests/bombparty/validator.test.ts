@@ -28,29 +28,22 @@ describe('BombParty Validator', () => {
     });
 
     it('should accept word with valid syllable (if in dictionary)', () => {
-      // Note: Ce test dépend du dictionnaire réel
-      // Il peut échouer si le mot n'est pas dans le dictionnaire
       const result = validateWithDictionarySync('maison', 'mai', []);
       
-      // Au moins vérifier que la structure est correcte
       expect(result).toBeDefined();
       expect(typeof result.ok).toBe('boolean');
       
-      // Si le mot est dans le dictionnaire, il devrait être accepté
       if (result.ok) {
         expect(result.reason).toBeUndefined();
       } else {
-        // Si pas dans le dictionnaire, raison devrait être définie
         expect(result.reason).toBeDefined();
       }
     });
 
     it('should normalize words before validation', () => {
-      // Test avec accents
       const result1 = validateWithDictionarySync('maison', 'mai', []);
       const result2 = validateWithDictionarySync('maïson', 'mai', []);
       
-      // Les deux devraient avoir le même résultat après normalisation
       expect(result1.ok).toBe(result2.ok);
     });
   });
@@ -103,7 +96,6 @@ describe('BombParty Validator', () => {
       expect(Array.isArray(suggestions)).toBe(true);
       expect(suggestions.length).toBeLessThanOrEqual(5);
       
-      // Toutes les suggestions devraient contenir la syllabe
       suggestions.forEach(word => {
         expect(word.toLowerCase().includes('ma')).toBe(true);
         expect(word.length).toBeGreaterThanOrEqual(3);
@@ -117,11 +109,9 @@ describe('BombParty Validator', () => {
     });
 
     it('should return empty array for syllable with no matches', () => {
-      // Syllabe improbable
       const suggestions = getWordSuggestionsSync('xyzabc123', 5);
       
       expect(Array.isArray(suggestions)).toBe(true);
-      // Peut être vide ou contenir quelques résultats selon l'index
     });
   });
 
@@ -138,22 +128,17 @@ describe('BombParty Validator', () => {
     });
 
     it('should accept "chat" for syllable "t" if it is a real syllable', () => {
-      // "t" est la dernière syllabe de "chat"
       const result = validateLocal('chat', 't', []);
-      // car il n'a pas de voyelle. Testons pour voir le comportement.
       expect(result).toBeDefined();
     });
 
     it('should reject word where syllable is only a substring, not a real syllable', () => {
-      // "maison" -> syllabes: ["mai", "son"]
-      // "ai" est une sous-chaîne mais pas une vraie syllabe
       const result = validateLocal('maison', 'ai', []);
       expect(result.ok).toBe(false);
       expect(result.reason).toBe('no_syllable');
     });
 
     it('should accept word where syllable is a real syllable', () => {
-      // "maison" -> syllabes: ["mai", "son"]
       const result1 = validateLocal('maison', 'mai', []);
       expect(result1.ok).toBe(true);
 
@@ -162,9 +147,7 @@ describe('BombParty Validator', () => {
     });
 
     it('should handle compound words with hyphens', () => {
-      // "porte-monnaie" -> vérifie chaque partie séparément
       const result = validateLocal('porte-monnaie', 'mon', []);
-      // "mon" devrait être dans "monnaie"
       expect(result.ok).toBe(true);
     });
   });
@@ -172,7 +155,6 @@ describe('BombParty Validator', () => {
   describe('edge cases', () => {
     it('should handle empty syllable', () => {
       const result = validateLocal('test', '', []);
-      // Syllabe vide devrait être rejetée
       expect(result.ok).toBe(false);
     });
 
@@ -185,13 +167,11 @@ describe('BombParty Validator', () => {
     it('should handle very long word', () => {
       const longWord = 'a'.repeat(100) + 'test' + 'b'.repeat(100);
       const result = validateLocal(longWord, 'test', []);
-      // Devrait être accepté si la syllabe est présente
       expect(result.ok).toBe(true);
     });
 
     it('should handle special characters in syllable', () => {
       const result = validateLocal('test-word', 'test', []);
-      // Tirets sont acceptés
       expect(result.ok).toBe(true);
     });
   });

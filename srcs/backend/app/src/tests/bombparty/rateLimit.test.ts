@@ -8,9 +8,8 @@ describe('BombParty Rate Limiting', () => {
   beforeEach(() => {
     wsServer = new BombPartyWSServer();
     
-    // Mock WebSocket
     mockSocket = {
-      readyState: 1, // OPEN
+      readyState: 1,
       on: jest.fn(),
       ping: jest.fn(),
       close: jest.fn(),
@@ -21,7 +20,6 @@ describe('BombParty Rate Limiting', () => {
   it('should allow messages within rate limit', () => {
     wsServer.registerConnection(mockSocket);
     
-    // envoyer 5 messages (limite par defaut: 10)
     for (let i = 0; i < 5; i++) {
       const allowed = wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 2000);
       expect(allowed).toBe(true);
@@ -31,12 +29,10 @@ describe('BombParty Rate Limiting', () => {
   it('should block messages exceeding rate limit', () => {
     wsServer.registerConnection(mockSocket);
     
-    // envoyer 11 messages (limite: 10)
     for (let i = 0; i < 10; i++) {
       wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 2000);
     }
     
-    // le 11eme devrait etre bloque
     const allowed = wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 2000);
     expect(allowed).toBe(false);
   });
@@ -44,18 +40,15 @@ describe('BombParty Rate Limiting', () => {
   it('should reset rate limit after window expires', (done) => {
     wsServer.registerConnection(mockSocket);
     
-    // atteindre la limite
     for (let i = 0; i < 10; i++) {
-      wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 100); // 100ms window
+      wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 100);
     }
     
-    // verifier que c'est bloque
     expect(wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 100)).toBe(false);
     
-    // attendre que la fenetre expire
     setTimeout(() => {
       const allowed = wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 100);
-      expect(allowed).toBe(true); // devrait etre reinitialise
+      expect(allowed).toBe(true);
       done();
     }, 150);
   });
@@ -63,12 +56,10 @@ describe('BombParty Rate Limiting', () => {
   it('should handle different message types independently', () => {
     wsServer.registerConnection(mockSocket);
     
-    // atteindre la limite pour un type
     for (let i = 0; i < 10; i++) {
       wsServer.checkRateLimit(mockSocket, 'bp:game:input', 10, 2000);
     }
     
-    // un autre type devrait toujours etre autorise
     const allowed = wsServer.checkRateLimit(mockSocket, 'bp:bonus:activate', 10, 2000);
     expect(allowed).toBe(true);
   });

@@ -376,15 +376,6 @@ export default class GamesManager {
 				);
 			}
 
-			// Save result only once (when one player ends it?)
-			// Version B logic: `this.saveGameResult(sent, receiv, winner, scores, undefined, 'quick');` called in onEnd.
-			// This runs for BOTH players in onEnd?
-			// onEnd is called for each player in Game.ts?
-			// Game.ts (Version A): calls onEnd for both clients.
-			// We should save only once.
-			// Version B `startInvitedGame` `onEnd` seems to save it. If called twice, it saves twice?
-			// Version B `startOnline` has check `if (this.waitingClient ...)` to set up `onEnd`...
-			// Actually, let's use `savedGames` set to prevent double save.
 			if (!this.savedGames.has(game)) {
 				this.saveGameResult(
 					sent,

@@ -39,11 +39,11 @@ export function validateRoomJoin(
   password?: string
 ): { valid: boolean; error?: string } {
   if (!player) {
-    return { valid: false, error: 'Joueur non trouvé' };
+    return { valid: false, error: 'Joueur non trouve' };
   }
 
   if (!room) {
-    return { valid: false, error: 'Salle non trouvée' };
+    return { valid: false, error: 'Salle non trouvee' };
   }
 
   if (player.roomId && player.roomId !== room.id) {
@@ -73,7 +73,7 @@ export function validateRoomCreation(
   password?: string
 ): { valid: boolean; error?: string; validMaxPlayers?: number } {
   if (!creator) {
-    return { valid: false, error: 'Joueur non trouvé' };
+    return { valid: false, error: 'Joueur non trouve' };
   }
 
   if (creator.roomId) {
@@ -83,10 +83,10 @@ export function validateRoomCreation(
   if (roomName !== undefined) {
     const trimmedName = roomName.trim();
     if (trimmedName.length === 0) {
-      return { valid: false, error: 'Le nom du lobby ne peut pas être vide' };
+      return { valid: false, error: 'Le nom du lobby ne peut pas etre vide' };
     }
     if (trimmedName.length > 50) {
-      return { valid: false, error: 'Le nom du lobby ne peut pas dépasser 50 caractères' };
+      return { valid: false, error: 'Le nom du lobby ne peut pas depasser 50 caracteres' };
     }
     if (!/^[a-zA-Z0-9\s\-_àáâãäåèéêëìíîïòóôõöùúûüýÿçÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝŸÇ]+$/.test(trimmedName)) {
       return { valid: false, error: 'Le nom du lobby contient des caractères invalides' };
@@ -95,10 +95,10 @@ export function validateRoomCreation(
 
   if (password !== undefined && password !== null && password !== '') {
     if (password.length < 3) {
-      return { valid: false, error: 'Le mot de passe doit contenir au moins 3 caractères' };
+      return { valid: false, error: 'Le mot de passe doit contenir au moins 3 caracteres' };
     }
     if (password.length > 20) {
-      return { valid: false, error: 'Le mot de passe ne peut pas dépasser 20 caractères' };
+      return { valid: false, error: 'Le mot de passe ne peut pas depasser 20 caracteres' };
     }
   }
 
@@ -134,7 +134,7 @@ export function cleanupEmptyRoom(
       if (!(room as any).emptyRoomTimeout) {
         (room as any).emptyRoomTimeout = setTimeout(() => {
           if (room.players.size === 0) {
-            console.log(`[RoomUtils] Grace period expiré - suppression de la room vide`, { roomId });
+            console.log(`[RoomUtils] Grace period expire - suppression de la room vide`, { roomId });
             if (roomEngines.has(roomId)) {
               roomEngines.delete(roomId);
             }
@@ -150,7 +150,7 @@ export function cleanupEmptyRoom(
       return;
     }
     
-    console.log(`[RoomUtils] Suppression immédiate de la room vide`, { roomId, hasGame: hasGameInProgress });
+    console.log(`[RoomUtils] Suppression immediate de la room vide`, { roomId, hasGame: hasGameInProgress });
     
     if (roomEngines.has(roomId)) {
       roomEngines.delete(roomId);

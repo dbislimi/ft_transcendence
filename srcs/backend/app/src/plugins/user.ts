@@ -36,7 +36,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance<any, any, a
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) return reply.code(400).send({ error: 'Email invalide' });
       const existing = await dbGet('SELECT id FROM users WHERE email = ? AND id != ?', [email.trim(), decoded.id]);
-      if (existing) return reply.code(409).send({ error: 'Email déjà utilisé' });
+      if (existing) return reply.code(409).send({ error: 'Email deja utilise' });
       updates.push('email = ?');
       values.push(email.trim());
     }
@@ -53,7 +53,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance<any, any, a
       const displayNameRegex = /^[a-z0-9-]+$/;
       if (!displayNameRegex.test(display_name)) return reply.code(400).send({ error: 'Pseudo invalide' });
       const existing = await dbGet('SELECT id FROM users WHERE display_name = ? AND id != ?', [display_name.trim(), decoded.id]);
-      if (existing) return reply.code(409).send({ error: 'Pseudo déjà utilisé' });
+      if (existing) return reply.code(409).send({ error: 'Pseudo deja utilise' });
       updates.push('display_name = ?');
       values.push(display_name.trim());
     }
@@ -63,7 +63,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance<any, any, a
       values.push(avatar.trim());
     }
 
-    if (updates.length === 0) return reply.code(400).send({ error: 'Aucune donnée à mettre à jour' });
+    if (updates.length === 0) return reply.code(400).send({ error: 'Aucune donnee a mettre a jour' });
     values.push(decoded.id);
     await dbRun(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
     return reply.send({ success: true });

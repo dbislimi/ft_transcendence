@@ -48,7 +48,7 @@ async function main() {
 
 	await fastify.register(websocket);
 
-	// 2. wsController après WebSocket
+	// 2. wsController apres WebSocket
 	await fastify.register(wsController);
 	
 	// 2. Plugins de base
@@ -71,10 +71,10 @@ async function main() {
 		});
 	});
 
-	// 5. WebSocket Friends (APRÈS db, comme dans la référence)
+	// 5. WebSocket Friends (APRES db, comme dans la reference)
 	await fastify.register(wsFriends);
 
-	// 6. Auth et utilisateurs (comme dans la référence)
+	// 6. Auth et utilisateurs (comme dans la reference)
 	await fastify.register(authHook);
 	await fastify.register(authPlugin);
 	await fastify.register(googleAuth);
@@ -87,7 +87,6 @@ async function main() {
 	// 7. Pong config
 	await fastify.register(pongConfig);
 
-	// 8. BombParty (NE PAS TOUCHER)
 	await fastify.register(bombPartyWSHandlers);
 
 	console.log('[Stats] Enregistrement des routes de statistiques...');

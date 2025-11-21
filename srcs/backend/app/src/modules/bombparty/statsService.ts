@@ -151,7 +151,6 @@ export class BombPartyStatsService {
           }
 
           if (!row) {
-            // Créer un profil par défaut si inexistant
             this.db.run(
               `INSERT INTO bp_user_progress (user_id) VALUES (?)`,
               [userId],
@@ -162,7 +161,6 @@ export class BombPartyStatsService {
                   return;
                 }
 
-                // Retourner les valeurs par défaut
                 const levelInfo = calculateLevel(0);
                 resolve({
                   success: true,
@@ -187,7 +185,6 @@ export class BombPartyStatsService {
             return;
           }
 
-          // Mapper les données existantes
           const badges: Badge[] = JSON.parse(row.badges || '[]');
           const unlockedThemes: string[] = JSON.parse(row.unlocked_themes || '["default"]');
           const unlockedAvatars: string[] = JSON.parse(row.unlocked_avatars || '["default"]');
@@ -237,7 +234,6 @@ export class BombPartyStatsService {
   ): Promise<DBResult<{ newBadges: Badge[]; levelUp: boolean }>> {
     return new Promise(async (resolve) => {
       try {
-        // Récupérer la progression actuelle
         const progressResult = await this.getUserProgress(userId);
         if (!progressResult.success || !progressResult.data) {
           resolve({ success: false, error: 'Could not fetch user progress' });
@@ -267,12 +263,10 @@ export class BombPartyStatsService {
         const badgeTypes = Object.keys(BADGE_DEFINITIONS) as BadgeType[];
 
         for (const badgeType of badgeTypes) {
-          // Vérifier si le badge est déjà débloqué
           if (currentBadges.some(b => b.type === badgeType)) {
             continue;
           }
 
-          // Vérifier les conditions pour débloquer le badge
           let shouldUnlock = false;
           switch (badgeType) {
             case 'first_win':
@@ -326,7 +320,6 @@ export class BombPartyStatsService {
           }
         }
 
-        // Mettre à jour dans la base de données
         this.db.run(
           `UPDATE bp_user_progress 
            SET level = ?, 

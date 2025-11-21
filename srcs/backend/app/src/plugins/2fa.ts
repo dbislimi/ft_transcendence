@@ -36,7 +36,7 @@ export default fp(async function Send2faPlugin(fastify: Fastify) {
     const message = {
       from: '"2FA Service" <Transcendance06000@gmail.com>',
       to: email,
-      subject: 'Votre code de vérification',
+      subject: 'Votre code de verification',
       text: `Votre code est : ${otp}`,
     };
 
@@ -58,7 +58,7 @@ export default fp(async function Send2faPlugin(fastify: Fastify) {
     const user = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
 
     if (!user) {
-      return reply.code(401).send({ error: 'Utilisateur non trouvé' });
+      return reply.code(401).send({ error: 'Utilisateur non trouve' });
     }
 
     if (user.twoFAOtp !== code) {

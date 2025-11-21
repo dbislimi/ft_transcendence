@@ -114,8 +114,6 @@ describe('BombPartyEngine', () => {
       
       const result = engine.submitWord(word, 1000);
       
-      // Note: La validation réelle dépend du dictionnaire
-      // Ce test vérifie au moins que la méthode fonctionne
       expect(result).toBeDefined();
       expect(typeof result.ok).toBe('boolean');
     });
@@ -132,13 +130,10 @@ describe('BombPartyEngine', () => {
       const syllable = state.currentSyllable.toLowerCase();
       const word = `test${syllable}word`;
       
-      // Première soumission (peut échouer si le mot n'est pas dans le dictionnaire)
       engine.submitWord(word, 1000);
       
-      // Deuxième soumission devrait être rejetée comme doublon
       const result = engine.submitWord(word, 2000);
       
-      // Si la première a réussi, la deuxième devrait être un doublon
       const newState = engine.getState();
       if (newState.usedWords.includes(word.toLowerCase())) {
         expect(result.ok).toBe(false);
@@ -166,7 +161,6 @@ describe('BombPartyEngine', () => {
       engine.resolveTurn(true, false);
       
       const newState = engine.getState();
-      // Le joueur suivant devrait être sélectionné
       expect(newState.currentPlayerIndex).not.toBe(initialPlayerIndex);
     });
 
@@ -202,14 +196,12 @@ describe('BombPartyEngine', () => {
       engine.initializeGame(players);
       const state = engine.getState();
       
-      // Éliminer tous les joueurs sauf un
       state.players.forEach((player, index) => {
         if (index > 0) {
           player.isEliminated = true;
         }
       });
       
-      // Forcer la mise à jour de l'état
       engine.resolveTurn(false, false);
       
       expect(engine.isGameOver()).toBe(true);
@@ -236,7 +228,6 @@ describe('BombPartyEngine', () => {
       engine.initializeGame(players);
       const state = engine.getState();
       
-      // Éliminer tous les joueurs sauf le premier
       state.players[1].isEliminated = true;
       
       const winner = engine.getWinner();
@@ -254,7 +245,6 @@ describe('BombPartyEngine', () => {
       
       engine.initializeGame(players);
       const state = engine.getState();
-      // Donner un bonus au joueur
       state.players[0].bonuses.plus5sec = 1;
     });
 
@@ -269,7 +259,6 @@ describe('BombPartyEngine', () => {
     it('should fail if player has no bonus', () => {
       const result = engine.activateBonus('player1', 'plus5sec');
       
-      // Après activation, plus de bonus
       const result2 = engine.activateBonus('player1', 'plus5sec');
       expect(result2.ok).toBe(false);
     });
@@ -320,18 +309,15 @@ describe('BombPartyEngine', () => {
     });
 
     it('should respect the maximum bonus limit per type', () => {
-      // Donner MAX_BONUS_PER_TYPE bonus de chaque type
       testState.players[0].bonuses.extraLife = MAX_BONUS_PER_TYPE;
       testState.players[0].bonuses.inversion = MAX_BONUS_PER_TYPE;
       testState.players[0].bonuses.plus5sec = MAX_BONUS_PER_TYPE;
       testState.players[0].bonuses.doubleChance = MAX_BONUS_PER_TYPE;
       testState.players[0].bonuses.vitesseEclair = MAX_BONUS_PER_TYPE;
 
-      // Essayer de donner un bonus supplémentaire
       const initialBonuses = { ...testState.players[0].bonuses };
       giveRandomBonus(testState, 'player1');
 
-      // Aucun bonus ne devrait être ajouté car tous sont à la limite
       expect(testState.players[0].bonuses.extraLife).toBe(initialBonuses.extraLife);
       expect(testState.players[0].bonuses.inversion).toBe(initialBonuses.inversion);
       expect(testState.players[0].bonuses.plus5sec).toBe(initialBonuses.plus5sec);
@@ -340,12 +326,10 @@ describe('BombPartyEngine', () => {
     });
 
     it('should not exceed maximum bonus limit when adding new bonus', () => {
-      // Donner un bonus jusqu'à la limite
       testState.players[0].bonuses.extraLife = MAX_BONUS_PER_TYPE - 1;
       
       giveRandomBonus(testState, 'player1');
       
-      // Le bonus ne devrait pas dépasser la limite
       expect(testState.players[0].bonuses.extraLife).toBeLessThanOrEqual(MAX_BONUS_PER_TYPE);
     });
 
@@ -358,7 +342,6 @@ describe('BombPartyEngine', () => {
         inversion: 0,
       };
 
-      // Simuler 1000 distributions de bonus
       const iterations = 1000;
       for (let i = 0; i < iterations; i++) {
         const stateCopy: GameState = {
@@ -371,7 +354,6 @@ describe('BombPartyEngine', () => {
         
         giveRandomBonus(stateCopy, 'player1');
         
-        // Compter quel bonus a été donné
         const player = stateCopy.players[0];
         if (player.bonuses.extraLife > 0) distribution.extraLife++;
         else if (player.bonuses.vitesseEclair > 0) distribution.vitesseEclair++;
@@ -380,17 +362,14 @@ describe('BombPartyEngine', () => {
         else if (player.bonuses.inversion > 0) distribution.inversion++;
       }
 
-      // extraLife devrait être autour de 5% (5/100 = 5%)
       const extraLifePercent = (distribution.extraLife / iterations) * 100;
-      expect(extraLifePercent).toBeGreaterThan(3); // Tolérance: au moins 3%
-      expect(extraLifePercent).toBeLessThan(8);    // Tolérance: au plus 8%
+      expect(extraLifePercent).toBeGreaterThan(3);
+      expect(extraLifePercent).toBeLessThan(8);
 
-      // inversion devrait être autour de 30% (30/100 = 30%)
       const inversionPercent = (distribution.inversion / iterations) * 100;
-      expect(inversionPercent).toBeGreaterThan(25); // Tolérance: au moins 25%
-      expect(inversionPercent).toBeLessThan(35);    // Tolérance: au plus 35%
+      expect(inversionPercent).toBeGreaterThan(25);
+      expect(inversionPercent).toBeLessThan(35);
 
-      // plus5sec et doubleChance devraient être autour de 25% chacun
       const plus5secPercent = (distribution.plus5sec / iterations) * 100;
       expect(plus5secPercent).toBeGreaterThan(20);
       expect(plus5secPercent).toBeLessThan(30);
@@ -399,18 +378,15 @@ describe('BombPartyEngine', () => {
       expect(doubleChancePercent).toBeGreaterThan(20);
       expect(doubleChancePercent).toBeLessThan(30);
 
-      // vitesseEclair devrait être autour de 15%
       const vitesseEclairPercent = (distribution.vitesseEclair / iterations) * 100;
       expect(vitesseEclairPercent).toBeGreaterThan(10);
       expect(vitesseEclairPercent).toBeLessThan(20);
     });
 
     it('should only select from available bonuses when some are at max', () => {
-      // Mettre certains bonus à la limite
       testState.players[0].bonuses.extraLife = MAX_BONUS_PER_TYPE;
       testState.players[0].bonuses.inversion = MAX_BONUS_PER_TYPE;
 
-      // Distribuer plusieurs bonus
       for (let i = 0; i < 10; i++) {
         giveRandomBonus(testState, 'player1');
       }
@@ -418,7 +394,6 @@ describe('BombPartyEngine', () => {
       expect(testState.players[0].bonuses.extraLife).toBe(MAX_BONUS_PER_TYPE);
       expect(testState.players[0].bonuses.inversion).toBe(MAX_BONUS_PER_TYPE);
       
-      // Les autres bonus peuvent avoir été augmentés
       expect(testState.players[0].bonuses.plus5sec).toBeLessThanOrEqual(MAX_BONUS_PER_TYPE);
       expect(testState.players[0].bonuses.doubleChance).toBeLessThanOrEqual(MAX_BONUS_PER_TYPE);
       expect(testState.players[0].bonuses.vitesseEclair).toBeLessThanOrEqual(MAX_BONUS_PER_TYPE);
