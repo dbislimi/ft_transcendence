@@ -108,7 +108,7 @@ export default function Registration() {
           name: data.user?.name || info.name,
           email: data.user?.email || info.email,
         };
-        login(userData);
+        login(userData, data.token);
         navigate("/");
       } else {
         const errMsg = data.error || (data.raw ? data.raw : "Erreur serveur");

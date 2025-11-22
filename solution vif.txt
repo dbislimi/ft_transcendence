@@ -1,0 +1,14 @@
+engro va dans le front dans Registration
+
+      if (response.ok) {
+        const userData = {
+          id: Number(data.user?.id) || 1,
+          name: data.user?.name || info.name,
+          email: data.user?.email || info.email,
+        };
+        login(userData, data.token);
+        navigate("/");
+
+dans ce morceau de code faut que tu rajoute data.token dans login()
+
+mais azy y'a un ptit autre bail bizarre faut demander a dylan pk
