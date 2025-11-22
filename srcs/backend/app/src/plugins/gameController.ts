@@ -10,7 +10,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	options
 ) => {
 	const games = new GamesManager();
-	// Configuration de l'instance fastify pour la sauvegarde (Logique Version B, compatible car méthode existante)
 	games.setFastifyInstance(fastify);
 
 	fastify.get("/game", { websocket: true }, (socket: any, req) => {

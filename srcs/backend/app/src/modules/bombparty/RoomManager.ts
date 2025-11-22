@@ -148,7 +148,7 @@ export class BombPartyRoomManager {
     }
     
     if (this.roomEngines.has(roomId)) {
-      return { success: false, error: 'Partie déjà en cours' };
+      return { success: false, error: 'Partie deja en cours' };
     }
     
     return handleStartGame(playerId, roomId, this.rooms, this.roomEngines);
@@ -339,7 +339,7 @@ export class BombPartyRoomManager {
             event: 'bp:lobby:closed',
             payload: {
               roomId,
-              reason: 'Lobby inactif supprimé'
+              reason: 'Lobby inactif supprime'
             }
           });
         }

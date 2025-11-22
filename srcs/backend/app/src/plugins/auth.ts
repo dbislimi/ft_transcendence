@@ -106,7 +106,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
 
       if (existingDisplayName) {
-        return reply.code(409).send({ error: "Ce pseudo est déjà utilisé." });
+        return reply.code(409).send({ error: "ce pseudo est deja utilise." });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);

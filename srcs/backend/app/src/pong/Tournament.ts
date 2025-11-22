@@ -274,7 +274,7 @@ export default class Tournament {
 
 	printTree(root: Node | null = this.root) {
 		if (!root) {
-			console.log("(arbre vide)");
+			console.log("(empty tree)");
 			return;
 		}
 		const label = (n: Node) => {

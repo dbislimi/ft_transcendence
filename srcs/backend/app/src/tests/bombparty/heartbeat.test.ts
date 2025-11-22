@@ -13,7 +13,7 @@ describe('BombParty Heartbeat', () => {
     wsServer = new BombPartyWSServer();
     
     mockSocket = {
-      readyState: 1, // OPEN
+      readyState: 1,
       on: jest.fn((event, handler) => {
         if (event === 'pong') {
           mockSocket.pongHandler = handler;
@@ -46,7 +46,6 @@ describe('BombParty Heartbeat', () => {
     const connection = wsServer['connections'].get(mockSocket);
     const initialPong = connection!.lastPong;
     
-    // simule un pong apres 1 seconde
     if (typeof jest !== 'undefined' && jest.advanceTimersByTime) {
       jest.advanceTimersByTime(1000);
     }
@@ -66,13 +65,10 @@ describe('BombParty Heartbeat', () => {
     wsServer.registerConnection(socket1);
     wsServer.registerConnection(socket2);
     
-    // avance le temps pour declencher le ping
     if (typeof jest !== 'undefined' && jest.advanceTimersByTime) {
       jest.advanceTimersByTime(30000);
     }
     
-    // le ping devrait etre appele (via sendPingToAll dans l'interval)
-    // note: on verifie que la methode existe et peut etre appelee
     expect(socket1.ping).toBeDefined();
     expect(socket2.ping).toBeDefined();
   });
@@ -81,7 +77,6 @@ describe('BombParty Heartbeat', () => {
     wsServer.registerConnection(mockSocket);
     expect(wsServer['connections'].has(mockSocket)).toBe(true);
     
-    // Simuler un close
     if (mockSocket.on.mock.calls.length > 0) {
       const closeHandler = mockSocket.on.mock.calls.find(([event]: [string]) => event === 'close')?.[1];
       if (closeHandler) {
@@ -89,9 +84,6 @@ describe('BombParty Heartbeat', () => {
       }
     }
     
-    // la connexion devrait etre supprimee
-    // note: la suppression se fait dans wsServer via socket.on('close'), 
-    // donc on verifie juste que la methode existe
     expect(wsServer['connections']).toBeDefined();
   });
 });

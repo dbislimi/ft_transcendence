@@ -2,7 +2,6 @@ import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
 import { verifyToken } from '../utils/auth.ts';
 
-// Interface pour les matchs (issue de Version B)
 interface Match {
   id: number;
   player1_id: number;
@@ -19,7 +18,6 @@ interface Match {
   scores?: string;
 }
 
-// Extension des types Fastify pour inclure nos décorateurs
 declare module 'fastify' {
   interface FastifyInstance {
     saveMatch: (
@@ -38,9 +36,6 @@ declare module 'fastify' {
 
 export default fp(async function matchesPlugin(fastify: FastifyInstance) {
   
-  // --- DÉCORATEURS (Fonctionnalités Backend / Pong) ---
-
-  // Helper pour mettre à jour les stats utilisateur
   fastify.decorate("updateUserStats", async function(userId: number, isWin: boolean) {
     return new Promise<void>((resolve, reject) => {
       const column = isWin ? "wins" : "losses";
@@ -59,7 +54,6 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     });
   });
 
-  // Méthode principale de sauvegarde de match (Utilisée par GamesManager)
   fastify.decorate("saveMatch", async function(
     player1Id: number,
     player2Id: number | null,
@@ -72,7 +66,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     
     // Gestion anti-doublons
     if (fastify.recentSaves && fastify.recentSaves.has(saveKey.substring(0, saveKey.lastIndexOf('-')))) {
-      fastify.log.warn(`Match doublon ignoré: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
+      fastify.log.warn(`match doublon ignore: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
       return Promise.resolve();
     }
     
@@ -122,8 +116,6 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     });
   });
 
-  // --- ROUTES VERSION B (Nouvelles routes détaillées) ---
-
   fastify.get("/api/match-history/:userId", async (request: any, reply: any) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;
@@ -159,8 +151,8 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
         [userId, userId, limit, offset],
         (err: any, rows: Match[]) => {
           if (err) {
-            fastify.log.error("Erreur récupération historique:", err);
-            reply.code(500).send({ error: "Erreur serveur" });
+            fastify.log.error("erreur recuperation historique:", err);
+            reply.code(500).send({ error: "erreur serveur" });
             reject(err);
           } else {
             const matches = rows.map(match => {
@@ -171,8 +163,8 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
                 opponent: match.is_bot === 1
                   ? { name: `Bot (${match.bot_difficulty})`, avatar: "/avatars/bot.png", isBot: true }
                   : match.player1_id === parseInt(userId)
-                    ? { name: match.player2_name || 'Joueur inconnu', avatar: match.player2_avatar || '/avatars/avatar1.png', isBot: false }
-                    : { name: match.player1_name || 'Joueur inconnu', avatar: match.player1_avatar || '/avatars/avatar1.png', isBot: false },
+                    ? { name: match.player2_name || 'joueur inconnu', avatar: match.player2_avatar || '/avatars/avatar1.png', isBot: false }
+                    : { name: match.player1_name || 'joueur inconnu', avatar: match.player1_avatar || '/avatars/avatar1.png', isBot: false },
                 isWinner: match.winner_id === parseInt(userId),
                 date: new Date(match.played_at).toISOString()
               };

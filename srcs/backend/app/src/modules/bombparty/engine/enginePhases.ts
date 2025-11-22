@@ -131,7 +131,7 @@ export function isTurnExpired(state: GameState): boolean {
       elapsedMs: now - state.turnStartedAt,
       currentPlayer: currentPlayer?.name,
       currentPlayerId: currentPlayer?.id 
-    }, '[isTurnExpired] Tour expiré détecté');
+    }, '[isTurnExpired] Tour expire detecte');
   }
   
   return isExpired;

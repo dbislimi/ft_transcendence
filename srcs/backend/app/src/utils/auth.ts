@@ -20,7 +20,6 @@ export function verifyToken(
   request: FastifyRequest,
   reply: FastifyReply
 ): { id: number; name?: string; email?: string } | null {
-  // VERSION A (Canonical): Utilisation de (request as any).raw?.headers pour compatibilité (ex: BombParty/Socket)
   const authHeader = ((request as any).raw?.headers as any)?.authorization as string | undefined;
   
   if (!authHeader?.startsWith("Bearer ")) {
