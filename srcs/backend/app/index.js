@@ -31,6 +31,20 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
             tournaments_won INTEGER DEFAULT 0
 		);`);
 
+		db.run(`CREATE TABLE IF NOT EXISTS messages (
+  			id INTEGER PRIMARY KEY AUTOINCREMENT,
+  			fromId INTEGER NOT NULL,
+  			toId INTEGER,
+  			text TEXT NOT NULL,
+  			date TEXT NOT NULL
+		);`);
+
+		db.run(`CREATE TABLE IF NOT EXISTS blocks (
+  			id INTEGER PRIMARY KEY AUTOINCREMENT,
+  			blockerId INTEGER NOT NULL,
+  			blockedId INTEGER NOT NULL
+		);`);
+
 		// ajout colonnes pour legacy DBs (alter table ignore si existe deja)
 		db.run(`ALTER TABLE users ADD COLUMN display_name TEXT;`, (err) => {});
 		db.run(`ALTER TABLE users ADD COLUMN avatar TEXT;`, (err) => {});

@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET must be defined in environment variables');
 }
@@ -13,13 +12,39 @@ if (!JWT_SECRET) {
 interface Client {
   id: number;
   name: string;
-  socket: any; // webSocket
+  socket: WebSocket;
 }
 
-export default fp(async function Chat(fastify: FastifyInstance<any, any, any, any, any>) {
-  const clients: Client[] = [];
+const clients: Client[] = [];
 
+export function sendTournamentMessage(
+  playerIds: (number | undefined)[],
+  message: string
+) {
+  /*if (playerIds == undefined) fait un ptit bail pour ne pas afficher le undefined
+      return;*/
+  const ids = playerIds.filter(Boolean) as number[];
 
+  const payload = {
+    type: "info",
+    message,
+    date: new Date().toISOString(),
+  };
+
+  for (const c of clients) {
+    if (ids.includes(c.id) && c.socket.readyState === 1) {
+      try {
+        c.socket.send(JSON.stringify(payload));
+      } catch (err) {
+        console.error("Erreur envoi WS tournoi :", err);
+      }
+    }
+  }
+}
+
+export default fp(async function Chat(fastify: FastifyInstance) {
+
+  // Vérifie si un utilisateur bloque un autre
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -33,10 +58,52 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
     });
   }
 
+  // Récupère la liste des IDs bloqués par un utilisateur
+  async function getBlockedIds(blockerId: number): Promise<number[]> {
+    return new Promise((resolve, reject) => {
+      fastify.db.all(
+        "SELECT blockedId FROM blocks WHERE blockerId = ?",
+        [blockerId],
+        (err, rows: { blockedId: number }[]) => {
+          if (err) reject(err);
+          else resolve(rows.map(r => r.blockedId));
+        }
+      );
+    });
+  }
 
+  // Envoi vers un client spécifique
   function sendToClient(client: Client, data: any) {
-    if (client.socket.readyState === 1) {
-      client.socket.send(JSON.stringify(data));
+    try {
+      if (client.socket.readyState === 1) {
+        client.socket.send(JSON.stringify(data));
+      }
+    } catch (err) {
+      fastify.log.error("Erreur envoi WS:", err);
+    }
+  }
+
+
+  // Envoie la liste des utilisateurs connectés à tous
+  async function broadcastUsers() {
+    const allUsers = clients.map(c => ({ id: c.id, name: c.name }));
+
+    for (const client of clients) {
+      if (client.socket.readyState !== 1) continue;
+
+      try {
+        const blockedIds = await getBlockedIds(client.id);
+
+        const usersForThisClient = allUsers.map(user => ({
+          ...user,
+          blocked: blockedIds.includes(user.id),
+        }));
+
+        sendToClient(client, { type: "users", users: usersForThisClient });
+
+      } catch (err) {
+        fastify.log.error(`Erreur broadcastUsers pour ${client.name}:`, err);
+      }
     }
   }
 
@@ -48,17 +115,17 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
-        id: number;
-        name: string;
-        email: string;
-      };
-
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
+      console.log("l'id dans le back : ", decoded.id);
+      console.log("le name dans le back : ", decoded.name);
       const client: Client = { id: decoded.id, name: decoded.name, socket };
       clients.push(client);
-      fastify.log.info(` ${client.name} connecté`);
 
-      // Messages entrants
+      fastify.log.info(`✅ ${client.name} connecté (${clients.length} clients)`);
+
+      broadcastUsers();
+
+      // Réception de message
       socket.on("message", async (raw: Buffer) => {
         try {
           const data = JSON.parse(raw.toString());
@@ -78,11 +145,11 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
             );
 
             if (msg.to) {
-              // message prive
-              const target = clients.find((c) => c.id === msg.to);
-              if (target && target.id !== client.id) {
-                if (!(await isBlocked(target.id, client.id))) {
-                  sendToClient(target, { type: "private", ...msg });
+              // Message privé
+              const targets = clients.filter(c => c.id === msg.to);
+              for (const t of targets) {
+                if (!(await isBlocked(t.id, client.id))) {
+                  sendToClient(t, { type: "private", ...msg });
                 }
               }
               sendToClient(client, { type: "private", ...msg });
@@ -98,30 +165,45 @@ export default fp(async function Chat(fastify: FastifyInstance<any, any, any, an
           if (data.type === "block") {
             fastify.db.run(
               "INSERT OR IGNORE INTO blocks (blockerId, blockedId) VALUES (?, ?)",
-              [client.id, data.userId]
+              [client.id, data.userId],
+              (err) => {
+                if (err) return fastify.log.error("Erreur DB block:", err);
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} bloqué` });
+                // Rediffuser la liste des utilisateurs pour que le statut "bloqué" soit à jour
+                broadcastUsers();
+              }
             );
-            sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} bloqué` });
           }
 
           if (data.type === "unblock") {
             fastify.db.run(
               "DELETE FROM blocks WHERE blockerId = ? AND blockedId = ?",
-              [client.id, data.userId]
+              [client.id, data.userId],
+              (err) => { // Ajout du callback
+                if (err) return fastify.log.error("Erreur DB unblock:", err);
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} débloqué` });
+                // Rediffuser la liste des utilisateurs
+                broadcastUsers();
+              }
             );
-            sendToClient(client, { type: "info", message: `Utilisateur ${data.userId} débloqué` });
           }
         } catch (err) {
-          fastify.log.error(" Erreur message WS :", err);
+          fastify.log.error("Erreur message WS :", err);
         }
       });
 
       socket.on("close", () => {
-        const index = clients.findIndex((c) => c.id === client.id);
-        if (index !== -1) clients.splice(index, 1);
-        fastify.log.info(` ${client.name} déconnecté`);
+        const index = clients.findIndex(c => c.socket === socket);
+        if (index !== -1) {
+          const [removedClient] = clients.splice(index, 1);
+          fastify.log.info(`❌ ${removedClient.name} déconnecté (${clients.length} restants)`);
+        } else {
+            fastify.log.info(`❌ Client inconnu déconnecté`);
+        }
+        broadcastUsers();
       });
     } catch (err) {
-      fastify.log.error(" JWT invalide :", err);
+      fastify.log.error("JWT invalide :", err);
       socket.close();
     }
   });

@@ -19,7 +19,6 @@ import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
 import twoFaPlugin from "./plugins/2fa.ts";
-import chatPlugin from "./plugins/chat.ts";
 import pongConfig from "./plugins/pongConfig.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";

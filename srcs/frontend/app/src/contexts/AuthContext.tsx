@@ -75,6 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(true);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
+        console.log("SA GRAND MERE LA FOLLE");
         await handleLogoutCleanup();
       }
     } catch (error) {
@@ -86,6 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logoutUser = async (currentToken?: string | null) => {
+    console.log("SA GRAND MERE LA FOLLE 2 ");
     if (currentToken) {
       try {
         await fetch('http://localhost:3001/logout', {
@@ -97,6 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const blob = new Blob([JSON.stringify({})], {
           type: 'application/json',
         });
+        console.log("SA GRAND MERE LA FOLLE 2 ");
         navigator.sendBeacon('http://localhost:3001/logout', blob);
       }
     }
@@ -115,6 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const now = Date.now();
           
           if (expiresAt < now) {
+            console.log("SA GRAND MERE LA FOLLE 2 ");
             await handleLogoutCleanup();
             return;
           }
@@ -142,21 +146,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (token) {
-        const blob = new Blob([JSON.stringify({})], {
-          type: 'application/json',
-        });
-        navigator.sendBeacon('http://localhost:3001/logout', blob);
-      }
-    };
+  // useEffect(() => {
+  //   const handleBeforeUnload = () => {
+  //     if (token) {
+  //       const blob = new Blob([JSON.stringify({})], {
+  //         type: 'application/json',
+  //       });
+  //       console.log("use effect handleBeforeUnload");
+  //       navigator.sendBeacon('http://localhost:3001/logout', blob);
+  //     }
+  //   };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [token]);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, [token]);
 
   const handleLogoutCleanup = async () => {
     const currentToken = token;
@@ -168,6 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     
     await logoutUser(currentToken);
+    console.log("use effect handleLogoutCleanup");
   };
 
   const setToken = async (newToken: string | null) => {
@@ -176,6 +182,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setTokenState(newToken);
     } else {
       await handleLogoutCleanup();
+      console.log("use effect setToken");
     }
   };
 
@@ -191,6 +198,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     await handleLogoutCleanup();
+    console.log("use effect logout");
   };
 
   const value: AuthContextType = {
