@@ -29,14 +29,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						if (!err && row) {
 							client.cosmetics = {
 								preferredSide: row.preferred_side || "left",
-								paddleColor: row.paddle_color || "#FFFFFF",
-								ballColor: row.ball_color || "#FFFFFF",
+								paddleColor: row.paddle_color || "White",
+								ballColor: row.ball_color || "White",
 							};
 						} else {
 							client.cosmetics = {
 								preferredSide: "left",
-								paddleColor: "#FFFFFF",
-								ballColor: "#FFFFFF",
+								paddleColor: "White",
+								ballColor: "White",
 							};
 						}
 					}
@@ -232,8 +232,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 						const currentCosmetics = client.cosmetics || {
 							preferredSide: "left",
-							paddleColor: "#ffffff",
-							ballColor: "#ff0000",
+							paddleColor: "White",
+							ballColor: "Rose",
 						};
 
 						const hasChanged =
@@ -271,7 +271,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				console.log("close ", client.name);
 				games.stop_online(client);
 				client.socket = undefined;
-				if (client.rejoinTimer) {
+				if (client.id >= 0 && client.rejoinTimer) {
 					if (client.removalTimer) clearTimeout(client.removalTimer);
 					client.removalTimer = setTimeout(() => {
 						const c = fastify.clients.get(client.id);

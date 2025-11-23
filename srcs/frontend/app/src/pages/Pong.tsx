@@ -22,7 +22,6 @@ import { useUser } from "../context/UserContext";
 import { useGameSession } from "../context/GameSessionContext";
 import { useGameSettings } from "../context/GameSettingsContext";
 
-
 type PlayerLabels = {
 	self: string;
 	opponent: string;

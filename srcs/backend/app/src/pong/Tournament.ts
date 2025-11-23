@@ -399,7 +399,7 @@ export default class Tournament {
 			// quit while in game
 			if (game) {
 				this.cancelCountdown(game);
-				if (client.tournament?.allowReconnect) {
+				if (client.id >= 0 && client.tournament?.allowReconnect) {
 					client.tournament.allowReconnect = false;
 					this.sendRejoinPrompt(client);
 					game.pause();
@@ -435,7 +435,7 @@ export default class Tournament {
 				clearTimeout(client.winnerTimer);
 				client.winnerTimer = undefined;
 			}
-			if (client.tournament?.allowReconnect) {
+			if (client.id >= 0 && client.tournament?.allowReconnect) {
 				client.tournament.allowReconnect = false;
 				this.sendRejoinPrompt(client);
 				this.scheduleRejoinTimeout(client, 10000, () => {

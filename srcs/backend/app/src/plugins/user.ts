@@ -21,8 +21,8 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (!user.avatar) user.avatar = "/avatars/avatar1.webp";
 		user.cosmetics = {
 			preferredSide: user.preferred_side || "left",
-			paddleColor: user.paddle_color || "#ffffff",
-			ballColor: user.ball_color || "#ff0000",
+			paddleColor: user.paddle_color || "White",
+			ballColor: user.ball_color || "Rose",
 		};
 		return reply.send(user);
 	});
@@ -93,12 +93,21 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 			values.push(preferredSide);
 		}
 
-		if (paddleColor && /^#[0-9A-F]{6}$/i.test(paddleColor)) {
+		const validColors = [
+			"Cyan",
+			"Emerald",
+			"Rose",
+			"Blue",
+			"Amber",
+			"White",
+		];
+
+		if (paddleColor && validColors.includes(paddleColor)) {
 			updates.push("paddle_color = ?");
 			values.push(paddleColor);
 		}
 
-		if (ballColor && /^#[0-9A-F]{6}$/i.test(ballColor)) {
+		if (ballColor && validColors.includes(ballColor)) {
 			updates.push("ball_color = ?");
 			values.push(ballColor);
 		}

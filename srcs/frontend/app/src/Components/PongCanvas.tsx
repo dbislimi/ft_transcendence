@@ -105,7 +105,7 @@ function PongCanvas({
 			c.rect(p1X, players.p1.y * scale, playerWidth, p1Size);
 			const isP1Opponent = side !== 0;
 			c.fillStyle = isP1Opponent
-				? opponentPaddleColor ?? "#ffffff"
+				? getColor(opponentPaddleColor ?? "White")
 				: getColor(cosmetics.paddleColor);
 			c.shadowBlur = 10;
 			c.shadowColor = "white";
@@ -115,7 +115,7 @@ function PongCanvas({
 			c.rect(p2X, players.p2.y * scale, playerWidth, p2Size);
 			const isP2Opponent = side !== 1;
 			c.fillStyle = isP2Opponent
-				? opponentPaddleColor ?? "#ffffff"
+				? getColor(opponentPaddleColor ?? "White")
 				: getColor(cosmetics.paddleColor);
 			c.shadowBlur = 10;
 			c.shadowColor = "white";
