@@ -38,8 +38,6 @@ export default class Game {
 		train?: boolean;
 		options?: {
 			maxScore?: number;
-			height?: number;
-			width?: number;
 			bonusNb?: number;
 			bonusTypes?: string[];
 			playerSpeed?: number;

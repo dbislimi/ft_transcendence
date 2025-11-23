@@ -20,13 +20,13 @@ const router = createBrowserRouter([
 			{
 				element: <ProtectedRoute />,
 				children: [
-					{ path: "/pong", element: <pages.Pong /> },
-					{ path: "/bomb-party", element: <pages.BombParty /> },
-					{ path: "/settings", element: <pages.Settings /> },
-					{ path: "/profile", element: <pages.Profile /> },
 					{ path: "/friends", element: <pages.Friends /> },
+					{ path: "/profile", element: <pages.Profile /> },
 				],
 			},
+			{ path: "/settings", element: <pages.Settings /> },
+			{ path: "/pong", element: <pages.Pong /> },
+			{ path: "/bomb-party", element: <pages.BombParty /> },
 			{ path: "/", element: <pages.Home /> },
 			{ path: "/Connection", element: <pages.Connection /> },
 			{ path: "/Confirmation", element: <pages.Confirmation /> },

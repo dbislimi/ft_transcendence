@@ -35,7 +35,6 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const [settings, setSettingsState] = useState<GameSettings>(() => {
-		// Charger depuis sessionStorage au démarrage
 		try {
 			const stored = sessionStorage.getItem(STORAGE_KEY);
 			return stored

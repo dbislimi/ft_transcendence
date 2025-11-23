@@ -84,7 +84,7 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 						label="Mode"
 						options={["Tournament", "Quick Match"]}
 						value={mode}
-						onChange={setMode}
+						onChange={(val) => setMode(val as string)}
 						columns={2}
 						color="cyan"
 						variant="lg"
@@ -94,7 +94,7 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 							<ChoiceGroup
 								options={["Create", "Join"]}
 								value={variant}
-								onChange={setVariant}
+								onChange={(val) => setVariant(val as string)}
 								columns={2}
 								color="cyan"
 								variant="md"
@@ -105,7 +105,9 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 										label="Capacite"
 										options={[4, 8, 16, 32]}
 										value={size}
-										onChange={setSize}
+										onChange={(val) =>
+											setSize(val as number)
+										}
 										columns={4}
 										color="cyan"
 										variant="sm"

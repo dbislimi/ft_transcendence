@@ -45,6 +45,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 	}
 	console.log("JWT OK");
 	fastify.decorate("clients", new Map<number, Client>());
+	fastify.decorate("guestIdCounter", 0);
 	fastify.decorate("findClientByName", (name: string): Client | null => {
 		for (const client of fastify.clients.values())
 			if (client.name === name) return client;
@@ -61,7 +62,19 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 		): Client | null => {
 			try {
 				const token = req.query?.token;
-				if (!token) return null;
+				if (!token) {
+					// Create guest client
+					const guestId = --fastify.guestIdCounter; // Negative IDs for guests
+					const guestName = `Guest${Math.abs(guestId)}`;
+					console.log("Nouvelle connexion guest");
+					const client: Client = {
+						id: guestId,
+						name: guestName,
+						socket,
+					};
+					fastify.clients.set(guestId, client);
+					return client;
+				}
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;

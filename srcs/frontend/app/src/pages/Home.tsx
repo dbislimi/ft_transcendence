@@ -94,6 +94,39 @@ export default function Home() {
 									: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
 							}`}
 						>
+							{/* Always show games */}
+							<ActionButton
+								to="/pong"
+								color="purple"
+								icon={
+									<svg
+										className="w-6 h-6 text-purple-400"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
+									</svg>
+								}
+								title="Pong"
+								subtitle="Lancer Pong"
+							/>
+							<ActionButton
+								to="/bomb-party"
+								color="pink"
+								icon={
+									<span className="text-pink-400 text-xl">
+										💣
+									</span>
+								}
+								title="Bomb Party"
+								subtitle="Lancer Bomb Party"
+							/>
 							{!isAuthenticated && (
 								<>
 									<ActionButton
@@ -169,47 +202,15 @@ export default function Home() {
 										subtitle="Gérer mon compte"
 									/>
 									<ActionButton
-										to="/pong"
-										color="purple"
-										icon={
-											<svg
-												className="w-6 h-6 text-purple-400"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-												/>
-											</svg>
-										}
-										title="Pong"
-										subtitle="Lancer Pong"
-									/>
-									<ActionButton
 										color="cyan"
 										icon={
 											<span className="text-cyan-400 text-xl">
-													🖼️
+												🖼️
 											</span>
 										}
 										title="Boutique"
 										subtitle="Choisir un arrière-plan"
 										onClick={() => setOpenPicker(true)}
-									/>
-									<ActionButton
-										to="/bomb-party"
-										color="pink"
-										icon={
-											<span className="text-pink-400 text-xl">
-													💣
-											</span>
-										}
-										title="Bomb Party"
-										subtitle="Lancer Bomb Party"
 									/>
 									<ActionButton
 										to="/about"

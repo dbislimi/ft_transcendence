@@ -6,6 +6,7 @@ declare module "fastify" {
 	interface FastifyInstance {
 		db: sqlite3.Database;
 		clients: Map<number, Client>;
+		guestIdCounter: number;
 		getClient(
 			req: FastifyRequest<{ Querystring: { token?: string } }>,
 			socket: any

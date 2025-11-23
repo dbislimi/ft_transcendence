@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useGameSettings } from "../context/GameSettingsContext";
 
 interface GameSettingsModalProps {
 	onClose: () => void;
@@ -21,13 +22,12 @@ export default function GameSettingsModal({
 	onClose,
 	onConfirm,
 }: GameSettingsModalProps) {
-	const [bonusNb, setBonusNb] = useState(1);
-	const [selectedBonuses, setSelectedBonuses] = useState<string[]>([
-		"Bigger",
-		"Smaller",
-		"Faster",
-	]);
-	const [playerSpeed, setPlayerSpeed] = useState(90);
+	const { settings } = useGameSettings();
+	const [bonusNb, setBonusNb] = useState(settings.bonusNb);
+	const [selectedBonuses, setSelectedBonuses] = useState<string[]>(
+		settings.bonusTypes
+	);
+	const [playerSpeed, setPlayerSpeed] = useState(settings.playerSpeed);
 
 	const handleBonusToggle = (bonusId: string) => {
 		setSelectedBonuses((prev) =>

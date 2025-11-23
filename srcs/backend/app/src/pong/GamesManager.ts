@@ -267,7 +267,6 @@ export default class GamesManager {
 	startOffline(
 		client: Client,
 		diff: difficulty | null,
-		skipCountdown?: boolean,
 		options?: {
 			bonusNb?: number;
 			bonusTypes?: string[];
@@ -322,8 +321,7 @@ export default class GamesManager {
 			options,
 		});
 		this.setRoom(client, game);
-		if (skipCountdown) game.start();
-		else this.startWithCountdown(game, game.clients);
+		game.start();
 		return diff === null;
 	}
 

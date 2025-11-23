@@ -31,8 +31,8 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({
 	const { token, user } = useUser();
 
 	const isOnline = (userId: number): boolean => {
-		const friend = friends.find(f => f.id === userId);
-		return friend ? (friend.online === true || friend.online === 1) : false;
+		const friend = friends.find((f) => f.id === userId);
+		return friend ? friend.online === true || friend.online === 1 : false;
 	};
 
 	const isOnlineStatus = (online?: number | boolean): boolean => {
@@ -41,10 +41,10 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const refreshFriends = async (): Promise<void> => {
 		if (!token) return;
-		
+
 		try {
-			const res = await fetch("http://localhost:3000/friends", { 
-				headers: { Authorization: `Bearer ${token}` } 
+			const res = await fetch("http://localhost:3000/friends", {
+				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
 				const data = await res.json();
@@ -66,49 +66,61 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({
 	useEffect(() => {
 		const handleFriendsMessage = (event: CustomEvent) => {
 			const data = event.detail;
-			
+
 			switch (data.type) {
 				case "connected":
 					console.log("Friends WebSocket: connecté");
 					break;
-				
+
 				case "friend_request_received":
-				case "friend_request_accepted": 
+				case "friend_request_accepted":
 				case "friend_request_rejected":
 				case "friend_removed":
 				case "user_blocked":
 					refreshFriends();
-					window.dispatchEvent(new CustomEvent('refreshFriendRequests'));
+					window.dispatchEvent(
+						new CustomEvent("refreshFriendRequests")
+					);
 					break;
-				
+
 				case "status_update":
-					setFriends(prev => prev.map(friend => 
-						friend.id === data.userId 
-							? { ...friend, online: data.online }
-							: friend
-					));
+					setFriends((prev) =>
+						prev.map((friend) =>
+							friend.id === data.userId
+								? { ...friend, online: data.online }
+								: friend
+						)
+					);
 					break;
-				
+
 				case "heartbeat":
 					break;
 			}
 		};
 
-		window.addEventListener('friendsWebSocketMessage', handleFriendsMessage as EventListener);
-		
+		window.addEventListener(
+			"friendsWebSocketMessage",
+			handleFriendsMessage as EventListener
+		);
+
 		return () => {
-			window.removeEventListener('friendsWebSocketMessage', handleFriendsMessage as EventListener);
+			window.removeEventListener(
+				"friendsWebSocketMessage",
+				handleFriendsMessage as EventListener
+			);
 		};
 	}, [refreshFriends]);
 
 	return (
-		<FriendsContext.Provider value={{
-			friends,
-			setFriends,
-			isOnline,
-			isOnlineStatus,
-			refreshFriends,
-		}}>
+		<FriendsContext.Provider
+			value={{
+				friends,
+				setFriends,
+				isOnline,
+				isOnlineStatus,
+				refreshFriends,
+			}}
+		>
 			{children}
 		</FriendsContext.Provider>
 	);
@@ -157,17 +169,34 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const { isAuthenticated, token } = useUser();
 
 	useEffect(() => {
-		if (!isAuthenticated || !token) {
-			chatWsRef.current?.close();
-			pongWsRef.current?.close();
+		if (!isAuthenticated) {
 			friendsWsRef.current?.close();
-			chatWsRef.current = null;
-			pongWsRef.current = null;
 			friendsWsRef.current = null;
+
+			pongWsRef.current = new WebSocket(`ws://localhost:3000/game`);
+			pongWsRef.current.onopen = () =>
+				console.log("Pong Websocket connecté (guest)");
+			pongWsRef.current.onclose = () =>
+				console.log("Pong Websocket fermé (guest)");
+			pongWsRef.current.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+				const route = pongRoutesRef.current.get(data.event);
+				if (route) route(data);
+			};
+
+			chatWsRef.current = new WebSocket(`ws://localhost:3000/chat`);
+			chatWsRef.current.onopen = () =>
+				console.log("Chat Websocket connecté (guest)");
+			chatWsRef.current.onclose = () =>
+				console.log("Chat Websocket fermé (guest)");
+			chatWsRef.current.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+				setMessages((prev) => [...prev, data]);
+			};
 			return;
 		}
 
-		const tokenParam = encodeURIComponent(token);
+		const tokenParam = encodeURIComponent(token!);
 
 		pongWsRef.current = new WebSocket(
 			`ws://localhost:3000/game?token=${tokenParam}`
@@ -181,16 +210,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		const onOpen = (name: string) =>
 			console.log(`${name} Websocket connecté`);
-		const onclose = (name: string) =>
+		const onClose = (name: string) =>
 			console.log(`${name} Websocket fermé`);
 
 		chatWsRef.current.onopen = () => onOpen("Chat");
 		pongWsRef.current.onopen = () => onOpen("Pong");
 		friendsWsRef.current.onopen = () => onOpen("Friends");
 
-		chatWsRef.current.onclose = () => onclose("Chat");
-		pongWsRef.current.onclose = () => onclose("Pong");
-		friendsWsRef.current.onclose = () => onclose("Friends");
+		chatWsRef.current.onclose = () => onClose("Chat");
+		pongWsRef.current.onclose = () => onClose("Pong");
+		friendsWsRef.current.onclose = () => onClose("Friends");
 
 		chatWsRef.current.onmessage = (event) => {
 			const data = JSON.parse(event.data);
@@ -200,11 +229,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		friendsWsRef.current.onmessage = (event) => {
 			try {
 				const data = JSON.parse(event.data);
-				
-				window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', { 
-					detail: data 
-				}));
-				
+
+				window.dispatchEvent(
+					new CustomEvent("friendsWebSocketMessage", {
+						detail: data,
+					})
+				);
 			} catch (err) {
 				console.error("Erreur parsing message WebSocket amis:", err);
 			}
@@ -217,7 +247,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			} catch (e) {
 				return;
 			}
-			console.log('received: ', parsed);
+			console.log("received: ", parsed);
 			const to: string | undefined =
 				typeof parsed?.to === "string" ? parsed.to : undefined;
 			if (!to) return;

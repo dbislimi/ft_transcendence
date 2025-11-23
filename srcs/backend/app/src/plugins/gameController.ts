@@ -182,7 +182,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 								local = games.startOffline(
 									client,
 									data.body.diff,
-									data.body.skipCountdown,
 									data.body.options
 								);
 								break;

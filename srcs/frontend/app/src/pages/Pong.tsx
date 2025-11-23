@@ -16,6 +16,7 @@ import { useWebSocket } from "../context/WebSocketContext";
 import PongModeSelection from "../Components/PongModeSelection";
 import PongGameArea from "../Components/PongGameArea";
 import ActionButton from "../Components/ActionButton";
+import { SettingsCard } from "../Components/SettingsCard";
 import type { GameState } from "../types/GameState";
 import type { OfflineConfig } from "../Components/OfflineCard";
 import { useUser } from "../context/UserContext";
@@ -56,8 +57,7 @@ type Ui =
 	  }
 	| { kind: "countdown"; value: number }
 	| { kind: "result"; gameOver: GameOverData }
-	| { kind: "cosmetics" }
-	| { kind: "gameSettings" };
+	| { kind: "settings" };
 
 const PLAYER_LABELS = {
 	self: "You",
@@ -275,7 +275,7 @@ export default function Pong() {
 	}, [session, view.kind, setParams, resetGameState, setControlsReady]);
 
 	useEffect(() => {
-		if (!mode && view.kind !== "menu") stop();
+		if (!mode && view.kind !== "menu" && view.kind !== "settings") stop();
 	}, [mode, view.kind]);
 
 	useEffect(() => {
@@ -569,26 +569,15 @@ export default function Pong() {
 						onSelect={(nextMode) => setParams({ mode: nextMode })}
 					/>
 					<ActionButton
-						onClick={() => setView({ kind: "cosmetics" })}
+						onClick={() => setView({ kind: "settings" })}
 						color="purple"
-						icon={
-							<span role="img" aria-label="cosmetics">
-								🎨
-							</span>
-						}
-						title="Paramètres"
-						subtitle="Personnalisez votre jeu"
-					/>
-					<ActionButton
-						onClick={() => setView({ kind: "gameSettings" })}
-						color="blue"
 						icon={
 							<span role="img" aria-label="settings">
 								⚙️
 							</span>
 						}
-						title="Paramètres de jeu"
-						subtitle="Bonus et vitesse"
+						title="Paramètres"
+						subtitle="Personnalisez votre jeu"
 					/>
 				</div>
 			)}
@@ -629,7 +618,7 @@ export default function Pong() {
 						sendStartEvent({
 							action: "play_offline",
 							diff,
-							skipCountdown: true,
+							options: gameSettings,
 						});
 						trainingLabelsRef.current = {
 							self: user?.name
@@ -662,19 +651,12 @@ export default function Pong() {
 					side={session?.side ?? 0}
 				/>
 			)}
-			{view.kind === "cosmetics" && (
-				<CosmeticsModal
-					onClose={() => setView({ kind: "menu" })}
+			{view.kind === "settings" && (
+				<SettingsCard
+					onCancel={() => setView({ kind: "menu" })}
 					cosmetics={cosmetics}
-				/>
-			)}
-			{view.kind === "gameSettings" && (
-				<GameSettingsModal
-					onClose={() => setView({ kind: "menu" })}
-					onConfirm={(settings) => {
-						updateSettings(settings);
-						setView({ kind: "menu" });
-					}}
+					onUpdateCosmetics={() => {}}
+					onUpdateGameSettings={updateSettings}
 				/>
 			)}
 		</div>
