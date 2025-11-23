@@ -24,6 +24,17 @@ function PongCanvas({
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 
+	const colorMap: Record<string, string> = {
+		Cyan: "#06b6d4",
+		Emerald: "#10b981",
+		Rose: "#f43f5e",
+		Blue: "#3b82f6",
+		Amber: "#f59e0b",
+		White: "#ffffff",
+	};
+
+	const getColor = (name: string) => colorMap[name] || "#ffffff";
+
 	const shouldMirror =
 		cosmetics.preferredSide === "right" ? side === 0 : side === 1;
 
@@ -95,7 +106,7 @@ function PongCanvas({
 			const isP1Opponent = side !== 0;
 			c.fillStyle = isP1Opponent
 				? opponentPaddleColor ?? "#ffffff"
-				: cosmetics.paddleColor;
+				: getColor(cosmetics.paddleColor);
 			c.shadowBlur = 10;
 			c.shadowColor = "white";
 			c.fill();
@@ -105,7 +116,7 @@ function PongCanvas({
 			const isP2Opponent = side !== 1;
 			c.fillStyle = isP2Opponent
 				? opponentPaddleColor ?? "#ffffff"
-				: cosmetics.paddleColor;
+				: getColor(cosmetics.paddleColor);
 			c.shadowBlur = 10;
 			c.shadowColor = "white";
 			c.fill();
@@ -120,7 +131,7 @@ function PongCanvas({
 			);
 			c.shadowBlur = 10;
 			c.shadowColor = "rgba(102, 14, 237, 1)";
-			c.fillStyle = cosmetics.ballColor;
+			c.fillStyle = getColor(cosmetics.ballColor);
 			c.fill();
 			c.shadowBlur = 0;
 			frameIdRef.current = requestAnimationFrame(loop);

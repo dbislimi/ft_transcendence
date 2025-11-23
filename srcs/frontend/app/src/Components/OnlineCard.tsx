@@ -4,6 +4,7 @@ import ChoiceGroup from "./ChoiceGroup";
 import GameInput from "./GameInput";
 import { useEffect, useState, type RefObject } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
+import { useUser } from "../context/UserContext";
 
 interface OnlineCardProps {
 	onCancel: () => void;
@@ -25,6 +26,8 @@ interface Tournament {
 
 export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	const { t } = useTranslation();
+	const { user, isAuthenticated, setGuestName } = useUser();
+	const isGuest = !isAuthenticated;
 	const [mode, setMode] = useState("Quick Match");
 	const [variant, setVariant] = useState("Join");
 	const [size, setSize] = useState(4);
@@ -62,12 +65,13 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	}, [mode, variant, addPongRoute, removePongRoute, pongWsRef]);
 
 	const disable =
-		variant === "Create"
+		(isGuest && !user?.name?.trim()) ||
+		(variant === "Create"
 			? (!priv && !name.trim()) ||
 			  (priv && (!name.trim() || !password.trim()))
 			: priv
 			? !name.trim() || !password.trim()
-			: !name.trim();
+			: !name.trim());
 
 	const onSubmit = () => onConfirm(mode, variant, size, name, password);
 
@@ -77,9 +81,26 @@ export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 				title="Online Mode"
 				onCancel={onCancel}
 				onConfirm={onSubmit}
-				disabledConfirm={mode !== "Quick Match" ? disable : false}
+				disabledConfirm={
+					mode === "Tournament"
+						? disable
+						: isGuest && !user?.name?.trim()
+				}
 			>
 				<div className="space-y-5">
+					{isGuest && (
+						<div>
+							<label className="block text-slate-300 text-sm mb-1">
+								Votre nom
+							</label>
+							<input
+								value={user?.name || ""}
+								onChange={(e) => setGuestName(e.target.value)}
+								className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+								placeholder="Entrez votre nom"
+							/>
+						</div>
+					)}
 					<ChoiceGroup
 						label="Mode"
 						options={["Tournament", "Quick Match"]}

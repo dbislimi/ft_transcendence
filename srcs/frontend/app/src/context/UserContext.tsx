@@ -31,6 +31,7 @@ interface UserContextType {
 	logout: () => void;
 	isAuthenticated: boolean;
 	setUser: (user: User | null) => void;
+	setGuestName: (name: string) => void;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -43,6 +44,7 @@ const UserContext = createContext<UserContextType>({
 	logout: () => {},
 	isAuthenticated: false,
 	setUser: () => {},
+	setGuestName: () => {},
 });
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -88,6 +90,33 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
+	const setGuestName = useCallback(
+		(name: string) => {
+			try {
+				sessionStorage.setItem("guestName", name);
+			} catch (e) {
+				console.error("Failed to save guestName:", e);
+			}
+			if (!token) {
+				setUser({
+					id: -1,
+					name,
+					email: "",
+					display_name: name,
+					avatar: "",
+					wins: 0,
+					losses: 0,
+					cosmetics: {
+						preferredSide: "left",
+						paddleColor: "White",
+						ballColor: "White",
+					},
+				});
+			}
+		},
+		[token]
+	);
+
 	const login = (userData: User, userToken: string) => {
 		setUser(userData);
 		sessionStorage.setItem("token", userToken);
@@ -101,7 +130,38 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const refreshUser = async () => {
 		setIsLoading(true);
 		if (!token) {
-			setUser(null);
+			try {
+				const guestName = sessionStorage.getItem("guestName") || "";
+				setUser({
+					id: -1,
+					name: guestName,
+					email: "",
+					display_name: guestName,
+					avatar: "",
+					wins: 0,
+					losses: 0,
+					cosmetics: {
+						preferredSide: "left",
+						paddleColor: "White",
+						ballColor: "White",
+					},
+				});
+			} catch {
+				setUser({
+					id: -1,
+					name: "",
+					email: "",
+					display_name: "",
+					avatar: "",
+					wins: 0,
+					losses: 0,
+					cosmetics: {
+						preferredSide: "left",
+						paddleColor: "White",
+						ballColor: "White",
+					},
+				});
+			}
 			setIsLoading(false);
 			return;
 		}
@@ -165,6 +225,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				logout,
 				isAuthenticated,
 				setUser,
+				setGuestName,
 			}}
 		>
 			{children}

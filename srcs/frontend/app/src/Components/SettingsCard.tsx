@@ -31,7 +31,11 @@ export function SettingsCard({
 	const { user, setUser } = useUser();
 	const { settings } = useGameSettings();
 
-	const [tempCosmetics, setTempCosmetics] = useState(cosmetics);
+	const [tempCosmetics, setTempCosmetics] = useState({
+		preferredSide: cosmetics?.preferredSide || "left",
+		paddleColor: cosmetics?.paddleColor || "White",
+		ballColor: cosmetics?.ballColor || "Rose",
+	});
 
 	const [bonusNb, setBonusNb] = useState(settings.bonusNb);
 	const [selectedBonuses, setSelectedBonuses] = useState<string[]>(
@@ -46,9 +50,9 @@ export function SettingsCard({
 	];
 
 	const hasCosmeticsChanges =
-		tempCosmetics.preferredSide !== cosmetics.preferredSide ||
-		tempCosmetics.paddleColor !== cosmetics.paddleColor ||
-		tempCosmetics.ballColor !== cosmetics.ballColor;
+		tempCosmetics.preferredSide !== (cosmetics?.preferredSide || "left") ||
+		tempCosmetics.paddleColor !== (cosmetics?.paddleColor || "White") ||
+		tempCosmetics.ballColor !== (cosmetics?.ballColor || "Rose");
 
 	const hasGameSettingsChanges =
 		bonusNb !== settings.bonusNb ||

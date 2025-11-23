@@ -8,7 +8,6 @@ import WaitingOverlay from "../Components/WaitingOverlay";
 import { ReadyButton } from "../Components/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
 import { OfflineCard } from "../Components/OfflineCard";
-import CosmeticsModal from "../Components/CosmeticsModal";
 import usePongParams from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { OnlineCard } from "../Components/OnlineCard";
@@ -22,9 +21,7 @@ import type { OfflineConfig } from "../Components/OfflineCard";
 import { useUser } from "../context/UserContext";
 import { useGameSession } from "../context/GameSessionContext";
 import { useGameSettings } from "../context/GameSettingsContext";
-import GameSettingsModal, {
-	type GameSettings,
-} from "../Components/GameSettingsModal";
+
 
 type PlayerLabels = {
 	self: string;
@@ -76,7 +73,7 @@ const initGameState = (): GameState => ({
 });
 
 export default function Pong() {
-	const { user } = useUser();
+	const { user, isAuthenticated } = useUser();
 	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 	const { session, setSession, clearSession } = useGameSession();
 	const { mode, setParams } = usePongParams();
@@ -99,8 +96,8 @@ export default function Pong() {
 
 	const cosmetics = user?.cosmetics || {
 		preferredSide: "left",
-		paddleColor: "#ffffff",
-		ballColor: "#ff0000",
+		paddleColor: "White",
+		ballColor: "Rose",
 	};
 
 	const labels = useMemo((): PlayerLabels => {
@@ -407,7 +404,12 @@ export default function Pong() {
 				resetGameState();
 				setControlsReady(false);
 				activeSessionRef.current = true;
-				sendStartEvent({ action: "play_offline", diff });
+				sendStartEvent({
+					action: "play_offline",
+					diff,
+					options: payload.options,
+				});
+				setView({ kind: "play" });
 				return;
 			}
 			sendStartEvent(payload);
@@ -455,6 +457,14 @@ export default function Pong() {
 			setParams({ mode: "online" });
 			sessionMetaRef.current.sessionType = "online";
 			sessionMetaRef.current.isTournament = selectedMode === "Tournament";
+			if (!isAuthenticated && user?.name) {
+				pongWsRef.current?.send(
+					JSON.stringify({
+						event: "set_name",
+						name: user.name,
+					})
+				);
+			}
 			if (selectedMode === "Tournament") {
 				pongWsRef.current?.send(
 					JSON.stringify({
@@ -472,7 +482,7 @@ export default function Pong() {
 				sendStartEvent({ action: "play_online" });
 			}
 		},
-		[sendStartEvent, setParams, pongWsRef]
+		[sendStartEvent, setParams, pongWsRef, user]
 	);
 
 	const handleOfflineConfirm = useCallback(
@@ -506,6 +516,7 @@ export default function Pong() {
 				diff,
 				options: gameSettings,
 			});
+			setView({ kind: "play" });
 		},
 		[
 			setParams,
@@ -558,7 +569,10 @@ export default function Pong() {
 			{waitingView && showGameField && (
 				<WaitingOverlay opponentName={waitingView.opponentName} />
 			)}
-			{(isSearching || isTraining) && (
+			{(isSearching ||
+				isTraining ||
+				(view.kind === "play" &&
+					session?.sessionType === "offline")) && (
 				<div className="absolute top-4 left-4 z-50">
 					<BackToMenuButton onClick={handleBackToMenu} />
 				</div>

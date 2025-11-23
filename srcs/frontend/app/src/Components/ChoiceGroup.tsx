@@ -101,7 +101,7 @@ export default function ChoiceGroup<T extends string | number>(
 						? (opt as ColorOption).label
 						: String(opt);
 					const compareValue = isColorOption
-						? (opt as ColorOption).color
+						? (opt as ColorOption).label
 						: opt;
 					const customColor = isColorOption
 						? (opt as ColorOption).color

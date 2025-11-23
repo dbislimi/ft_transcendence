@@ -65,6 +65,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 				console.log(`FROM: ${client.name}`);
 				console.log(data);
 				switch (data.event) {
+					case "set_name":
+						if (client.id < 0) {
+							console.log(
+								`Setting guest name from ${client.name} to ${data.name}`
+							);
+							client.name = data.name + " (Guest)";
+						}
+						break;
 					case "invitation": {
 						const { action, invitationId, friendId, options } =
 							data.body;

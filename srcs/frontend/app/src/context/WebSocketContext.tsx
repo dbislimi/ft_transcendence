@@ -180,8 +180,15 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				console.log("Pong Websocket fermé (guest)");
 			pongWsRef.current.onmessage = (event) => {
 				const data = JSON.parse(event.data);
-				const route = pongRoutesRef.current.get(data.event);
-				if (route) route(data);
+				console.log("received pong (guest): ", data);
+				if (!data.to) return;
+				const handler = pongRoutesRef.current.get(data.to);
+				if (!handler) return;
+				try {
+					handler(data);
+				} catch (e) {
+					console.error("pong route handler error:", e);
+				}
 			};
 
 			chatWsRef.current = new WebSocket(`ws://localhost:3000/chat`);
