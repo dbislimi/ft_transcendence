@@ -195,10 +195,10 @@ export function SettingsCard({
 						<div className="space-y-6">
 							<ChoiceGroup
 								label="Nombre de bonus simultanés"
-								options={["0", "1", "2", "3", "4", "5"]}
+								options={["0", "1", "2", "3", "4"]}
 								value={bonusNb.toString()}
 								onChange={(value) => setBonusNb(Number(value))}
-								columns={6}
+								columns={5}
 								color="purple"
 								variant="md"
 							/>
