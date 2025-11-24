@@ -62,9 +62,9 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       displayName = body.display_name;
     }
 
-  const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const displayNameRegex = /^[a-zA-Z0-9_-]+$/;
+    const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const displayNameRegex = /^[a-zA-Z0-9_-]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
     if (!nameRegex.test(name)) {
@@ -125,7 +125,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       console.log("lastID:", userId);
 
       const token = jwt.sign(
-        { id: userId, name, email },
+        { id: userId, name, email, display_name: displayName },
         JWT_SECRET,
         { expiresIn: "2h" }
       );
@@ -180,40 +180,42 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       }
 
       if (user.twoFAEnabled === 1) {
-      const otp = fastify.generateOtp();
+        const otp = fastify.generateOtp();
 
-      await new Promise<void>((resolve, reject) => {
-        db.run(
-          'UPDATE users SET twoFAOtp = ? WHERE id = ?',
-          [otp, user.id],
-          (err: any) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+        await new Promise<void>((resolve, reject) => {
+          db.run(
+            'UPDATE users SET twoFAOtp = ? WHERE id = ?',
+            [otp, user.id],
+            (err: any) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
 
-      const emailSent = await fastify.send2faEmail(user.email, otp);
-      if (!emailSent) {
-        return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
+        const emailSent = await fastify.send2faEmail(user.email, otp);
+        if (!emailSent) {
+          return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
+        }
+
+        return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
       }
 
-      return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
-      }
-
-    //console.log("EREN YEAGER");
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email },
-      JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1 , user: {
+      //console.log("EREN YEAGER");
+      const token = jwt.sign(
+        { id: user.id, name: user.name, email, display_name: user.display_name },
+        JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+      return reply.send({
+        success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1, user: {
           id: user.id,
           name: user.name,
           email: user.email,
           display_name: user.display_name,
           avatar: user.avatar
-        }});
+        }
+      });
     } catch (err) {
       console.error(err);
       return reply.code(500).send({ error: "Erreur serveur" });

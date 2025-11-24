@@ -154,11 +154,12 @@ export default class Tournament {
 			this.joinMatch(parent);
 			return;
 		}
-		console.log("start");
-		sendTournamentMessage([parent.waiting?.id, player.id], ` Nouveau match de juif : ${parent.waiting?.name} VS ${player.name}`);
 		if (parent.waiting) {
 			const waitingPlayer = parent.waiting;
 			const currentPlayer = player;
+
+			console.log("start");
+			sendTournamentMessage([waitingPlayer.id, currentPlayer.id], ` Nouveau match de tournoi : ${waitingPlayer.name} VS ${currentPlayer.name}`);
 
 			parent.game = new Game({
 				p1: parent.waiting,

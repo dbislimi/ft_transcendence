@@ -113,10 +113,11 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string; display_name: string };
       console.log("l'id dans le back : ", decoded.id);
       console.log("le name dans le back : ", decoded.name);
-      const client: Client = { id: decoded.id, name: decoded.name, socket };
+      console.log("le display_name dans le back : ", decoded.display_name);
+      const client: Client = { id: decoded.id, name: decoded.display_name || decoded.name, socket };
       clients.push(client);
 
       fastify.log.info(`✅ ${client.name} connecté (${clients.length} clients)`);
@@ -197,7 +198,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           const [removedClient] = clients.splice(index, 1);
           fastify.log.info(`❌ ${removedClient.name} déconnecté (${clients.length} restants)`);
         } else {
-            fastify.log.info(`❌ Client inconnu déconnecté`);
+          fastify.log.info(`❌ Client inconnu déconnecté`);
         }
         broadcastUsers();
       });

@@ -10,7 +10,7 @@ export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"chat" | "users">("chat");
   const [target, setTarget] = useState<number | null>(null);
-  
+
   // CORRECTION 1 : On remplace userId par userName (string) dans le type
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userName: string } | null>(null);
 
@@ -49,13 +49,13 @@ export default function ChatWidget() {
     setInput("");
   };
 
-  const blockUser = (userId: number) => {
-    chatWsRef.current?.send(JSON.stringify({ type: "block", userId }));
+  const blockUser = (userId: number, userName: string) => {
+    chatWsRef.current?.send(JSON.stringify({ type: "block", userId, name: userName }));
     if (target === userId) setTarget(null);
   };
 
-  const unblockUser = (userId: number) => {
-    chatWsRef.current?.send(JSON.stringify({ type: "unblock", userId }));
+  const unblockUser = (userId: number, userName: string) => {
+    chatWsRef.current?.send(JSON.stringify({ type: "unblock", userId, name: userName }));
   };
 
   const handleInvite = (friendId: number) => {
@@ -80,7 +80,7 @@ export default function ChatWidget() {
   };
 
   const goToProfile = (userName: string) => {
-    navigate(`/profile/${encodeURIComponent(userName)}`); 
+    navigate(`/profile/${encodeURIComponent(userName)}`);
     setOpen(false);
     setContextMenu(null);
   };
@@ -144,8 +144,8 @@ export default function ChatWidget() {
               {users
                 .filter(u => u.id !== user.id)
                 .map(u => (
-                  <div 
-                    key={u.id} 
+                  <div
+                    key={u.id}
                     className="flex flex-col mb-2 border-b pb-2 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition"
                     // CORRECTION 3 : On passe u.name au lieu de u.id
                     onContextMenu={(e) => handleContextMenu(e, u.name)}
@@ -168,11 +168,11 @@ export default function ChatWidget() {
                           </button>
                         )}
                         {u.blocked ? (
-                          <button onClick={() => unblockUser(u.id)} className="text-xs text-green-600 hover:underline">
+                          <button onClick={() => unblockUser(u.id, u.name)} className="text-xs text-green-600 hover:underline">
                             Débloquer
                           </button>
                         ) : (
-                          <button onClick={() => blockUser(u.id)} className="text-xs text-red-600 hover:underline">
+                          <button onClick={() => blockUser(u.id, u.name)} className="text-xs text-red-600 hover:underline">
                             Bloquer
                           </button>
                         )}
@@ -203,7 +203,7 @@ export default function ChatWidget() {
       )}
 
       {contextMenu && (
-        <div 
+        <div
           className="fixed bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-xl rounded-lg py-1 z-[60] min-w-[120px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
