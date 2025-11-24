@@ -20,7 +20,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
       auth: fastifyOauth2.GOOGLE_CONFIGURATION,
     },
     startRedirectPath: '/auth/google',
-  callbackUri: 'http://localhost:3001/auth/google/callback',
+    callbackUri: 'http://localhost:3001/auth/google/callback',
     scope: ['profile', 'email'],
     });
 

@@ -36,7 +36,9 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
   			fromId INTEGER NOT NULL,
   			toId INTEGER,
   			text TEXT NOT NULL,
-  			date TEXT NOT NULL
+			date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    		FOREIGN KEY (fromId) REFERENCES users(id),
+    		FOREIGN KEY (toId) REFERENCES users(id)
 		);`);
 
 		db.run(`CREATE TABLE IF NOT EXISTS blocks (

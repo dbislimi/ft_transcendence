@@ -1,29 +1,41 @@
 import { useState, useRef, useEffect } from "react";
 import { useWebSocket } from "../contexts/WebSocketContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ChatWidget() {
-  const savedUser = localStorage.getItem("user");
-  const savedToken = localStorage.getItem("token");
   const { chatWsRef, pongWsRef, messages, users } = useWebSocket();
-
-  if (!savedUser || !savedToken) return null;
-
-  const parsedUser = JSON.parse(savedUser);
-  const user = { ...parsedUser, id: Number(parsedUser.id) };
+  const navigate = useNavigate();
 
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"chat" | "users">("chat");
   const [target, setTarget] = useState<number | null>(null);
+  
+  // CORRECTION 1 : On remplace userId par userName (string) dans le type
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userName: string } | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // Scroll automatique
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open, view]);
 
-  // Envoi de message
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
+  const savedUser = localStorage.getItem("user");
+  const savedToken = localStorage.getItem("token");
+
+  if (!savedUser || !savedToken) {
+    return null;
+  }
+
+  const parsedUser = JSON.parse(savedUser);
+  const user = { ...parsedUser, id: Number(parsedUser.id) };
+
   const sendMessage = () => {
     if (!chatWsRef.current || chatWsRef.current.readyState !== WebSocket.OPEN || !input.trim()) return;
 
@@ -31,14 +43,12 @@ export default function ChatWidget() {
       JSON.stringify({
         type: "message",
         text: input,
-        to: target, // null = global, sinon ID du destinataire
+        to: target,
       })
     );
-
     setInput("");
   };
 
-  // Blocage
   const blockUser = (userId: number) => {
     chatWsRef.current?.send(JSON.stringify({ type: "block", userId }));
     if (target === userId) setTarget(null);
@@ -53,16 +63,26 @@ export default function ChatWidget() {
       pongWsRef.current.send(
         JSON.stringify({
           event: "invitation",
-          body: {
-            action: "invite",
-            friendId: friendId,
-          },
+          body: { action: "invite", friendId: friendId },
         })
       );
-      console.log(`Invitation envoyée à l'utilisateur ${friendId}`);
-    } else {
-      console.error("WebSocket Pong non connecté");
     }
+  };
+
+  // CORRECTION 2 : La fonction prend maintenant un string (userName)
+  const handleContextMenu = (e: React.MouseEvent, userName: string) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      userName: userName // On stocke le nom
+    });
+  };
+
+  const goToProfile = (userName: string) => {
+    navigate(`/profile/${encodeURIComponent(userName)}`); 
+    setOpen(false);
+    setContextMenu(null);
   };
 
   return (
@@ -75,8 +95,7 @@ export default function ChatWidget() {
       </button>
 
       {open && (
-        <div className="w-80 h-[26rem] bg-white dark:bg-gray-900 rounded-2xl shadow-xl mt-2 flex flex-col border border-gray-300 dark:border-gray-700">
-          {/* HEADER */}
+        <div className="w-80 h-[26rem] bg-white dark:bg-gray-900 rounded-2xl shadow-xl mt-2 flex flex-col border border-gray-300 dark:border-gray-700 relative">
           <div className="flex justify-between items-center px-3 py-2 bg-blue-600 text-white rounded-t-2xl">
             <div className="flex gap-3">
               <button
@@ -95,7 +114,6 @@ export default function ChatWidget() {
             <button onClick={() => setOpen(false)}>✖</button>
           </div>
 
-          {/* CONTENU */}
           {view === "chat" ? (
             <div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
               {messages
@@ -126,7 +144,12 @@ export default function ChatWidget() {
               {users
                 .filter(u => u.id !== user.id)
                 .map(u => (
-                  <div key={u.id} className="flex flex-col mb-2 border-b pb-2 last:border-0">
+                  <div 
+                    key={u.id} 
+                    className="flex flex-col mb-2 border-b pb-2 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition"
+                    // CORRECTION 3 : On passe u.name au lieu de u.id
+                    onContextMenu={(e) => handleContextMenu(e, u.name)}
+                  >
                     <div className="flex justify-between items-center">
                       <button
                         onClick={() => setTarget(u.id)}
@@ -160,10 +183,9 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* INPUT */}
           <div className="p-2 border-t flex gap-2">
             <input
-              className="flex-1 border rounded-lg px-2"
+              className="flex-1 border rounded-lg px-2 text-black dark:text-white dark:bg-gray-700"
               value={input}
               placeholder={
                 target
@@ -177,6 +199,21 @@ export default function ChatWidget() {
               ➤
             </button>
           </div>
+        </div>
+      )}
+
+      {contextMenu && (
+        <div 
+          className="fixed bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-xl rounded-lg py-1 z-[60] min-w-[120px]"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button
+            // Maintenant contextMenu.userName existe et est valide
+            onClick={() => goToProfile(contextMenu.userName)}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            👤 Voir profil
+          </button>
         </div>
       )}
     </div>

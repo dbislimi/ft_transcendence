@@ -8,6 +8,22 @@ export default fp(async function userPlugin(fastify: FastifyInstance<any, any, a
   const dbGet = promisify(fastify.db.get.bind(fastify.db));
   const dbRun = promisify(fastify.db.run.bind(fastify.db));
 
+  fastify.get('/users/:name', async (request, reply) => {
+    const {name} = request.params as { name: string };
+    const decodedName = decodeURIComponent(name);
+    try{
+      const user = await dbGet('SELECT id, display_name, avatar, online FROM users WHERE display_name = ?', [decodedName]);
+      
+      if (!user)
+        return reply.code(404).send({ error: "Utilisateur introuvable" });
+      return (user);
+    }
+    catch (err) {
+      fastify.log.error(err);
+      return reply.code(500).send({ error: "Erreur serveur" });
+    }
+  })
+
   fastify.get('/me', async (request, reply) => {
     const decoded = verifyToken(request, reply);
     if (!decoded) return;

@@ -29,6 +29,7 @@ const router = createBrowserRouter([
       { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
       { path: "/bomb-party/profile", element: <pages.BombPartyProfilePage /> },
       { path: "/profile", element: <pages.Profile /> },
+      { path: "/profileChat", element: <pages.ProfileChat /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
       { path: "/settings", element: <pages.Settings /> },
