@@ -45,12 +45,13 @@ export class BombPartyEngine {
     };
   }
 
-  startGame(config: GameConfig): void {
+  startGame(config: GameConfig, player1Name?: string): void {
     const players: Player[] = [];
     for (let i = 0; i < config.playersCount; i++) {
+      const defaultName = i === 0 && player1Name ? player1Name : `Joueur ${i + 1}`;
       players.push({
         id: `player-${i + 1}`,
-        name: `Joueur ${i + 1}`,
+        name: defaultName,
         lives: config.livesPerPlayer,
         isEliminated: false,
         streak: 0,

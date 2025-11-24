@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BombPartyEngine } from '../../game-bomb-party/core/engine';
 import { TurnTimer } from '../../game-bomb-party/core/timer';
 import { bombPartyStatsService } from '../../services/bombPartyStatsService';
@@ -33,6 +34,7 @@ export interface UseBombPartyGameReturn {
 }
 
 export function useBombPartyGame(user: any) {
+  const { t } = useTranslation();
   const [engine] = useState(() => new BombPartyEngine());
   const [timer] = useState(() => new TurnTimer());
   const [gameState, setGameState] = useState(engine.getState());
@@ -165,13 +167,13 @@ export function useBombPartyGame(user: any) {
       
       const redirectTimer = setTimeout(() => {
         console.log("[useBombPartyGame] Partie terminée, redirection vers l'écran d'accueil");
-        alert("Partie terminée. Retour à l'écran d'accueil...");
+        alert(t('bombParty.gameOver.redirectToMenu', 'Partie terminée. Retour à l\'écran d\'accueil...'));
         setGamePhase('RULES');
       }, 5000);
       
       return () => clearTimeout(redirectTimer);
     }
-  }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords, setGamePhase, user]);
+  }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords, setGamePhase, user, t]);
 
   const handleWordSubmit = useCallback((word: string, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null) => {
     console.log('[useBombPartyGame] handleWordSubmit called', {
@@ -388,7 +390,9 @@ export function useBombPartyGame(user: any) {
     setGameStartTime(Date.now());
     
     if (gameMode === 'local') {
-      engine.startGame(config);
+      // recupere le nom user si log sinon on met un 
+      const player1Name = user?.display_name || user?.name || undefined;
+      engine.startGame(config, player1Name);
       setGameState(engine.getState());
       setGamePhase('GAME');
       setTurnStartTime(Date.now());
@@ -400,7 +404,7 @@ export function useBombPartyGame(user: any) {
       console.log('Envoi de bp:lobby:start au serveur');
       bombPartyService.startGame();
     }
-  }, [engine, setGamePhase]);
+  }, [engine, setGamePhase, user]);
 
   const resetGame = useCallback(() => {
     engine.reset();

@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import BackgroundSurface from "./BackgroundSurface";
+import ChatWidget from "./ChatWidget";
 
 export default function Layout() {
 	const location = useLocation();
@@ -14,6 +15,7 @@ export default function Layout() {
 				<main className="h-full">
 					<Outlet />
 				</main>
+				<ChatWidget />
 			</BackgroundSurface>
 		</>
 	)

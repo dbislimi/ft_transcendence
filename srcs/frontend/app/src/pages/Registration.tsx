@@ -90,7 +90,7 @@ export default function Registration() {
     try {
       console.debug("[Registration] Sending payload to /register:", info);
 
-      const response = await fetch("http://localhost:3001/register", {
+      const response = await fetch("https://localhost:3001/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(info),
@@ -108,7 +108,7 @@ export default function Registration() {
           name: data.user?.name || info.name,
           email: data.user?.email || info.email,
         };
-        login(userData);
+        login(userData, data.token);
         navigate("/");
       } else {
         const errMsg = data.error || (data.raw ? data.raw : "Erreur serveur");

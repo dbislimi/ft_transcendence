@@ -9,6 +9,7 @@ services:
       - ../AI:/usr/AI
       - ./backend/app:/usr/app
       - ./shared:/usr/shared
+      - ./certs:/usr/certs
       - /usr/app/node_modules
     env_file:
       - ./backend/app/.env
@@ -38,6 +39,7 @@ services:
     volumes:
       - ./frontend/app:/usr/app
       - ./shared:/usr/shared
+      - ./certs:/usr/certs
       - /usr/app/node_modules
     ports:
       - 5173:5173

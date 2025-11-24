@@ -48,7 +48,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const tokenParam = encodeURIComponent(token);
 
-    const BASE_WS_URL = "ws://localhost:3001"; 
+    const BASE_WS_URL = "wss://localhost:3001"; 
 
     pongWsRef.current = new WebSocket(`${BASE_WS_URL}/game?token=${tokenParam}`);
     chatWsRef.current = new WebSocket(`${BASE_WS_URL}/chat?token=${tokenParam}`);

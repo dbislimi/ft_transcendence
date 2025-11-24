@@ -19,7 +19,7 @@ export function usePlayerProfile(userId: string | null) {
                     throw new Error("No authentication token");
                 }
 
-                const response = await fetch(`http://localhost:3001/users/${userId}`, {
+                const response = await fetch(`https://localhost:3001/users/${userId}`, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'

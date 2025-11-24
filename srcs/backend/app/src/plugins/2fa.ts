@@ -1,10 +1,10 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
-import { request } from 'http';
+import { request } from 'https';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
@@ -23,7 +23,7 @@ export function GenerateOtp(){
     return crypto.randomInt(100000, 999999).toString();
 }
 
-export default fp(async function Send2faPlugin(fastify: Fastify) {
+export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

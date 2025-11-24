@@ -61,19 +61,19 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                 : 'text-slate-200'
             }`}>
               {didPlayerWin 
-                ? t('bombParty.gameOver.youWon', '🎉 Vous avez gagné ! 🎉')
-                : t('bombParty.gameOver.youLost', 'Partie terminée')}
+                ? t('bombParty.gameOver.youWon')
+                : t('bombParty.gameOver.youLost')}
             </h2>
             {winner && (
               <p className="text-xl text-slate-300 mb-2">
                 {didPlayerWin 
-                  ? t('bombParty.gameOver.congratulations', 'Félicitations, champion !')
-                  : t('bombParty.gameOver.winnerIs', 'Le gagnant est : {{name}}', { name: winner.name })}
+                  ? t('bombParty.gameOver.congratulations')
+                  : t('bombParty.gameOver.winnerIs', { name: winner.name })}
               </p>
             )}
             {winner && (
               <p className="text-lg text-slate-400">
-                {t('bombParty.gameOver.livesRemaining', '{{count}} vie(s) restante(s)', { count: winner.lives })}
+                {t('bombParty.gameOver.livesRemaining', { count: winner.lives })}
               </p>
             )}
           </div>
@@ -84,20 +84,20 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
             <div>
               <h2 className="text-2xl font-bold text-cyan-300 mb-2">
                 {isGameOver 
-                  ? t('bombParty.spectator.finalResults', 'Résultats finaux')
-                  : t('bombParty.spectator.title', 'Mode Spectateur')}
+                  ? t('bombParty.spectator.finalResults')
+                  : t('bombParty.spectator.title')}
               </h2>
               <p className="text-slate-400 text-sm">
                 {isGameOver
-                  ? t('bombParty.spectator.gameFinished', 'La partie est terminée')
-                  : t('bombParty.spectator.description', 'Vous observez la partie en cours')}
+                  ? t('bombParty.spectator.gameFinished')
+                  : t('bombParty.spectator.description')}
               </p>
             </div>
             <button
               onClick={onQuit}
               className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors duration-200 shadow-lg"
             >
-              {t('bombParty.spectator.quit', 'Quitter la partie')}
+              {t('bombParty.spectator.quit')}
             </button>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="text-slate-400 text-sm mb-1">
-                {t('bombParty.spectator.currentSyllable', 'Syllabe actuelle')}
+                {t('bombParty.spectator.currentSyllable')}
               </div>
               <div className="text-2xl font-bold text-cyan-300">
                 {gameState.currentSyllable || '-'}
@@ -113,21 +113,21 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="text-slate-400 text-sm mb-1">
-                {t('bombParty.spectator.phase', 'Phase')}
+                {t('bombParty.spectator.phase')}
               </div>
               <div className="text-xl font-semibold text-slate-200">
                 {gameState.phase === 'TURN_ACTIVE' 
-                  ? t('bombParty.spectator.turnActive', 'Tour actif')
+                  ? t('bombParty.spectator.turnActive')
                   : gameState.phase === 'RESOLVE'
-                  ? t('bombParty.spectator.resolving', 'Résolution')
+                  ? t('bombParty.spectator.resolving')
                   : gameState.phase === 'GAME_OVER'
-                  ? t('bombParty.spectator.gameOver', 'Partie terminée')
+                  ? t('bombParty.spectator.gameOver')
                   : gameState.phase}
               </div>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="text-slate-400 text-sm mb-1">
-                {t('bombParty.spectator.playersAlive', 'Joueurs vivants')}
+                {t('bombParty.spectator.playersAlive')}
               </div>
               <div className="text-2xl font-bold text-green-400">
                 {gameState.players.filter(p => !p.isEliminated && p.lives > 0).length}
@@ -135,7 +135,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="text-slate-400 text-sm mb-1">
-                {t('bombParty.spectator.wordsUsed', 'Mots utilisés')}
+                {t('bombParty.spectator.wordsUsed')}
               </div>
               <div className="text-2xl font-bold text-slate-200">
                 {gameState.usedWords?.length || 0}
@@ -145,7 +145,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
         </div>
         <div className="p-6">
           <h3 className="text-xl font-semibold text-slate-200 mb-4">
-            {t('bombParty.spectator.playerStats', 'Statistiques des joueurs')}
+            {t('bombParty.spectator.playerStats')}
           </h3>
           <div className="space-y-3">
             {sortedStats.map((stat) => {
@@ -177,24 +177,24 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                           {stat.player.name}
                           {isCurrentPlayer && (
                             <span className="ml-2 text-sm text-cyan-400">
-                              ({t('bombParty.spectator.you', 'Vous')})
+                              ({t('bombParty.spectator.you')})
                             </span>
                           )}
                         </span>
                         {stat.isAlive ? (
                           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-semibold">
-                            {t('bombParty.spectator.alive', 'Vivant')}
+                            {t('bombParty.spectator.alive')}
                           </span>
                         ) : (
                           <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-semibold">
-                            {t('bombParty.spectator.eliminated', 'Éliminé')}
+                            {t('bombParty.spectator.eliminated')}
                           </span>
                         )}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                         <div>
                           <div className="text-slate-400 text-xs mb-1">
-                            {t('bombParty.spectator.lives', 'Vies')}
+                            {t('bombParty.spectator.lives')}
                           </div>
                           <div className="flex items-center gap-1">
                             {Array.from({ length: stat.player.lives }, (_, i) => (
@@ -212,7 +212,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                         </div>
                         <div>
                           <div className="text-slate-400 text-xs mb-1">
-                            {t('bombParty.spectator.streak', 'Série')}
+                            {t('bombParty.spectator.streak')}
                           </div>
                           <div className="text-slate-200 font-semibold">
                             {stat.currentStreak}
@@ -220,7 +220,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                         </div>
                         <div>
                           <div className="text-slate-400 text-xs mb-1">
-                            {t('bombParty.spectator.words', 'Mots')}
+                            {t('bombParty.spectator.words')}
                           </div>
                           <div className="text-slate-200 font-semibold">
                             {stat.validWords}/{stat.wordsSubmitted}
@@ -233,7 +233,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                         </div>
                         <div>
                           <div className="text-slate-400 text-xs mb-1">
-                            {t('bombParty.spectator.avgTime', 'Temps moyen')}
+                            {t('bombParty.spectator.avgTime')}
                           </div>
                           <div className="text-slate-200 font-semibold">
                             {stat.averageResponseTime > 0 
@@ -252,7 +252,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
         {gameState.history.length > 0 && (
           <div className="p-6 border-t border-slate-700">
             <h3 className="text-xl font-semibold text-slate-200 mb-4">
-              {t('bombParty.spectator.recentHistory', 'Historique récent')}
+              {t('bombParty.spectator.recentHistory')}
             </h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {gameState.history.slice(-10).reverse().map((entry, index) => {
@@ -268,7 +268,7 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-slate-300 font-medium">
-                        {player?.name || 'Joueur inconnu'}
+                        {player?.name || t('bombParty.spectator.unknownPlayer')}
                       </span>
                       <span className={`font-mono ${
                         entry.ok ? 'text-green-400' : 'text-red-400'
@@ -279,8 +279,8 @@ export default function SpectatorView({ gameState, currentPlayerId, onQuit }: Sp
                     <div className="flex items-center gap-3 text-xs text-slate-400">
                       <span>
                         {entry.ok 
-                          ? t('bombParty.spectator.valid', '✓ Valide')
-                          : t('bombParty.spectator.invalid', '✗ Invalide')}
+                          ? t('bombParty.spectator.valid')
+                          : t('bombParty.spectator.invalid')}
                       </span>
                       <span>
                         {(entry.msTaken / 1000).toFixed(1)}s

@@ -1,0 +1,426 @@
+# 🔐 Guide de gestion des certificats SSL - ft_transcendence
+
+## 📋 Vue d'ensemble
+
+Les certificats SSL sont **obligatoires** pour ft_transcendence car le sujet exige HTTPS/WSS. Ce guide explique comment les générer, les gérer et les utiliser.
+
+---
+
+## 🎯 Stratégie recommandée
+
+**Certificats générés sur l'hôte + montés dans Docker**
+
+✅ **Avantages** :
+- Persistants (ne changent pas à chaque rebuild)
+- Acceptés une seule fois dans le navigateur
+- Partagés entre tous les containers
+- Faciles à gérer
+
+---
+
+## 🔧 Génération des certificats
+
+### **Méthode 1 : Commande manuelle** (Une seule fois)
+
+```bash
+cd /Users/benelgorch/Desktop/GitHub/ft_transcendence/srcs
+mkdir -p certs
+cd certs
+
+openssl req -x509 -newkey rsa:4096 \
+  -keyout key.pem \
+  -out cert.pem \
+  -days 365 -nodes \
+  -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Student/CN=localhost"
+```
+
+**Résultat** :
+```
+srcs/certs/
+├── cert.pem  (certificat public - 2013 bytes)
+└── key.pem   (clé privée - 3272 bytes)
+```
+
+---
+
+### **Méthode 2 : Script automatique** ⭐ (Recommandé)
+
+Créez le fichier `srcs/generate-certs.sh` :
+
+```bash
+#!/bin/bash
+
+CERT_DIR="./certs"
+CERT_FILE="$CERT_DIR/cert.pem"
+KEY_FILE="$CERT_DIR/key.pem"
+
+# Créer le dossier s'il n'existe pas
+mkdir -p "$CERT_DIR"
+
+# Générer les certificats seulement s'ils n'existent pas
+if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
+    echo "🔐 Génération des certificats SSL..."
+    openssl req -x509 -newkey rsa:4096 \
+        -keyout "$KEY_FILE" \
+        -out "$CERT_FILE" \
+        -days 365 -nodes \
+        -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Student/CN=localhost"
+    
+    chmod 600 "$KEY_FILE"
+    chmod 644 "$CERT_FILE"
+    
+    echo "✅ Certificats générés dans $CERT_DIR"
+else
+    echo "✅ Certificats déjà présents"
+fi
+```
+
+**Utilisation** :
+```bash
+chmod +x srcs/generate-certs.sh
+./srcs/generate-certs.sh
+```
+
+---
+
+### **Méthode 3 : Intégration au Makefile**
+
+Ajoutez dans votre [Makefile](file:///Users/benelgorch/Desktop/GitHub/ft_transcendence/Makefile) :
+
+```makefile
+.PHONY: certs up down clean
+
+certs:
+	@cd srcs && ./generate-certs.sh
+
+up: certs
+	@cd srcs && docker-compose up -d
+	@echo "✅ Projet lancé sur https://localhost:5173"
+
+down:
+	@cd srcs && docker-compose down
+
+clean: down
+	@cd srcs && rm -rf certs/*.pem
+	@echo "🗑️  Certificats supprimés"
+
+re: clean up
+```
+
+**Utilisation** :
+```bash
+make        # Lance le projet (génère les certs si besoin)
+make certs  # Génère uniquement les certificats
+make clean  # Supprime les certificats
+make re     # Nettoie et relance tout
+```
+
+---
+
+## 🐳 Configuration Docker
+
+### **docker-compose.yml**
+
+Les certificats doivent être montés dans les containers :
+
+```yaml
+services:
+  back:
+    volumes:
+      - ./certs:/usr/certs  # ← Monte les certificats
+      - ./backend/app:/usr/app
+      # ... autres volumes
+
+  front:
+    volumes:
+      - ./certs:/usr/certs  # ← Monte les certificats
+      - ./frontend/app:/usr/app
+      # ... autres volumes
+```
+
+### **Vérification dans les containers**
+
+```bash
+# Vérifier que les certificats sont bien montés
+docker exec api ls -la /usr/certs
+docker exec front ls -la /usr/certs
+
+# Devrait afficher :
+# -rw-r--r-- cert.pem
+# -rw------- key.pem
+```
+
+---
+
+## 🔒 Sécurité : .gitignore
+
+**IMPORTANT** : Les certificats ne doivent **JAMAIS** être commités !
+
+Ajoutez dans [.gitignore](file:///Users/benelgorch/Desktop/GitHub/ft_transcendence/.gitignore) :
+
+```gitignore
+# SSL Certificates
+*.pem
+srcs/certs/*.pem
+srcs/certs/
+```
+
+**Vérification** :
+```bash
+# Vérifier que les certificats sont ignorés
+git status
+
+# Ne devrait PAS montrer :
+# - srcs/certs/cert.pem
+# - srcs/certs/key.pem
+```
+
+---
+
+## 🌐 Acceptation dans le navigateur
+
+### **Firefox**
+
+1. Allez sur `https://localhost:5173`
+2. Cliquez sur **"Avancé"**
+3. Cliquez sur **"Accepter le risque et continuer"**
+
+### **Chrome/Edge**
+
+1. Allez sur `https://localhost:5173`
+2. Cliquez sur **"Avancé"**
+3. Cliquez sur **"Continuer vers localhost (dangereux)"**
+
+### **Safari**
+
+1. Allez sur `https://localhost:5173`
+2. Cliquez sur **"Afficher les détails"**
+3. Cliquez sur **"Visiter ce site web"**
+4. Confirmez
+
+**Note** : Vous devez accepter le certificat **une seule fois** (tant que vous ne régénérez pas les certificats).
+
+---
+
+## 🔍 Vérification du fonctionnement
+
+### **1. Backend HTTPS**
+
+```bash
+# Vérifier les logs
+docker logs api --tail 5
+
+# Devrait afficher :
+# [XX:XX:XX.XXX] INFO: Serveur HTTPS lancé sur https://127.0.0.1:3001
+```
+
+**Test avec curl** :
+```bash
+curl -k https://localhost:3001/
+# Devrait retourner : {"hello":"from docker"}
+```
+
+### **2. Frontend HTTPS**
+
+```bash
+# Vérifier les logs
+docker logs front --tail 5
+
+# Devrait afficher :
+# ➜  Local:   https://localhost:5173/
+# ➜  Network: https://172.18.0.3:5173/
+```
+
+### **3. WebSockets WSS**
+
+Ouvrez la console du navigateur (F12) et vérifiez :
+- Pas d'erreur "Mixed Content"
+- WebSocket connecté avec `wss://`
+
+---
+
+## 🐛 Dépannage
+
+### **Problème : "Certificate not found"**
+
+```bash
+# Vérifier que les certificats existent
+ls -la srcs/certs/
+
+# Si vide, générer :
+cd srcs && ./generate-certs.sh
+```
+
+### **Problème : "Permission denied"**
+
+```bash
+# Corriger les permissions
+chmod 600 srcs/certs/key.pem
+chmod 644 srcs/certs/cert.pem
+```
+
+### **Problème : "ENOENT: no such file" dans Docker**
+
+```bash
+# Vérifier le volume mount
+docker inspect api | grep -A 10 Mounts
+
+# Devrait montrer : ./certs:/usr/certs
+```
+
+### **Problème : Certificat expiré**
+
+Les certificats sont valides **365 jours**. Pour régénérer :
+
+```bash
+cd srcs/certs
+rm *.pem
+cd ..
+./generate-certs.sh
+```
+
+### **Problème : "Mixed Content" dans le navigateur**
+
+Vérifiez que **toutes** les URLs utilisent HTTPS :
+```bash
+# Chercher les URLs HTTP dans le frontend
+cd srcs/frontend/app/src
+grep -r "http://localhost:3001" .
+
+# Remplacer par https://
+find . -type f \( -name "*.ts" -o -name "*.tsx" \) \
+  -exec sed -i '' 's|http://localhost:3001|https://localhost:3001|g' {} +
+```
+
+---
+
+## 📚 Pour l'évaluation
+
+### **Checklist avant l'évaluation**
+
+- [ ] Certificats générés dans `srcs/certs/`
+- [ ] `.gitignore` ignore les `.pem`
+- [ ] Script `generate-certs.sh` fonctionnel
+- [ ] Makefile intègre la génération
+- [ ] Backend en HTTPS (logs confirment)
+- [ ] Frontend en HTTPS (logs confirment)
+- [ ] WebSockets en WSS
+- [ ] Pas d'erreur "Mixed Content"
+- [ ] README explique comment générer les certificats
+
+### **README.md à ajouter**
+
+```markdown
+## Installation
+
+1. Cloner le projet
+   ```bash
+   git clone <repo>
+   cd ft_transcendence
+   ```
+
+2. Générer les certificats SSL
+   ```bash
+   cd srcs
+   ./generate-certs.sh
+   ```
+
+3. Lancer le projet
+   ```bash
+   make
+   # ou
+   cd srcs && docker-compose up -d
+   ```
+
+4. Accéder à l'application
+   - Frontend : https://localhost:5173
+   - Backend : https://localhost:3001
+   - Accepter le certificat auto-signé dans le navigateur
+
+## Certificats SSL
+
+Les certificats sont auto-signés pour le développement local.
+Ils sont générés automatiquement par le script `generate-certs.sh`.
+
+**Note** : Les certificats ne sont pas commités (voir `.gitignore`).
+Chaque personne qui clone le projet doit les générer.
+```
+
+---
+
+## 🎓 Explication pour l'évaluateur
+
+**Pourquoi des certificats auto-signés ?**
+- Développement local uniquement
+- Pas besoin d'autorité de certification (CA)
+- Gratuit et rapide à générer
+- Suffisant pour HTTPS/WSS
+
+**Pourquoi pas dans Docker ?**
+- Certificats régénérés à chaque rebuild
+- Navigateur redemande l'acceptation
+- Perte de temps en développement
+
+**Pourquoi dans .gitignore ?**
+- Sécurité : ne jamais commiter des clés privées
+- Chaque environnement a ses propres certificats
+- Bonne pratique de développement
+
+---
+
+## 🔄 Workflow complet
+
+### **Pour vous (développeur)**
+
+```bash
+# 1. Première fois
+cd srcs
+./generate-certs.sh
+docker-compose up -d
+
+# 2. Développement quotidien
+docker-compose up -d  # Les certificats existent déjà
+
+# 3. Si problème
+docker-compose down
+rm certs/*.pem
+./generate-certs.sh
+docker-compose up -d
+```
+
+### **Pour l'évaluateur**
+
+```bash
+# 1. Clone le projet
+git clone <repo>
+cd ft_transcendence
+
+# 2. Génère les certificats
+cd srcs
+./generate-certs.sh
+
+# 3. Lance le projet
+docker-compose up -d
+
+# 4. Ouvre le navigateur
+# https://localhost:5173
+# Accepte le certificat
+```
+
+---
+
+## 📊 Résumé
+
+| Aspect | Solution |
+|--------|----------|
+| **Génération** | Script `generate-certs.sh` |
+| **Stockage** | `srcs/certs/` (hôte) |
+| **Docker** | Volume mount `./certs:/usr/certs` |
+| **Sécurité** | `.gitignore` ignore `*.pem` |
+| **Automatisation** | Makefile `make up` |
+| **Validité** | 365 jours |
+| **Type** | Auto-signé (dev local) |
+
+---
+
+**Les certificats sont maintenant bien configurés ! ✅**

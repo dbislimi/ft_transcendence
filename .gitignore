@@ -1,2 +1,10 @@
 .vscode
-node_modules/
+node_modules/srcs/certs/*.pem
+
+# SSL Certificates
+srcs/certs/*.pem
+*.pem
+
+# SSL Certificates
+srcs/certs/*.pem
+*.pem

@@ -1,5 +1,6 @@
 import Game from "./Game.ts";
 import type { Client } from "../plugins/websockets.ts";
+import { sendTournamentMessage } from "../plugins/chat.ts";
 
 class Node {
 	game?: Game;
@@ -154,6 +155,7 @@ export default class Tournament {
 			return;
 		}
 		console.log("start");
+		sendTournamentMessage([parent.waiting?.id, player.id], ` Nouveau match de juif : ${parent.waiting?.name} VS ${player.name}`);
 		if (parent.waiting) {
 			const waitingPlayer = parent.waiting;
 			const currentPlayer = player;

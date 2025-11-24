@@ -90,7 +90,7 @@ export default function Profile() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
-  const API_URL = "http://localhost:3001";
+  const API_URL = "https://localhost:3001";
 
   const avatars = [
     "/avatars/avatar1.png", "/avatars/avatar2.png", "/avatars/avatar3.png",

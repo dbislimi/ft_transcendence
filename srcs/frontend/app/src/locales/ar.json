@@ -60,7 +60,12 @@
       "title": "انتهت اللعبة !",
       "backToMenu": "العودة إلى القائمة",
       "victory": "انتصار !",
-      "gameFinished": "انتهت اللعبة !"
+      "gameFinished": "انتهت اللعبة !",
+      "livesRemaining": "{{count}} حياة متبقية",
+      "youWon": "🎉 لقد فزت! 🎉",
+      "youLost": "انتهت اللعبة",
+      "congratulations": "تهانينا، بطل!",
+      "winnerIs": "الفائز هو: {{name}}"
     },
     "players": {
       "title": "اللاعبون المنتظرون",

@@ -165,7 +165,12 @@
       "title": "Fin de partie !",
       "backToMenu": "Retour au menu",
       "victory": "Victoire !",
-      "gameFinished": "Partie terminée !"
+      "gameFinished": "Partie terminée !",
+      "livesRemaining": "{{count}} vie(s) restante(s)",
+      "youWon": "🎉 Vous avez gagné ! 🎉",
+      "youLost": "Partie terminée",
+      "congratulations": "Félicitations, champion !",
+      "winnerIs": "Le gagnant est : {{name}}"
     },
     "backToMenu": "Retour au menu",
     "stats": {

@@ -59,12 +59,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/me', {
+      console.log('[refreshUser] Appel /me avec token:', token.substring(0, 20));
+      const res = await fetch('https://localhost:3001/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
+
       if (res.ok) {
         const data = await res.json();
         const userData = {
@@ -88,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logoutUser = async (currentToken?: string | null) => {
     if (currentToken) {
       try {
-        await fetch('http://localhost:3001/logout', {
+        await fetch('https://localhost:3001/logout', {
           method: 'POST',
           headers: { Authorization: `Bearer ${currentToken}` },
         });
@@ -97,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const blob = new Blob([JSON.stringify({})], {
           type: 'application/json',
         });
-        navigator.sendBeacon('http://localhost:3001/logout', blob);
+        navigator.sendBeacon('https://localhost:3001/logout', blob);
       }
     }
   };
@@ -106,14 +108,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initAuth = async () => {
       const savedUser = localStorage.getItem('user');
       const savedToken = localStorage.getItem('token');
-      
+
       if (savedUser && savedToken) {
         try {
           const userData = JSON.parse(savedUser);
           const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
           const expiresAt = tokenPayload.exp * 1000;
           const now = Date.now();
-          
+
           if (expiresAt < now) {
             await handleLogoutCleanup();
             return;
@@ -123,14 +125,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsAuthenticated(true);
           setIsLoading(false);
         } catch (error) {
-          console.error('Erreur lors du chargement des données utilisateur:', error);
+          console.error('Erreur lors du chargement des donnees utilisateur:', error);
           await handleLogoutCleanup();
         }
       } else {
         setIsLoading(false);
       }
     };
-    
+
     initAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -142,21 +144,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (token) {
-        const blob = new Blob([JSON.stringify({})], {
-          type: 'application/json',
-        });
-        navigator.sendBeacon('http://localhost:3001/logout', blob);
-      }
-    };
+  // useEffect(() => {
+  //   const handleBeforeUnload = () => {
+  //     if (token) {
+  //       const blob = new Blob([JSON.stringify({})], {
+  //         type: 'application/json',
+  //       });
+  //       console.log("use effect handleBeforeUnload");
+  //       navigator.sendBeacon('https://localhost:3001/logout', blob);
+  //     }
+  //   };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [token]);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, [token]);
 
   const handleLogoutCleanup = async () => {
     const currentToken = token;
@@ -166,7 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setTokenState(null);
     setIsAuthenticated(false);
     setIsLoading(false);
-    
+
     await logoutUser(currentToken);
   };
 

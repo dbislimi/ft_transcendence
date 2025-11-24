@@ -257,7 +257,7 @@ export class BombPartyService {
     try {
       const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const wsUrl = isDev 
-        ? `ws://localhost:3001/bombparty/ws`
+        ? `wss://localhost:3001/bombparty/ws`
         : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/bombparty/ws`;
       
       logger.debug('Connecting to WebSocket', { connectionId: this.connectionId, url: wsUrl.replace(/token=[^&]+/, 'token=***') });

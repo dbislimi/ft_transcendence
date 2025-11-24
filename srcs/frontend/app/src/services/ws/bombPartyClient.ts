@@ -122,9 +122,9 @@ export class BombPartyClient {
     const isDev = typeof window !== 'undefined' && 
       (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     
-    const wsUrl = isDev 
-      ? 'ws://localhost:3001'
-      : ((import.meta as any).env?.VITE_WS_URL || `ws://${window.location.hostname}:3001`);
+    const wsUrl = import.meta.env.DEV 
+      ? 'wss://localhost:3001'
+      : ((import.meta as any).env?.VITE_WS_URL || `wss://${window.location.hostname}:3001`);
     
     const baseUrl = wsUrl.replace(/^https?/, 'ws').replace(/^wss?/, 'ws');
     

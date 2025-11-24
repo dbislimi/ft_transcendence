@@ -37,8 +37,29 @@ const router = createBrowserRouter([
   },
 ]);
 
+// createRoot(document.getElementById("root")!).render(
+//   <StrictMode>
+//     <SettingsProvider>
+//       <GlobalBackgroundProvider>
+//         <BackgroundProvider>
+//           <AuthProvider>
+//             <UserProvider>
+//               <WebSocketProvider>
+//                 <NotificationProvider>
+//                   <GameSessionProvider>
+//                     <RouterProvider router={router} />
+//                   </GameSessionProvider>
+//                 </NotificationProvider>
+//               </WebSocketProvider>
+//             </UserProvider>
+//           </AuthProvider>
+//         </BackgroundProvider>
+//       </GlobalBackgroundProvider>
+//     </SettingsProvider>
+//   </StrictMode>
+// );
+
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
     <SettingsProvider>
       <GlobalBackgroundProvider>
         <BackgroundProvider>
@@ -56,5 +77,4 @@ createRoot(document.getElementById("root")!).render(
         </BackgroundProvider>
       </GlobalBackgroundProvider>
     </SettingsProvider>
-  </StrictMode>
 );

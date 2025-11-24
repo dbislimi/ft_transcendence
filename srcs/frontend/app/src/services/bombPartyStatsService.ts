@@ -17,7 +17,7 @@ interface TrigramAttempt {
 }
 
 class BombPartyStatsService {
-  private baseUrl = 'http://localhost:3001/api/bomb-party';
+  private baseUrl = 'https://localhost:3001/api/bomb-party';
   private trigramAttempts: TrigramAttempt[] = [];
 
   private getAuthToken(): string | null {

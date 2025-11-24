@@ -155,7 +155,12 @@
       "title": "¡Juego terminado!",
       "backToMenu": "Volver al menú",
       "victory": "¡Victoria!",
-      "gameFinished": "¡Juego terminado!"
+      "gameFinished": "¡Juego terminado!",
+      "livesRemaining": "{{count}} vida(s) restante(s)",
+      "youWon": "🎉 ¡Has ganado! 🎉",
+      "youLost": "Juego terminado",
+      "congratulations": "¡Felicidades, campeón!",
+      "winnerIs": "El ganador es: {{name}}"
     },
     "players": {
       "title": "Jugadores esperando",

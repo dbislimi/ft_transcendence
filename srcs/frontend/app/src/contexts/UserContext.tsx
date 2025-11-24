@@ -38,7 +38,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:3001/friends", { 
+      const res = await fetch("https://localhost:3001/friends", { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {

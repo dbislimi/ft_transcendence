@@ -1,7 +1,7 @@
 import type { PlayerProfile } from "../types/playerProfiles";
 
 export async function fetchPlayerProfile(userId: string): Promise<PlayerProfile> {
-    const res = await fetch(`http://localhost:3001/api/users/${userId}`, {
+    const res = await fetch(`https://localhost:3001/api/users/${userId}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

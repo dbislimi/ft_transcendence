@@ -148,7 +148,12 @@
       "title": "Game Over!",
       "backToMenu": "Back to Menu",
       "victory": "Victory!",
-      "gameFinished": "Game finished!"
+      "gameFinished": "Game finished!",
+      "livesRemaining": "{{count}} life/lives remaining",
+      "youWon": "🎉 You won! 🎉",
+      "youLost": "Game over",
+      "congratulations": "Congratulations, champion!",
+      "winnerIs": "The winner is: {{name}}"
     },
     "players": {
       "title": "Waiting Players",

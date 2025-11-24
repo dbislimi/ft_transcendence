@@ -7,7 +7,6 @@ import fs from 'fs'
 
 // determine le chemin vers shared selon l'environnement (Docker ou local)
 function getSharedPath() {
-  // Dans Docker, le volume est monte sur /usr/shared
   const dockerPath = '/usr/shared'
   try {
     if (fs.existsSync(dockerPath) && fs.existsSync(path.join(dockerPath, 'bombparty', 'types.ts'))) {
@@ -18,6 +17,36 @@ function getSharedPath() {
   }
   // En local, le chemin relatif depuis srcs/frontend/app vers srcs/shared
   return path.resolve(__dirname, '../../shared')
+}
+
+function getHttpsOptions() {
+  // Try Docker path first, then local path
+  const dockerCertPath = '/usr/certs/cert.pem';
+  const dockerKeyPath = '/usr/certs/key.pem';
+  const localCertPath = path.resolve(__dirname, '../../certs/cert.pem');
+  const localKeyPath = path.resolve(__dirname, '../../certs/key.pem');
+
+  try {
+    // Check Docker paths first
+    if (fs.existsSync(dockerCertPath) && fs.existsSync(dockerKeyPath)) {
+      console.log('Using HTTPS certificates from Docker path');
+      return {
+        key: fs.readFileSync(dockerKeyPath),
+        cert: fs.readFileSync(dockerCertPath)
+      };
+    }
+    // Fallback to local paths
+    if (fs.existsSync(localCertPath) && fs.existsSync(localKeyPath)) {
+      console.log('Using HTTPS certificates from local path');
+      return {
+        key: fs.readFileSync(localKeyPath),
+        cert: fs.readFileSync(localCertPath)
+      };
+    }
+  } catch (e) {
+    console.warn('HTTPS certificates not found, falling back to HTTP', e);
+  }
+  return undefined;
 }
 
 // https://vite.dev/config/
@@ -37,11 +66,13 @@ export default defineConfig({
     }
   },
   server: {
+    https: getHttpsOptions(),
     proxy: {
       '/bombparty/ws': {
-        target: 'ws://localhost:3001',
+        target: 'wss://localhost:3001',
         ws: true,
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false
       }
     }
   }

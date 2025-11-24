@@ -155,7 +155,12 @@
       "title": "Игра окончена!",
       "backToMenu": "Вернуться в меню",
       "victory": "Победа!",
-      "gameFinished": "Игра завершена!"
+      "gameFinished": "Игра завершена!",
+      "livesRemaining": "Осталось {{count}} жизн(и/ей)",
+      "youWon": "🎉 Вы выиграли! 🎉",
+      "youLost": "Игра окончена",
+      "congratulations": "Поздравляем, чемпион!",
+      "winnerIs": "Победитель: {{name}}"
     },
     "players": {
       "title": "Ожидающие игроки",

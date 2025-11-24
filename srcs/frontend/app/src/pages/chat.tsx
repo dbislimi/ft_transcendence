@@ -20,7 +20,7 @@ export function useWebsocketChat(
 		if (!token) return;
 
 		const ws = new WebSocket(
-			`ws://localhost:3001/${endpoint}?token=${token}`
+			`wss://localhost:3001/${endpoint}?token=${token}`
 		);
 		wsRef.current = ws;
 

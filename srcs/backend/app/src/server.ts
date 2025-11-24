@@ -6,6 +6,7 @@ import fastifyStatic from "@fastify/static";
 import websocket from "@fastify/websocket";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 import "./types/fastify.d.ts";
 import wsController from "./plugins/websockets.ts";
@@ -19,7 +20,6 @@ import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
 import twoFaPlugin from "./plugins/2fa.ts";
-import chatPlugin from "./plugins/chat.ts";
 import pongConfig from "./plugins/pongConfig.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
@@ -27,30 +27,35 @@ import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const httpsOptions = {
+	key: fs.readFileSync(path.join(__dirname, '../../certs/key.pem')),
+	cert: fs.readFileSync(path.join(__dirname, '../../certs/cert.pem'))
+};
+
 const fastify = Fastify({
 	logger: {
 		transport: {
 			target: "pino-pretty",
 		},
 	},
+	https: httpsOptions,
 });
 
 async function main() {
 	await fastify.register(cors, {
-		origin: "http://localhost:5173",
+		origin: "https://localhost:5173", // HTTPS for frontend
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		exposedHeaders: ["Content-Length"],
 		credentials: true,
 		maxAge: 86400,
-		strictPreflight: true
 	});
 
 	await fastify.register(websocket);
 
 	// 2. wsController apres WebSocket
 	await fastify.register(wsController);
-	
+
 	// 2. Plugins de base
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
@@ -102,9 +107,9 @@ async function main() {
 	fastify.get('/', async () => ({ hello: 'from docker' }));
 
 	try {
-		// Port 3001 (Stable/BombParty default)
+		// Port 3001 avec HTTPS
 		const address = await fastify.listen({ port: 3001, host: '0.0.0.0' });
-		fastify.log.info(`Serveur lancé sur ${address}`);
+		fastify.log.info(`Serveur HTTPS lancé sur ${address}`);
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);

@@ -56,7 +56,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
       }
 
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/me', {
+      const res = await fetch('https://localhost:3001/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
