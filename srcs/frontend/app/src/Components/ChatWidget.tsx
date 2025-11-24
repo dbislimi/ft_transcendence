@@ -39,7 +39,6 @@ export default function ChatWidget() {
   // Connexion WebSocket
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:3001/chat?token=${token}`);
-    //const ws = new WebSocket(`wss://localhost:3001/chat?token=${token}`);
 
     ws.onopen = () => console.log("WS connecté");
     ws.onclose = () => console.log("WS fermé");
