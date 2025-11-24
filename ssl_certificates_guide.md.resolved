@@ -31,7 +31,7 @@ openssl req -x509 -newkey rsa:4096 \
   -keyout key.pem \
   -out cert.pem \
   -days 365 -nodes \
-  -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Student/CN=localhost"
+  -subj "/C=FR/ST=Nice/L=Nice/O=42/OU=Student/CN=localhost"
 ```
 
 **Résultat** :
@@ -64,7 +64,7 @@ if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
         -keyout "$KEY_FILE" \
         -out "$CERT_FILE" \
         -days 365 -nodes \
-        -subj "/C=FR/ST=Paris/L=Paris/O=42/OU=Student/CN=localhost"
+        -subj "/C=FR/ST=Nice/L=Nice/O=42/OU=Student/CN=localhost"
     
     chmod 600 "$KEY_FILE"
     chmod 644 "$CERT_FILE"

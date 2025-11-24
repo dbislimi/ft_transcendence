@@ -1,12 +1,14 @@
 all : up
 
-up :
+certs : 
+	@cd srcs && ./generate_certs.sh
+
+up : certs
 	DOCKER_BUILDKIT=0 docker compose -f ./srcs/docker-compose.yml up
 
 down :
 	docker compose -f ./srcs/docker-compose.yml down
 
-re: fclean up
 
 status : 
 	@echo "\033[1;32mDOCKER:\033[0m"
@@ -19,7 +21,9 @@ status :
 clear :
 	@docker system prune -af --volumes
 
-clean :
+clean : down
+	@cd srcs && rm -rf certs/*.pem
+	@echo "Certificats supprimer"
 	@docker ps -q | xargs -r docker stop
 	@docker ps -a -q | xargs -r docker rm
 	@docker images -q | xargs -r docker rmi
@@ -27,4 +31,6 @@ clean :
 
 fclean: clean clear
 
-.PHONY: all clean fclean re status
+re: fclean up
+
+.PHONY: all certs clean fclean re status
