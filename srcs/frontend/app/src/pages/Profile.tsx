@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useUser } from "../contexts/UserContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useWebSocket } from "../contexts/WebSocketContext";
@@ -53,6 +54,7 @@ interface Match {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, refreshUser } = useUser();
   const { token } = useAuth();
   const { friendsWsRef } = useWebSocket();
@@ -251,19 +253,19 @@ export default function Profile() {
       const data = await res.json();
       if (res.ok) {
         setIsError(false);
-        setMessage("Profil mis à jour avec succès");
+        setMessage(t('profile.error_msg.updateSuccess'));
         setPassword("");
         setEditMode(false);
         await refreshUser();
         setTimeout(() => setMessage(""), 3000);
       } else {
         setIsError(true);
-        setMessage(data.error || "Erreur lors de la mise à jour");
+        setMessage(data.error || t('profile.error_msg.updateError'));
         setTimeout(() => setMessage(""), 3000);
       }
     } catch {
       setIsError(true);
-      setMessage("Erreur réseau. Veuillez réessayer.");
+      setMessage(t('profile.error_msg.networkErrorRetry'));
       setTimeout(() => setMessage(""), 3000);
     }
   };
@@ -317,9 +319,9 @@ export default function Profile() {
         fetchRequests();
       } else {
         const data = await res.json();
-        setFriendsError(data.error || "Erreur lors de l'envoi");
+        setFriendsError(data.error || t('profile.error_msg.sendError'));
       }
-    } catch (e) { setFriendsError("Erreur réseau"); }
+    } catch (e) { setFriendsError(t('profile.error_msg.networkError')); }
     finally { setFriendsLoading(false); }
   };
 
@@ -416,7 +418,7 @@ export default function Profile() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
-                  Retour
+                  {t('profile.navigate.back')}
                 </span>
               </button>
             </div>
@@ -438,7 +440,7 @@ export default function Profile() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </span>
-                Vue d'ensemble
+                {t('profile.navigate.overview')}
               </button>
               
               <button
@@ -454,7 +456,7 @@ export default function Profile() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
                 </span>
-                Statistiques
+                {t('profile.navigate.stats')}
               </button>
               
               <button
@@ -470,7 +472,7 @@ export default function Profile() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </span>
-                Historique
+                {t('profile.navigate.history')}
               </button>
               
               <button
@@ -486,7 +488,7 @@ export default function Profile() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </span>
-                Amis
+                {t('profile.navigate.friends')}
               </button>
               
               <button
@@ -503,7 +505,7 @@ export default function Profile() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </span>
-                Paramètres
+                {t('profile.navigate.settings')}
               </button>
             </div>
           </div>
@@ -519,24 +521,24 @@ export default function Profile() {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    Statistiques rapides
+                    {t('profile.view.quickStats')}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/30">
                       <div className="text-3xl font-bold text-blue-300">{stats.totalGames}</div>
-                      <div className="text-gray-400">Parties jouées</div>
+                      <div className="text-gray-400">{t('profile.view.gamesPlayed')}</div>
                     </div>
                     <div className="text-center p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg border border-green-500/30">
                       <div className="text-3xl font-bold text-green-300">{stats.wins}</div>
-                      <div className="text-gray-400">Victoires</div>
+                      <div className="text-gray-400">{t('profile.view.wins')}</div>
                     </div>
                     <div className="text-center p-4 bg-gradient-to-r from-red-600/20 to-pink-600/20 rounded-lg border border-red-500/30">
                       <div className="text-3xl font-bold text-red-300">{stats.losses}</div>
-                      <div className="text-gray-400">Défaites</div>
+                      <div className="text-gray-400">{t('profile.view.losses')}</div>
                     </div>
                     <div className="text-center p-4 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-lg border border-yellow-500/30">
                       <div className="text-3xl font-bold text-yellow-300">{stats.winRate}%</div>
-                      <div className="text-gray-400">Winrate</div>
+                      <div className="text-gray-400">{t('profile.view.winRate')}</div>
                     </div>
                   </div>
                 </div>
@@ -546,7 +548,7 @@ export default function Profile() {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    Amis en ligne
+                    {t('profile.view.onlineFriends')}
                   </h3>
                   <div className="space-y-3">
                     {friends.filter(f => isOnline(f.online)).slice(0, 4).map((friend) => (
@@ -557,7 +559,7 @@ export default function Profile() {
                         </div>
                         <div className="flex-1">
                           <div className="text-white font-medium">{friend.display_name}</div>
-                          <div className="text-green-400 text-sm">En ligne</div>
+                          <div className="text-green-400 text-sm">{t('profile.view.online')}</div>
                         </div>
                       </div>
                     ))}
@@ -566,7 +568,7 @@ export default function Profile() {
                         <svg className="w-16 h-16 mx-auto mb-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
-                        <p>Aucun ami en ligne</p>
+                        <p>{t('profile.view.noOnlineFriends')}</p>
                       </div>
                     )}
                   </div>
@@ -581,7 +583,7 @@ export default function Profile() {
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
-                  Statistiques détaillées
+                  {t('profile.stats.detailedStats')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -590,35 +592,35 @@ export default function Profile() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div className="text-3xl font-bold text-white mb-1">{stats.totalGames}</div>
-                    <div className="text-gray-400 text-sm">Parties totales</div>
+                    <div className="text-gray-400 text-sm">{t('profile.stats.totalGames')}</div>
                   </div>
                   <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
                     <svg className="w-10 h-10 mx-auto mb-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                     <div className="text-3xl font-bold text-white mb-1">{stats.winRate}%</div>
-                    <div className="text-gray-400 text-sm">Taux de victoire</div>
+                    <div className="text-gray-400 text-sm">{t('profile.stats.winRate')}</div>
                   </div>
                   <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
                     <svg className="w-10 h-10 mx-auto mb-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <div className="text-3xl font-bold text-white mb-1">{stats.botWins}</div>
-                    <div className="text-gray-400 text-sm">Victoires contre bots</div>
+                    <div className="text-gray-400 text-sm">{t('profile.stats.botWins')}</div>
                   </div>
                   <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
                     <svg className="w-10 h-10 mx-auto mb-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <div className="text-3xl font-bold text-white mb-1">{stats.playerWins}</div>
-                    <div className="text-gray-400 text-sm">Victoires contre joueurs</div>
+                    <div className="text-gray-400 text-sm">{t('profile.stats.playerWins')}</div>
                   </div>
                   <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
                     <svg className="w-10 h-10 mx-auto mb-2 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                     <div className="text-3xl font-bold text-white mb-1">{stats.tournamentsWon}</div>
-                    <div className="text-gray-400 text-sm">Tournois gagnés</div>
+                    <div className="text-gray-400 text-sm">{t('profile.stats.tournamentsWon')}</div>
                   </div>
                 </div>
               </div>
@@ -631,7 +633,7 @@ export default function Profile() {
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Historique des parties
+                  {t('profile.history.matchHistory')}
                 </h3>
 
                 <div className="space-y-4">
@@ -673,15 +675,15 @@ export default function Profile() {
                                     </svg>
                                   )}
                                   <span className={`font-bold text-lg ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
-                                    {match.isWinner ? "VICTOIRE" : "DÉFAITE"}
+                                    {match.isWinner ? t('profile.history.victory') : t('profile.history.defeat')}
                                   </span>
                                 </div>
                                 
                                 <div className="flex items-center gap-2 text-gray-300">
-                                  <span className="text-white font-medium">vs {match.opponent.name}</span>
+                                  <span className="text-white font-medium">{t('profile.history.vs')} {match.opponent.name}</span>
                                   {match.opponent.isBot && (
                                     <span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
-                                      BOT
+                                      {t('profile.history.bot')}
                                     </span>
                                   )}
                                   {match.matchType === 'tournament' && (
@@ -689,7 +691,7 @@ export default function Profile() {
                                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                                       </svg>
-                                      TOURNOI
+                                      {t('profile.history.tournament')}
                                     </span>
                                   )}
                                   {match.matchType === 'quick' && !match.opponent.isBot && (
@@ -697,7 +699,7 @@ export default function Profile() {
                                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                       </svg>
-                                      RAPIDE
+                                      {t('profile.history.quick')}
                                     </span>
                                   )}
                                   {match.matchType === 'offline' && match.opponent.isBot && (
@@ -705,7 +707,7 @@ export default function Profile() {
                                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                       </svg>
-                                      ENTRAINEMENT
+                                      {t('profile.history.training')}
                                     </span>
                                   )}
                                 </div>
@@ -723,7 +725,7 @@ export default function Profile() {
                                 </div>
                               )}
                               <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">Match #{match.id}</span>
+                                <span className="text-gray-400 text-sm">{t('profile.history.matchNumber')} {match.id}</span>
                               </div>
                             </div>
                           </div>
@@ -740,14 +742,14 @@ export default function Profile() {
                             {historyLoading ? (
                               <span className="flex items-center gap-2">
                                 <div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
-                                Chargement...
+                                {t('profile.history.loading')}
                               </span>
                             ) : (
                               <span className="flex items-center gap-2">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
-                                Charger plus de parties
+                                {t('profile.history.loadMore')}
                               </span>
                             )}
                           </button>
@@ -759,8 +761,8 @@ export default function Profile() {
                       <svg className="w-32 h-32 mx-auto mb-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <h4 className="text-2xl font-bold text-gray-300 mb-2">Aucune partie jouée</h4>
-                      <p className="text-lg mb-4">Votre historique de parties apparaîtra ici</p>
+                      <h4 className="text-2xl font-bold text-gray-300 mb-2">{t('profile.history.noGamesPlayed')}</h4>
+                      <p className="text-lg mb-4">{t('profile.history.historyPlaceholder')}</p>
                       <button
                         onClick={() => navigate("/pong")}
                         className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto"
@@ -769,7 +771,7 @@ export default function Profile() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Jouer ma première partie
+                        {t('profile.history.playFirstGame')}
                       </button>
                     </div>
                   )}
@@ -784,7 +786,7 @@ export default function Profile() {
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  Gestion des amis
+                  {t('profile.friend.manage')}
                 </h3>
 
                 {friendsError && (
@@ -806,9 +808,9 @@ export default function Profile() {
                 {/* Navigation des sous-onglets */}
                 <div className="flex flex-wrap gap-2 mb-8">
                   {[
-                    { id: "list", label: `Amis (${friends.length})`, icon: "👥" },
-                    { id: "requests", label: `Demandes (${requests.length})`, icon: "📩" },
-                    { id: "blocked", label: `Bloqués (${blockedUsers.length})`, icon: "🚫" }
+                    { id: "list", label: `${t('profile.friend.friends')} (${friends.length})`, icon: "👥" },
+                    { id: "requests", label: `${t('profile.friend.requests')} (${requests.length})`, icon: "📩" },
+                    { id: "blocked", label: `${t('profile.friend.blocked')} (${blockedUsers.length})`, icon: "🚫" }
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -831,14 +833,14 @@ export default function Profile() {
                     {/* Ajouter un ami */}
                     <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
                       <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-                        ➕ Ajouter un ami
+                        ➕ {t('profile.friend.add')}
                       </h4>
                       <div className="flex gap-3">
                         <input 
                           value={newFriendName} 
                           onChange={e => setNewFriendName(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          placeholder="Nom d'utilisateur" 
+                          placeholder={t('profile.friend.usernamePlaceholder')} 
                           className="flex-1 px-4 py-3 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
                           disabled={friendsLoading}
                         />
@@ -851,7 +853,7 @@ export default function Profile() {
                         </button>
                       </div>
                       <p className="text-sm text-gray-400 mt-2">
-                        Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.
+                        {t('profile.friend.addHint')}
                       </p>
                     </div>
 
@@ -872,7 +874,7 @@ export default function Profile() {
                               <div className="flex-1">
                                 <h4 className="text-lg font-bold text-white">{friend.display_name}</h4>
                                 <p className={`text-sm ${isOnline(friend.online) ? 'text-green-400' : 'text-gray-500'}`}>
-                                  {isOnline(friend.online) ? "🟢 En ligne" : "⚫ Hors ligne"}
+                                  {isOnline(friend.online) ? `🟢 ${t('profile.friend.online')}` : `⚫ ${t('profile.friend.offline')}`}
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -881,20 +883,20 @@ export default function Profile() {
                                     onClick={() => navigate(`/pong?invite=${friend.id}`)}
                                     className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
                                   >
-                                    🎮 Inviter à jouer
+                                    🎮 {t('profile.friend.invite')}
                                   </button>
                                 )}
                                 <button 
                                   onClick={() => handleBlockUser(friend.id)}
                                   className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
                                 >
-                                  🚫 Bloquer
+                                  🚫 {t('profile.friend.block')}
                                 </button>
                                 <button 
                                   onClick={() => handleRemoveFriend(friend.id)}
                                   className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
                                 >
-                                  🗑️ Supprimer
+                                  🗑️ {t('profile.friend.remove')}
                                 </button>
                               </div>
                             </div>
@@ -903,8 +905,8 @@ export default function Profile() {
                       ) : (
                         <div className="text-center py-12 text-gray-400">
                           <div className="text-6xl mb-4">👻</div>
-                          <p className="text-lg">Aucun ami pour l'instant</p>
-                          <p className="text-sm">Commencez par ajouter quelqu'un !</p>
+                          <p className="text-lg">{t('profile.friend.notFound')}</p>
+                          <p className="text-sm">{t('profile.friend.searchPlaceholder')}</p>
                         </div>
                       )}
                     </div>
@@ -917,7 +919,7 @@ export default function Profile() {
                     {/* Demandes reçues */}
                     <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
                       <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
-                        📥 Demandes reçues ({requests.filter(r => r.type === "received").length})
+                        📥 {t('profile.friend.receivedRequests')} ({requests.filter(r => r.type === "received").length})
                       </h4>
                       <div className="space-y-3">
                         {requests.filter(r => r.type === "received").length > 0 ? (
@@ -936,19 +938,19 @@ export default function Profile() {
                                   onClick={() => handleAcceptRequest(r.sender_id)} 
                                   className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
                                 >
-                                  ✅ Accepter
+                                  ✅ {t('profile.friend.accept')}
                                 </button>
                                 <button 
                                   onClick={() => handleRejectRequest(r.sender_id)} 
                                   className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
                                 >
-                                  ❌ Refuser
+                                  ❌ {t('profile.friend.reject')}
                                 </button>
                                 <button 
                                   onClick={() => handleBlockUser(r.sender_id)} 
                                   className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
                                 >
-                                  🚫 Bloquer
+                                  🚫 {t('profile.friend.block')}
                                 </button>
                               </div>
                             </div>
@@ -956,7 +958,7 @@ export default function Profile() {
                         ) : (
                           <div className="text-center py-8 text-gray-400">
                             <div className="text-4xl mb-2">📪</div>
-                            <p>Aucune demande reçue</p>
+                            <p>{t('profile.friend.noReceivedRequests')}</p>
                           </div>
                         )}
                       </div>
@@ -965,7 +967,7 @@ export default function Profile() {
                     {/* Demandes envoyées */}
                     <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
                       <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
-                        📤 Demandes envoyées ({requests.filter(r => r.type === "sent").length})
+                        📤 {t('profile.friend.sentRequests')} ({requests.filter(r => r.type === "sent").length})
                       </h4>
                       <div className="space-y-3">
                         {requests.filter(r => r.type === "sent").length > 0 ? (
@@ -981,14 +983,14 @@ export default function Profile() {
                               </div>
                               <span className="text-yellow-400 font-medium flex items-center gap-2">
                                 <div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full"></div>
-                                En attente...
+                                {t('profile.friend.pending')}
                               </span>
                             </div>
                           ))
                         ) : (
                           <div className="text-center py-8 text-gray-400">
                             <div className="text-4xl mb-2">📭</div>
-                            <p>Aucune demande envoyée</p>
+                            <p>{t('profile.friend.noSentRequests')}</p>
                           </div>
                         )}
                       </div>
@@ -1000,7 +1002,7 @@ export default function Profile() {
                 {friendsSubTab === "blocked" && (
                   <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
                     <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400 mb-4">
-                      🚫 Utilisateurs bloqués ({blockedUsers.length})
+                      🚫 {t('profile.friend.blockedUsers')} ({blockedUsers.length})
                     </h4>
                     <div className="space-y-3">
                       {blockedUsers.length > 0 ? (
@@ -1015,7 +1017,7 @@ export default function Profile() {
                               <div>
                                 <span className="font-medium text-white">{u.display_name}</span>
                                 <div className="text-sm text-gray-400">
-                                  Bloqué le {new Date(u.created_at).toLocaleDateString()}
+                                  {t('profile.friend.blockedOn')} {new Date(u.created_at).toLocaleDateString()}
                                 </div>
                               </div>
                             </div>
@@ -1023,15 +1025,15 @@ export default function Profile() {
                               onClick={() => handleUnblockUser(u.id)} 
                               className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
                             >
-                              🔓 Débloquer
+                              🔓 {t('profile.friend.unblock')}
                             </button>
                           </div>
                         ))
                       ) : (
                         <div className="text-center py-8 text-gray-400">
                           <div className="text-4xl mb-2">🕊️</div>
-                          <p>Aucun utilisateur bloqué</p>
-                          <p className="text-sm">Vous êtes en paix avec tout le monde !</p>
+                          <p>{t('profile.friend.noBlockedUsers')}</p>
+                          <p className="text-sm">{t('profile.friend.peaceMessage')}</p>
                         </div>
                       )}
                     </div>
@@ -1045,7 +1047,7 @@ export default function Profile() {
               <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">
-                    ⚙️ Paramètres du profil
+                    ⚙️ {t('profile.settings.title')}
                   </h3>
                   <button
                     onClick={() => setEditMode(!editMode)}
@@ -1055,7 +1057,7 @@ export default function Profile() {
                         : "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
                     }`}
                   >
-                    {editMode ? "❌ Annuler" : "✏️ Modifier"}
+                    {editMode ? `❌ ${t('profile.settings.cancel')}` : `✏️ ${t('profile.settings.edit')}`}
                   </button>
                 </div>
 
@@ -1073,14 +1075,14 @@ export default function Profile() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
                       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                        <h4 className="text-lg font-bold text-gray-200 mb-4">Informations personnelles</h4>
+                        <h4 className="text-lg font-bold text-gray-200 mb-4">{t('profile.settings.personalInfo')}</h4>
                         <div className="space-y-3">
                           <div>
-                            <span className="text-gray-400">Email :</span>
+                            <span className="text-gray-400">{t('profile.settings.email')} :</span>
                             <span className="text-white ml-2 font-medium">{user.email}</span>
                           </div>
                           <div>
-                            <span className="text-gray-400">Pseudo :</span>
+                            <span className="text-gray-400">{t('profile.settings.username')} :</span>
                             <span className="text-white ml-2 font-medium">{user.display_name}</span>
                           </div>
                         </div>
@@ -1088,11 +1090,11 @@ export default function Profile() {
                     </div>
                     
                     <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                      <h4 className="text-lg font-bold text-gray-200 mb-4">Avatar actuel</h4>
+                      <h4 className="text-lg font-bold text-gray-200 mb-4">{t('profile.settings.currentAvatar')}</h4>
                       <div className="flex justify-center">
                         <img
                           src={user.avatar || "/avatars/avatar1.png"}
-                          alt="Avatar actuel"
+                          alt={t('profile.settings.currentAvatar')}
                           className="w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover"
                         />
                       </div>
@@ -1103,7 +1105,7 @@ export default function Profile() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.email')}</label>
                           <input
                             type="email"
                             value={email}
@@ -1114,18 +1116,18 @@ export default function Profile() {
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Pseudo</label>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.username')}</label>
                           <input
                             type="text"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                             className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
-                            placeholder="Votre pseudo"
+                            placeholder={t('profile.settings.username')}
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Nouveau mot de passe</label>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.newPassword')}</label>
                           <input
                             type="password"
                             value={password}
@@ -1137,7 +1139,7 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-4">Choisir un avatar</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-4">{t('profile.settings.chooseAvatar')}</label>
                         <div className="grid grid-cols-5 gap-3">
                           {avatars.map((avatarUrl) => (
                             <button
@@ -1161,10 +1163,10 @@ export default function Profile() {
                         
                         <div className="mt-6 flex justify-center">
                           <div className="text-center">
-                            <p className="text-gray-400 text-sm mb-2">Aperçu</p>
+                            <p className="text-gray-400 text-sm mb-2">{t('profile.settings.preview')}</p>
                             <img
                               src={avatar}
-                              alt="Aperçu avatar"
+                              alt={t('profile.settings.previewAvatar')}
                               className="w-24 h-24 rounded-full border-4 border-purple-500/50 object-cover mx-auto"
                             />
                           </div>
@@ -1177,14 +1179,14 @@ export default function Profile() {
                         type="submit"
                         className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                       >
-                        💾 Sauvegarder
+                        💾 {t('profile.settings.save')}
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditMode(false)}
                         className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                       >
-                        ❌ Annuler
+                        ❌ {t('profile.settings.cancel')}
                       </button>
                     </div>
                   </form>
