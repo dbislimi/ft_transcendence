@@ -1,34 +1,16 @@
-import { useEffect, useState, useRef } from "react";
-
-interface Message {
-  type: "global" | "private" | "info";
-  from?: number;
-  fromName?: string;
-  to?: number | null;
-  text?: string;
-  message?: string;
-  date?: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  blocked?: boolean;
-}
+import { useState, useRef, useEffect } from "react";
+import { useWebSocket } from "../contexts/WebSocketContext";
 
 export default function ChatWidget() {
   const savedUser = localStorage.getItem("user");
   const savedToken = localStorage.getItem("token");
+  const { chatWsRef, pongWsRef, messages, users } = useWebSocket();
 
   if (!savedUser || !savedToken) return null;
 
   const parsedUser = JSON.parse(savedUser);
   const user = { ...parsedUser, id: Number(parsedUser.id) };
-  const token = savedToken;
 
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"chat" | "users">("chat");
@@ -36,47 +18,16 @@ export default function ChatWidget() {
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // Connexion WebSocket
-  useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:3001/chat?token=${token}`);
-
-    ws.onopen = () => console.log("WS connecté");
-    ws.onclose = () => console.log("WS fermé");
-    ws.onerror = (e) => console.error("WS erreur:", e);
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        // Liste des users
-        if (data.type === "users") {
-          setUsers(data.users);
-          return;
-        }
-
-        // Messages globaux ou privés
-        if (data.type === "global" || data.type === "private" || data.type === "info") {
-          setMessages((prev) => [...prev, data]);
-        }
-      } catch (err) {
-        console.error("Erreur parse WS:", err);
-      }
-    };
-
-    setSocket(ws);
-    return () => ws.close();
-  }, [token]);
-
   // Scroll automatique
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, open, view]);
 
   // Envoi de message
   const sendMessage = () => {
-    if (!socket || socket.readyState !== WebSocket.OPEN || !input.trim()) return;
+    if (!chatWsRef.current || chatWsRef.current.readyState !== WebSocket.OPEN || !input.trim()) return;
 
-    socket.send(
+    chatWsRef.current.send(
       JSON.stringify({
         type: "message",
         text: input,
@@ -89,18 +40,29 @@ export default function ChatWidget() {
 
   // Blocage
   const blockUser = (userId: number) => {
-    socket?.send(JSON.stringify({ type: "block", userId }));
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, blocked: true } : u))
-    );
+    chatWsRef.current?.send(JSON.stringify({ type: "block", userId }));
     if (target === userId) setTarget(null);
   };
 
   const unblockUser = (userId: number) => {
-    socket?.send(JSON.stringify({ type: "unblock", userId }));
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, blocked: false } : u))
-    );
+    chatWsRef.current?.send(JSON.stringify({ type: "unblock", userId }));
+  };
+
+  const handleInvite = (friendId: number) => {
+    if (pongWsRef.current && pongWsRef.current.readyState === WebSocket.OPEN) {
+      pongWsRef.current.send(
+        JSON.stringify({
+          event: "invitation",
+          body: {
+            action: "invite",
+            friendId: friendId,
+          },
+        })
+      );
+      console.log(`Invitation envoyée à l'utilisateur ${friendId}`);
+    } else {
+      console.error("WebSocket Pong non connecté");
+    }
   };
 
   return (
@@ -141,13 +103,12 @@ export default function ChatWidget() {
                 .map((msg, i) => (
                   <div key={i} className="flex flex-col mb-2 items-start">
                     <div
-                      className={`${
-                        msg.type === "info"
-                          ? "bg-yellow-100 dark:bg-yellow-800 italic"
-                          : msg.type === "private"
+                      className={`${msg.type === "info"
+                        ? "bg-yellow-100 dark:bg-yellow-800 italic"
+                        : msg.type === "private"
                           ? "bg-purple-200 dark:bg-purple-700"
                           : "bg-gray-200 dark:bg-gray-700"
-                      } px-3 py-2 rounded-xl`}
+                        } px-3 py-2 rounded-xl`}
                     >
                       {msg.type !== "info" && (
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
@@ -165,22 +126,35 @@ export default function ChatWidget() {
               {users
                 .filter(u => u.id !== user.id)
                 .map(u => (
-                  <div key={u.id} className="flex justify-between items-center mb-2">
-                    <button
-                      onClick={() => setTarget(u.id)}
-                      className="text-left text-sm text-blue-700 hover:underline"
-                    >
-                      {u.name} {u.blocked ? "(bloqué)" : ""}
-                    </button>
-                    {u.blocked ? (
-                      <button onClick={() => unblockUser(u.id)} className="text-green-600 hover:underline">
-                        Débloquer
+                  <div key={u.id} className="flex flex-col mb-2 border-b pb-2 last:border-0">
+                    <div className="flex justify-between items-center">
+                      <button
+                        onClick={() => setTarget(u.id)}
+                        className="text-left text-sm text-blue-700 hover:underline font-medium"
+                      >
+                        {u.name} {u.blocked ? "(bloqué)" : ""}
                       </button>
-                    ) : (
-                      <button onClick={() => blockUser(u.id)} className="text-red-600 hover:underline">
-                        Bloquer
-                      </button>
-                    )}
+                      <div className="flex gap-2">
+                        {!u.blocked && (
+                          <button
+                            onClick={() => handleInvite(u.id)}
+                            className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
+                            title="Inviter à jouer"
+                          >
+                            Inviter
+                          </button>
+                        )}
+                        {u.blocked ? (
+                          <button onClick={() => unblockUser(u.id)} className="text-xs text-green-600 hover:underline">
+                            Débloquer
+                          </button>
+                        ) : (
+                          <button onClick={() => blockUser(u.id)} className="text-xs text-red-600 hover:underline">
+                            Bloquer
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>

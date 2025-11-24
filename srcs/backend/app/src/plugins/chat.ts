@@ -5,9 +5,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET must be defined in environment variables');
-}
 
 interface Client {
   id: number;
@@ -58,7 +55,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     });
   }
 
-  // Récupère la liste des IDs bloqués par un utilisateur
+
+  // Récupère la liste des IDs bloqués PAR un utilisateur
   async function getBlockedIds(blockerId: number): Promise<number[]> {
     return new Promise((resolve, reject) => {
       fastify.db.all(
@@ -75,7 +73,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
   // Envoi vers un client spécifique
   function sendToClient(client: Client, data: any) {
     try {
-      if (client.socket.readyState === 1) {
+      if (client.socket.readyState === 1) { // 1 = OPEN
         client.socket.send(JSON.stringify(data));
       }
     } catch (err) {
@@ -139,6 +137,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               date: new Date().toISOString(),
             };
 
+            // Sauvegarde en base
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
               [msg.from, msg.to, msg.text, msg.date]
@@ -179,7 +178,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             fastify.db.run(
               "DELETE FROM blocks WHERE blockerId = ? AND blockedId = ?",
               [client.id, data.userId],
-              (err) => { // Ajout du callback
+              (err) => {
                 if (err) return fastify.log.error("Erreur DB unblock:", err);
                 sendToClient(client, { type: "info", message: `Utilisateur ${data.name} débloqué` });
                 // Rediffuser la liste des utilisateurs

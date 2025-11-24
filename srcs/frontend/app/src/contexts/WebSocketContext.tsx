@@ -7,6 +7,14 @@ export interface Message {
   date: string;
   type: "global" | "private" | "info";
   to?: number | null;
+  fromName?: string;
+  message?: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  blocked?: boolean;
 }
 
 interface WebSocketContextType {
@@ -14,6 +22,7 @@ interface WebSocketContextType {
   friendsWsRef: React.MutableRefObject<WebSocket | null>;
   chatWsRef: React.MutableRefObject<WebSocket | null>;
   messages: Message[];
+  users: User[];
   sendMessage: (msg: {
     type: string;
     text: string;
@@ -27,10 +36,11 @@ const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const chatWsRef = useRef<WebSocket | null>(null);
   const pongWsRef = useRef<WebSocket | null>(null);
   const friendsWsRef = useRef<WebSocket | null>(null);
-  
+
   const pongRoutesRef = useRef(new Map<string, (data: any) => void>());
 
   const { isAuthenticated, token } = useAuth();
@@ -48,7 +58,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const tokenParam = encodeURIComponent(token);
 
-    const BASE_WS_URL = "ws://localhost:3001"; 
+    const BASE_WS_URL = "ws://localhost:3001";
 
     pongWsRef.current = new WebSocket(`${BASE_WS_URL}/game?token=${tokenParam}`);
     chatWsRef.current = new WebSocket(`${BASE_WS_URL}/chat?token=${tokenParam}`);
@@ -68,7 +78,15 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     chatWsRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setMessages((prev) => [...prev, data]);
+
+        if (data.type === "users") {
+          setUsers(data.users);
+          return;
+        }
+
+        if (data.type === "global" || data.type === "private" || data.type === "info") {
+          setMessages((prev) => [...prev, data]);
+        }
       } catch (e) {
         console.error("Chat WS parse error", e);
       }
@@ -77,8 +95,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     friendsWsRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', { 
-          detail: data 
+        window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', {
+          detail: data
         }));
       } catch (err) {
         console.error("Erreur parsing message WebSocket amis:", err);
@@ -94,7 +112,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
       const to: string | undefined = typeof parsed?.to === "string" ? parsed.to : undefined;
       if (!to) return;
-      
+
       const handler = pongRoutesRef.current.get(to);
       if (handler) {
         try {
@@ -137,6 +155,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         friendsWsRef,
         chatWsRef,
         messages,
+        users,
         sendMessage,
         addPongRoute,
         removePongRoute,
