@@ -72,6 +72,13 @@ function getFileType(filename: string): 'image' | 'svg' {
   return filename.endsWith('.svg') ? 'svg' : 'image';
 }
 
+const LEGACY_ID_MAP: Record<string, string> = {
+  'hallowenn-background': 'halloween',
+  'matrix-42-background': 'matrix42',
+  'snow-background': 'snow',
+  '42background': '42',
+};
+
 function buildCatalog(): BackgroundItem[] {
   const items: BackgroundItem[] = [];
   items.push({
@@ -84,8 +91,10 @@ function buildCatalog(): BackgroundItem[] {
   });
   for (const [path, url] of Object.entries(backgroundFiles)) {
     const filename = path.split('/').pop() || '';
-    const id = filename.replace(/\.(svg|webp|png|jpg|jpeg)$/, '').replace(/_/g, '-');
-    if (id === '42background')
+    const generatedId = filename.replace(/\.(svg|webp|png|jpg|jpeg)$/, '').replace(/_/g, '-');
+    const id = LEGACY_ID_MAP[generatedId] || generatedId;
+    
+    if (id === '42' || generatedId === '42background')
       continue;
     
     const name = generateNameFromFilename(path);
@@ -106,13 +115,20 @@ function buildCatalog(): BackgroundItem[] {
   if (theme42Path) {
     const theme42Url = backgroundFiles[theme42Path] as string;
     items.push({
-      id: '42background',
+      id: '42',
       name: '42',
       url: theme42Url,
-      type: 'image',
+      type: 'svg',
       description: 'Logo emblématique de 42',
-      tags: ['42', 'logo', 'special']
+      tags: ['42', 'logo', 'special', 'hidden']
     });
+    if (import.meta.env.DEV) {
+      console.log('[Backgrounds] 42background ajouté au store avec ID "42":', theme42Url);
+    }
+  } else {
+    if (import.meta.env.DEV) {
+      console.warn('[Backgrounds] 42background non trouvé dans backgroundFiles:', Object.keys(backgroundFiles));
+    }
   }
 
   return items;

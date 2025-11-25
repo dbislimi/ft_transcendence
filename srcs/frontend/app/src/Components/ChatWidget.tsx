@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { getWebSocketHost } from "../config/api";
 
 interface Message {
     type: "global" | "private" | "info";
@@ -38,7 +39,14 @@ export default function ChatWidget() {
 
     // Connexion WebSocket
     useEffect(() => {
-        const ws = new WebSocket(`wss://localhost:3001/chat?token=${token}`);
+        // Always prefer Nginx proxy (port 443) over direct backend port (3001)
+        // If on port 5173 (Vite), target localhost (Nginx).
+        // If on port 443 (Nginx), target window.location.host.
+        const wsHost = getWebSocketHost();
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${wsHost}/chat?token=${token}`;
+
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => console.log("WS connecté");
         ws.onclose = () => console.log("WS fermé");
@@ -142,10 +150,10 @@ export default function ChatWidget() {
                                     <div key={i} className="flex flex-col mb-2 items-start">
                                         <div
                                             className={`${msg.type === "info"
-                                                    ? "bg-yellow-100 dark:bg-yellow-800 italic"
-                                                    : msg.type === "private"
-                                                        ? "bg-purple-200 dark:bg-purple-700"
-                                                        : "bg-gray-200 dark:bg-gray-700"
+                                                ? "bg-yellow-100 dark:bg-yellow-800 italic"
+                                                : msg.type === "private"
+                                                    ? "bg-purple-200 dark:bg-purple-700"
+                                                    : "bg-gray-200 dark:bg-gray-700"
                                                 } px-3 py-2 rounded-xl`}
                                         >
                                             {msg.type !== "info" && (

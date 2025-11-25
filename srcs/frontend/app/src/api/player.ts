@@ -1,7 +1,8 @@
 import type { PlayerProfile } from "../types/playerProfiles";
+import { API_BASE_URL } from "../config/api";
 
 export async function fetchPlayerProfile(userId: string): Promise<PlayerProfile> {
-    const res = await fetch(`https://localhost:3001/api/users/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

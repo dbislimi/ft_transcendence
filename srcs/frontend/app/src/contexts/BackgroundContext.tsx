@@ -1,10 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import bg42 from '../../img/42background.svg?url';
-import bghalloween from '../../img/hallowenn_background.svg?url';
-import bgmatrix42 from '../../img/matrix_42_background.svg?url';
-import bgsnow from '../../img/snow_background.svg?url';
+import { allBackgrounds, getBackgroundById, getBackgroundUrl as getCatalogBackgroundUrl, type BackgroundItem } from '../backgrounds/catalog';
 
-export type BackgroundKey = 'default' | 'space' | '42' | 'halloween' | 'matrix42' | 'snow';
+export type BackgroundKey = string;
 export type GameKey = 'bombparty' | 'pong';
 
 type BackgroundState = {
@@ -21,6 +18,7 @@ type BackgroundContextValue = {
   clearBackground: (game: GameKey) => void;
   getBackgroundUrl: (key: BackgroundKey) => string | null;
   getGlobalBackgroundKey: () => BackgroundKey;
+  availableBackgrounds: BackgroundItem[];
 };
 
 const STORAGE_KEYS = {
@@ -37,18 +35,15 @@ const DEFAULT_STATE: BackgroundState = {
   pong: 'default',
 };
 
-const BACKGROUND_URLS: Partial<Record<Exclude<BackgroundKey, 'default'>, string>> = {
-  '42': bg42,
-  'halloween': bghalloween,
-  'matrix42': bgmatrix42,
-  'snow': bgsnow,
-};
-
 function loadState(): BackgroundState {
   try {
-    const global = (localStorage.getItem(STORAGE_KEYS.global) as BackgroundKey) || 'default';
-    const bombparty = (localStorage.getItem(STORAGE_KEYS.bombparty) as BackgroundKey) || 'default';
-    const pong = (localStorage.getItem(STORAGE_KEYS.pong) as BackgroundKey) || 'default';
+    const savedGlobal = localStorage.getItem(STORAGE_KEYS.global);
+    const savedBombparty = localStorage.getItem(STORAGE_KEYS.bombparty);
+    const savedPong = localStorage.getItem(STORAGE_KEYS.pong);
+    const global = (savedGlobal && getBackgroundById(savedGlobal)) ? savedGlobal : 'default';
+    const bombparty = (savedBombparty && getBackgroundById(savedBombparty)) ? savedBombparty : 'default';
+    const pong = (savedPong && getBackgroundById(savedPong)) ? savedPong : 'default';
+    
     return { global, bombparty, pong };
   } catch {
     return { ...DEFAULT_STATE };
@@ -98,7 +93,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
 
   const getBackgroundUrl = useCallback((key: BackgroundKey): string | null => {
     if (key === 'default' || key === 'space') return null;
-    return BACKGROUND_URLS[key] ?? null;
+    return getCatalogBackgroundUrl(key);
   }, []);
 
   const getGlobalBackgroundKey = useCallback(() => state.global, [state.global]);
@@ -111,6 +106,7 @@ export function BackgroundProvider({ children }: { children: React.ReactNode }) 
     clearBackground,
     getBackgroundUrl,
     getGlobalBackgroundKey,
+    availableBackgrounds: allBackgrounds,
   }), [state, getBackgroundFor, setBackgroundFor, setGlobalBackground, clearBackground, getBackgroundUrl, getGlobalBackgroundKey]);
 
   return (

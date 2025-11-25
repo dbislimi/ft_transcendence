@@ -4,9 +4,10 @@ import fp from 'fastify-plugin';
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 
-
 dotenv.config();
+
 const JWT_SECRET = process.env.JWT_SECRET!;
+const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, any, any, any>) {
 
@@ -20,7 +21,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
       auth: fastifyOauth2.GOOGLE_CONFIGURATION,
     },
     startRedirectPath: '/auth/google',
-  callbackUri: 'http://localhost:3001/auth/google/callback',
+  callbackUri: `https://${HOSTNAME}:3001/auth/google/callback`,
     scope: ['profile', 'email'],
     });
 
@@ -36,7 +37,6 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
         Authorization: 'Bearer ' + result.token.access_token
       },
     }).then(res => res.json());
-    console.log("AH LES INFO QUON A DE GOOGLE: ", userInfo);
     const { email, name } = userInfo;
 
     const db = fastify.db;
@@ -82,7 +82,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
         return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
       }
 
-      return reply.redirect(`http://localhost:5173?require2fa=${user.twoFAEnabled}`);
+      return reply.redirect(`https://${HOSTNAME}:5173?require2fa=${user.twoFAEnabled}`);
       }
 
     const jwtToken = jwt.sign(
@@ -90,8 +90,6 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
       JWT_SECRET,
       { expiresIn: '2h' }
     );
-
-    return reply.redirect(`http://localhost:5173?token=${jwtToken}`);
+    return reply.redirect(`https://${HOSTNAME}:5173?token=${jwtToken}`);
     });
 });
-

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import type { PlayerProfile } from "../types/playerProfiles";
+import { API_BASE_URL } from "../config/api";
 
 export function usePlayerProfile(userId: string | null) {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     useEffect(() => {
         let cancelled = false;
         async function run() {
@@ -19,8 +20,8 @@ export function usePlayerProfile(userId: string | null) {
                     throw new Error("No authentication token");
                 }
 
-                const response = await fetch(`https://localhost:3001/users/${userId}`, {
-                    headers: { 
+                const response = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
@@ -59,6 +60,6 @@ export function usePlayerProfile(userId: string | null) {
             cancelled = true;
         };
     }, [userId]);
-    
+
     return { profile, loading, error };
 }

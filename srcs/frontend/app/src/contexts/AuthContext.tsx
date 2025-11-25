@@ -50,6 +50,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gérer le token depuis l'URL (retour de Google OAuth)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = searchParams.get('token');
+    const require2fa = searchParams.get('require2fa');
+
+    if (tokenFromUrl) {
+      console.log('[AuthContext] Token détecté dans l\'URL, traitement...');
+      setTokenState(tokenFromUrl);
+      localStorage.setItem('token', tokenFromUrl);
+
+      // Nettoyer l'URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+
+    if (require2fa) {
+      console.log('[AuthContext] 2FA requis');
+      // Nettoyer l'URL et rediriger
+      const newUrl = '/auth';
+      window.history.replaceState({}, '', newUrl);
+      window.location.href = newUrl;
+    }
+  }, []);
+
   const refreshUser = async () => {
     setIsLoading(true);
     if (!token) {
@@ -60,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       console.log('[refreshUser] Appel /me avec token:', token.substring(0, 20));
-      const res = await fetch('https://localhost:3001/me', {
+      const res = await fetch('/api/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -90,7 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logoutUser = async (currentToken?: string | null) => {
     if (currentToken) {
       try {
-        await fetch('https://localhost:3001/logout', {
+        await fetch('/api/logout', {
           method: 'POST',
           headers: { Authorization: `Bearer ${currentToken}` },
         });
@@ -99,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const blob = new Blob([JSON.stringify({})], {
           type: 'application/json',
         });
-        navigator.sendBeacon('https://localhost:3001/logout', blob);
+        navigator.sendBeacon('/api/logout', blob);
       }
     }
   };

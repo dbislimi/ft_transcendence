@@ -37,6 +37,106 @@
       "dren": "Led the entire Pong game with its AI and laid the project's foundations (structure, tooling, CI/CD) for controlled deployments."
     }
   },
+  "profile": {
+    "error_msg": {
+      "invalidEmail": "Invalid email.",
+      "invalidDisplayName": "Username must contain only letters, numbers or hyphens.",
+      "invalidPassword": "Password must contain at least 6 characters, one uppercase, one lowercase, one number and one special character.",
+      "noChanges": "No changes detected.",
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Error updating profile",
+      "networkErrorRetry": "Network error. Please try again.",
+      "sendError": "Error sending request",
+      "networkError": "Network error",
+      "confirmBlock": "Block this user?",
+      "confirmDelete": "Remove this friend?",
+      "loading": "Loading profile..."
+    },
+    "navigate": {
+      "back": "Back",
+      "overview": "Overview",
+      "stats": "Statistics",
+      "history": "History",
+      "friends": "Friends",
+      "settings": "Settings"
+    },
+    "view": {
+      "quickStats": "Quick Stats",
+      "gamesPlayed": "Games Played",
+      "wins": "Wins",
+      "losses": "Losses",
+      "winRate": "Win Rate",
+      "onlineFriends": "Online Friends",
+      "online": "Online",
+      "noOnlineFriends": "No friends online"
+    },
+    "stats": {
+      "detailedStats": "Detailed Statistics",
+      "totalGames": "Total Games",
+      "winRate": "Win Rate",
+      "botWins": "Bot Wins",
+      "playerWins": "Player Wins",
+      "tournamentsWon": "Tournaments Won"
+    },
+    "history": {
+      "matchHistory": "Match History",
+      "victory": "VICTORY",
+      "defeat": "DEFEAT",
+      "vs": "vs",
+      "bot": "BOT",
+      "tournament": "TOURNAMENT",
+      "quick": "QUICK",
+      "training": "TRAINING",
+      "matchNumber": "Match #",
+      "loading": "Loading...",
+      "loadMore": "Load more matches",
+      "noGamesPlayed": "No games played",
+      "historyPlaceholder": "Your match history will appear here",
+      "playFirstGame": "Play my first game"
+    },
+    "friend": {
+      "manage": "Friend Management",
+      "friends": "Friends",
+      "requests": "Requests",
+      "blocked": "Blocked",
+      "add": "Add Friend",
+      "usernamePlaceholder": "Username",
+      "addHint": "Enter the exact username of the person you want to add.",
+      "online": "Online",
+      "offline": "Offline",
+      "invite": "Invite to play",
+      "block": "Block",
+      "remove": "Remove",
+      "notFound": "No friends yet",
+      "searchPlaceholder": "Start by adding someone!",
+      "receivedRequests": "Received Requests",
+      "accept": "Accept",
+      "reject": "Reject",
+      "noReceivedRequests": "No received requests",
+      "sentRequests": "Sent Requests",
+      "pending": "Pending...",
+      "noSentRequests": "No sent requests",
+      "blockedUsers": "Blocked Users",
+      "blockedOn": "Blocked on",
+      "unblock": "Unblock",
+      "noBlockedUsers": "No blocked users",
+      "peaceMessage": "You're at peace with everyone!"
+    },
+    "settings": {
+      "title": "Profile Settings",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "personalInfo": "Personal Information",
+      "email": "Email",
+      "username": "Username",
+      "currentAvatar": "Current Avatar",
+      "newPassword": "New Password",
+      "chooseAvatar": "Choose an avatar",
+      "preview": "Preview",
+      "previewAvatar": "Avatar Preview",
+      "save": "Save"
+    }
+  },
   "bombParty": {
     "info": {
       "title": "Info",

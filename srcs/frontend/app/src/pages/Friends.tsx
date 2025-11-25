@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL, WS_BASE_URL } from "../config/api";
 
 interface Friend {
   id: number;
@@ -36,12 +37,12 @@ export default function Friends() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"friends" | "requests" | "blocked">("friends");
   const [wsStatus, setWsStatus] = useState<string>("Déconnecté");
-  
+
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchFriends = async () => {
     try {
-      const res = await fetch("https://localhost:3001/friends", {
+      const res = await fetch(`${API_BASE_URL}/api/friends`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -55,7 +56,7 @@ export default function Friends() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("https://localhost:3001/friend-requests", {
+      const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -69,7 +70,7 @@ export default function Friends() {
 
   const fetchBlockedUsers = async () => {
     try {
-      const res = await fetch("https://localhost:3001/blocked-users", {
+      const res = await fetch(`${API_BASE_URL}/api/blocked-users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -84,7 +85,7 @@ export default function Friends() {
   useEffect(() => {
     if (!token || !user?.id) return;
 
-    const ws = new WebSocket(`wss://localhost:3001/ws-friends?token=${token}`);
+    const ws = new WebSocket(`${WS_BASE_URL}/ws-friends?token=${token}`);
     wsRef.current = ws;
 
     ws.onopen = () => setWsStatus("Connecté");
@@ -113,7 +114,7 @@ export default function Friends() {
             fetchRequests();
             break;
           case "status_update":
-            setFriends(prev => prev.map(friend => 
+            setFriends(prev => prev.map(friend =>
               friend.id === data.userId ? { ...friend, online: data.online } : friend
             ));
             break;
@@ -144,7 +145,7 @@ export default function Friends() {
     if (!newFriend.trim()) return;
     setLoading(true); setError(null);
     try {
-      const res = await fetch("https://localhost:3001/friend-requests", {
+      const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ display_name: newFriend.trim() }),
@@ -157,14 +158,14 @@ export default function Friends() {
 
   const acceptRequest = async (senderId: number) => {
     try {
-      const res = await fetch(`https://localhost:3001/friend-requests/${senderId}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) { fetchFriends(); fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors de l'acceptation"); }
     } catch (err) { setError("Erreur réseau"); }
   };
 
   const rejectRequest = async (senderId: number) => {
     try {
-      const res = await fetch(`https://localhost:3001/friend-requests/${senderId}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) { fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors du rejet"); }
     } catch (err) { setError("Erreur réseau"); }
   };
@@ -172,7 +173,7 @@ export default function Friends() {
   const removeFriend = async (friendId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) return;
     try {
-      const res = await fetch(`https://localhost:3001/friends/${friendId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) fetchFriends(); else { const data = await res.json(); setError(data.error || "Erreur lors de la suppression"); }
     } catch (err) { setError("Erreur réseau"); }
   };
@@ -180,7 +181,7 @@ export default function Friends() {
   const blockUser = async (userId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?")) return;
     try {
-      const res = await fetch("https://localhost:3001/block-user", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ user_id: userId }) });
+      const res = await fetch(`${API_BASE_URL}/api/block-user`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ user_id: userId }) });
       if (res.ok) { fetchFriends(); fetchRequests(); fetchBlockedUsers(); } else { const data = await res.json(); setError(data.error || "Erreur lors du blocage"); }
     } catch (err) { setError("Erreur réseau"); }
   };
@@ -188,7 +189,7 @@ export default function Friends() {
   const unblockUser = async (userId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir débloquer cet utilisateur ?")) return;
     try {
-      const res = await fetch(`https://localhost:3001/blocked-users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE_URL}/api/blocked-users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || "Erreur lors du déblocage"); }
     } catch (err) { setError("Erreur réseau"); }
   };

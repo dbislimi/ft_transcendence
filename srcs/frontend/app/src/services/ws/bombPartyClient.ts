@@ -3,6 +3,7 @@ import { wsCoordinator } from './WebSocketCoordinator';
 import { logger } from '../../utils/logger';
 import type { BPClientMessage, BPServerMessage, WSMessage } from './types';
 import { isBPServerMessage } from './types';
+import { getWebSocketHost } from '../../config/api';
 
 type EventHandler = (payload: unknown) => void;
 
@@ -24,7 +25,7 @@ export interface LobbyJoinPayload {
   password?: string;
 }
 
-export type BombPartyEvent = 
+export type BombPartyEvent =
   | 'bp:bonus:activate'
   | 'bp:auth'
   | 'bp:lobby:create'
@@ -99,14 +100,14 @@ export class BombPartyClient {
     this.reconnectMaxDelay = options.reconnectMaxDelay ?? 30000;
     this.messageQueueMaxSize = options.messageQueueMaxSize ?? 100;
     this.messageExpirationMs = options.messageExpirationMs ?? 60000;
-    
+
     logger.debug('websocket client created', { connectionId: this.connectionId, priority: this.priority });
   }
 
   private isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
-    
+
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiresAt = payload.exp * 1000;
@@ -118,17 +119,15 @@ export class BombPartyClient {
 
   private getWebSocketUrl(): string {
     const token = localStorage.getItem('token');
-    
-    const isDev = typeof window !== 'undefined' && 
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    
-    const wsUrl = import.meta.env.DEV 
-      ? 'wss://localhost:3001'
-      : ((import.meta as any).env?.VITE_WS_URL || `wss://${window.location.hostname}:3001`);
-    
-    const baseUrl = wsUrl.replace(/^https?/, 'ws').replace(/^wss?/, 'ws');
-    
-    const url = new URL(`${baseUrl}/bombparty/ws`);
+
+    // Always prefer Nginx proxy (port 443) over direct backend port (3001)
+    // If on port 5173 (Vite), target localhost (Nginx).
+    // If on port 443 (Nginx), target window.location.host.
+    const wsHost = getWebSocketHost();
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${wsHost}/bombparty/ws`;
+
+    const url = new URL(wsUrl);
     if (token) {
       url.searchParams.set('token', token);
     }
@@ -149,26 +148,26 @@ export class BombPartyClient {
       logger.debug(`[BombPartyClient] Cleanup already in progress, skipping [${this.connectionId}]`);
       return;
     }
-    
+
     this.isCleaningUp = true;
     logger.debug(`[BombPartyClient] Starting cleanup [${this.connectionId}]`);
-    
+
     try {
       if (this.reconnectTimer !== null) {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = null;
       }
-      
+
       if (this.pingInterval !== null) {
         clearInterval(this.pingInterval);
         this.pingInterval = null;
       }
-      
+
       if (this.connectionTimeout !== null) {
         clearTimeout(this.connectionTimeout);
         this.connectionTimeout = null;
       }
-      
+
       for (const cleanup of this.cleanupCallbacks) {
         try {
           cleanup();
@@ -177,7 +176,7 @@ export class BombPartyClient {
         }
       }
       this.cleanupCallbacks = [];
-      
+
       if (this.ws) {
         try {
           this.ws.onopen = null;
@@ -188,7 +187,7 @@ export class BombPartyClient {
           logger.warn('error cleaning up websocket handlers', { connectionId: this.connectionId, error: err });
         }
       }
-      
+
       logger.debug(`[BombPartyClient] Cleanup completed [${this.connectionId}]`);
     } finally {
       this.isCleaningUp = false;
@@ -206,37 +205,37 @@ export class BombPartyClient {
       logger.warn(`[BombPartyClient] Call reset() method to allow reconnection attempts again [${this.connectionId}]`);
       return;
     }
-    
+
     if (this.isDisconnected) {
       this.isDisconnected = false;
       logger.debug(`[BombPartyClient] Resetting isDisconnected flag [${this.connectionId}]`);
     }
-    
+
     if (this.connectionLock) {
       logger.debug(`[BombPartyClient] Connection lock active, ignoring connect request [${this.connectionId}]`);
       return;
     }
-    
+
     if (this.isConnecting || (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN))) {
       logger.debug(`[BombPartyClient] Connection already in progress or active, ignored [${this.connectionId}]`);
       return;
     }
-    
+
     const connectionsInfo = wsCoordinator.getConnectionsInfo();
-    
+
     this.registeredWithCoordinator = wsCoordinator.registerConnection(
       this.connectionId,
       'bombPartyClient',
       this.priority
     );
-    
+
     if (!this.registeredWithCoordinator) {
       this.nonPriorityAttempts++;
-      
+
       const hasActiveService = connectionsInfo.allConnections.some(
         c => c.type === 'bombPartyService' && c.isActive
       );
-      
+
       logger.warn(`[BombPartyClient] Not priority for now (attempt ${this.nonPriorityAttempts}/${this.maxNonPriorityAttempts}) [${this.connectionId}]`, {
         currentPrimary: connectionsInfo.primaryConnection,
         activeConnections: connectionsInfo.activeCount,
@@ -244,7 +243,7 @@ export class BombPartyClient {
         myPriority: this.priority,
         hasActiveService
       });
-      
+
       if (this.nonPriorityAttempts >= this.maxNonPriorityAttempts) {
         if (hasActiveService) {
           logger.error(`[BombPartyClient] Max non-priority attempts reached (${this.maxNonPriorityAttempts}), stopping reconnection [${this.connectionId}] - BombPartyService is active`);
@@ -263,29 +262,29 @@ export class BombPartyClient {
           return;
         }
       }
-      
+
       const delay = this.calculateReconnectDelay(this.nonPriorityAttempts - 1);
       logger.debug(`[BombPartyClient] Scheduling non-priority retry in ${Math.round(delay)}ms [${this.connectionId}]`);
-      
+
       this.reconnectTimer = setTimeout(() => {
         this.reconnectTimer = null;
         this.connect();
       }, delay);
-      
+
       return;
     }
-    
+
     this.nonPriorityAttempts = 0;
-    
+
     this.connectionLock = true;
     this.isConnecting = true;
     logger.debug(`[BombPartyClient] WebSocket connection attempt... [${this.connectionId}]`);
-    
+
     try {
       const wsUrl = this.getWebSocketUrl();
       logger.debug(`[BombPartyClient] Connecting to: ${wsUrl.replace(/token=[^&]+/, 'token=***')}`);
       this.ws = new WebSocket(wsUrl);
-      
+
       this.connectionTimeout = setTimeout(() => {
         if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
           logger.warn(`[BombPartyClient] Connection timeout [${this.connectionId}]`);
@@ -293,41 +292,41 @@ export class BombPartyClient {
           this.handleConnectionFailure();
         }
       }, 10000);
-      
+
       this.ws.onopen = () => {
         this.connectionLock = false;
         this.isConnecting = false;
-        
+
         this.reconnectAttempts = 0;
         this.nonPriorityAttempts = 0;
-        
+
         if (this.shouldStopReconnecting) {
           logger.debug(`[BombPartyClient] Connection successful, resetting shouldStopReconnecting flag [${this.connectionId}]`);
           this.shouldStopReconnecting = false;
           this.hasLoggedReconnectionStopped = false;
         }
-        
+
         if (this.connectionTimeout) {
           clearTimeout(this.connectionTimeout);
           this.connectionTimeout = null;
         }
-        
+
         logger.debug(`[BombPartyClient] Connexion établie [${this.connectionId}]`);
-        
+
         this.startPingInterval();
-        
+
         this._emit('connected', {});
       };
-      
+
       this.ws.onmessage = (event) => {
         if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
           logger.debug(`[BombPartyClient] Not priority, message ignored [${this.connectionId}]`);
           return;
         }
-        
+
         try {
           const rawData = JSON.parse(event.data) as WSMessage;
-          
+
           if (!isBPServerMessage(rawData)) {
             logger.warn(`[BombPartyClient] Invalid message format received:`, {
               connectionId: this.connectionId,
@@ -338,45 +337,45 @@ export class BombPartyClient {
             });
             return;
           }
-          
+
           const data = rawData as BPServerMessage;
-          
+
           if (data.event === 'bp:ping') {
             this.sendMessageDirectly('bp:pong', {});
             return;
           }
-          
+
           if (data.event !== 'bp:pong') {
             logger.debug('[BombPartyClient] Message received:', {
               event: data.event,
               connectionId: this.connectionId
             });
           }
-          
+
           this._emit(data.event, data.payload);
         } catch (err) {
           logger.error('[BombPartyClient] Error parsing message:', err);
         }
       };
-      
+
       this.ws.onclose = (event) => {
         this.connectionLock = false;
         this.isConnecting = false;
-        
+
         if (this.connectionTimeout) {
           clearTimeout(this.connectionTimeout);
           this.connectionTimeout = null;
         }
-        
+
         this.stopPingInterval();
-        
+
         logger.debug(`[BombPartyClient] Connection closed [${this.connectionId}], code: ${event.code}, reason: ${event.reason || 'none'}`, {
           reconnectAttempts: this.reconnectAttempts,
           maxReconnectAttempts: this.maxReconnectAttempts,
           shouldStopReconnecting: this.shouldStopReconnecting
         });
         this._emit('disconnected', { code: event.code, reason: event.reason });
-        
+
         if (this.shouldStopReconnecting) {
           logger.error(`[BombPartyClient] Connection closed but reconnection permanently stopped [${this.connectionId}]`, {
             code: event.code,
@@ -392,18 +391,18 @@ export class BombPartyClient {
           logger.warn(`[BombPartyClient] Call reset() to allow new connection attempts [${this.connectionId}]`);
           return;
         }
-        
+
         if (event.code === 1000) {
           logger.debug(`[BombPartyClient] Normal closure (code 1000), not reconnecting [${this.connectionId}]`);
           this.reconnectAttempts = 0;
           return;
         }
-        
+
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           const delay = this.calculateReconnectDelay(this.reconnectAttempts);
           this.reconnectAttempts++;
           logger.debug(`[BombPartyClient] Scheduling reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${Math.round(delay)}ms [${this.connectionId}]`);
-          
+
           this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;
             this.connect();
@@ -412,18 +411,18 @@ export class BombPartyClient {
           logger.error(`[BombPartyClient] Max reconnect attempts reached (${this.maxReconnectAttempts}), stopping permanently [${this.connectionId}]`);
           this.shouldStopReconnecting = true;
           this.stopReconnectingAndCleanQueue();
-          
+
           if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
             logger.debug(`[BombPartyClient] Cleared all reconnect timers [${this.connectionId}]`);
           }
-          
+
           this._emit('error', { error: 'Max reconnect attempts reached' });
           logger.warn(`[BombPartyClient] Call reset() to allow new connection attempts [${this.connectionId}]`);
         }
       };
-      
+
       this.ws.onerror = (error) => {
         this.connectionLock = false;
         this.isConnecting = false;
@@ -441,12 +440,12 @@ export class BombPartyClient {
       this.connectionLock = false;
       this.isConnecting = false;
       logger.error(`[BombPartyClient] Exception lors de la connexion [${this.connectionId}]:`, err);
-      
+
       if (err instanceof Error && err.message.includes('token')) {
         logger.warn(`[BombPartyClient] Authentication error, not retrying [${this.connectionId}]`);
         return;
       }
-      
+
       this.handleConnectionFailure();
     }
   }
@@ -456,7 +455,7 @@ export class BombPartyClient {
       clearTimeout(this.connectionTimeout);
       this.connectionTimeout = null;
     }
-    
+
     if (this.ws) {
       try {
         this.ws.close();
@@ -464,7 +463,7 @@ export class BombPartyClient {
       }
       this.ws = null;
     }
-    
+
     if (this.shouldStopReconnecting) {
       logger.error(`[BombPartyClient] Connection failure but reconnection permanently stopped [${this.connectionId}]`, {
         reason: 'shouldStopReconnecting flag is true',
@@ -478,7 +477,7 @@ export class BombPartyClient {
       }
       return;
     }
-    
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       const delay = this.calculateReconnectDelay(this.reconnectAttempts);
       this.reconnectAttempts++;
@@ -491,13 +490,13 @@ export class BombPartyClient {
       logger.error(`[BombPartyClient] Max reconnect attempts reached (${this.maxReconnectAttempts}), stopping permanently [${this.connectionId}]`);
       this.shouldStopReconnecting = true;
       this.stopReconnectingAndCleanQueue();
-      
+
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = null;
         logger.debug(`[BombPartyClient] Cleared all reconnect timers [${this.connectionId}]`);
       }
-      
+
       this._emit('error', { error: 'Max reconnect attempts reached after connection failure' });
       logger.warn(`[BombPartyClient] Call reset() to allow new connection attempts [${this.connectionId}]`);
     }
@@ -505,7 +504,7 @@ export class BombPartyClient {
 
   private startPingInterval(): void {
     this.stopPingInterval();
-    
+
     this.pingInterval = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.sendMessageDirectly('bp:ping', {});
@@ -525,21 +524,21 @@ export class BombPartyClient {
       logger.debug(`[BombPartyClient] Disconnect already in progress or done [${this.connectionId}]`);
       return;
     }
-    
+
     logger.debug(`[BombPartyClient] Disconnect requested [${this.connectionId}]`);
     this.isDisconnecting = true;
-    
+
     this.reconnectAttempts = this.maxReconnectAttempts;
     this.shouldStopReconnecting = true;
     this.stopReconnectingAndCleanQueue();
-    
+
     this.cleanup();
-    
+
     if (this.registeredWithCoordinator) {
       wsCoordinator.unregisterConnection(this.connectionId);
       this.registeredWithCoordinator = false;
     }
-    
+
     if (this.ws) {
       try {
         logger.debug(`[BombPartyClient] WebSocket disconnection [${this.connectionId}]`);
@@ -547,23 +546,23 @@ export class BombPartyClient {
       } catch (err) {
         logger.warn('error closing websocket', { connectionId: this.connectionId, error: err });
       }
-      
+
       this.ws = null;
     }
-    
+
     this.isConnecting = false;
     this.authenticated = false;
     this.connectionLock = false;
     this.nonPriorityAttempts = 0;
     this.isDisconnecting = false;
     this.isDisconnected = true;
-    
+
     this.messageQueue = [];
   }
 
   public reset(): void {
     logger.debug(`[BombPartyClient] Reset requested [${this.connectionId}]`);
-    
+
     this.reconnectAttempts = 0;
     this.nonPriorityAttempts = 0;
     this.shouldStopReconnecting = false;
@@ -571,7 +570,7 @@ export class BombPartyClient {
     this.authenticated = false;
     this.connectionLock = false;
     this.isDisconnected = false;
-    
+
     logger.debug(`[BombPartyClient] Reset completed, client can reconnect [${this.connectionId}]`);
   }
 
@@ -595,7 +594,7 @@ export class BombPartyClient {
     const set = this.handlers.get(event) ?? new Set<EventHandler>();
     set.add(handler);
     this.handlers.set(event, set);
-    
+
     const unsubscribe = () => {
       const currentSet = this.handlers.get(event);
       if (currentSet) {
@@ -605,9 +604,9 @@ export class BombPartyClient {
         }
       }
     };
-    
+
     this.cleanupCallbacks.push(unsubscribe);
-    
+
     return unsubscribe;
   }
 
@@ -639,17 +638,17 @@ export class BombPartyClient {
       return;
     }
     this.cleanExpiredMessages();
-    
+
     if (this.messageQueue.length >= this.messageQueueMaxSize) {
       this.messageQueue.sort((a, b) => b.priority - a.priority);
       this.messageQueue.pop();
       logger.warn(`[BombPartyClient] Message queue full, removing least priority message [${this.connectionId}]`);
     }
-    
+
     const priority = this.getMessagePriority(event);
     const timestamp = Date.now();
     const expiresAt = timestamp + this.messageExpirationMs;
-    
+
     this.messageQueue.push({
       event,
       payload,
@@ -657,7 +656,7 @@ export class BombPartyClient {
       expiresAt,
       priority
     });
-    
+
     this.messageQueue.sort((a, b) => b.priority - a.priority);
   }
 
@@ -665,7 +664,7 @@ export class BombPartyClient {
     const now = Date.now();
     const initialLength = this.messageQueue.length;
     this.messageQueue = this.messageQueue.filter(msg => msg.expiresAt > now);
-    
+
     if (this.messageQueue.length < initialLength) {
       logger.debug(`[BombPartyClient] Removed ${initialLength - this.messageQueue.length} expired messages [${this.connectionId}]`);
     }
@@ -675,7 +674,7 @@ export class BombPartyClient {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return false;
     }
-    
+
     try {
       const message = JSON.stringify({ event, payload });
       this.ws.send(message);
@@ -697,7 +696,7 @@ export class BombPartyClient {
     if (this.shouldStopReconnecting) {
       return;
     }
-    
+
     if (event !== 'bp:ping' && event !== 'bp:pong') {
       logger.debug(`[BombPartyClient] emit called [${this.connectionId}]:`, {
         event,
@@ -707,7 +706,7 @@ export class BombPartyClient {
         payload: event === 'bp:lobby:create' ? payload : '...'
       });
     }
-    
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       if (this.sendMessageDirectly(event, payload)) {
         if (event !== 'bp:ping' && event !== 'bp:pong') {
@@ -718,12 +717,12 @@ export class BombPartyClient {
         logger.warn('failed to send message directly', { connectionId: this.connectionId, event });
       }
     }
-    
+
     if (event !== 'bp:ping' && event !== 'bp:pong') {
       if (this.shouldStopReconnecting) {
         return;
       }
-      
+
       logger.debug(`[BombPartyClient] WebSocket not ready, queuing message [${this.connectionId}]:`, {
         event,
         wsState: this.ws?.readyState,
@@ -732,10 +731,10 @@ export class BombPartyClient {
         shouldStopReconnecting: this.shouldStopReconnecting
       });
       this.addToQueue(event, payload);
-      
-      if (!this.isConnecting && 
-          (!this.ws || this.ws.readyState !== WebSocket.CONNECTING) && 
-          !this.shouldStopReconnecting) {
+
+      if (!this.isConnecting &&
+        (!this.ws || this.ws.readyState !== WebSocket.CONNECTING) &&
+        !this.shouldStopReconnecting) {
         logger.debug(`[BombPartyClient] Reconnection attempt to send message [${this.connectionId}]`);
         this.connect();
       }
@@ -746,30 +745,30 @@ export class BombPartyClient {
     if (this.shouldStopReconnecting) {
       return;
     }
-    
+
     if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
       logger.debug(`[BombPartyClient] Not primary connection, skipping authentication [${this.connectionId}]`);
       return;
     }
-    
+
     if (this.authenticated && this.currentPlayerName === playerName) {
       logger.debug(`[BombPartyClient] Already authenticated as [${playerName}], ignored [${this.connectionId}]`);
       return;
     }
-    
+
     logger.debug(`[BombPartyClient] Send authentication for [${playerName}] [${this.connectionId}]`);
     this.currentPlayerName = playerName;
-    
+
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       logger.debug(`[BombPartyClient] WebSocket not connected during authentication, queueing and connecting... [${this.connectionId}]`);
       this.addToQueue('bp:auth', { playerName });
-      
+
       if (!this.shouldStopReconnecting) {
         this.connect();
       }
       return;
     }
-    
+
     this.emit('bp:auth', { playerName });
   }
 
@@ -809,7 +808,7 @@ export class BombPartyClient {
     if (this.shouldStopReconnecting) {
       return;
     }
-    
+
     logger.debug('sendmessage', { connectionId: this.connectionId, event: message.event, wsReady: this.ws?.readyState });
     this.emit(message.event, message.payload);
   }
@@ -826,7 +825,7 @@ export class BombPartyClient {
 
   private _emit(event: string, payload: unknown): void {
     const set = this.handlers.get(event);
-    
+
     if (event !== 'bp:ping' && event !== 'bp:pong') {
       logger.debug('[BombPartyClient] _emit:', {
         event,
@@ -835,11 +834,11 @@ export class BombPartyClient {
         connectionId: this.connectionId
       });
     }
-    
+
     if (!set) {
       return;
     }
-    
+
     for (const handler of set) {
       try {
         handler(payload);
@@ -851,44 +850,44 @@ export class BombPartyClient {
         });
       }
     }
-    
+
     if (event === 'connected') {
       if (this.currentPlayerName) {
         this.messageQueue = this.messageQueue.filter(msg => msg.event !== 'bp:auth');
         this.emit('bp:auth', { playerName: this.currentPlayerName });
       }
-      
+
       this._processPendingMessages();
     } else if (event === 'bp:auth:success') {
       this.authenticated = true;
       logger.debug(`[BombPartyClient] Authentication successful [${this.connectionId}]`);
-      
+
       this._processPendingMessages();
     }
   }
-  
+
   private _processPendingMessages(): void {
     if (this.messageQueue.length === 0) {
       return;
     }
-    
+
     this.cleanExpiredMessages();
-    
+
     if (this.messageQueue.length === 0) {
       return;
     }
-    
+
     logger.debug(`[BombPartyClient] Processing ${this.messageQueue.length} pending messages [${this.connectionId}]`);
-    
+
     const messagesToSend = [...this.messageQueue];
     this.messageQueue = [];
-    
+
     for (const message of messagesToSend) {
       if (Date.now() > message.expiresAt) {
         logger.debug(`[BombPartyClient] Skipping expired message: ${message.event} [${this.connectionId}]`);
         continue;
       }
-      
+
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         if (this.sendMessageDirectly(message.event, message.payload)) {
           logger.debug(`[BombPartyClient] Queued message sent: ${message.event} [${this.connectionId}]`);
@@ -899,15 +898,15 @@ export class BombPartyClient {
         this.messageQueue.push(message);
       }
     }
-    
+
     this.messageQueue.sort((a, b) => b.priority - a.priority);
   }
-  
+
   private handleMockEvent(event: string, payload: unknown): void {
     if (!this.mock || this.ws) {
       return;
     }
-    
+
     if (event === 'bp:bonus:activate') {
       const p = payload as { roomId: string; playerId: string; bonusKey: BonusKey };
       setTimeout(() => {

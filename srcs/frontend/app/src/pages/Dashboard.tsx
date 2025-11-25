@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 export default function Dashboard() {
   const [username, setUsername] = useState<string | null>(null);
@@ -13,7 +14,7 @@ export default function Dashboard() {
       return;
     }
 
-  fetch("https://localhost:3001/profile", {
+    fetch(`${API_BASE_URL}/api/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

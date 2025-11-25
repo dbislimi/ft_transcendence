@@ -113,7 +113,7 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                         }`}
                       >
                       <div className="aspect-video w-full relative">
-                        {bg.id === '42background' ? (
+                        {bg.id === '42' ? (
                           <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center transition-all duration-300 group-hover:from-yellow-300 group-hover:to-orange-400">
                             <div className="text-center">
                               <div className="text-6xl font-bold text-black mb-2">?</div>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
 import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { API_BASE_URL } from '../config/api';
 
 interface AccountSettingsModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
     "/avatars/avatar7.png", "/avatars/avatar8.png", "/avatars/avatar9.png",
     "/avatars/avatar10.png"
   ];
-  
+
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || "/avatars/avatar1.png");
 
   if (!isOpen) return null;
@@ -56,7 +57,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
       }
 
       const token = localStorage.getItem('token');
-      const res = await fetch('https://localhost:3001/me', {
+      const res = await fetch(`${API_BASE_URL}/api/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +87,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -113,9 +114,9 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
             // Mode Lecture
             <div className="space-y-8">
               <div className="flex flex-col items-center justify-center space-y-4">
-                <img 
-                  src={user?.avatar || "/avatars/avatar1.png"} 
-                  alt="Profile" 
+                <img
+                  src={user?.avatar || "/avatars/avatar1.png"}
+                  alt="Profile"
                   className="w-32 h-32 rounded-full border-4 border-blue-500/50 object-cover"
                 />
                 <h3 className="text-2xl font-bold text-white">{user?.display_name}</h3>
@@ -158,9 +159,9 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                 <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-300">Avatar</label>
                   <div className="flex justify-center mb-4">
-                    <img 
-                      src={selectedAvatar} 
-                      alt="Selected Avatar" 
+                    <img
+                      src={selectedAvatar}
+                      alt="Selected Avatar"
                       className="w-24 h-24 rounded-full border-4 border-blue-500 object-cover"
                     />
                   </div>
@@ -170,9 +171,8 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                         key={av}
                         type="button"
                         onClick={() => setSelectedAvatar(av)}
-                        className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all ${
-                          selectedAvatar === av ? 'border-blue-500 scale-110' : 'border-transparent hover:border-gray-500'
-                        }`}
+                        className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all ${selectedAvatar === av ? 'border-blue-500 scale-110' : 'border-transparent hover:border-gray-500'
+                          }`}
                       >
                         <img src={av} alt="Avatar choice" className="w-full h-full object-cover" />
                       </button>

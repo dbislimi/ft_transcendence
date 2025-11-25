@@ -10,19 +10,21 @@ type Card = {
 
 export default function BackgroundPicker({ game }: { game?: 'bombparty' | 'pong' }) {
   const { t } = useTranslation();
-  const { getBackgroundFor, setBackgroundFor, setGlobalBackground, getBackgroundUrl, getGlobalBackgroundKey } = useBackground();
+  const { getBackgroundFor, setBackgroundFor, setGlobalBackground, getBackgroundUrl, getGlobalBackgroundKey, availableBackgrounds } = useBackground();
   const [applyAll, setApplyAll] = useState(false);
 
   const current = game ? getBackgroundFor(game) : getGlobalBackgroundKey();
 
   const cards: Card[] = useMemo(() => {
-    const keys: BackgroundKey[] = ['default', 'space', '42', 'halloween', 'matrix42', 'snow'];
-    return keys.map((k) => ({
-      key: k,
-      label: t(`ui.background.${k}`),
-      previewUrl: k === 'default' ? null : getBackgroundUrl(k),
+    // Filtrer les backgrounds cachés (comme 42background) et utiliser tous les autres du catalog
+    const backgrounds = availableBackgrounds.filter(bg => bg.id !== '42background');
+    
+    return backgrounds.map((bg) => ({
+      key: bg.id,
+      label: t(`shop.backgrounds.${bg.id}.name`, bg.name),
+      previewUrl: bg.url,
     }));
-  }, [t, getBackgroundUrl]);
+  }, [t, availableBackgrounds]);
 
   const onSelect = (k: BackgroundKey) => {
     if (!game) {

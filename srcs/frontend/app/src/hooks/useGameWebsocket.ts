@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { getWebSocketHost } from "../config/api";
 
 export function useGameWebsocket(
 	api: string,
@@ -21,46 +22,48 @@ export function useGameWebsocket(
 
 		function doConnect(authToken: string | null) {
 			if (stopped || isConnecting) return;
-			
+
 			if (ws && ws.readyState !== WebSocket.CLOSED) {
 				ws.close();
 				ws = null;
 			}
-			
+
 			isConnecting = true;
-			
-			const wsHost = window.location.hostname === 'localhost' 
-				? 'localhost:3001' 
-				: `${window.location.hostname}:3001`;
-			
+
+			// Always prefer Nginx proxy (port 443) over direct backend port (3001)
+			// to avoid certificate trust issues and CORS complications.
+			// If on port 5173 (Vite), target localhost (Nginx).
+			// If on port 443 (Nginx), target window.location.host (relative).
+			const wsHost = getWebSocketHost();
 			const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
 			const url = authToken
 				? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(authToken)}`
 				: `${wsProtocol}//${wsHost}/${api}`;
 			console.log(`[ws:${api}] Attempting to connect to: ${url.replace(/token=[^&]+/, 'token=***')}`);
-			
+
 			try {
 				ws = new WebSocket(url);
 				wsRef.current = ws;
-				
+
 				ws.onopen = () => {
 					isConnecting = false;
 					console.log(`[ws:${api}] opened`);
 				};
-				
+
 				ws.onclose = (event) => {
 					isConnecting = false;
 					if (!stopped && event.code !== 1000) {
 						console.log(`[ws:${api}] closed (code: ${event.code})`);
 					}
 				};
-				
+
 				ws.onerror = (err) => {
 					if (!stopped) {
 						console.error(`[ws:${api}] error:`, err);
 					}
 				};
-				
+
 				ws.onmessage = (event) => onMessageRef.current(event);
 			} catch (error) {
 				isConnecting = false;
@@ -69,14 +72,14 @@ export function useGameWebsocket(
 		}
 
 		console.log(`[ws:${api}] Auth check: authenticated=${isAuthenticated}, token=${token ? 'PRESENT' : 'MISSING'}`);
-		
+
 		if (token) {
 			console.log(`[ws:${api}] Connecting with authentication`);
 			doConnect(token);
 		} else {
 			console.log(`[ws:${api}] Attempting connection without token (may be rejected by server)`);
 			doConnect(null);
-			
+
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;

@@ -1,6 +1,7 @@
 import { useBombPartyStore } from '../store/useBombPartyStore';
 import { wsCoordinator } from './ws/WebSocketCoordinator';
 import { logger } from '../utils/logger';
+import { getWebSocketHost } from '../config/api';
 
 export interface BombPartyMessage {
   t?: string;
@@ -41,7 +42,7 @@ export class BombPartyService {
   private lastHotReloadTime: number = 0;
   private hotReloadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly HOT_RELOAD_DEBOUNCE_MS = 500;
-  
+
   private getWebSocketStateName(readyState?: number): string {
     if (readyState === undefined) return 'UNDEFINED';
     switch (readyState) {
@@ -52,7 +53,7 @@ export class BombPartyService {
       default: return 'UNKNOWN';
     }
   }
-  
+
   private getReadyStateString(): string {
     if (!this.ws) return 'NO_WS';
     return this.getWebSocketStateName(this.ws.readyState);
@@ -69,17 +70,17 @@ export class BombPartyService {
   constructor() {
     this.connectionId = `bps_${Math.random().toString(36).substring(2, 10)}`;
     logger.debug('Instance created', { connectionId: this.connectionId });
-    
+
     // @ts-ignore - import.meta.hot est disponible en mode dev Vite
     if (typeof import.meta.hot !== 'undefined') {
       logger.debug('Hot reload support detected (Vite)', { connectionId: this.connectionId });
-      
+
       // @ts-ignore
       import.meta.hot.on('vite:beforeUpdate', () => {
         const wsState = this.ws?.readyState;
         const isConnected = wsState === WebSocket.OPEN;
         const wsStateName = this.getWebSocketStateName(wsState);
-        
+
         if (isConnected) {
           this.hotReloadDetected = true;
           logger.info('Hot reload: beforeUpdate - préservation de la connexion ouverte', {
@@ -97,13 +98,13 @@ export class BombPartyService {
           });
         }
       });
-      
+
       // @ts-ignore
       import.meta.hot.on('vite:afterUpdate', () => {
         const wsState = this.ws?.readyState;
         const isConnected = wsState === WebSocket.OPEN;
         const wsStateName = this.getWebSocketStateName(wsState);
-        
+
         if (this.hotReloadDetected && isConnected) {
           logger.info('Hot reload: afterUpdate - connexion préservée avec succès', {
             connectionId: this.connectionId,
@@ -117,14 +118,14 @@ export class BombPartyService {
             isConnected: false,
             willReconnect: true
           });
-          
+
           const store = useBombPartyStore.getState();
           const hadRoomId = store.connection.roomId;
           const hadPlayerId = store.connection.playerId;
           const storedName = localStorage.getItem('bombparty_player_name');
           const token = localStorage.getItem('token');
           const playerName = storedName || (token ? 'AuthenticatedUser' : null);
-          
+
           setTimeout(() => {
             logger.info('Hot reload: tentative de reconnexion après hot reload', {
               connectionId: this.connectionId,
@@ -133,15 +134,15 @@ export class BombPartyService {
               willReauth: !!playerName,
               willRejoinRoom: !!hadRoomId
             });
-            
+
             this.reconnectAttempts = 0;
             this.connect();
-            
+
             if (playerName && hadRoomId) {
               const checkConnection = setInterval(() => {
                 if (this.ws?.readyState === WebSocket.OPEN) {
                   clearInterval(checkConnection);
-                  
+
                   if (playerName) {
                     logger.info('Hot reload: réauthentification après reconnexion', {
                       connectionId: this.connectionId,
@@ -149,7 +150,7 @@ export class BombPartyService {
                     });
                     this.pendingPlayerName = playerName;
                   }
-                  
+
                   if (hadRoomId) {
                     setTimeout(() => {
                       logger.info('Hot reload: rejoindre la room après reconnexion', {
@@ -161,12 +162,12 @@ export class BombPartyService {
                   }
                 }
               }, 100);
-              
+
               setTimeout(() => clearInterval(checkConnection), 5000);
             }
           }, 500);
         }
-        
+
         setTimeout(() => {
           this.hotReloadDetected = false;
           logger.debug('Hot reload flag reset', { connectionId: this.connectionId });
@@ -178,12 +179,12 @@ export class BombPartyService {
   public init(): void {
     if (this.isInitialized) {
       logger.debug('Already initialized', { connectionId: this.connectionId });
-      
+
       if (this.ws?.readyState === WebSocket.OPEN) {
         logger.debug('Connection already open, skipping reconnection', { connectionId: this.connectionId });
         return;
       }
-      
+
       const isHotReload = typeof import.meta.hot !== 'undefined';
       if (isHotReload && this.hotReloadDetected) {
         logger.debug('Hot reload detected, preserving connection state', { connectionId: this.connectionId });
@@ -197,30 +198,30 @@ export class BombPartyService {
 
   private connect(): void {
     if (this.isConnecting) {
-      logger.warn('Connection already in progress, ignoring duplicate request', { 
+      logger.warn('Connection already in progress, ignoring duplicate request', {
         connectionId: this.connectionId,
         wsState: this.ws?.readyState,
         wsStateString: this.getReadyStateString()
       });
       return;
     }
-    
+
     if (this.ws?.readyState === WebSocket.OPEN) {
-      logger.info('Already connected, ignoring connection request', { 
+      logger.info('Already connected, ignoring connection request', {
         connectionId: this.connectionId,
         wsState: this.ws.readyState
       });
       return;
     }
-    
+
     if (this.ws?.readyState === WebSocket.CONNECTING) {
-      logger.warn('Connection in progress (CONNECTING state), ignoring duplicate request', { 
+      logger.warn('Connection in progress (CONNECTING state), ignoring duplicate request', {
         connectionId: this.connectionId,
         wsState: this.ws.readyState
       });
       return;
     }
-    
+
     if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
       logger.warn('WebSocket already connected or connecting, ignoring duplicate request', {
         connectionId: this.connectionId,
@@ -228,7 +229,7 @@ export class BombPartyService {
       });
       return;
     }
-    
+
     if (this.ws) {
       logger.debug('Cleaning up old WebSocket before creating new connection', {
         connectionId: this.connectionId,
@@ -236,30 +237,30 @@ export class BombPartyService {
       });
       this.cleanupWebSocket();
     }
-    
+
     this.isConnecting = true;
     const store = useBombPartyStore.getState();
     store.setConnectionState('connecting');
-    
+
     this.registeredWithCoordinator = wsCoordinator.registerConnection(
       this.connectionId,
       'bombPartyService',
       50
     );
-    
+
     if (!this.registeredWithCoordinator) {
       logger.debug('Not authorized by coordinator, connection cancelled', { connectionId: this.connectionId });
       store.setConnectionState('disconnected');
       this.isConnecting = false;
       return;
     }
-    
+
     try {
-      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const wsUrl = isDev 
-        ? `wss://localhost:3001/bombparty/ws`
-        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/bombparty/ws`;
-      
+
+      const wsHost = getWebSocketHost();
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${wsHost}/bombparty/ws`;
+
       logger.debug('Connecting to WebSocket', { connectionId: this.connectionId, url: wsUrl.replace(/token=[^&]+/, 'token=***') });
       this.ws = new WebSocket(wsUrl);
       this.setupEventHandlers();
@@ -315,9 +316,9 @@ export class BombPartyService {
 
       const guestId = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
       this.authenticate(`Guest_${guestId}`);
-      
+
       this.flushPendingMessages();
-      
+
       const store = useBombPartyStore.getState();
       if (store.connection.roomId) {
         setTimeout(() => {
@@ -335,27 +336,27 @@ export class BombPartyService {
 
     this.ws.onmessage = (event) => {
       const isPrimary = wsCoordinator.isPrimaryConnection(this.connectionId);
-      
+
       this.lastPong = Date.now();
-      
+
       this.messageCounter++;
-      
+
       try {
         const message: BombPartyMessage = JSON.parse(event.data);
-        
+
         if (this.isDuplicateMessage(message)) {
-          logger.warn('Duplicate message detected, ignoring', { 
-            connectionId: this.connectionId, 
+          logger.warn('Duplicate message detected, ignoring', {
+            connectionId: this.connectionId,
             event: message.event,
             messageCounter: this.messageCounter
           });
           return;
         }
-        
+
         if (message.event !== 'bp:ping' && message.event !== 'bp:pong') {
-          logger.debug('Message received', { 
-            connectionId: this.connectionId, 
-            isPrimary, 
+          logger.debug('Message received', {
+            connectionId: this.connectionId,
+            isPrimary,
             event: message.event,
             messageCounter: this.messageCounter
           });
@@ -370,9 +371,9 @@ export class BombPartyService {
       logger.info('Disconnected', { connectionId: this.connectionId, code: event.code, reason: event.reason });
       this.isConnecting = false;
       this.stopHeartbeat();
-      
+
       this.lastConnectionError = { code: event.code, reason: event.reason };
-      
+
       this.handleDisconnection(event.code, event.reason);
     };
 
@@ -393,23 +394,23 @@ export class BombPartyService {
     if (message.event === 'bp:ping' || message.event === 'bp:pong') {
       return false;
     }
-    
+
     const messageKey = `${message.event}_${JSON.stringify(message.payload || {})}`;
     const now = Date.now();
-    
+
     const lastProcessed = this.lastProcessedMessages.get(messageKey);
     if (lastProcessed && (now - lastProcessed) < this.MESSAGE_DEDUP_WINDOW) {
       return true;
     }
-    
+
     this.lastProcessedMessages.set(messageKey, now);
-    
+
     for (const [key, timestamp] of this.lastProcessedMessages.entries()) {
       if ((now - timestamp) > this.MESSAGE_DEDUP_WINDOW) {
         this.lastProcessedMessages.delete(key);
       }
     }
-    
+
     return false;
   }
 
@@ -418,13 +419,13 @@ export class BombPartyService {
 
     if (message.t === 'error') {
       const error = message as TypedError;
-      logger.warn('Error message received from server', { 
+      logger.warn('Error message received from server', {
         connectionId: this.connectionId,
         code: error.code,
         msg: error.msg
       });
       store.setLastError(error.msg);
-      
+
       if ((error.code === 'STATE_ERROR' || error.code === 'ROOM_NOT_FOUND') && /room not found/i.test(error.msg || '')) {
         const hadRoom = !!store.connection.roomId;
         const gameInProgress = store.gameState && store.gameState.phase === 'TURN_ACTIVE';
@@ -438,7 +439,7 @@ export class BombPartyService {
           logger.warn('Room not found but game in progress, preserving game state');
         }
       }
-      
+
       return;
     }
 
@@ -465,13 +466,13 @@ export class BombPartyService {
         break;
 
       case 'bp:lobby:created':
-        logger.info('Lobby créé avec succès', { 
+        logger.info('Lobby créé avec succès', {
           connectionId: this.connectionId,
-          roomId: message.payload.roomId, 
+          roomId: message.payload.roomId,
           maxPlayers: message.payload.maxPlayers,
           playerId: message.payload.playerId
         });
-        
+
         if (this.ws?.readyState !== WebSocket.OPEN) {
           logger.error('WebSocket closed during lobby creation', {
             connectionId: this.connectionId,
@@ -481,7 +482,7 @@ export class BombPartyService {
           store.setLastError('Connexion perdue pendant la création du lobby');
           return;
         }
-        
+
         store.setRoomId(message.payload.roomId);
         store.setIsHost(true);
         store.setLobbyMaxPlayers(message.payload.maxPlayers);
@@ -489,10 +490,10 @@ export class BombPartyService {
         break;
 
       case 'bp:lobby:joined':
-        logger.info('Lobby rejoint avec succès', { 
-          roomId: message.payload.roomId, 
+        logger.info('Lobby rejoint avec succès', {
+          roomId: message.payload.roomId,
           playersCount: message.payload.players?.length || 0,
-          maxPlayers: message.payload.maxPlayers 
+          maxPlayers: message.payload.maxPlayers
         });
         store.setRoomId(message.payload.roomId);
         store.setLobbyPlayers(message.payload.players || []);
@@ -502,7 +503,7 @@ export class BombPartyService {
           store.setIsHost(first === store.connection.playerId);
         }
         store.setGamePhase('PLAYERS');
-        
+
         const isReconnect = message.payload.isReconnect || false;
         if (isReconnect || store.gameState) {
           logger.info('🔄 Reconnexion détectée - demande de l\'état de la room', {
@@ -514,12 +515,12 @@ export class BombPartyService {
             this.requestRoomState(message.payload.roomId);
           }, 500);
         }
-        
+
         this.flushPendingMessages();
         break;
 
       case 'bp:lobby:player_joined':
-        logger.info('Nouveau joueur a rejoint le lobby', { 
+        logger.info('Nouveau joueur a rejoint le lobby', {
           roomId: message.payload.roomId,
           newPlayerId: message.payload.playerId,
           newPlayerName: message.payload.playerName,
@@ -537,7 +538,7 @@ export class BombPartyService {
         break;
 
       case 'bp:lobby:player_left':
-        logger.info('Joueur a quitté le lobby', { 
+        logger.info('Joueur a quitté le lobby', {
           roomId: message.payload.roomId,
           leftPlayerId: message.payload.playerId,
           playersCount: message.payload.players?.length || 0
@@ -559,7 +560,7 @@ export class BombPartyService {
           store.setLobbyPlayers([]);
           store.setGamePhase('LOBBY');
         } else {
-          logger.info('Un joueur a quitté le lobby', { 
+          logger.info('Un joueur a quitté le lobby', {
             roomId: message.payload.roomId,
             leftPlayerId: message.payload.playerId,
             playersCount: message.payload.players?.length || 0
@@ -584,15 +585,15 @@ export class BombPartyService {
 
       case 'bp:lobby:details':
         break;
-        
+
       case 'bp:room:state':
         logger.debug('Room state updated', { payload: message.payload });
         const isReconnectState = message.payload.isReconnect || false;
-        
+
         if (store.connection.roomId === message.payload.roomId) {
           store.setLobbyPlayers(message.payload.players);
           store.setLobbyMaxPlayers(message.payload.maxPlayers);
-          
+
           if (isReconnectState) {
             logger.info('✅ État de la room reçu après reconnexion', {
               connectionId: this.connectionId,
@@ -602,7 +603,7 @@ export class BombPartyService {
               stateVersion: message.payload.stateVersion
             });
           }
-          
+
           if (message.payload.gameState) {
             this.flushPendingMessages();
           }
@@ -613,7 +614,7 @@ export class BombPartyService {
         }
         this.requestLobbyList();
         break;
-        
+
       case 'bp:room:closed':
         logger.info('Room closed', { payload: message.payload });
         store.setRoomId(null);
@@ -621,12 +622,12 @@ export class BombPartyService {
         store.setIsHost(false);
         store.setLastError('Room closed by host');
         break;
-        
+
       case 'bp:error':
         logger.error('Server error', undefined, { payload: message.payload });
         const errorCode = message.payload.code;
         let errorMessage = 'An error occurred';
-        
+
         switch (errorCode) {
           case 'ROOM_FULL':
             errorMessage = 'Room is full';
@@ -643,32 +644,32 @@ export class BombPartyService {
           default:
             errorMessage = message.payload.message || errorMessage;
         }
-        
+
         store.setLastError(errorMessage);
         break;
 
       case 'bp:game:countdown':
         logger.debug('Game countdown received', { payload: message.payload });
-        
+
         if (message.payload?.roomId === store.connection.roomId) {
           const startTime = message.payload.startTime ?? Date.now();
           const duration = message.payload.countdownDuration ?? 3000;
-          
+
           const updateCountdown = () => {
             const now = Date.now();
             const remainingMs = Math.max(0, startTime + duration - now);
             const remainingSeconds = Math.ceil(remainingMs / 1000);
             store.setCountdown(remainingSeconds);
           };
-          
+
           store.setGamePhase('GAME');
           updateCountdown();
-          
+
           if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
             this.countdownInterval = null;
           }
-          
+
           this.countdownInterval = setInterval(() => {
             updateCountdown();
             if (Date.now() >= startTime + duration) {
@@ -679,14 +680,14 @@ export class BombPartyService {
               store.setCountdown(0);
             }
           }, 100) as unknown as number;
-          
+
           logger.info('Countdown démarré', { startTime, duration, roomId: message.payload.roomId, countdown: Math.ceil((startTime + duration - Date.now()) / 1000) });
         }
         break;
 
       case 'bp:game:start':
         logger.debug('Game start received', { payload: message.payload });
-        
+
         if (message.payload?.roomId === store.connection.roomId) {
           store.setGamePhase('GAME');
           store.setGameStartTime(Date.now());
@@ -707,146 +708,146 @@ export class BombPartyService {
         try {
           const gameStatePayload = message.payload;
           const currentTurnStartTime = store.turnStartTime;
-          
+
           if (gameStatePayload.full === true && gameStatePayload.gameState) {
-          logger.debug('Received full game state', {
-            connectionId: this.connectionId,
-            sequenceNumber: gameStatePayload.sequenceNumber,
-            phase: gameStatePayload.gameState.phase
-          });
-          
-          const newGameState = gameStatePayload.gameState;
-          const newTurnStartedAt = newGameState.turnStartedAt;
-          
-          if (newGameState.phase === 'TURN_ACTIVE' && newTurnStartedAt) {
-            const isNewTurn = newTurnStartedAt !== currentTurnStartTime;
-            const needsUpdate = isNewTurn || currentTurnStartTime === 0;
-            const timeDiff = Math.abs(newTurnStartedAt - currentTurnStartTime);
-            
-            if (needsUpdate || timeDiff > 100) {
-              logger.info('🎯 bp:game:state (full) - Synchronisation du timer', {
+            logger.debug('Received full game state', {
+              connectionId: this.connectionId,
+              sequenceNumber: gameStatePayload.sequenceNumber,
+              phase: gameStatePayload.gameState.phase
+            });
+
+            const newGameState = gameStatePayload.gameState;
+            const newTurnStartedAt = newGameState.turnStartedAt;
+
+            if (newGameState.phase === 'TURN_ACTIVE' && newTurnStartedAt) {
+              const isNewTurn = newTurnStartedAt !== currentTurnStartTime;
+              const needsUpdate = isNewTurn || currentTurnStartTime === 0;
+              const timeDiff = Math.abs(newTurnStartedAt - currentTurnStartTime);
+
+              if (needsUpdate || timeDiff > 100) {
+                logger.info('🎯 bp:game:state (full) - Synchronisation du timer', {
+                  connectionId: this.connectionId,
+                  currentTurnStartTime,
+                  newTurnStartedAt,
+                  isNewTurn,
+                  isInitialization: currentTurnStartTime === 0,
+                  isResync: !isNewTurn && timeDiff > 100,
+                  timeDiff,
+                  currentPlayerId: newGameState.currentPlayerId,
+                  timeOffset: Date.now() - newTurnStartedAt,
+                  turnDurationMs: newGameState.turnDurationMs,
+                  sequenceNumber: gameStatePayload.sequenceNumber
+                });
+                store.setTurnStartTime(newTurnStartedAt);
+              } else {
+                logger.debug('bp:game:state (full) - Timer déjà synchronisé', {
+                  connectionId: this.connectionId,
+                  turnStartTime: currentTurnStartTime,
+                  serverTurnStartedAt: newTurnStartedAt,
+                  timeDiff
+                });
+              }
+            } else if (newGameState.phase !== 'TURN_ACTIVE' && currentTurnStartTime > 0) {
+              logger.debug('bp:game:state (full) - Phase changée, turnStartTime conservé', {
                 connectionId: this.connectionId,
-                currentTurnStartTime,
-                newTurnStartedAt,
-                isNewTurn,
-                isInitialization: currentTurnStartTime === 0,
-                isResync: !isNewTurn && timeDiff > 100,
-                timeDiff,
-                currentPlayerId: newGameState.currentPlayerId,
-                timeOffset: Date.now() - newTurnStartedAt,
-                turnDurationMs: newGameState.turnDurationMs,
-                sequenceNumber: gameStatePayload.sequenceNumber
-              });
-              store.setTurnStartTime(newTurnStartedAt);
-            } else {
-              logger.debug('bp:game:state (full) - Timer déjà synchronisé', {
-                connectionId: this.connectionId,
-                turnStartTime: currentTurnStartTime,
-                serverTurnStartedAt: newTurnStartedAt,
-                timeDiff
+                oldPhase: 'TURN_ACTIVE',
+                newPhase: newGameState.phase,
+                turnStartTime: currentTurnStartTime
               });
             }
-          } else if (newGameState.phase !== 'TURN_ACTIVE' && currentTurnStartTime > 0) {
-            logger.debug('bp:game:state (full) - Phase changée, turnStartTime conservé', {
-              connectionId: this.connectionId,
-              oldPhase: 'TURN_ACTIVE',
-              newPhase: newGameState.phase,
-              turnStartTime: currentTurnStartTime
-            });
-          }
-          
-          store.receiveServerState(newGameState);
-          
-          if (newGameState.phase === 'TURN_ACTIVE') {
-            store.setGamePhase('GAME');
-          }
-          
-          if (gameStatePayload.isReconnect) {
-            logger.info('✅ État complet du jeu reçu après reconnexion', {
-              connectionId: this.connectionId,
-              roomId: gameStatePayload.roomId,
-              phase: newGameState.phase,
-              sequenceNumber: gameStatePayload.sequenceNumber,
-              stateVersion: gameStatePayload.stateVersion,
-              currentPlayerId: newGameState.currentPlayerId,
-              turnStartedAt: newGameState.turnStartedAt
-            });
-          }
-          
-          this.flushPendingMessages();
-        } else if (gameStatePayload.delta && !gameStatePayload.full) {
-          logger.debug('Received game state delta', {
-            connectionId: this.connectionId,
-            sequenceNumber: gameStatePayload.sequenceNumber,
-            deltaKeys: Object.keys(gameStatePayload.delta)
-          });
-          
-          const delta = gameStatePayload.delta;
-          const newTurnStartedAt = delta.turnStartedAt;
-          
-          if (delta.phase === 'TURN_ACTIVE' && newTurnStartedAt) {
-            const isNewTurn = newTurnStartedAt !== currentTurnStartTime;
-            const needsUpdate = isNewTurn || currentTurnStartTime === 0;
-            const timeDiff = Math.abs(newTurnStartedAt - currentTurnStartTime);
-            
-            const durationChanged = delta.turnDurationMs && 
-                                   store.gameState?.turnDurationMs && 
-                                   delta.turnDurationMs !== store.gameState.turnDurationMs;
-            
-            if (needsUpdate || timeDiff > 100 || durationChanged) {
-              logger.info('🎯 bp:game:state (delta) - Synchronisation du timer', {
+
+            store.receiveServerState(newGameState);
+
+            if (newGameState.phase === 'TURN_ACTIVE') {
+              store.setGamePhase('GAME');
+            }
+
+            if (gameStatePayload.isReconnect) {
+              logger.info('✅ État complet du jeu reçu après reconnexion', {
                 connectionId: this.connectionId,
-                currentTurnStartTime,
-                newTurnStartedAt,
-                isNewTurn,
-                isInitialization: currentTurnStartTime === 0,
-                isResync: !isNewTurn && (timeDiff > 100 || durationChanged),
-                timeDiff,
-                durationChanged,
-                oldDuration: store.gameState?.turnDurationMs,
-                newDuration: delta.turnDurationMs,
-                timeOffset: Date.now() - newTurnStartedAt,
-                turnDurationMs: delta.turnDurationMs,
+                roomId: gameStatePayload.roomId,
+                phase: newGameState.phase,
                 sequenceNumber: gameStatePayload.sequenceNumber,
+                stateVersion: gameStatePayload.stateVersion,
+                currentPlayerId: newGameState.currentPlayerId,
+                turnStartedAt: newGameState.turnStartedAt
+              });
+            }
+
+            this.flushPendingMessages();
+          } else if (gameStatePayload.delta && !gameStatePayload.full) {
+            logger.debug('Received game state delta', {
+              connectionId: this.connectionId,
+              sequenceNumber: gameStatePayload.sequenceNumber,
+              deltaKeys: Object.keys(gameStatePayload.delta)
+            });
+
+            const delta = gameStatePayload.delta;
+            const newTurnStartedAt = delta.turnStartedAt;
+
+            if (delta.phase === 'TURN_ACTIVE' && newTurnStartedAt) {
+              const isNewTurn = newTurnStartedAt !== currentTurnStartTime;
+              const needsUpdate = isNewTurn || currentTurnStartTime === 0;
+              const timeDiff = Math.abs(newTurnStartedAt - currentTurnStartTime);
+
+              const durationChanged = delta.turnDurationMs &&
+                store.gameState?.turnDurationMs &&
+                delta.turnDurationMs !== store.gameState.turnDurationMs;
+
+              if (needsUpdate || timeDiff > 100 || durationChanged) {
+                logger.info('🎯 bp:game:state (delta) - Synchronisation du timer', {
+                  connectionId: this.connectionId,
+                  currentTurnStartTime,
+                  newTurnStartedAt,
+                  isNewTurn,
+                  isInitialization: currentTurnStartTime === 0,
+                  isResync: !isNewTurn && (timeDiff > 100 || durationChanged),
+                  timeDiff,
+                  durationChanged,
+                  oldDuration: store.gameState?.turnDurationMs,
+                  newDuration: delta.turnDurationMs,
+                  timeOffset: Date.now() - newTurnStartedAt,
+                  turnDurationMs: delta.turnDurationMs,
+                  sequenceNumber: gameStatePayload.sequenceNumber,
+                  deltaKeys: Object.keys(delta)
+                });
+                store.setTurnStartTime(newTurnStartedAt);
+              } else {
+                logger.debug('bp:game:state (delta) - Timer déjà synchronisé', {
+                  connectionId: this.connectionId,
+                  turnStartTime: currentTurnStartTime,
+                  serverTurnStartedAt: newTurnStartedAt,
+                  timeDiff
+                });
+              }
+            }
+
+            store.applyGameStateDelta(delta, gameStatePayload.sequenceNumber);
+
+            if (delta.phase === 'TURN_ACTIVE') {
+              store.setGamePhase('GAME');
+            }
+
+            if (gameStatePayload.isReconnect) {
+              logger.info('✅ État delta du jeu reçu après reconnexion', {
+                connectionId: this.connectionId,
+                roomId: gameStatePayload.roomId,
+                sequenceNumber: gameStatePayload.sequenceNumber,
+                stateVersion: gameStatePayload.stateVersion,
                 deltaKeys: Object.keys(delta)
               });
-              store.setTurnStartTime(newTurnStartedAt);
-            } else {
-              logger.debug('bp:game:state (delta) - Timer déjà synchronisé', {
-                connectionId: this.connectionId,
-                turnStartTime: currentTurnStartTime,
-                serverTurnStartedAt: newTurnStartedAt,
-                timeDiff
-              });
             }
-          }
-          
-          store.applyGameStateDelta(delta, gameStatePayload.sequenceNumber);
-          
-          if (delta.phase === 'TURN_ACTIVE') {
-            store.setGamePhase('GAME');
-          }
-          
-          if (gameStatePayload.isReconnect) {
-            logger.info('✅ État delta du jeu reçu après reconnexion', {
+
+            this.flushPendingMessages();
+          } else {
+            logger.warn('Invalid game state message format', {
               connectionId: this.connectionId,
-              roomId: gameStatePayload.roomId,
-              sequenceNumber: gameStatePayload.sequenceNumber,
-              stateVersion: gameStatePayload.stateVersion,
-              deltaKeys: Object.keys(delta)
+              hasGameState: !!gameStatePayload.gameState,
+              hasDelta: !!gameStatePayload.delta,
+              full: gameStatePayload.full,
+              sequenceNumber: gameStatePayload.sequenceNumber
             });
           }
-          
-          this.flushPendingMessages();
-        } else {
-          logger.warn('Invalid game state message format', {
-            connectionId: this.connectionId,
-            hasGameState: !!gameStatePayload.gameState,
-            hasDelta: !!gameStatePayload.delta,
-            full: gameStatePayload.full,
-            sequenceNumber: gameStatePayload.sequenceNumber
-          });
-        }
         } catch (error) {
           logger.error('Error processing bp:game:state', error, {
             connectionId: this.connectionId,
@@ -860,7 +861,7 @@ export class BombPartyService {
         logger.debug('Game end received', { payload: message.payload });
         const endPayload = message.payload;
         store.setGamePhase('GAME_OVER');
-        
+
         const currentState = store.gameState;
         if (currentState && endPayload.winner) {
           const updatedState = {
@@ -876,16 +877,16 @@ export class BombPartyService {
       case 'bp:turn:started':
         logger.debug('Turn started received', { payload: message.payload });
         const payload = message.payload;
-        if (payload && 
-            payload.turnStartedAt !== undefined && 
-            payload.turnDurationMs !== undefined && 
-            payload.currentPlayerId !== undefined) {
+        if (payload &&
+          payload.turnStartedAt !== undefined &&
+          payload.turnDurationMs !== undefined &&
+          payload.currentPlayerId !== undefined) {
           if (payload.roomId === store.connection.roomId) {
             const currentTurnStartTime = store.turnStartTime;
             const newTurnStartedAt = payload.turnStartedAt;
-            
+
             const isNewTurn = currentTurnStartTime !== newTurnStartedAt;
-            
+
             logger.info('🎯 bp:turn:started - Mise à jour de turnStartTime', {
               roomId: payload.roomId,
               currentPlayerId: payload.currentPlayerId,
@@ -895,25 +896,25 @@ export class BombPartyService {
               isNewTurn,
               timeOffset: Date.now() - newTurnStartedAt
             });
-            
+
             store.handleTurnStarted(
               payload.turnStartedAt,
               payload.turnDurationMs,
               payload.currentPlayerId
             );
             store.setGamePhase('GAME');
-            
+
             store.setTurnStartTime(payload.turnStartedAt);
-            
+
             logger.info('✅ Tour démarré - turnStartTime mis à jour avec le temps serveur');
           }
         }
         break;
 
       case 'turn_started':
-        if (message.turnStartedAt !== undefined && 
-            message.turnDurationMs !== undefined && 
-            message.currentPlayerId !== undefined) {
+        if (message.turnStartedAt !== undefined &&
+          message.turnDurationMs !== undefined &&
+          message.currentPlayerId !== undefined) {
           store.handleTurnStarted(
             message.turnStartedAt,
             message.turnDurationMs,
@@ -930,12 +931,12 @@ export class BombPartyService {
         const pongReceivedAt = Date.now();
         const previousLastPong = this.lastPong;
         this.lastPong = pongReceivedAt;
-        
+
         const latency = message.payload?.ts ? pongReceivedAt - message.payload.ts : 'unknown';
         const timeSinceLastPong = previousLastPong > 0 ? pongReceivedAt - previousLastPong : 'unknown';
-        
-        logger.debug('Pong received', { 
-          connectionId: this.connectionId, 
+
+        logger.debug('Pong received', {
+          connectionId: this.connectionId,
           timestamp: message.payload?.ts,
           latency,
           timeSinceLastPong,
@@ -952,24 +953,24 @@ export class BombPartyService {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
     }
-    
-    logger.debug('Starting heartbeat', { 
+
+    logger.debug('Starting heartbeat', {
       connectionId: this.connectionId,
       interval: this.HEARTBEAT_INTERVAL,
       timeout: this.PONG_TIMEOUT
     });
-    
+
     this.heartbeatInterval = setInterval(() => {
       if (!wsCoordinator.isPrimaryConnection(this.connectionId)) {
         return;
       }
-      
+
       if (this.ws?.readyState === WebSocket.OPEN) {
         const now = Date.now();
         const timeSinceLastPong = now - this.lastPong;
-        
+
         if (timeSinceLastPong > this.PONG_TIMEOUT) {
-          logger.warn('⏱️ Heartbeat timeout detected before ping', { 
+          logger.warn('⏱️ Heartbeat timeout detected before ping', {
             connectionId: this.connectionId,
             timeSinceLastPong,
             threshold: this.PONG_TIMEOUT,
@@ -980,31 +981,31 @@ export class BombPartyService {
           this.handleConnectionError();
           return;
         }
-        
-        logger.debug('Sending heartbeat ping', { 
+
+        logger.debug('Sending heartbeat ping', {
           connectionId: this.connectionId,
           timeSinceLastPong,
           threshold: this.PONG_TIMEOUT,
           wsState: this.getReadyStateString()
         });
-        
+
         try {
           this.ws.send(JSON.stringify({ event: 'bp:ping', payload: { ts: now } }));
         } catch (error) {
-          logger.error('Error sending ping', error, { 
+          logger.error('Error sending ping', error, {
             connectionId: this.connectionId,
             wsState: this.getReadyStateString()
           });
           this.handleConnectionError();
           return;
         }
-        
+
         setTimeout(() => {
           const checkTime = Date.now();
           const timeSincePong = checkTime - this.lastPong;
-          
+
           if (timeSincePong > this.PONG_TIMEOUT) {
-            logger.warn('⏱️ Pong timeout detected after ping', { 
+            logger.warn('⏱️ Pong timeout detected after ping', {
               connectionId: this.connectionId,
               timeSincePong,
               threshold: this.PONG_TIMEOUT,
@@ -1046,9 +1047,9 @@ export class BombPartyService {
 
   private cleanupHandlers(): void {
     if (!this.ws) return;
-    
+
     logger.debug('Cleaning up WebSocket handlers', { connectionId: this.connectionId });
-    
+
     try {
       this.ws.onopen = null;
       this.ws.onclose = null;
@@ -1060,28 +1061,28 @@ export class BombPartyService {
   }
 
   private cleanupWebSocket(): void {
-    logger.debug('Cleaning up WebSocket', { 
+    logger.debug('Cleaning up WebSocket', {
       connectionId: this.connectionId,
-      wsState: this.ws?.readyState 
+      wsState: this.ws?.readyState
     });
-    
+
     this.stopHeartbeat();
     this.stopCountdown();
-    
+
     if (this.ws) {
       try {
         this.cleanupHandlers();
-        
+
         if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
           this.ws.close();
         }
       } catch (err) {
         logger.warn('Error closing WebSocket', { connectionId: this.connectionId, error: err });
       }
-      
+
       this.ws = null;
     }
-    
+
     this.isWebSocketReady = false;
   }
 
@@ -1095,7 +1096,7 @@ export class BombPartyService {
       });
       return;
     }
-    
+
     if (this.hotReloadDetected && this.ws?.readyState !== WebSocket.OPEN) {
       logger.info('Hot reload in progress mais connexion fermée - traitement de la déconnexion', {
         connectionId: this.connectionId,
@@ -1104,21 +1105,21 @@ export class BombPartyService {
         wsState: this.getWebSocketStateName(this.ws?.readyState)
       });
     }
-    
+
     this.stopCountdown();
     const store = useBombPartyStore.getState();
-    
+
     if (this.registeredWithCoordinator) {
       wsCoordinator.unregisterConnection(this.connectionId);
       this.registeredWithCoordinator = false;
     }
-    
+
     const disconnectionInfo = this.getDisconnectionInfo(code, reason);
-    
+
     const gameInProgress = !!store.connection.roomId;
     const currentRoomId = store.connection.roomId;
     const currentPlayerId = store.connection.playerId;
-    
+
     logger.info('🔌 Handling disconnection', {
       connectionId: this.connectionId,
       code,
@@ -1132,7 +1133,7 @@ export class BombPartyService {
       roomId: currentRoomId,
       playerId: currentPlayerId
     });
-    
+
     if (!disconnectionInfo.shouldReconnect) {
       store.setConnectionState('disconnected');
       logger.info('✅ Normal disconnection - not reconnecting', {
@@ -1143,18 +1144,18 @@ export class BombPartyService {
       });
       return;
     }
-    
-    const maxAttempts = disconnectionInfo.isServerError 
-      ? this.maxReconnectAttemptsForServerDown 
+
+    const maxAttempts = disconnectionInfo.isServerError
+      ? this.maxReconnectAttemptsForServerDown
       : this.maxReconnectAttempts;
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       store.setConnectionState('server_unreachable');
       const errorMessage = disconnectionInfo.isServerError
         ? 'Le serveur est inaccessible. Veuillez réessayer plus tard.'
         : 'Connexion perdue. Veuillez rafraîchir la page.';
       store.setLastError(errorMessage);
-      
+
       logger.error('❌ Max reconnect attempts reached - giving up', {
         connectionId: this.connectionId,
         attempts: this.reconnectAttempts,
@@ -1164,18 +1165,18 @@ export class BombPartyService {
         gameInProgress,
         roomId: currentRoomId
       });
-      
+
       if (this.reconnectTimeout) {
         clearTimeout(this.reconnectTimeout);
         this.reconnectTimeout = null;
         logger.debug('Cleared pending reconnect timeout after max attempts', { connectionId: this.connectionId });
       }
-      
+
       return;
     }
-    
+
     store.setConnectionState('reconnecting');
-    
+
     const reconnectInfo = {
       connectionId: this.connectionId,
       disconnectionType: disconnectionInfo.type,
@@ -1186,16 +1187,16 @@ export class BombPartyService {
       roomId: currentRoomId,
       playerId: currentPlayerId
     };
-    
+
     if (disconnectionInfo.type === 'PONG_TIMEOUT') {
       logger.warn('⏱️ PONG_TIMEOUT detected - reconnecting automatically', reconnectInfo);
     } else {
       logger.info('🔄 Scheduling reconnection for error', reconnectInfo);
     }
-    
+
     this.scheduleReconnect(disconnectionInfo.isServerError);
   }
-  
+
   private getDisconnectionInfo(code?: number, reason?: string): {
     type: string;
     description: string;
@@ -1210,7 +1211,7 @@ export class BombPartyService {
           shouldReconnect: false,
           isServerError: false
         };
-      
+
       case 1001:
         return {
           type: 'GOING_AWAY',
@@ -1218,18 +1219,18 @@ export class BombPartyService {
           shouldReconnect: false,
           isServerError: false
         };
-      
+
       case 1006:
         const isInitialConnection = this.reconnectAttempts === 0;
         return {
           type: 'ABNORMAL_CLOSURE',
-          description: isInitialConnection 
+          description: isInitialConnection
             ? 'Abnormal closure (1006) - server may be unreachable'
             : 'Abnormal closure (1006) - connection lost',
           shouldReconnect: true,
           isServerError: isInitialConnection
         };
-      
+
       case 1005:
         return {
           type: 'NO_STATUS',
@@ -1237,7 +1238,7 @@ export class BombPartyService {
           shouldReconnect: true,
           isServerError: true
         };
-      
+
       case 1002:
         return {
           type: 'PROTOCOL_ERROR',
@@ -1245,7 +1246,7 @@ export class BombPartyService {
           shouldReconnect: false,
           isServerError: false
         };
-      
+
       case 1003:
         return {
           type: 'UNSUPPORTED_DATA',
@@ -1253,7 +1254,7 @@ export class BombPartyService {
           shouldReconnect: false,
           isServerError: false
         };
-      
+
       case 1008:
         if (reason === 'PONG_TIMEOUT' || reason?.includes('PONG_TIMEOUT') || reason?.includes('timeout')) {
           return {
@@ -1269,7 +1270,7 @@ export class BombPartyService {
           shouldReconnect: false,
           isServerError: false
         };
-      
+
       case 1011:
         return {
           type: 'SERVER_ERROR',
@@ -1277,7 +1278,7 @@ export class BombPartyService {
           shouldReconnect: true,
           isServerError: true
         };
-      
+
       case undefined:
         return {
           type: 'UNKNOWN',
@@ -1285,7 +1286,7 @@ export class BombPartyService {
           shouldReconnect: true,
           isServerError: false
         };
-      
+
       default:
         return {
           type: 'OTHER',
@@ -1304,18 +1305,18 @@ export class BombPartyService {
       });
       return;
     }
-    
+
     if (this.hotReloadDetected && this.ws?.readyState !== WebSocket.OPEN) {
       logger.info('Hot reload in progress mais connexion fermée - traitement de l\'erreur', {
         connectionId: this.connectionId,
         wsState: this.getWebSocketStateName(this.ws?.readyState)
       });
     }
-    
+
     const store = useBombPartyStore.getState();
-    
+
     const maxAttempts = this.maxReconnectAttemptsForServerDown;
-    
+
     logger.warn('Connection error detected, attempting to reconnect', {
       connectionId: this.connectionId,
       reconnectAttempts: this.reconnectAttempts,
@@ -1323,11 +1324,11 @@ export class BombPartyService {
       roomId: store.connection.roomId,
       playerId: store.connection.playerId
     });
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       store.setConnectionState('server_unreachable');
       store.setLastError('Le serveur est inaccessible. Veuillez réessayer plus tard.');
-      
+
       logger.error('❌ Max reconnect attempts reached in handleConnectionError - giving up', {
         connectionId: this.connectionId,
         attempts: this.reconnectAttempts,
@@ -1335,30 +1336,30 @@ export class BombPartyService {
       });
       return;
     }
-    
+
     store.setConnectionState('reconnecting');
-    
+
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
-    
+
     this.stopHeartbeat();
     this.stopCountdown();
-    
+
     if (this.registeredWithCoordinator) {
       wsCoordinator.unregisterConnection(this.connectionId);
       this.registeredWithCoordinator = false;
     }
-    
+
     this.scheduleReconnect(true);
   }
 
   private scheduleReconnect(isServerUnreachable: boolean = false): void {
-    const maxAttempts = isServerUnreachable 
-      ? this.maxReconnectAttemptsForServerDown 
+    const maxAttempts = isServerUnreachable
+      ? this.maxReconnectAttemptsForServerDown
       : this.maxReconnectAttempts;
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       logger.error('Cannot schedule reconnect - max attempts already reached', {
         connectionId: this.connectionId,
@@ -1371,23 +1372,23 @@ export class BombPartyService {
       store.setLastError('Le serveur est inaccessible. Veuillez réessayer plus tard.');
       return;
     }
-    
+
     if (this.reconnectTimeout) {
       logger.debug('Cancelling previous reconnect timeout', { connectionId: this.connectionId });
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
-    
+
     if (this.isConnecting) {
       logger.warn('Connection already in progress, not scheduling reconnect', { connectionId: this.connectionId });
       return;
     }
-    
+
     const store = useBombPartyStore.getState();
     const delay = this.reconnectDelays[Math.min(this.reconnectAttempts, this.reconnectDelays.length - 1)];
-    
+
     const nextAttempt = this.reconnectAttempts + 1;
-    
+
     logger.info('Scheduling reconnection', {
       connectionId: this.connectionId,
       attempt: nextAttempt,
@@ -1396,10 +1397,10 @@ export class BombPartyService {
       roomId: store.connection.roomId,
       playerId: store.connection.playerId
     });
-    
+
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null; // Nettoyer immédiatement
-      
+
       if (this.reconnectAttempts >= maxAttempts) {
         logger.error('Reconnect timeout fired but max attempts already reached, cancelling', {
           connectionId: this.connectionId,
@@ -1411,44 +1412,44 @@ export class BombPartyService {
         store.setLastError('Le serveur est inaccessible. Veuillez réessayer plus tard.');
         return;
       }
-      
+
       this.reconnectAttempts++;
       store.setReconnectAttempts(this.reconnectAttempts);
-      
+
       const roomId = store.connection.roomId;
       const playerId = store.connection.playerId;
-      
+
       logger.info('Reconnecting...', {
         connectionId: this.connectionId,
         attempt: this.reconnectAttempts,
         roomId,
         playerId
       });
-      
+
       this.connect();
-      
+
       if (!this.pendingPlayerName) {
         const storedName = localStorage.getItem('bombparty_player_name');
         const token = localStorage.getItem('token');
         if (storedName) {
           this.pendingPlayerName = storedName;
-          logger.debug('Preserved player name for reauthentication', { 
+          logger.debug('Preserved player name for reauthentication', {
             playerName: storedName.replace(/token=[^&]+/, 'token=***'),
             connectionId: this.connectionId
           });
         } else if (token) {
           this.pendingPlayerName = 'AuthenticatedUser';
-          logger.debug('Using authenticated user for reauthentication', { 
+          logger.debug('Using authenticated user for reauthentication', {
             connectionId: this.connectionId
           });
         }
       }
-      
+
       if (this.pendingPlayerName) {
         const checkConnection = setInterval(() => {
           if (this.ws?.readyState === WebSocket.OPEN) {
             clearInterval(checkConnection);
-            
+
             if (!this.pendingPlayerName) {
               const storedName = (localStorage.getItem('bombparty_player_name') || '').trim();
               if (storedName) {
@@ -1465,9 +1466,9 @@ export class BombPartyService {
               roomId,
               playerId
             });
-            
+
             this.authenticate(this.pendingPlayerName!);
-            
+
             if (roomId) {
               setTimeout(() => {
                 const store = useBombPartyStore.getState();
@@ -1478,7 +1479,7 @@ export class BombPartyService {
                     playerId: store.connection.playerId
                   });
                   this.joinRoom(roomId);
-                  
+
                   setTimeout(() => {
                     if (this.ws?.readyState === WebSocket.OPEN) {
                       logger.info('🔄 Demande de l\'état de la room après reconnexion', {
@@ -1503,7 +1504,7 @@ export class BombPartyService {
             }
           }
         }, 100);
-        
+
         setTimeout(() => {
           clearInterval(checkConnection);
         }, 10000);
@@ -1536,14 +1537,14 @@ export class BombPartyService {
 
     try {
       localStorage.setItem('bombparty_player_name', safeName);
-    } catch {}
+    } catch { }
 
     this.pendingPlayerName = safeName;
   }
 
   authenticateWithName(playerName: string): void {
     localStorage.setItem('bombparty_player_name', playerName);
-    
+
     if (this.isWebSocketReady) {
       this.authenticate(playerName);
     } else {
@@ -1553,7 +1554,7 @@ export class BombPartyService {
 
   createRoom(name: string, isPrivate: boolean, password?: string, maxPlayers?: number): void {
     const store = useBombPartyStore.getState();
-    
+
     logger.info('createRoom appelé', {
       connectionId: this.connectionId,
       name,
@@ -1565,15 +1566,15 @@ export class BombPartyService {
       connectionState: store.connection.state,
       isAuthenticating: store.connection.isAuthenticating
     });
-    
+
     if (!this.ws) {
       logger.error('Cannot create room: WebSocket is null', undefined, { connectionId: this.connectionId });
       store.setLastError('Connexion WebSocket non initialisée. Veuillez rafraîchir la page.');
       return;
     }
-    
+
     if (this.ws.readyState !== WebSocket.OPEN) {
-      logger.error('Cannot create room: WebSocket not open', undefined, { 
+      logger.error('Cannot create room: WebSocket not open', undefined, {
         connectionId: this.connectionId,
         readyState: this.ws.readyState,
         readyStateName: this.getReadyStateString()
@@ -1581,15 +1582,15 @@ export class BombPartyService {
       store.setLastError('Connexion perdue. Veuillez rafraîchir la page.');
       return;
     }
-    
+
     if (!store.connection.playerId) {
-      logger.error('Cannot create room: not authenticated', undefined, { 
+      logger.error('Cannot create room: not authenticated', undefined, {
         connectionId: this.connectionId,
         connectionState: store.connection.state,
         isAuthenticating: store.connection.isAuthenticating
       });
       store.setLastError('Vous devez être authentifié pour créer un lobby. Veuillez patienter...');
-      
+
       if (store.connection.isAuthenticating) {
         logger.info('Authentication in progress, will retry createRoom in 2 seconds');
         setTimeout(() => {
@@ -1604,30 +1605,30 @@ export class BombPartyService {
       }
       return;
     }
-    
+
     if (store.connection.state !== 'connected') {
-      logger.error('Cannot create room: connection state is not connected', undefined, { 
+      logger.error('Cannot create room: connection state is not connected', undefined, {
         connectionId: this.connectionId,
         connectionState: store.connection.state
       });
       store.setLastError(`État de connexion invalide: ${store.connection.state}. Veuillez rafraîchir la page.`);
       return;
     }
-    
-    logger.info('Sending create room request', { 
-      connectionId: this.connectionId, 
-      name, 
-      isPrivate, 
+
+    logger.info('Sending create room request', {
+      connectionId: this.connectionId,
+      name,
+      isPrivate,
       maxPlayers,
       playerId: store.connection.playerId
     });
-    
+
     try {
       const message = JSON.stringify({
         event: 'bp:lobby:create',
         payload: { name, isPrivate, password, maxPlayers }
       });
-      
+
       this.ws.send(message);
       logger.info('Create room message sent successfully', { connectionId: this.connectionId });
     } catch (error) {
@@ -1638,14 +1639,14 @@ export class BombPartyService {
 
   joinRoom(roomId: string, password?: string): void {
     const store = useBombPartyStore.getState();
-    
+
     if (this.ws?.readyState === WebSocket.OPEN) {
       if (!store.connection.playerId) {
         logger.error('Cannot join: not authenticated', undefined, { connectionId: this.connectionId });
         store.setLastError('You must be connected to join a room');
         return;
       }
-      
+
       logger.debug('Join room', { connectionId: this.connectionId, roomId, hasPassword: !!password });
       this.ws.send(JSON.stringify({
         event: 'bp:lobby:join',
@@ -1699,36 +1700,36 @@ export class BombPartyService {
 
   submitWord(word: string, msTaken: number): void {
     const store = useBombPartyStore.getState();
-    
+
     if (!store.connection.roomId) {
       logger.error('submitWord - No roomId', { connectionId: this.connectionId });
       store.setLastError('Erreur: Pas de room');
       return;
     }
-    
+
     const message = {
       event: 'bp:game:input',
       payload: { roomId: store.connection.roomId, word, msTaken }
     };
-    
+
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      logger.warn('submitWord - WebSocket not open, queuing message', { 
-        connectionId: this.connectionId, 
+      logger.warn('submitWord - WebSocket not open, queuing message', {
+        connectionId: this.connectionId,
         readyState: this.ws?.readyState,
         pendingMessages: this.pendingMessages.length
       });
       this.pendingMessages.push(message);
       return;
     }
-    
-    logger.info('submitWord - Sending word to server', { 
+
+    logger.info('submitWord - Sending word to server', {
       connectionId: this.connectionId,
       word,
       msTaken,
       roomId: store.connection.roomId,
       playerId: store.connection.playerId
     });
-    
+
     try {
       this.ws.send(JSON.stringify(message));
     } catch (error) {
@@ -1737,33 +1738,33 @@ export class BombPartyService {
       store.setLastError('Erreur lors de l\'envoi du mot');
     }
   }
-  
+
   private flushPendingMessages(): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
-    
+
     if (this.pendingMessages.length === 0) {
       return;
     }
-    
-    logger.info('Flushing pending messages', { 
+
+    logger.info('Flushing pending messages', {
       connectionId: this.connectionId,
       count: this.pendingMessages.length
     });
-    
+
     const messages = [...this.pendingMessages];
     this.pendingMessages = [];
-    
+
     for (const message of messages) {
       try {
         this.ws.send(JSON.stringify(message));
-        logger.debug('Pending message sent', { 
+        logger.debug('Pending message sent', {
           connectionId: this.connectionId,
           event: message.event
         });
       } catch (error) {
-        logger.error('Error sending pending message', error, { 
+        logger.error('Error sending pending message', error, {
           connectionId: this.connectionId,
           event: message.event
         });
@@ -1796,16 +1797,16 @@ export class BombPartyService {
 
   requestRoomState(roomId: string): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      logger.info('🔄 Requesting room state for reconnection', { 
+      logger.info('🔄 Requesting room state for reconnection', {
         connectionId: this.connectionId,
-        roomId 
+        roomId
       });
       this.ws.send(JSON.stringify({
         event: 'bp:room:state_request',
         payload: { roomId }
       }));
     } else {
-      logger.warn('Cannot request room state: WebSocket not open', { 
+      logger.warn('Cannot request room state: WebSocket not open', {
         connectionId: this.connectionId,
         roomId,
         wsState: this.getReadyStateString()
@@ -1818,7 +1819,7 @@ export class BombPartyService {
       logger.debug('Disconnection already in progress', { connectionId: this.connectionId });
       return;
     }
-    
+
     if (this.hotReloadDetected && this.ws?.readyState === WebSocket.OPEN) {
       logger.info('Hot reload detected - skipping disconnection to preserve open connection', {
         connectionId: this.connectionId,
@@ -1827,7 +1828,7 @@ export class BombPartyService {
       });
       return;
     }
-    
+
     if (this.hotReloadDetected && this.ws?.readyState !== WebSocket.OPEN) {
       logger.info('Hot reload detected but connection closed - allowing disconnection for cleanup', {
         connectionId: this.connectionId,
@@ -1835,26 +1836,26 @@ export class BombPartyService {
         isConnected: false
       });
     }
-    
+
     logger.debug('Explicit disconnection', { connectionId: this.connectionId });
     this.isDisconnecting = true;
-    
+
     this.isConnecting = false;
     this.isWebSocketReady = false;
-    
+
     this.stopHeartbeat();
     this.stopCountdown();
-    
+
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
-    
+
     if (this.registeredWithCoordinator) {
       wsCoordinator.unregisterConnection(this.connectionId);
       this.registeredWithCoordinator = false;
     }
-    
+
     if (this.ws) {
       try {
         this.ws.onclose = null;
@@ -1866,7 +1867,7 @@ export class BombPartyService {
       }
       this.ws = null;
     }
-    
+
     this.isDisconnecting = false;
   }
 }

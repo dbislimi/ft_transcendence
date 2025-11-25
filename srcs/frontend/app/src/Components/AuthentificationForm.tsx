@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 interface UserInfos {
   name: string;
@@ -43,7 +44,7 @@ export default function Form({ type }: Props) {
     const info: UserInfos = { name, email, password };
 
     try {
-  const response = await fetch('https://localhost:3001/register', {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(info),

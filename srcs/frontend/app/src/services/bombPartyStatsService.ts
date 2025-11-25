@@ -10,6 +10,8 @@ interface GameStats {
   finalLives: number;
 }
 
+import { API_BASE_URL } from '../config/api';
+
 interface TrigramAttempt {
   trigram: string;
   isSuccess: boolean;
@@ -17,7 +19,7 @@ interface TrigramAttempt {
 }
 
 class BombPartyStatsService {
-  private baseUrl = 'https://localhost:3001/api/bomb-party';
+  private baseUrl = `${API_BASE_URL}/api/bomb-party`;
   private trigramAttempts: TrigramAttempt[] = [];
 
   private getAuthToken(): string | null {
@@ -27,7 +29,7 @@ class BombPartyStatsService {
   private getUserIdFromToken(): number | null {
     const token = this.getAuthToken();
     if (!token) return null;
-    
+
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.id;
@@ -39,12 +41,12 @@ class BombPartyStatsService {
 
   private async fetchWithAuth(url: string, options: RequestInit = {}) {
     const token = this.getAuthToken();
-    
+
     if (!token) {
       throw new Error('Token d\'authentification manquant');
     }
 
-    
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -75,14 +77,14 @@ class BombPartyStatsService {
   async saveGameStats(stats: GameStats & { userId: string | number; playerName?: string }): Promise<void> {
     try {
       const token = this.getAuthToken();
-      
+
       console.log('[bombPartyStatsService] saveGameStats:', {
         hasToken: !!token,
         userId: stats.userId,
         userIdType: typeof stats.userId,
         condition: !!(token && stats.userId)
       });
-      
+
       if (token && stats.userId && stats.userId !== 'local') {
         console.log('[bombPartyStatsService] Sauvegarde avec authentification');
         await this.fetchWithAuth(`${this.baseUrl}/stats/update`, {
@@ -101,7 +103,7 @@ class BombPartyStatsService {
       } else {
         console.log('[bombPartyStatsService] Sauvegarde en mode local/guest');
         const playerName = stats.playerName || `Guest_${Date.now()}`;
-        
+
         const response = await fetch(`${this.baseUrl}/stats/update-local`, {
           method: 'POST',
           headers: {
@@ -141,10 +143,10 @@ class BombPartyStatsService {
     const playerHistory = gameData.history.filter(h => h.playerId === playerId);
     const validWords = playerHistory.filter(h => h.ok);
     const totalResponseTime = playerHistory.reduce((sum, h) => sum + h.msTaken, 0);
-    
+
     const player = gameData.players.find(p => p.id === playerId);
     const alivePlayers = gameData.players.filter(p => p.lives > 0);
-    const position = alivePlayers.length === 1 ? 1 : 
+    const position = alivePlayers.length === 1 ? 1 :
       alivePlayers.sort((a, b) => b.lives - a.lives).findIndex(p => p.id === playerId) + 1;
 
     return {

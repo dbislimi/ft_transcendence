@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth, type User } from "./AuthContext";
+import { API_BASE_URL } from "../config/api";
 
 export interface Friend {
   id: number;
@@ -23,7 +24,7 @@ const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, user, isLoading, refreshUser: authRefreshUser } = useAuth();
-  
+
   const [friends, setFriends] = useState<Friend[]>([]);
 
   const refreshUser = authRefreshUser;
@@ -38,8 +39,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!token) return;
 
     try {
-      const res = await fetch("https://localhost:3001/friends", { 
-        headers: { Authorization: `Bearer ${token}` } 
+      const res = await fetch(`${API_BASE_URL}/api/friends`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -68,23 +69,23 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleFriendsMessage = (event: CustomEvent) => {
       const data = event.detail;
-      
+
       switch (data.type) {
         case "connected":
           break;
-        
+
         case "friend_request_received":
-        case "friend_request_accepted": 
+        case "friend_request_accepted":
         case "friend_request_rejected":
         case "friend_removed":
         case "user_blocked":
           refreshFriends();
           window.dispatchEvent(new CustomEvent('refreshFriendRequests'));
           break;
-        
+
         case "status_update":
-          setFriends(prev => prev.map(friend => 
-            friend.id === data.userId 
+          setFriends(prev => prev.map(friend =>
+            friend.id === data.userId
               ? { ...friend, online: data.online }
               : friend
           ));

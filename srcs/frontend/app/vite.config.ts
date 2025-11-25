@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import checker from 'vite-plugin-checker'
 import path from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // determine le chemin vers shared selon l'environnement (Docker ou local)
 function getSharedPath() {
@@ -15,7 +19,7 @@ function getSharedPath() {
   } catch (e) {
     // ignore errors
   }
-  // En local, le chemin relatif depuis srcs/frontend/app vers srcs/shared
+  // En local le chemin relatif depuis srcs/frontend/app vers srcs/shared
   return path.resolve(__dirname, '../../shared')
 }
 
@@ -49,6 +53,8 @@ function getHttpsOptions() {
   return undefined;
 }
 
+const HOSTNAME = process.env.VITE_HOSTNAME || 'localhost';
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -69,7 +75,7 @@ export default defineConfig({
     https: getHttpsOptions(),
     proxy: {
       '/bombparty/ws': {
-        target: 'wss://localhost:3001',
+        target: `wss://${HOSTNAME}:3001`,
         ws: true,
         changeOrigin: true,
         secure: false

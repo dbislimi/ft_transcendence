@@ -7,7 +7,6 @@ import websocket from "@fastify/websocket";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-
 import "./types/fastify.d.ts";
 import wsController from "./plugins/websockets.ts";
 import dbPlugin from "../index.js";
@@ -26,6 +25,7 @@ import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 const httpsOptions = {
 	key: fs.readFileSync(path.join(__dirname, '../../certs/key.pem')),
@@ -43,7 +43,7 @@ const fastify = Fastify({
 
 async function main() {
 	await fastify.register(cors, {
-		origin: "https://localhost:5173", // HTTPS for frontend
+		origin: [`https://${HOSTNAME}:5173`, `https://${HOSTNAME}`],
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		exposedHeaders: ["Content-Length"],

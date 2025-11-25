@@ -58,11 +58,11 @@ export default function Profile() {
   const { user, refreshUser } = useUser();
   const { token } = useAuth();
   const { friendsWsRef } = useWebSocket();
-  
+
   const [activeTab, setActiveTab] = useState("overview");
   const [friendsSubTab, setFriendsSubTab] = useState<"list" | "requests" | "blocked">("list");
   const [isLoaded, setIsLoaded] = useState(false);
-  
+
   // Settings/Edit Mode States
   const [editMode, setEditMode] = useState(false);
   const [email, setEmail] = useState("");
@@ -80,19 +80,19 @@ export default function Profile() {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
-  
+
   // Loading/Error States
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [friendsError, setFriendsError] = useState<string | null>(null);
   const [newFriendName, setNewFriendName] = useState("");
-  
+
   // History Pagination States
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
-  const API_URL = "https://localhost:3001";
+  const API_URL = "/api";
 
   const avatars = [
     "/avatars/avatar1.png", "/avatars/avatar2.png", "/avatars/avatar3.png",
@@ -146,13 +146,13 @@ export default function Profile() {
 
   const fetchMatchHistory = async (page = 1) => {
     if (!user?.id) return;
-    
+
     setHistoryLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/match-history/${user.id}?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (res.ok) {
         const matches = await res.json();
         if (page === 1) {
@@ -201,7 +201,7 @@ export default function Profile() {
     if (email && email !== user?.email) {
       if (!validateEmail(email)) {
         setIsError(true);
-        setMessage("Email invalide.");
+        setMessage(t('profile.error_msg.invalidEmail'));
         return;
       }
       body.email = email;
@@ -210,7 +210,7 @@ export default function Profile() {
     if (displayName && displayName !== user?.display_name) {
       if (!validateDisplayName(displayName)) {
         setIsError(true);
-        setMessage("Le pseudo ne doit contenir que des lettres, chiffres ou tirets.");
+        setMessage(t('profile.error_msg.invalidDisplayName'));
         return;
       }
       body.display_name = displayName;
@@ -219,7 +219,7 @@ export default function Profile() {
     if (password) {
       if (!validatePassword(password)) {
         setIsError(true);
-        setMessage("Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.");
+        setMessage(t('profile.error_msg.invalidPassword'));
         return;
       }
       body.password = password;
@@ -231,7 +231,7 @@ export default function Profile() {
 
     if (Object.keys(body).length === 0) {
       setIsError(true);
-      setMessage("Aucune modification détectée.");
+      setMessage(t('profile.error_msg.noChanges'));
       return;
     }
 
@@ -290,11 +290,11 @@ export default function Profile() {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'status_update') {
-           setFriends(prev => prev.map(f => f.id === data.userId ? { ...f, online: data.online } : f));
+          setFriends(prev => prev.map(f => f.id === data.userId ? { ...f, online: data.online } : f));
         } else if (['friend_request_received', 'friend_request_accepted', 'friend_removed', 'user_blocked'].includes(data.type)) {
-           fetchAllData(); // Refresh data on events
+          fetchAllData(); // Refresh data on events
         }
-      } catch (e) {}
+      } catch (e) { }
     };
 
     friendsWsRef.current.addEventListener('message', handleMessage);
@@ -342,9 +342,9 @@ export default function Profile() {
   };
 
   const handleBlockUser = async (id: number) => {
-    if(!confirm("Bloquer cet utilisateur ?")) return;
-    await fetch(`${API_URL}/block-user`, { 
-      method: 'POST', 
+    if (!confirm(t('profile.error_msg.confirmBlock'))) return;
+    await fetch(`${API_URL}/block-user`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ user_id: id })
     });
@@ -357,7 +357,7 @@ export default function Profile() {
   };
 
   const handleRemoveFriend = async (id: number) => {
-    if(!confirm("Supprimer cet ami ?")) return;
+    if (!confirm(t('profile.error_msg.confirmDelete'))) return;
     await fetch(`${API_URL}/friends/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     fetchAllData();
   };
@@ -369,7 +369,7 @@ export default function Profile() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-400">Chargement du profil...</p>
+            <p className="text-gray-400">{t('profile.error_msg.loading')}</p>
           </div>
         </div>
       </>
@@ -396,7 +396,7 @@ export default function Profile() {
                   <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                 </div>
               </div>
-              
+
               <div className="flex-1 text-center md:text-left">
                 <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 mb-2">
                   {user.display_name}
@@ -429,11 +429,10 @@ export default function Profile() {
             <div className="flex flex-wrap">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "overview"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
+                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "overview"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                  }`}
               >
                 <span className="mr-2 inline-flex">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -442,14 +441,13 @@ export default function Profile() {
                 </span>
                 {t('profile.navigate.overview')}
               </button>
-              
+
               <button
                 onClick={() => setActiveTab("stats")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "stats"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
+                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "stats"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                  }`}
               >
                 <span className="mr-2 inline-flex">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,14 +456,13 @@ export default function Profile() {
                 </span>
                 {t('profile.navigate.stats')}
               </button>
-              
+
               <button
                 onClick={() => setActiveTab("history")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "history"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
+                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "history"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                  }`}
               >
                 <span className="mr-2 inline-flex">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -474,14 +471,13 @@ export default function Profile() {
                 </span>
                 {t('profile.navigate.history')}
               </button>
-              
+
               <button
                 onClick={() => setActiveTab("friends")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "friends"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
+                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "friends"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                  }`}
               >
                 <span className="mr-2 inline-flex">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -490,14 +486,13 @@ export default function Profile() {
                 </span>
                 {t('profile.navigate.friends')}
               </button>
-              
+
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "settings"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
+                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "settings"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                  }`}
               >
                 <span className="mr-2 inline-flex">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -512,7 +507,7 @@ export default function Profile() {
 
           {/* Contenu Onglets */}
           <div className="space-y-8">
-            
+
             {/* VUE D'ENSEMBLE */}
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -585,7 +580,7 @@ export default function Profile() {
                   </svg>
                   {t('profile.stats.detailedStats')}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                   <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
                     <svg className="w-10 h-10 mx-auto mb-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -640,11 +635,10 @@ export default function Profile() {
                   {matchHistory.length > 0 ? (
                     <>
                       {matchHistory.map((match) => (
-                        <div key={match.id} className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
-                          match.isWinner 
-                            ? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
-                            : "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
-                        }`}>
+                        <div key={match.id} className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${match.isWinner
+                          ? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
+                          : "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
+                          }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="relative">
@@ -655,14 +649,14 @@ export default function Profile() {
                                     </svg>
                                   </div>
                                 ) : (
-                                  <img 
-                                    src={match.opponent.avatar || "/avatars/avatar1.png"} 
+                                  <img
+                                    src={match.opponent.avatar || "/avatars/avatar1.png"}
                                     alt={match.opponent.name}
                                     className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
                                   />
                                 )}
                               </div>
-                              
+
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   {match.isWinner ? (
@@ -678,7 +672,7 @@ export default function Profile() {
                                     {match.isWinner ? t('profile.history.victory') : t('profile.history.defeat')}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2 text-gray-300">
                                   <span className="text-white font-medium">{t('profile.history.vs')} {match.opponent.name}</span>
                                   {match.opponent.isBot && (
@@ -711,13 +705,13 @@ export default function Profile() {
                                     </span>
                                   )}
                                 </div>
-                                
+
                                 <div className="text-sm text-gray-400 mt-1">
                                   {formatDate(match.date)}
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className="text-right">
                               {match.scores && (
                                 <div className={`text-2xl font-bold mb-2 ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
@@ -731,7 +725,7 @@ export default function Profile() {
                           </div>
                         </div>
                       ))}
-                      
+
                       {hasMoreHistory && (
                         <div className="flex justify-center mt-8">
                           <button
@@ -793,7 +787,7 @@ export default function Profile() {
                   <div className="mb-6 p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400">
                     <div className="flex justify-between items-center">
                       <span>{friendsError}</span>
-                      <button 
+                      <button
                         onClick={() => setFriendsError(null)}
                         className="text-red-300 hover:text-red-200"
                       >
@@ -815,11 +809,10 @@ export default function Profile() {
                     <button
                       key={tab.id}
                       onClick={() => setFriendsSubTab(tab.id as any)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                        friendsSubTab === tab.id
-                          ? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
-                          : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                      }`}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${friendsSubTab === tab.id
+                        ? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
+                        : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+                        }`}
                     >
                       <span className="mr-2">{tab.icon}</span>
                       {tab.label}
@@ -836,16 +829,16 @@ export default function Profile() {
                         ➕ {t('profile.friend.add')}
                       </h4>
                       <div className="flex gap-3">
-                        <input 
-                          value={newFriendName} 
+                        <input
+                          value={newFriendName}
                           onChange={e => setNewFriendName(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          placeholder={t('profile.friend.usernamePlaceholder')} 
+                          placeholder={t('profile.friend.usernamePlaceholder')}
                           className="flex-1 px-4 py-3 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
                           disabled={friendsLoading}
                         />
-                        <button 
-                          onClick={handleAddFriend} 
+                        <button
+                          onClick={handleAddFriend}
                           disabled={friendsLoading || !newFriendName.trim()}
                           className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
@@ -864,8 +857,8 @@ export default function Profile() {
                           <div key={friend.id} className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
                             <div className="flex items-center gap-4">
                               <div className="relative">
-                                <img 
-                                  src={friend.avatar || "/avatars/avatar1.png"} 
+                                <img
+                                  src={friend.avatar || "/avatars/avatar1.png"}
                                   alt={friend.display_name}
                                   className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
                                 />
@@ -879,20 +872,20 @@ export default function Profile() {
                               </div>
                               <div className="flex gap-2">
                                 {isOnline(friend.online) && (
-                                  <button 
+                                  <button
                                     onClick={() => navigate(`/pong?invite=${friend.id}`)}
                                     className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
                                   >
                                     🎮 {t('profile.friend.invite')}
                                   </button>
                                 )}
-                                <button 
+                                <button
                                   onClick={() => handleBlockUser(friend.id)}
                                   className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
                                 >
                                   🚫 {t('profile.friend.block')}
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => handleRemoveFriend(friend.id)}
                                   className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
                                 >
@@ -926,28 +919,28 @@ export default function Profile() {
                           requests.filter(r => r.type === "received").map(r => (
                             <div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
                               <div className="flex items-center gap-3">
-                                <img 
-                                  src={r.avatar || "/avatars/avatar1.png"} 
+                                <img
+                                  src={r.avatar || "/avatars/avatar1.png"}
                                   alt={r.display_name}
                                   className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
                                 />
                                 <span className="font-medium text-white">{r.display_name}</span>
                               </div>
                               <div className="flex gap-2">
-                                <button 
-                                  onClick={() => handleAcceptRequest(r.sender_id)} 
+                                <button
+                                  onClick={() => handleAcceptRequest(r.sender_id)}
                                   className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
                                 >
                                   ✅ {t('profile.friend.accept')}
                                 </button>
-                                <button 
-                                  onClick={() => handleRejectRequest(r.sender_id)} 
+                                <button
+                                  onClick={() => handleRejectRequest(r.sender_id)}
                                   className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
                                 >
                                   ❌ {t('profile.friend.reject')}
                                 </button>
-                                <button 
-                                  onClick={() => handleBlockUser(r.sender_id)} 
+                                <button
+                                  onClick={() => handleBlockUser(r.sender_id)}
                                   className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
                                 >
                                   🚫 {t('profile.friend.block')}
@@ -974,8 +967,8 @@ export default function Profile() {
                           requests.filter(r => r.type === "sent").map(r => (
                             <div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
                               <div className="flex items-center gap-3">
-                                <img 
-                                  src={r.avatar || "/avatars/avatar1.png"} 
+                                <img
+                                  src={r.avatar || "/avatars/avatar1.png"}
                                   alt={r.display_name}
                                   className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
                                 />
@@ -1009,8 +1002,8 @@ export default function Profile() {
                         blockedUsers.map(u => (
                           <div key={u.id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
                             <div className="flex items-center gap-3">
-                              <img 
-                                src={u.avatar || "/avatars/avatar1.png"} 
+                              <img
+                                src={u.avatar || "/avatars/avatar1.png"}
                                 alt={u.display_name}
                                 className="w-12 h-12 rounded-full object-cover border-2 border-slate-500 opacity-50"
                               />
@@ -1021,8 +1014,8 @@ export default function Profile() {
                                 </div>
                               </div>
                             </div>
-                            <button 
-                              onClick={() => handleUnblockUser(u.id)} 
+                            <button
+                              onClick={() => handleUnblockUser(u.id)}
                               className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
                             >
                               🔓 {t('profile.friend.unblock')}
@@ -1051,22 +1044,20 @@ export default function Profile() {
                   </h3>
                   <button
                     onClick={() => setEditMode(!editMode)}
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                      editMode 
-                        ? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
-                        : "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
-                    }`}
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${editMode
+                      ? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
+                      : "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
+                      }`}
                   >
                     {editMode ? `❌ ${t('profile.settings.cancel')}` : `✏️ ${t('profile.settings.edit')}`}
                   </button>
                 </div>
 
                 {message && (
-                  <div className={`mb-6 p-4 rounded-lg border ${
-                    isError 
-                      ? "bg-red-600/20 border-red-500/30 text-red-300" 
-                      : "bg-green-600/20 border-green-500/30 text-green-300"
-                  }`}>
+                  <div className={`mb-6 p-4 rounded-lg border ${isError
+                    ? "bg-red-600/20 border-red-500/30 text-red-300"
+                    : "bg-green-600/20 border-green-500/30 text-green-300"
+                    }`}>
                     {message}
                   </div>
                 )}
@@ -1088,7 +1079,7 @@ export default function Profile() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
                       <h4 className="text-lg font-bold text-gray-200 mb-4">{t('profile.settings.currentAvatar')}</h4>
                       <div className="flex justify-center">
@@ -1114,7 +1105,7 @@ export default function Profile() {
                             placeholder="votre@email.com"
                           />
                         </div>
-                        
+
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.username')}</label>
                           <input
@@ -1125,7 +1116,7 @@ export default function Profile() {
                             placeholder={t('profile.settings.username')}
                           />
                         </div>
-                        
+
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.newPassword')}</label>
                           <input
@@ -1146,11 +1137,10 @@ export default function Profile() {
                               key={avatarUrl}
                               type="button"
                               onClick={() => setAvatar(avatarUrl)}
-                              className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-                                avatar === avatarUrl 
-                                  ? "ring-4 ring-purple-500 scale-110" 
-                                  : "hover:scale-105 opacity-70 hover:opacity-100"
-                              }`}
+                              className={`relative rounded-full overflow-hidden transition-all duration-300 ${avatar === avatarUrl
+                                ? "ring-4 ring-purple-500 scale-110"
+                                : "hover:scale-105 opacity-70 hover:opacity-100"
+                                }`}
                             >
                               <img
                                 src={avatarUrl}
@@ -1160,7 +1150,7 @@ export default function Profile() {
                             </button>
                           ))}
                         </div>
-                        
+
                         <div className="mt-6 flex justify-center">
                           <div className="text-center">
                             <p className="text-gray-400 text-sm mb-2">{t('profile.settings.preview')}</p>

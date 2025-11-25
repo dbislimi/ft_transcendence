@@ -1,4 +1,20 @@
 services:
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "443:443"
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./certs:/etc/nginx/ssl:ro
+    environment:
+      - HOSTNAME=${HOSTNAME:-localhost}
+    depends_on:
+      - front
+      - back
+    restart: unless-stopped
+
   back:
     build: ./backend
     container_name: api
@@ -13,8 +29,10 @@ services:
       - /usr/app/node_modules
     env_file:
       - ./backend/app/.env
-    ports:
-      - "3001:3001"
+    environment:
+      - HOSTNAME=${HOSTNAME:-localhost}
+    expose:
+      - "3001"
     restart: unless-stopped
   
   adminer:
@@ -41,8 +59,10 @@ services:
       - ./shared:/usr/shared
       - ./certs:/usr/certs
       - /usr/app/node_modules
-    ports:
-      - 5173:5173
+    environment:
+      - VITE_HOSTNAME=${HOSTNAME:-localhost}
+    expose:
+      - "5173"
     depends_on:
       - back
     restart: unless-stopped

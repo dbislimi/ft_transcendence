@@ -1,23 +1,17 @@
 #!/bin/bash
 
-CERT_DIR="./certs"
-CERT_FILE="$CERT_DIR/cert.pem"
-KEY_FILE="$CERT_DIR/key.pem"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env"
+HOSTNAME=$(hostname)
 
-mkdir -p "$CERT_DIR"
-
-if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
-    echo "🔐 Génération des certificats SSL..."
-    openssl req -x509 -newkey rsa:4096 \
-        -keyout "$KEY_FILE" \
-        -out "$CERT_FILE" \
-        -days 365 -nodes \
-        -subj "/C=FR/ST=Nice/L=Nice/O=42/OU=Student/CN=localhost"
-    
-    chmod 600 "$KEY_FILE"
-    chmod 644 "$CERT_FILE"
-    
-    echo "✅ Certificats générés dans $CERT_DIR"
+if [ -f "$ENV_FILE" ] && grep -q "^HOSTNAME=" "$ENV_FILE"; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|^HOSTNAME=.*|HOSTNAME=$HOSTNAME|" "$ENV_FILE"
+    else
+        sed -i "s|^HOSTNAME=.*|HOSTNAME=$HOSTNAME|" "$ENV_FILE"
+    fi
 else
-    echo "✅ Certificats déjà présents"
+    echo "HOSTNAME=$HOSTNAME" > "$ENV_FILE"
 fi
+
+echo "Hostname configuré: $HOSTNAME"

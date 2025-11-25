@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { API_BASE_URL, WS_BASE_URL } from "../config/api";
 
 interface Message {
 	from: string;
@@ -20,7 +21,7 @@ export function useWebsocketChat(
 		if (!token) return;
 
 		const ws = new WebSocket(
-			`wss://localhost:3001/${endpoint}?token=${token}`
+			`${WS_BASE_URL}/${endpoint}?token=${token}`
 		);
 		wsRef.current = ws;
 

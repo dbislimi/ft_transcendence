@@ -37,6 +37,106 @@
       "dren": "مطور متعدد الاستخدامات مع خبرة في DevOps وتطوير التطبيقات القوية. شغوف بالأتمتة والكفاءة."
     }
   },
+  "profile": {
+    "error_msg": {
+      "invalidEmail": "البريد الإلكتروني غير صالح.",
+      "invalidDisplayName": "يجب أن يحتوي اسم المستخدم على أحرف أو أرقام أو شرطات فقط.",
+      "invalidPassword": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل، حرف كبير، حرف صغير، رقم وحرف خاص.",
+      "noChanges": "لم يتم اكتشاف أي تغييرات.",
+      "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
+      "updateError": "خطأ في تحديث الملف الشخصي",
+      "networkErrorRetry": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+      "sendError": "خطأ في الإرسال",
+      "networkError": "خطأ في الشبكة",
+      "confirmBlock": "حظر هذا المستخدم؟",
+      "confirmDelete": "إزالة هذا الصديق؟",
+      "loading": "جاري تحميل الملف الشخصي..."
+    },
+    "navigate": {
+      "back": "رجوع",
+      "overview": "نظرة عامة",
+      "stats": "الإحصائيات",
+      "history": "التاريخ",
+      "friends": "الأصدقاء",
+      "settings": "الإعدادات"
+    },
+    "view": {
+      "quickStats": "إحصائيات سريعة",
+      "gamesPlayed": "الألعاب المُلعوبة",
+      "wins": "الانتصارات",
+      "losses": "الهزائم",
+      "winRate": "معدل الفوز",
+      "onlineFriends": "الأصدقاء المتصلون",
+      "online": "متصل",
+      "noOnlineFriends": "لا يوجد أصدقاء متصلون"
+    },
+    "stats": {
+      "detailedStats": "إحصائيات مفصلة",
+      "totalGames": "إجمالي الألعاب",
+      "winRate": "معدل الفوز",
+      "botWins": "الانتصارات ضد البوتات",
+      "playerWins": "الانتصارات ضد اللاعبين",
+      "tournamentsWon": "البطولات المكتسبة"
+    },
+    "history": {
+      "matchHistory": "سجل المباريات",
+      "victory": "انتصار",
+      "defeat": "هزيمة",
+      "vs": "ضد",
+      "bot": "بوت",
+      "tournament": "بطولة",
+      "quick": "سريع",
+      "training": "تدريب",
+      "matchNumber": "مباراة #",
+      "loading": "جاري التحميل...",
+      "loadMore": "تحميل المزيد من المباريات",
+      "noGamesPlayed": "لم يتم لعب أي ألعاب",
+      "historyPlaceholder": "سيظهر سجل مبارياتك هنا",
+      "playFirstGame": "العب أول لعبة"
+    },
+    "friend": {
+      "manage": "إدارة الأصدقاء",
+      "friends": "الأصدقاء",
+      "requests": "الطلبات",
+      "blocked": "المحظورون",
+      "add": "إضافة صديق",
+      "usernamePlaceholder": "اسم المستخدم",
+      "addHint": "أدخل اسم المستخدم الدقيق للشخص الذي تريد إضافته.",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "invite": "دعوة للعب",
+      "block": "حظر",
+      "remove": "إزالة",
+      "notFound": "لا يوجد أصدقاء بعد",
+      "searchPlaceholder": "ابدأ بإضافة شخص ما!",
+      "receivedRequests": "الطلبات المستلمة",
+      "accept": "قبول",
+      "reject": "رفض",
+      "noReceivedRequests": "لا توجد طلبات مستلمة",
+      "sentRequests": "الطلبات المرسلة",
+      "pending": "قيد الانتظار...",
+      "noSentRequests": "لا توجد طلبات مرسلة",
+      "blockedUsers": "المستخدمون المحظورون",
+      "blockedOn": "محظور في",
+      "unblock": "إلغاء الحظر",
+      "noBlockedUsers": "لا يوجد مستخدمون محظورون",
+      "peaceMessage": "أنت في سلام مع الجميع!"
+    },
+    "settings": {
+      "title": "إعدادات الملف الشخصي",
+      "cancel": "إلغاء",
+      "edit": "تعديل",
+      "personalInfo": "المعلومات الشخصية",
+      "email": "البريد الإلكتروني",
+      "username": "اسم المستخدم",
+      "currentAvatar": "الصورة الرمزية الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "chooseAvatar": "اختر صورة رمزية",
+      "preview": "معاينة",
+      "previewAvatar": "معاينة الصورة الرمزية",
+      "save": "حفظ"
+    }
+  },
   "bombParty": {
     "info": {
       "title": "معلومات",

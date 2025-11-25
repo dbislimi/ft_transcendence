@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useAuth } from "../contexts/AuthContext";
+import GoogleAuthButton from "../Components/GoogleAuthButton";
 
 export default function Connection() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export default function Connection() {
     }
 
     try {
-      const response = await fetch("https://localhost:3001/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -68,7 +69,7 @@ export default function Connection() {
         name: email.split('@')[0],
         email: email
       };
-      
+
       // @ts-ignore
       login(userData);
       navigate("/");
@@ -80,7 +81,7 @@ export default function Connection() {
       <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md px-6">
-          
+
           <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
@@ -135,6 +136,21 @@ export default function Connection() {
                 Se connecter
               </button>
             </form>
+
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-600/30"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-slate-800/80 text-slate-400">ou</span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <GoogleAuthButton />
+              </div>
+            </div>
 
             <div className="mt-6 text-center">
               <p className="text-slate-400 text-sm">

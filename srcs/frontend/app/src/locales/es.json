@@ -37,6 +37,106 @@
       "dren": "Desarrollador versátil con experiencia en DevOps y desarrollo de aplicaciones robustas. Apasionado por la automatización y eficiencia."
     }
   },
+  "profile": {
+    "error_msg": {
+      "invalidEmail": "Email inválido.",
+      "invalidDisplayName": "El nombre de usuario solo debe contener letras, números o guiones.",
+      "invalidPassword": "La contraseña debe contener al menos 6 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
+      "noChanges": "No se detectaron cambios.",
+      "updateSuccess": "Perfil actualizado con éxito",
+      "updateError": "Error al actualizar el perfil",
+      "networkErrorRetry": "Error de red. Por favor, inténtalo de nuevo.",
+      "sendError": "Error al enviar",
+      "networkError": "Error de red",
+      "confirmBlock": "¿Bloquear a este usuario?",
+      "confirmDelete": "¿Eliminar a este amigo?",
+      "loading": "Cargando perfil..."
+    },
+    "navigate": {
+      "back": "Atrás",
+      "overview": "Resumen",
+      "stats": "Estadísticas",
+      "history": "Historial",
+      "friends": "Amigos",
+      "settings": "Configuración"
+    },
+    "view": {
+      "quickStats": "Estadísticas Rápidas",
+      "gamesPlayed": "Partidas Jugadas",
+      "wins": "Victorias",
+      "losses": "Derrotas",
+      "winRate": "Tasa de Victoria",
+      "onlineFriends": "Amigos en Línea",
+      "online": "En línea",
+      "noOnlineFriends": "No hay amigos en línea"
+    },
+    "stats": {
+      "detailedStats": "Estadísticas Detalladas",
+      "totalGames": "Partidas Totales",
+      "winRate": "Tasa de Victoria",
+      "botWins": "Victorias contra Bots",
+      "playerWins": "Victorias contra Jugadores",
+      "tournamentsWon": "Torneos Ganados"
+    },
+    "history": {
+      "matchHistory": "Historial de Partidas",
+      "victory": "VICTORIA",
+      "defeat": "DERROTA",
+      "vs": "vs",
+      "bot": "BOT",
+      "tournament": "TORNEO",
+      "quick": "RÁPIDA",
+      "training": "ENTRENAMIENTO",
+      "matchNumber": "Partida #",
+      "loading": "Cargando...",
+      "loadMore": "Cargar más partidas",
+      "noGamesPlayed": "No se han jugado partidas",
+      "historyPlaceholder": "Tu historial de partidas aparecerá aquí",
+      "playFirstGame": "Jugar mi primera partida"
+    },
+    "friend": {
+      "manage": "Gestión de Amigos",
+      "friends": "Amigos",
+      "requests": "Solicitudes",
+      "blocked": "Bloqueados",
+      "add": "Añadir Amigo",
+      "usernamePlaceholder": "Nombre de usuario",
+      "addHint": "Introduce el nombre de usuario exacto de la persona que quieres añadir.",
+      "online": "En línea",
+      "offline": "Desconectado",
+      "invite": "Invitar a jugar",
+      "block": "Bloquear",
+      "remove": "Eliminar",
+      "notFound": "Aún no tienes amigos",
+      "searchPlaceholder": "¡Empieza añadiendo a alguien!",
+      "receivedRequests": "Solicitudes Recibidas",
+      "accept": "Aceptar",
+      "reject": "Rechazar",
+      "noReceivedRequests": "No hay solicitudes recibidas",
+      "sentRequests": "Solicitudes Enviadas",
+      "pending": "Pendiente...",
+      "noSentRequests": "No hay solicitudes enviadas",
+      "blockedUsers": "Usuarios Bloqueados",
+      "blockedOn": "Bloqueado el",
+      "unblock": "Desbloquear",
+      "noBlockedUsers": "No hay usuarios bloqueados",
+      "peaceMessage": "¡Estás en paz con todos!"
+    },
+    "settings": {
+      "title": "Configuración del Perfil",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "personalInfo": "Información Personal",
+      "email": "Email",
+      "username": "Nombre de usuario",
+      "currentAvatar": "Avatar Actual",
+      "newPassword": "Nueva Contraseña",
+      "chooseAvatar": "Elegir un avatar",
+      "preview": "Vista previa",
+      "previewAvatar": "Vista previa del Avatar",
+      "save": "Guardar"
+    }
+  },
   "bombParty": {
     "info": {
       "title": "Información",

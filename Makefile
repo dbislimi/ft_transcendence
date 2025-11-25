@@ -1,6 +1,9 @@
 all : up
 
-certs : 
+hostname:
+	@cd srcs && chmod +x generate_hostname.sh && ./generate_hostname.sh
+
+certs : hostname
 	@cd srcs && ./generate_certs.sh
 
 up : certs
@@ -8,7 +11,6 @@ up : certs
 
 down :
 	docker compose -f ./srcs/docker-compose.yml down
-
 
 status : 
 	@echo "\033[1;32mDOCKER:\033[0m"
@@ -33,4 +35,4 @@ fclean: clean clear
 
 re: fclean up
 
-.PHONY: all certs clean fclean re status
+.PHONY: all hostname certs clean fclean re status

@@ -1,4 +1,5 @@
 import type { GameState, Player } from './types';
+import { bombPartyApiService } from '../../services/bombPartyApiService';
 
 export class BombPartyEngineGetters {
   private state: GameState;
@@ -16,7 +17,7 @@ export class BombPartyEngineGetters {
   }
 
   getState(): GameState {
-    return { 
+    return {
       ...this.state,
       players: this.state.players.map(p => ({
         ...p,
@@ -52,28 +53,40 @@ export class BombPartyEngineGetters {
     return alivePlayers.length === 1 ? alivePlayers[0] : null;
   }
 
-  getWordSuggestions(maxSuggestions: number = 5): string[] {
+  async getWordSuggestions(maxSuggestions: number = 5): Promise<string[]> {
     if (!this.state.currentSyllable) return [];
-    return [];
+    return await bombPartyApiService.getWordSuggestions(this.state.currentSyllable, maxSuggestions);
   }
 
-  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
+
+  async getCurrentSyllableInfo(): Promise<{ syllable: string; availableWords: number; totalWords: number }> {
     if (!this.state.currentSyllable) {
       return { syllable: '', availableWords: 0, totalWords: 0 };
     }
-    return { syllable: this.state.currentSyllable, availableWords: 0, totalWords: 0 };
+    try {
+      const info = await bombPartyApiService.getSyllableInfo(this.state.currentSyllable);
+      return {
+        syllable: info.syllable,
+        availableWords: info.availableWords,
+        totalWords: info.totalWords
+      };
+    } catch (error) {
+      console.error('[Engine] Error fetching syllable info:', error);
+      return { syllable: this.state.currentSyllable, availableWords: 0, totalWords: 0 };
+    }
   }
+
 
   getTurnDurationForCurrentPlayer(): number {
     const currentId = this.state.players[this.state.currentPlayerIndex]?.id;
-    
+
     if (currentId && this.state.pendingFastForNextPlayerId === currentId) {
       return 3000;
     }
-    
+
     const difficulty = this.state.currentSyllableDifficulty || 'medium';
     let baseDuration: number;
-    
+
     switch (difficulty) {
       case 'easy':
         baseDuration = 12000;
@@ -86,7 +99,7 @@ export class BombPartyEngineGetters {
         baseDuration = 15000;
         break;
     }
-    
+
     return Math.min(baseDuration, 25000);
   }
 }

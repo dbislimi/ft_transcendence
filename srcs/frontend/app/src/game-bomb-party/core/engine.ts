@@ -1,8 +1,8 @@
 import type { GameState, GamePhase, Player, GameConfig, BonusKey, PlayerBonuses } from './types';
 import { STREAK_FOR_BONUS } from './types';
-import { validateWithDictionary, validateLocal } from '../data/validator';
+import { validateLocal } from '../data/validator';
 import { BombPartyEngineGetters } from './engine-getters';
-import { getRandomSyllable } from '../data/syllableLoader';
+import { bombPartyApiService } from '../../services/bombPartyApiService';
 import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '@shared/bombparty/types';
 
 export class BombPartyEngine {
@@ -86,7 +86,7 @@ export class BombPartyEngine {
     this.state.phase = 'COUNTDOWN';
   }
 
-  startTurn(): void {
+  async startTurn(): Promise<void> {
     if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
       this.nextPlayer();
       if (this.state.players[this.state.currentPlayerIndex]?.isEliminated) {
@@ -95,7 +95,7 @@ export class BombPartyEngine {
       }
     }
 
-    this.state.currentSyllable = this.getNewSyllable();
+    this.state.currentSyllable = await this.getNewSyllable();
     this.currentSyllableUsageCount = 1;
     this.totalPlayersInRound = this.state.players.length;
     this.state.phase = 'TURN_ACTIVE';
@@ -113,14 +113,23 @@ export class BombPartyEngine {
     }
   }
 
-  private getNewSyllable(): string {
-    const newSyllable = getRandomSyllable(this.lastSyllable);
-    this.lastSyllable = newSyllable;
-    return newSyllable;
+  private async getNewSyllable(): Promise<string> {
+    try {
+      const result = await bombPartyApiService.getRandomSyllable(this.lastSyllable);
+      const newSyllable = result.syllable;
+      this.lastSyllable = newSyllable;
+      return newSyllable;
+    } catch (error) {
+      console.error('[Engine] Error fetching random syllable:', error);
+      // Fallback to avoid breaking the game
+      return 'CH';
+    }
   }
 
   submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-    const validation = validateWithDictionary(word, this.state.currentSyllable, this.state.usedWords);
+    // Use local validation for immediate feedback (basic checks only)
+    // Backend validates in multiplayer; this is for local mode UX
+    const validation = validateLocal(word, this.state.currentSyllable, this.state.usedWords);
     if (validation.ok) {
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({
@@ -154,7 +163,7 @@ export class BombPartyEngine {
     }
   }
 
-  resolveTurn(wordValid: boolean, timeExpired: boolean): void {
+  async resolveTurn(wordValid: boolean, timeExpired: boolean): Promise<void> {
     if (this.state.players.length === 0 || this.state.currentPlayerIndex >= this.state.players.length) {
       console.error('Erreur: Aucun joueur ou index invalide');
       return;
@@ -190,7 +199,7 @@ export class BombPartyEngine {
     }
     this.currentSyllableUsageCount++;
     this.nextPlayer();
-    this.startTurn();
+    await this.startTurn();
   }
 
   private nextPlayer(): void {
@@ -248,14 +257,14 @@ export class BombPartyEngine {
     return this.getters.getWinner();
   }
 
-  getWordSuggestions(maxSuggestions: number = 5): string[] {
+  async getWordSuggestions(maxSuggestions: number = 5): Promise<string[]> {
     this.updateGetters();
-    return this.getters.getWordSuggestions(maxSuggestions);
+    return await this.getters.getWordSuggestions(maxSuggestions);
   }
 
-  getCurrentSyllableInfo(): { syllable: string; availableWords: number; totalWords: number } {
+  async getCurrentSyllableInfo(): Promise<{ syllable: string; availableWords: number; totalWords: number }> {
     this.updateGetters();
-    return this.getters.getCurrentSyllableInfo();
+    return await this.getters.getCurrentSyllableInfo();
   }
 
   getTurnDurationForCurrentPlayer(): number {
@@ -280,25 +289,25 @@ export class BombPartyEngine {
     }
 
     const totalWeight = availableBonuses.reduce((sum, [, weight]) => sum + weight, 0);
-    
+
     let random = Math.random() * totalWeight;
-    
+
     for (const [key, weight] of availableBonuses) {
       random -= weight;
       if (random <= 0) {
         return key;
       }
     }
-    
+
     return availableBonuses[0][0];
   }
 
   private giveRandomBonus(playerId: string): void {
     const p = this.state.players.find(pl => pl.id === playerId);
     if (!p) return;
-    
+
     const selectedBonus = this.selectWeightedBonus(p.bonuses);
-    
+
     if (selectedBonus) {
       const currentCount = p.bonuses[selectedBonus] || 0;
       if (currentCount < MAX_BONUS_PER_TYPE) {

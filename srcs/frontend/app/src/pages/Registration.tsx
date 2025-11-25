@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useAuth } from "../contexts/AuthContext";
+import GoogleAuthButton from "../Components/GoogleAuthButton";
 
 interface UserInfos {
   name: string;
@@ -20,7 +21,7 @@ export default function Registration() {
 
   const [step, setStep] = useState(1);
   const [avatar, setAvatar] = useState("/avatars/avatar1.png");
-  
+
   const [formData, setFormData] = useState<UserInfos>({
     name: "",
     email: "",
@@ -90,7 +91,7 @@ export default function Registration() {
     try {
       console.debug("[Registration] Sending payload to /register:", info);
 
-      const response = await fetch("https://localhost:3001/register", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(info),
@@ -132,7 +133,7 @@ export default function Registration() {
       <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-lg px-6">
-          
+
           <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-purple-400 mb-2">
@@ -146,10 +147,9 @@ export default function Registration() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex-1 relative">
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full bg-gradient-to-r from-green-400 to-purple-400 transition-all duration-500 ${
-                      step === 1 ? "w-1/2" : "w-full"
-                    }`}
+                  <div
+                    className={`h-full bg-gradient-to-r from-green-400 to-purple-400 transition-all duration-500 ${step === 1 ? "w-1/2" : "w-full"
+                      }`}
                   />
                 </div>
               </div>
@@ -158,10 +158,23 @@ export default function Registration() {
               </div>
             </div>
 
+            {step === 1 && (
+              <div className="mb-6">
+                <GoogleAuthButton />
+                <div className="mt-6 relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-600/30"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-slate-800/80 text-slate-400">ou</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {errors && Object.keys(errors).length > 0 && (
-              <div className={`mb-6 p-4 rounded-lg border ${
-                errors ? "bg-red-500/10 border-red-500/30 text-red-400" : "bg-green-500/10 border-green-500/30 text-green-400"
-              }`}>
+              <div className={`mb-6 p-4 rounded-lg border ${errors ? "bg-red-500/10 border-red-500/30 text-red-400" : "bg-green-500/10 border-green-500/30 text-green-400"
+                }`}>
                 <p className="text-center text-sm">{Object.values(errors)[0]}</p>
               </div>
             )}
@@ -215,9 +228,9 @@ export default function Registration() {
                   {predefinedAvatars.map((a) => (
                     <div key={a} className="relative group">
                       <img src={a} alt="Avatar" className={`w-16 h-16 rounded-full object-cover border-2 cursor-pointer transition-transform duration-200 transform-gpu group-hover:scale-110 ${avatar === a ? "border-green-400 shadow-lg shadow-green-400/50 z-10 relative" : "border-slate-600 hover:border-slate-400"}`} onClick={() => setAvatar(a)} />
-                        {avatar === a && (
-                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400/20 to-purple-400/20 pointer-events-none z-0"></div>
-                        )}
+                      {avatar === a && (
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400/20 to-purple-400/20 pointer-events-none z-0"></div>
+                      )}
                     </div>
                   ))}
                 </div>

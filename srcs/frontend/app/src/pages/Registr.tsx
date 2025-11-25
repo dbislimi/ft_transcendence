@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export default function Registration() {
   const [name, setName] = useState('');
@@ -7,7 +8,7 @@ export default function Registration() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-  const res = await fetch('https://localhost:3001/register', {
+    const res = await fetch(`${API_BASE_URL}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email }),

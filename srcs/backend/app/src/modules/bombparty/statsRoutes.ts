@@ -23,7 +23,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   const statsService = new BombPartyStatsService(db);
   const authenticateToken = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const authHeader = (((request as any).headers?.authorization) || 
+      const authHeader = (((request as any).headers?.authorization) ||
         ((request as any).raw?.headers as any)?.authorization) as string | undefined;
       console.log("[Stats API] Auth check:", {
         url: (request as any).url,
@@ -52,7 +52,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   };
 
   fastify.get(
-    "/api/bomb-party/stats/:userId",
+    "/bomb-party/stats/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -88,7 +88,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.get(
-    "/api/bomb-party/history/:userId",
+    "/bomb-party/history/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -128,7 +128,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.get(
-    "/api/bomb-party/trigram-stats/:userId",
+    "/bomb-party/trigram-stats/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -167,7 +167,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.get(
-    "/api/bomb-party/ranking",
+    "/bomb-party/ranking",
     async (request, reply) => {
       try {
         const { limit = "50" } = request.query;
@@ -187,7 +187,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.post(
-    "/api/bomb-party/stats/update",
+    "/bomb-party/stats/update",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -264,7 +264,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.post(
-    "/api/bomb-party/trigram-stats/update",
+    "/bomb-party/trigram-stats/update",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -295,7 +295,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.post(
-    "/api/bomb-party/stats/update-local",
+    "/bomb-party/stats/update-local",
     async (request, reply) => {
       try {
         const matchData = request.body as {
@@ -364,7 +364,7 @@ export default fp(async function StatsRoutes(fastify: any) {
           database.run(
             "INSERT INTO users (name, email, password, display_name) VALUES (?, ?, ?, ?)",
             [playerName, guestEmail, 'guest', playerName],
-            function(this: any, err: any) {
+            function (this: any, err: any) {
               if (err) {
                 console.error("[Stats API] Error creating guest user:", err);
                 reject(err);
@@ -380,7 +380,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   }
 
   fastify.get(
-    "/api/bomb-party/suggestions",
+    "/bomb-party/suggestions",
     async (request, reply) => {
       try {
         const { syllable, max = "5" } = request.query;
@@ -403,8 +403,89 @@ export default fp(async function StatsRoutes(fastify: any) {
     }
   );
 
+  fastify.post(
+    "/bomb-party/validate-word",
+    async (request, reply) => {
+      try {
+        const { word, syllable, usedWords } = request.body as {
+          word: string;
+          syllable: string;
+          usedWords: string[];
+        };
+
+        if (!word || !syllable) {
+          return reply.code(400).send({ error: "Word and syllable parameters are required" });
+        }
+
+        const { validateWithDictionary } = await import('./validator.ts');
+        const validation = await validateWithDictionary(word, syllable, usedWords || []);
+
+        return reply.send({
+          success: true,
+          data: validation
+        });
+      } catch (error) {
+        console.error("[BombParty API] Error validating word:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
   fastify.get(
-    "/api/bomb-party/progress/:userId",
+    "/bomb-party/syllable/random",
+    async (request, reply) => {
+      try {
+        const { exclude } = request.query as { exclude?: string };
+        const { getRandomSyllable, getSyllableDifficulty } = await import('./syllableSelector.ts');
+
+        const syllable = getRandomSyllable(exclude);
+        const difficulty = getSyllableDifficulty(syllable);
+
+        return reply.send({
+          success: true,
+          data: {
+            syllable,
+            difficulty
+          }
+        });
+      } catch (error) {
+        console.error("[BombParty API] Error getting random syllable:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
+  fastify.get(
+    "/bomb-party/syllable/info/:syllable",
+    async (request, reply) => {
+      try {
+        const { syllable } = request.params as { syllable: string };
+
+        if (!syllable) {
+          return reply.code(400).send({ error: "Syllable parameter is required" });
+        }
+
+        const { getSyllableInfo, getSyllableDifficulty } = await import('./syllableSelector.ts');
+        const info = getSyllableInfo(syllable);
+        const difficulty = getSyllableDifficulty(syllable);
+
+        return reply.send({
+          success: true,
+          data: {
+            ...info,
+            difficulty
+          }
+        });
+      } catch (error) {
+        console.error("[BombParty API] Error getting syllable info:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
+
+  fastify.get(
+    "/bomb-party/progress/:userId",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -429,7 +510,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.post(
-    "/api/bomb-party/progress/update",
+    "/bomb-party/progress/update",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -470,7 +551,7 @@ export default fp(async function StatsRoutes(fastify: any) {
   );
 
   fastify.post(
-    "/api/bomb-party/progress/preferences",
+    "/bomb-party/progress/preferences",
     { preHandler: authenticateToken },
     async (request, reply) => {
       try {
@@ -492,5 +573,5 @@ export default fp(async function StatsRoutes(fastify: any) {
         return reply.code(500).send({ error: "Server error" });
       }
     }
-  );  
+  );
 });

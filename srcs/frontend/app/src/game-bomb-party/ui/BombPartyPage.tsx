@@ -5,10 +5,10 @@ import { isTimerExpired } from '../core/timerUtils';
 import { useAuth } from '../../contexts/AuthContext';
 import RulesScreen from '../RulesScreen';
 import { bombPartyService } from '../../services/bombPartyService';
-import { 
-  useBombPartyHooks, 
-  BombPartyLayout, 
-  BombPartyLobbyView, 
+import {
+  useBombPartyHooks,
+  BombPartyLayout,
+  BombPartyLobbyView,
   BombPartyUI
 } from './bombparty';
 import { useBombPartyStore } from '../../store/useBombPartyStore';
@@ -18,18 +18,18 @@ export default function BombPartyPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const serviceInitializedRef = useRef<boolean>(false);
-  
+
   useEffect(() => {
     if (serviceInitializedRef.current) {
       return;
     }
-    
+
     bombPartyService.init();
     serviceInitializedRef.current = true;
-    
+
     return () => {
       const isHotReload = import.meta.env?.DEV && import.meta.hot !== undefined;
-      
+
       if (!isHotReload) {
         bombPartyService.disconnect();
         serviceInitializedRef.current = false;
@@ -42,7 +42,7 @@ export default function BombPartyPage() {
     if (roomIdFromUrl) {
       console.log('[BombPartyPage] Room parameter detected, attempting to join:', roomIdFromUrl);
       const connection = useBombPartyStore.getState().connection;
-      
+
       const tryJoin = () => {
         const conn = useBombPartyStore.getState().connection;
         if (conn.state === 'connected' && conn.playerId) {
@@ -53,7 +53,7 @@ export default function BombPartyPage() {
           setTimeout(tryJoin, 500);
         }
       };
-      
+
       tryJoin();
     }
   }, [searchParams]);
@@ -71,7 +71,7 @@ export default function BombPartyPage() {
   const actionsRef = useRef(actions);
   const engineRef = useRef(engine);
   const timerRef = useRef(timer);
-  
+
   useEffect(() => {
     stateRef.current = state;
     actionsRef.current = actions;
@@ -82,7 +82,7 @@ export default function BombPartyPage() {
   // timer unifie pour local et multiplayer
   const isTimerActive = state.gameState.phase === 'TURN_ACTIVE';
   const remainingMs = useTurnTimer(timer, isTimerActive);
-  
+
   // debug temporaire
   useEffect(() => {
     if (isTimerActive && remainingMs === 0) {
@@ -103,7 +103,7 @@ export default function BombPartyPage() {
     const currentActions = actionsRef.current;
     const currentEngine = engineRef.current;
     const currentTimer = timerRef.current;
-    
+
     const expired = isTimerExpired(
       currentState.gameMode,
       currentState.gameState.phase,
@@ -119,50 +119,52 @@ export default function BombPartyPage() {
       if (currentState.gameMode === 'local') {
         const wordValid = false;
         const timeExpired = true;
-        
-        currentEngine.resolveTurn(wordValid, timeExpired);
-        const newState = currentEngine.getState();
-        
-        currentActions.setGameState(newState);
 
-        if (!currentEngine.isGameOver()) {
-          const newTurnStart = newState.turnStartedAt || Date.now();
-          const newTurnDuration = newState.turnDurationMs || 15000;
-          
-          currentActions.setTurnStartTime(newTurnStart);
-          
-          if (currentTimer && newTurnStart && newTurnDuration) {
-            currentTimer.startTurn(newTurnStart, newTurnDuration, Date.now());
+        (async () => {
+          await currentEngine.resolveTurn(wordValid, timeExpired);
+          const newState = currentEngine.getState();
+
+          currentActions.setGameState(newState);
+
+          if (!currentEngine.isGameOver()) {
+            const newTurnStart = newState.turnStartedAt || Date.now();
+            const newTurnDuration = newState.turnDurationMs || 15000;
+
+            currentActions.setTurnStartTime(newTurnStart);
+
+            if (currentTimer && newTurnStart && newTurnDuration) {
+              currentTimer.startTurn(newTurnStart, newTurnDuration, Date.now());
+            }
+
+            currentActions.setTimerGracePeriod(true);
+            setTimeout(() => {
+              currentActions.setTurnInProgress(false);
+              currentActions.setWordJustSubmitted(false);
+              currentActions.setTimerGracePeriod(false);
+            }, 300);
           }
-          
-          currentActions.setTimerGracePeriod(true);
-          setTimeout(() => {
-            currentActions.setTurnInProgress(false);
-            currentActions.setWordJustSubmitted(false);
-            currentActions.setTimerGracePeriod(false);
-          }, 300);
-        }
+        })();
       } else {
         const currentPlayer = currentState.gameState.players[currentState.gameState.currentPlayerIndex];
         if (currentPlayer && currentPlayer.id) {
           currentActions.setTimerGracePeriod(true);
-          
+
           const store = useBombPartyStore.getState();
           store.setOptimisticLifeLoss({
             playerId: currentPlayer.id,
             timestamp: Date.now()
           });
-          
+
           const optimisticState = {
             ...currentState.gameState,
-            players: currentState.gameState.players.map((p: any) => 
-              p.id === currentPlayer.id 
+            players: currentState.gameState.players.map((p: any) =>
+              p.id === currentPlayer.id
                 ? { ...p, lives: Math.max(0, p.lives - 1) }
                 : p
             )
           };
           currentActions.setGameState(optimisticState);
-          
+
           setTimeout(() => {
             currentActions.setTimerGracePeriod(false);
           }, 1000);
@@ -189,8 +191,8 @@ export default function BombPartyPage() {
 
   if (state.gamePhase === 'RULES') {
     return (
-      <RulesScreen 
-        onContinue={handlers.handleModeSelect} 
+      <RulesScreen
+        onContinue={handlers.handleModeSelect}
         onBack={handleBackFromRules}
       />
     );
@@ -219,7 +221,7 @@ export default function BombPartyPage() {
       <BombPartyLayout
         state={state}
         engine={engine}
-          remainingMs={remainingMs}
+        remainingMs={remainingMs}
         isCurrentPlayerTurn={handlers.isCurrentPlayerTurn}
         onWordSubmit={handlers.handleWordSubmit}
         onActivateBonus={handlers.handleActivateBonus}
