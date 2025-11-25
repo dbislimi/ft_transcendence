@@ -1,19 +1,26 @@
 {
-  "nav": { 
-    "signin": "تسجيل", 
-    "settings": "الإعدادات" 
+  "nav": {
+    "signin": "تسجيل",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج"
   },
-  "home": { 
-    "connectBtn": "اتصال", 
-    "registrationBtn": "تسجيل", 
-    "gameBtn": "لعبة",
+  "home": {
+    "connectBtn": "اتصال",
+    "registrationBtn": "تسجيل",
     "aboutBtn": "من نحن",
-    "subtitle": "تحدى حدودك في عالم بونغ"
-  },
-  "game": { 
-    "start": "ابدأ", 
-    "stop": "توقف", 
-    "speedUnit": "كم/ساعة" 
+    "subtitle": "تحدي حدودك",
+    "welcome": "مرحباً",
+    "connectDesc": "الوصول إلى حسابك",
+    "registrationDesc": "انضم إلى المغامرة",
+    "pongTitle": "Pong",
+    "pongDesc": "تشغيل بونغ",
+    "shopDesc": "تخصيص التجربة",
+    "bombPartyTitle": "Bomb Party",
+    "bombPartyDesc": "تشغيل حفلة القنابل",
+    "aboutDesc": "اكتشف الفريق",
+    "readyToTranscend": "مستعد لتجاوز حدودك؟",
+    "optimalPerformance": "أداء مثالي"
   },
   "about": {
     "title": "فريقنا",
@@ -36,8 +43,100 @@
       "openAria": "فتح معلومات اللعبة",
       "closeAria": "إغلاق الشريط الجانبي للمعلومات",
       "howToGetTitle": "كيفية الحصول على المكافآت",
-      "streakRule": "احصل على مكافأة عشوائية كل {{n}} كلمات صحيحة متتالية.",
       "bonusesTitle": "المكافآت"
+    },
+    "debug": {
+      "show": "إظهار التصحيح",
+      "hide": "إخفاء التصحيح"
+    },
+    "hud": {
+      "yourTurn": "دورك",
+      "waiting": "في الانتظار",
+      "eliminated": "خارج اللعب",
+      "fastTurn": "دور سريع",
+      "wordSuggestions": "اقتراحات الكلمات"
+    },
+    "gameOver": {
+      "title": "انتهت اللعبة !",
+      "backToMenu": "العودة إلى القائمة",
+      "victory": "انتصار !",
+      "gameFinished": "انتهت اللعبة !"
+    },
+    "players": {
+      "title": "اللاعبون المنتظرون",
+      "players": "لاعبين",
+      "roomId": "معرف الردهة",
+      "waiting": "في الانتظار",
+      "host": "المضيف",
+      "waitingForPlayers": "في انتظار لاعبين إضافيين...",
+      "leave": "مغادرة",
+      "start": "بدء اللعبة"
+    },
+    "backToMenu": "العودة إلى القائمة",
+    "stats": {
+      "title": "إحصائيات Bomb Party",
+      "subtitle": "اكتشف أداءك وقارن نفسك مع اللاعبين الآخرين",
+      "subtitleGuest": "تحقق من تصنيف أفضل اللاعبين",
+      "loading": "جاري تحميل الإحصائيات...",
+      "error": "خطأ",
+      "retry": "إعادة المحاولة",
+      "back": "رجوع",
+      "loginPrompt": "سجل الدخول للمزيد من الإحصائيات",
+      "loginPromptDesc": "أنشئ حسابًا لتتبع أدائك الشخصي وتاريخ مبارياتك والثلاثيات المفضلة لديك.",
+      "reconnectPrompt": "أعد الاتصال لرؤية إحصائياتك الشخصية",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "history": "التاريخ",
+        "trigrams": "الثلاثيات",
+        "ranking": "التصنيف"
+      },
+      "overview": {
+        "matchStats": "إحصائيات المباريات",
+        "totalMatches": "المباريات المُلعوبة",
+        "totalWins": "الانتصارات",
+        "winRate": "معدل الفوز",
+        "bestStreak": "أفضل سلسلة",
+        "wordStats": "إحصائيات الكلمات",
+        "totalWordsSubmitted": "الكلمات المُرسلة",
+        "totalValidWords": "الكلمات الصحيحة",
+        "accuracy": "الدقة",
+        "averageResponseTime": "متوسط وقت الاستجابة",
+        "otherStats": "إحصائيات أخرى",
+        "totalPlayTime": "إجمالي وقت اللعب",
+        "favoriteTrigramTitle": "الثلاثي المفضل",
+        "none": "لا يوجد"
+      },
+      "history": {
+        "title": "تاريخ المباريات",
+        "date": "التاريخ",
+        "position": "الموضع",
+        "words": "الكلمات",
+        "livesRemaining": "الأرواح المتبقية",
+        "duration": "المدة",
+        "result": "النتيجة",
+        "victory": "انتصار",
+        "defeat": "هزيمة"
+      },
+      "trigrams": {
+        "title": "إحصائيات الثلاثيات",
+        "trigram": "الثلاثي",
+        "attempts": "المحاولات",
+        "successRate": "معدل النجاح",
+        "averageTime": "متوسط الوقت"
+      },
+      "ranking": {
+        "title": "التصنيف العالمي",
+        "rank": "الرتبة",
+        "player": "اللاعب",
+        "wins": "الانتصارات",
+        "games": "الألعاب",
+        "winRate": "معدل الفوز",
+        "bestStreak": "أفضل سلسلة",
+        "you": "(أنت)"
+      },
+      "charts": {
+        "trigramDistribution": "توزيع الثلاثيات"
+      }
     },
     "lobby": {
       "title": "الردهة",
@@ -46,48 +145,67 @@
       "name": "الاسم",
       "private": "خاص",
       "password": "كلمة المرور",
-      "passwordOpt": "كلمة المرور اختيارية",
       "create": "إنشاء",
-      "join": "انضمام"
+      "join": "انضمام",
+      "connecting": "جاري الاتصال...",
+      "connected": "متصل",
+      "disconnected": "غير متصل",
+      "connectionRequired": "الاتصال مطلوب",
+      "playersCount": "عدد اللاعبين",
+      "availableLobbies": "الردهات المتاحة",
+      "noLobbies": "لا توجد ردهات متاحة",
+      "noLobbiesDesc": "أنشئ ردهة جديدة لبدء اللعب!",
+      "refresh": "تحديث",
+      "joinPrivate": "الانضمام إلى ردهة خاصة",
+      "privatePasswordDesc": "هذه الردهة محمية بكلمة مرور. يرجى إدخالها للانضمام.",
+      "enterPassword": "أدخل كلمة المرور",
+      "cancel": "إلغاء",
+      "inProgress": "قيد التقدم",
+      "full": "ممتلئة",
+      "waiting": "في الانتظار",
+      "justNow": "الآن",
+      "minutesAgo": "منذ {minutes} دقيقة",
+      "hoursAgo": "منذ {hours} ساعة",
+      "daysAgo": "منذ {days} يوم"
     },
-    "debug": { "show": "إظهار التصحيح", "hide": "إخفاء التصحيح" },
     "chat": {
       "placeholder": "اكتب هنا...",
       "send": "إرسال",
       "inputAria": "حقل الدردشة",
-      "sendAria": "إرسال رسالة",
-      "system": { "joined": "انضم {{name}}", "left": "غادر {{name}}", "you": "أنت" }
+      "sendAria": "إرسال رسالة"
     },
     "bonus": {
-      "title": "مكافآت",
-      "inversion": { "name": "عكس", "desc": "اعكس ترتيب الأدوار." },
-      "plus5sec": { "name": "+5 ثوانٍ", "desc": "أضف 5 ثوانٍ للمؤقت الحالي." },
-      "vitesseEclair": { "name": "سرعة البرق", "desc": "اللاعب التالي لديه 3 ثوانٍ فقط." },
-      "doubleChance": { "name": "فرصة مزدوجة", "desc": "محاولتان في دورك التالي." },
-      "extraLife": { "name": "حياة إضافية", "desc": "احصل على حياة واحدة (بحد أقصى 9)." }
+      "inversion": {
+        "name": "عكس"
+      },
+      "plus5sec": {
+        "name": "+5 ثوانٍ"
+      },
+      "vitesseEclair": {
+        "name": "سرعة البرق"
+      },
+      "doubleChance": {
+        "name": "فرصة مزدوجة"
+      },
+      "extraLife": {
+        "name": "حياة إضافية"
+      }
     },
     "menu": {
       "title": "Bomb Party",
       "subtitle": "اعثر على كلمات تحتوي على الثلاثي قبل انتهاء الوقت!",
       "playersCount": "عدد اللاعبين",
-      "players": "لاعبين",
       "startGame": "ابدأ اللعبة",
       "rules": {
         "title": "قواعد اللعبة",
         "rule1": "اعثر على كلمات تحتوي على الثلاثي المعروض",
         "rule2": "كل لاعب يبدأ بـ 3 أرواح",
         "rule3": "15 ثانية لكل دور للإجابة",
-        "rule4": "آخر ناجٍ يفوز باللعبة!",
-        "rule5": "يجب أن تكون الكلمات بالفرنسية وصحيحة"
+        "rule4": "آخر ناجٍ يفوز باللعبة!"
       }
     },
     "game": {
-      "countdown": "يبدأ في",
-      "turnIndicator": "دور",
-      "timeRemaining": "الوقت المتبقي",
-      "wordSuggestions": "اقتراحات",
-      "suggestionsEnabled": "الاقتراحات مفعلة",
-      "suggestionsDisabled": "الاقتراحات معطلة"
+      "countdown": "يبدأ في"
     },
     "rules": {
       "title": "قواعد اللعبة",
@@ -96,50 +214,194 @@
       "rule2": "كل دور محدود بالوقت. إذا انتهى الوقت، تخسر حياة.",
       "rule3": "لا يُسمح بالكلمات المكررة.",
       "rule4": "الفائز هو آخر لاعب متبقٍ.",
-      "continue": "أفهم، متابعة",
-      "continueAria": "الانتقال إلى الردهة"
+      "modeSelection": "اختيار الوضع",
+      "localMode": "الوضع المحلي",
+      "multiplayerMode": "الوضع متعدد اللاعبين",
+      "localPlayers": "اللاعبون المحليون",
+      "localModeDesc": "العب بمفردك أو مع عدة لاعبين على نفس الشاشة",
+      "multiplayerModeDesc": "العب عبر الإنترنت مع لاعبين آخرين",
+      "players": "لاعبون",
+      "startLocalGame": "بدء اللعبة المحلية"
     },
-    "hud": {
-      "yourTurn": "دورك",
-      "waiting": "في الانتظار",
-      "eliminated": "خارج اللعب",
-      "fastTurn": "دور سريع",
-      "wordSuggestions": "اقتراحات الكلمات"
+    "input": {
+      "instruction": "اعثر على كلمة تحتوي على:",
+      "placeholder": "أدخل كلمتك...",
+      "submit": "إرسال",
+      "recentWords": "الكلمات الأخيرة:",
+      "errors": {
+        "tooShort": "يجب أن تحتوي الكلمة على 3 أحرف على الأقل",
+        "duplicate": "كلمة مستخدمة مسبقاً"
+      }
     }
-  }
-  ,
-  "profile": {
-    "title": "الملف الشخصي",
-    "memberSince": "عضو منذ {{date}}",
-    "stats": {
-      "games": "المباريات",
-      "wins": "الانتصارات",
-      "winrate": "نسبة الفوز",
-      "playtime": "وقت اللعب"
-    },
-    "badges": { "title": "الشارات" },
-    "loading": "جاري تحميل الملف الشخصي...",
-    "error": "فشل تحميل الملف الشخصي",
-    "retry": "إعادة المحاولة",
-    "closeAria": "إغلاق نافذة الملف الشخصي"
   },
-  "common": { "back": "رجوع", "backAria": "العودة للخلف" },
-  "accessibility": { "languageSwitcher": "محدد اللغة" },
+  "shop": {
+    "title": "المتجر",
+    "items": {
+      "available": "متاحة"
+    },
+    "equipped": "مجهز",
+    "select": "تحديد",
+    "backgrounds": {
+      "default": {
+        "name": "افتراضي",
+        "description": "خلفية بسيطة ونظيفة"
+      },
+      "42": {
+        "name": "42",
+        "description": "شعار 42 الأيقوني"
+      },
+      "42background": {
+        "name": "42",
+        "description": "شعار 42 الأيقوني"
+      },
+      "halloween": {
+        "name": "هالوين",
+        "description": "جو هالوين غامض"
+      },
+      "matrix-42": {
+        "name": "ماتريكس 42",
+        "description": "نمط ماتريكس مع الكود"
+      },
+      "snow": {
+        "name": "ثلج",
+        "description": "رقاقات ثلج متحركة"
+      },
+      "matrix": {
+        "name": "ماتريكس",
+        "description": "تأثير ماتريكس رقمي"
+      },
+      "forest": {
+        "name": "غابة",
+        "description": "منظر طبيعي للغابة"
+      },
+      "grace": {
+        "name": "غريس",
+        "description": "جو أنيق وراقي"
+      },
+      "batman": {
+        "name": "باتمان",
+        "description": "عالم جوثام المظلم"
+      },
+      "dark-souls": {
+        "name": "دارك سولز",
+        "description": "جو ملحمي وغامض"
+      },
+      "the-last-of-us": {
+        "name": "ذا لاست أوف أس",
+        "description": "ما بعد نهاية العالم"
+      },
+      "windows95": {
+        "name": "ويندوز 95",
+        "description": "الحنين إلى الماضي"
+      },
+      "bit-cloud": {
+        "name": "بيت كلاود",
+        "description": "غيوم بكسلية"
+      },
+      "gta-5": {
+        "name": "جي تي أي 5",
+        "description": "جو حضري ليلي"
+      },
+      "kitti": {
+        "name": "كيتي",
+        "description": "قط صغير"
+      },
+      "interstellar": {
+        "name": "إنترستيلار",
+        "description": "رحلة عبر النجوم"
+      },
+      "pexels-padrinan-19670": {
+        "name": "منظر طبيعي",
+        "description": "منظر بانورامي للطبيعة"
+      },
+      "pexels-umkreisel-app-956999": {
+        "name": "سماء مرصعة بالنجوم",
+        "description": "ليلة مرصعة بالنجوم"
+      }
+    }
+  },
+  "common": {
+    "back": "رجوع",
+    "backAria": "العودة للخلف",
+    "close": "إغلاق"
+  },
+  "accessibility": {
+    "languageSwitcher": "محدد اللغة"
+  },
   "ui": {
     "background": {
-      "title": "الخلفيات",
-      "open": "الخلفيات",
-      "openAria": "فتح محدد الخلفية",
-      "selectAria": "اختر الخلفية {{name}}",
-      "default": "الافتراضي",
-      "space": "فضاء (متحرك)",
       "defaultPreview": "الإبقاء على خلفية اللعبة",
-      "42": "42",
-      "halloween": "هالووين",
-      "matrix42": "ماتريكس 42",
-      "snow": "ثلج",
       "active": "مفعّل",
       "applyAll": "استخدم لجميع الألعاب"
     }
+  },
+  "settings": {
+    "display": {
+      "title": "إعدادات العرض",
+      "theme": "المظهر",
+      "accessibility": "إمكانية الوصول",
+      "language": "اللغة",
+      "background": "الخلفية",
+      "performance": "الأداء",
+      "appearance": "المظهر",
+      "themeLight": "فاتح",
+      "themeDark": "داكن",
+      "fontSize": "حجم الخط",
+      "fontSmall": "صغير",
+      "fontMedium": "متوسط",
+      "fontLarge": "كبير",
+      "contrast": "التباين",
+      "contrastDesc": "ضبط التباين وسطوع النص",
+      "contrastVeryLow": "منخفض جداً",
+      "contrastLow": "منخفض",
+      "contrastNormal": "عادي",
+      "contrastHigh": "مرتفع",
+      "contrastVeryHigh": "مرتفع جداً",
+      "contrastPreview": "معاينة النص بهذا المستوى من التباين",
+      "animations": "الرسوم المتحركة",
+      "animationsDesc": "تفعيل التأثيرات البصرية والانتقالات",
+      "energySaver": "وضع توفير الطاقة",
+      "energySaverDesc": "تقليل التأثيرات البصرية لتوفير البطارية",
+      "autoSave": "يتم حفظ التغييرات تلقائياً",
+      "close": "إغلاق",
+      "description": "المظهر، التباين، اللغة، الخلفية، الرسوم المتحركة",
+      "lightMode": "☀️ الوضع الفاتح",
+      "darkMode": "🌙 الوضع الداكن",
+      "equipped": "مجهز",
+      "backgroundTip": "💡 نصيحة: اختر خلفية للوضع الفاتح وأخرى للوضع الداكن. ستتغير الخلفية تلقائياً عند التبديل بين الأوضاع.",
+      "performanceTitle": "الأداء والرسوم المتحركة",
+      "autoChangeBackground": "تغيير الخلفية تلقائياً",
+      "autoChangeBackgroundDesc": "يغير خلفية الشاشة تلقائياً عند التبديل بين الوضع الفاتح والداكن"
+    },
+    "game": {
+      "title": "اللعبة",
+      "description": "التحكم والتفضيلات",
+      "soundsEnabled": "الأصوات مفعلة",
+      "soundsEnabledDesc": "تفعيل المؤثرات الصوتية للعبة",
+      "reducedMotion": "تقليل الرسوم المتحركة",
+      "reducedMotionDesc": "تقليل الرسوم المتحركة لتحسين الأداء",
+      "showFPS": "إظهار FPS",
+      "showFPSDesc": "عرض عدد الإطارات في الثانية",
+      "autoSave": "يتم حفظ التغييرات تلقائياً",
+      "close": "إغلاق"
+    },
+    "account": {
+      "title": "الحساب",
+      "description": "معاينة الخلفيات",
+      "preferences": "التفضيلات",
+      "backgroundPreview": "معاينة الخلفية",
+      "backgroundPreviewDesc": "معاينات الخلفيات المحددة لكل وضع",
+      "lightModeBackground": "الوضع الفاتح",
+      "darkModeBackground": "الوضع الداكن"
+    },
+    "advanced": {
+      "title": "متقدم",
+      "description": "خيارات تقنية"
+    },
+    "home": {
+      "description": "العودة إلى الرئيسية",
+      "subtitle": "العودة إلى الصفحة الرئيسية"
+    },
+    "close": "إغلاق"
   }
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import BackgroundSurface from "../Components/BackgroundSurface";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useTranslation } from "react-i18next";
-import { useBackground } from "../contexts/BackgroundContext";
+import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
 
 interface TeamMember {
   id: number;
@@ -25,7 +25,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Thomas Benelgorch-1.png",
     descriptionKey: "thomas",
     links: {
-      github: "https://github.com/thomas-benelgorch",
+      github: "https://github.com/Neo677",
       linkedin: "https://linkedin.com/in/thomas-benelgorch"
     }
   },
@@ -47,7 +47,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Dylan Ravaonoromanana-1.png",
     descriptionKey: "dylan",
     links: {
-      github: "https://github.com/dylan-ravaonoromanana",
+      github: "https://github.com/Dylan063",
       linkedin: "https://linkedin.com/in/dylan-ravaonoromanana"
     }
   },
@@ -58,7 +58,7 @@ const teamMembers: TeamMember[] = [
     photo: "/img/Dren Bislimi-1.png",
     descriptionKey: "dren",
     links: {
-      github: "https://github.com/dren-bislimi",
+      github: "https://github.com/dbislimi",
       linkedin: "https://linkedin.com/in/dren-bislimi"
     }
   }
@@ -66,11 +66,10 @@ const teamMembers: TeamMember[] = [
 
 export default function About() {
   const { t } = useTranslation();
-  const { getGlobalBackgroundKey } = useBackground();
+  const { currentBackground } = useGlobalBackground();
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const bgKey = getGlobalBackgroundKey();
-  const isImageBackground = bgKey !== 'default' && bgKey !== 'space';
+  const isImageBackground = currentBackground.id !== 'default';
 
   const openPopup = (member: TeamMember) => {
     setSelectedMember(member);
@@ -87,11 +86,9 @@ export default function About() {
     <SpaceBackground />
     <div className="relative min-h-screen overflow-hidden">
 
-      {/* Contenu principal */}
       <div className="relative z-10 min-h-screen py-20">
         <div className="max-w-6xl mx-auto px-6">
           
-          {/* Titre de la page */}
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 mb-6">
               {t('about.title') || 'Notre Équipe'}
@@ -101,7 +98,6 @@ export default function About() {
             </p>
           </div>
 
-          {/* Grille des membres de l'équipe */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member) => (
               <div
@@ -109,10 +105,8 @@ export default function About() {
                 className="group cursor-pointer"
                 onClick={() => openPopup(member)}
               >
-                {/* Carte du membre */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/50 to-purple-900/50 backdrop-blur-sm border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
                   
-                  {/* Photo du membre */}
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
                     <img
@@ -122,7 +116,6 @@ export default function About() {
                     />
                   </div>
                   
-                  {/* Informations du membre */}
                   <div className="p-6 text-center">
                     <h3 className="text-xl font-bold text-white mb-2">
                       {member.firstName} {member.name}
@@ -132,7 +125,6 @@ export default function About() {
                     </p>
                   </div>
                   
-                  {/* Effet de lueur au survol */}
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 to-red-500/0 group-hover:from-orange-500/10 group-hover:to-red-500/10 transition-all duration-300 rounded-2xl"></div>
                 </div>
               </div>
@@ -141,21 +133,16 @@ export default function About() {
         </div>
       </div>
 
-      {/* Pop-up du membre sélectionné */}
       {isPopupOpen && selectedMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={closePopup}
           ></div>
           
-          {/* Pop-up */}
           <div className={`relative bg-gradient-to-br from-slate-800 to-purple-900 rounded-2xl border border-purple-500/30 max-w-2xl w-full transform transition-all duration-300 ${isPopupOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             
-            {/* En-tête du pop-up */}
             <div className="relative p-8">
-              {/* Bouton fermer */}
               <button
                 onClick={closePopup}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200"
@@ -165,7 +152,6 @@ export default function About() {
                 </svg>
               </button>
               
-                             {/* Photo et nom */}
                <div className="flex items-center space-x-6 mb-6">
                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-purple-500/50">
                    <img
@@ -182,7 +168,6 @@ export default function About() {
                 </div>
               </div>
               
-              {/* Description */}
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-white mb-3">{t('about.pathway') || 'Parcours'}</h3>
                 <p className="text-gray-300 leading-relaxed">
@@ -190,7 +175,6 @@ export default function About() {
                 </p>
               </div>
               
-              {/* Liens */}
               <div className="flex space-x-4">
                 {selectedMember.links.github && (
                   <a

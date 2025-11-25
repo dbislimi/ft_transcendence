@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import type { Client } from "./websockets.ts";
+import type { Client } from "./websockets.ts";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 

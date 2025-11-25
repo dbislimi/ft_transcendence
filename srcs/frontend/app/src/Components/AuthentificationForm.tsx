@@ -12,8 +12,8 @@ interface Props {
 }
 
 export default function Form({ type }: Props) {
-	const [errors, setErrors] = useState<{ [key: string]: string }>({});
-	const nav = useNavigate();
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const nav = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -43,12 +43,12 @@ export default function Form({ type }: Props) {
 
 		const info: UserInfos = { name, email, password };
 
-		try {
-			const response = await fetch("http://localhost:3000/register", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(info),
-			});
+    try {
+  const response = await fetch('http://localhost:3001/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(info),
+      });
 
 			if (response.ok) {
 				alert("Inscription réussie");
@@ -75,109 +75,84 @@ export default function Form({ type }: Props) {
 				</h2>
 			</div>
 
-			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Name field */}
-					<div>
-						<label
-							htmlFor="Name"
-							className="block text-sm font-medium text-gray-900"
-						>
-							Name
-						</label>
-						<div className="mt-2">
-							<input
-								id="Name"
-								name="Name"
-								type="text"
-								placeholder="Enter your name"
-								required
-								className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-							/>
-						</div>
-					</div>
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
+              Name
+            </label>
+            <div className="mt-2">
+              <input
+                id="Name"
+                name="Name"
+                type="text"
+                placeholder="Enter your name"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+            </div>
+          </div>
 
-					{/* Email field */}
-					<div>
-						<label
-							htmlFor="email"
-							className="block text-sm font-medium text-gray-900"
-						>
-							Email
-						</label>
-						<div className="mt-2">
-							<input
-								id="email"
-								name="email"
-								type="email"
-								placeholder="Enter your email"
-								required
-								className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-							/>
-						</div>
-					</div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
+              Email
+            </label>
+            <div className="mt-2">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+            </div>
+          </div>
 
-					{/* Password field */}
-					<div>
-						<label
-							htmlFor="password"
-							className="block text-sm font-medium text-gray-900"
-						>
-							Password
-						</label>
-						<div className="mt-2">
-							<input
-								id="password"
-								name="password"
-								type="password"
-								placeholder="Enter your password"
-								required
-								className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-							/>
-							{errors.password && (
-								<p className="text-sm text-red-500 mt-1">
-									{errors.password}
-								</p>
-							)}
-						</div>
-					</div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+              Password
+            </label>
+            <div className="mt-2">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+              {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
+            </div>
+          </div>
 
-					{/* Confirm Password field */}
-					<div>
-						<label
-							htmlFor="confirmPassword"
-							className="block text-sm font-medium text-gray-900"
-						>
-							Confirm Password
-						</label>
-						<div className="mt-2">
-							<input
-								id="confirmPassword"
-								name="confirmPassword"
-								type="password"
-								placeholder="Confirm your password"
-								required
-								className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-							/>
-							{errors.confirmPassword && (
-								<p className="text-sm text-red-500 mt-1">
-									{errors.confirmPassword}
-								</p>
-							)}
-						</div>
-					</div>
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
+              Confirm Password
+            </label>
+            <div className="mt-2">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                required
+                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+              />
+              {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
+            </div>
+          </div>
 
-					{/* Submit button */}
-					<div>
-						<button
-							type="submit"
-							className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-indigo-600"
-						>
-							Sign in
-						</button>
-					</div>
-				</form>
-			</div>
+          <div>
+            <button
+              type="submit"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-indigo-600"
+            >
+              Sign in
+            </button>
+          </div>
+        </form>
+      </div>
 
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 				<form onSubmit={handleSubmit} className="space-y-6">

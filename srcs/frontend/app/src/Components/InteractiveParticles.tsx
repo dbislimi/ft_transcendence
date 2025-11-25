@@ -24,14 +24,12 @@ export default function InteractiveParticles() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Configuration
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       initParticles();
     };
 
-    // Initialiser les particules
     const initParticles = () => {
       particlesRef.current = [];
       for (let i = 0; i < 100; i++) {
@@ -47,15 +45,12 @@ export default function InteractiveParticles() {
       }
     };
 
-    // Gestionnaire de souris
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
     };
 
-    // Gestionnaire de clic
     const handleClick = () => {
-      // Créer une explosion de particules au clic
       for (let i = 0; i < 20; i++) {
         particlesRef.current.push({
           x: mouseRef.current.x,
@@ -69,45 +64,36 @@ export default function InteractiveParticles() {
       }
     };
 
-    // Animation des particules
     const animate = () => {
       ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particlesRef.current.forEach((particle, index) => {
-        // Mettre à jour la position
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Rebondir sur les bords
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Garder dans les limites
         particle.x = Math.max(0, Math.min(canvas.width, particle.x));
         particle.y = Math.max(0, Math.min(canvas.height, particle.y));
 
-        // Interaction avec la souris
         const dx = mouseRef.current.x - particle.x;
         const dy = mouseRef.current.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < 100) {
-          // Attraction vers la souris
           const force = (100 - distance) / 100;
           particle.vx += (dx / distance) * force * 0.1;
           particle.vy += (dy / distance) * force * 0.1;
           
-          // Augmenter la taille et l'opacité
           particle.size = Math.min(particle.size + 0.1, 6);
           particle.opacity = Math.min(particle.opacity + 0.01, 1);
         } else {
-          // Retour à la normale
           particle.size = Math.max(particle.size - 0.05, 1);
           particle.opacity = Math.max(particle.opacity - 0.005, 0.3);
         }
 
-        // Dessiner la particule
         ctx.save();
         ctx.globalAlpha = particle.opacity;
         ctx.fillStyle = particle.color;
@@ -116,7 +102,6 @@ export default function InteractiveParticles() {
         ctx.fill();
         ctx.restore();
 
-        // Supprimer les particules trop petites ou trop rapides
         if (particle.size < 0.5 || (Math.abs(particle.vx) > 10 && Math.abs(particle.vy) > 10)) {
           particlesRef.current.splice(index, 1);
         }
@@ -125,16 +110,13 @@ export default function InteractiveParticles() {
       frameIdRef.current = requestAnimationFrame(animate);
     };
 
-    // Événements
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("click", handleClick);
 
-    // Démarrer
     resize();
     animate();
 
-    // Nettoyage
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);

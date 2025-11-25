@@ -28,10 +28,10 @@ export default function BombPartyInfoSidebar({ open, onClose }: BombPartyInfoSid
   if (!open) return null;
 
   const bonuses: Array<{ key: BonusKey; icon: string; nameKey: string; descKey: string }> = [
-    { key: 'inversion', icon: '🔁', nameKey: 'bombParty.bonus.inversion.name', descKey: 'bombParty.bonus.inversion.desc' },
-    { key: 'plus5sec', icon: '➕', nameKey: 'bombParty.bonus.plus5sec.name', descKey: 'bombParty.bonus.plus5sec.desc' },
+    { key: 'inversion', icon: '⏪', nameKey: 'bombParty.bonus.inversion.name', descKey: 'bombParty.bonus.inversion.desc' },
+    { key: 'plus5sec', icon: '⏳', nameKey: 'bombParty.bonus.plus5sec.name', descKey: 'bombParty.bonus.plus5sec.desc' },
     { key: 'vitesseEclair', icon: '⚡', nameKey: 'bombParty.bonus.vitesseEclair.name', descKey: 'bombParty.bonus.vitesseEclair.desc' },
-    { key: 'doubleChance', icon: '♢', nameKey: 'bombParty.bonus.doubleChance.name', descKey: 'bombParty.bonus.doubleChance.desc' },
+    { key: 'doubleChance', icon: '🎲', nameKey: 'bombParty.bonus.doubleChance.name', descKey: 'bombParty.bonus.doubleChance.desc' },
     { key: 'extraLife', icon: '❤️', nameKey: 'bombParty.bonus.extraLife.name', descKey: 'bombParty.bonus.extraLife.desc' },
   ];
 
@@ -80,5 +80,3 @@ export default function BombPartyInfoSidebar({ open, onClose }: BombPartyInfoSid
     document.body
   );
 }
-
-

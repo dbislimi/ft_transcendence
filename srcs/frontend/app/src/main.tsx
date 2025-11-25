@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import * as pages from "./pages";
 import Layout from "./Components/Layout";
+import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
 import { BackgroundProvider } from "./contexts/BackgroundContext";
 import { WebSocketProvider, FriendsProvider } from "./context/WebSocketContext";
 import { UserProvider } from "./context/UserContext";
@@ -12,6 +13,7 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { GameSessionProvider } from "./context/GameSessionContext";
 import { GameSettingsProvider } from "./context/GameSettingsContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 const router = createBrowserRouter([
 	{
@@ -40,19 +42,25 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-	<BackgroundProvider>
-		<UserProvider>
-			<WebSocketProvider>
-				<FriendsProvider>
-					<NotificationProvider>
-						<GameSessionProvider>
-							<GameSettingsProvider>
-								<RouterProvider router={router} />
-							</GameSettingsProvider>
-						</GameSessionProvider>
-					</NotificationProvider>
-				</FriendsProvider>
-			</WebSocketProvider>
-		</UserProvider>
-	</BackgroundProvider>
+	<StrictMode>
+		<SettingsProvider>
+			<GlobalBackgroundProvider>
+				<BackgroundProvider>
+					<UserProvider>
+						<WebSocketProvider>
+							<FriendsProvider>
+								<NotificationProvider>
+									<GameSessionProvider>
+										<GameSettingsProvider>
+											<RouterProvider router={router} />
+										</GameSettingsProvider>
+									</GameSessionProvider>
+								</NotificationProvider>
+							</FriendsProvider>
+						</WebSocketProvider>
+					</UserProvider>
+				</BackgroundProvider>
+			</GlobalBackgroundProvider>
+		</SettingsProvider>
+	</StrictMode>
 );

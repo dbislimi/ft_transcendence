@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export default fp(async function GoogleAuth(fastify: FastifyInstance) {
+export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, any, any, any>) {
 
     fastify.register(fastifyOauth2, {
     name: 'transcendance',
@@ -20,7 +20,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
       auth: fastifyOauth2.GOOGLE_CONFIGURATION,
     },
     startRedirectPath: '/auth/google',
-    callbackUri: 'http://localhost:3000/auth/google/callback',
+  callbackUri: 'http://localhost:3001/auth/google/callback',
     scope: ['profile', 'email'],
     });
 
@@ -95,4 +95,3 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
     });
 });
 
-//jcrois mtn faut juste tu recup le token que t'envoie dans le front en sah mais azy tema vite fait si t'a pas un chemin en plus a retirer du hook

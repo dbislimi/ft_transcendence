@@ -1,7 +1,7 @@
 all : up
 
 up :
-	docker compose -f ./srcs/docker-compose.yml up
+	DOCKER_BUILDKIT=0 docker compose -f ./srcs/docker-compose.yml up
 
 down :
 	docker compose -f ./srcs/docker-compose.yml down

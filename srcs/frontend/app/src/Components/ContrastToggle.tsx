@@ -10,7 +10,6 @@ export default function ContrastToggle() {
   };
 
   useEffect(() => {
-    // Récupérer le contraste sauvegardé
     const savedContrast = localStorage.getItem("contrast");
     if (savedContrast) {
       setContrast(savedContrast);
@@ -18,19 +17,13 @@ export default function ContrastToggle() {
   }, []);
 
   useEffect(() => {
-    // Appliquer le contraste
     const root = document.documentElement;
-    
-    // Supprimer tous les niveaux de contraste
     Object.values(contrastLevels).forEach(level => {
       root.classList.remove(level);
     });
-    
-    // Appliquer le niveau actuel
     if (contrast !== "normal") {
       root.classList.add(contrastLevels[contrast as keyof typeof contrastLevels]);
     }
-    
     localStorage.setItem("contrast", contrast);
   }, [contrast]);
 

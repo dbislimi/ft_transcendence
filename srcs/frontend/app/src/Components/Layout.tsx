@@ -5,13 +5,6 @@ import BackgroundSurface from "./BackgroundSurface";
 import Notifications from "./Notifications";
 
 export default function Layout() {
-	// const location = useLocation();
-	// const isGameRoute = location.pathname.startsWith('/game');
-	// const isBombPartyRoute = location.pathname.startsWith('/bomb-party');
-
-	const location = useLocation();
-	const hiddenRoutes = ["/", "/Connection", "/Confirmation", "/Registration"];
-
 	return (
 		<>
 			<Header />
@@ -21,7 +14,6 @@ export default function Layout() {
 				</main>
 			</BackgroundSurface>
 			<Notifications />
-			{/* {!hiddenRoutes.includes(location.pathname) && <ChatWidget />} */}
 		</>
 	);
 }

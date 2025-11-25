@@ -125,5 +125,3 @@ export function useBackground() {
   if (!ctx) throw new Error('useBackground must be used within BackgroundProvider');
   return ctx;
 }
-
-

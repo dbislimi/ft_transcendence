@@ -1,14 +1,22 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET must be defined in environment variables');
+}
 
 interface Client {
   id: number;
   name: string;
-  socket: any; // WebSocket
+  socket: any; // webSocket
 }
 
-export default fp(async function Chat(fastify: FastifyInstance) {
+export default fp(async function Chat(fastify: FastifyInstance<any, any, any, any, any>) {
   const clients: Client[] = [];
 
 
@@ -70,7 +78,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             );
 
             if (msg.to) {
-              // Message privé
+              // message prive
               const target = clients.find((c) => c.id === msg.to);
               if (target && target.id !== client.id) {
                 if (!(await isBlocked(target.id, client.id))) {

@@ -19,7 +19,22 @@ class Star {
 	glow: Sprite;
 	static readonly maxDepth: number = 10000;
 	static readonly speed: number = 10;
+	color: number;
+	width: number;
+	height: number;
+	core: Sprite;
+	glow: Sprite;
+	static readonly maxDepth: number = 10000;
+	static readonly speed: number = 10;
 
+	constructor(
+		width: number,
+		height: number,
+		coreTexture: Texture,
+		glowTexture: Texture
+	) {
+		this.width = width;
+		this.height = height;
 	constructor(
 		width: number,
 		height: number,
@@ -31,7 +46,16 @@ class Star {
 		this.x = Math.random() * this.width - this.width / 2;
 		this.y = Math.random() * this.height - this.height / 2;
 		this.z = Math.random() * Star.maxDepth;
+		this.z = Math.random() * Star.maxDepth;
 		this.color = colors[Math.floor(Math.random() * colors.length)];
+
+		this.core = new Sprite(coreTexture);
+		this.core.anchor.set(0.5);
+
+		this.glow = new Sprite(glowTexture);
+		this.glow.anchor.set(0.5);
+		this.glow.tint = this.color;
+		this.glow.alpha = 0.9;
 
 		this.core = new Sprite(coreTexture);
 		this.core.anchor.set(0.5);
@@ -61,13 +85,29 @@ class Star {
 	update() {
 		this.z -= Star.speed;
 		if (this.z <= 10) this.reset();
+
+	isOffscreen({ x, y }: { x: number; y: number }, padding: number = 0) {
+		return (
+			x < -padding ||
+			x > this.width + padding ||
+			y < -padding ||
+			y > this.height + padding
+		);
 	}
+
+	update() {
+		this.z -= Star.speed;
+		if (this.z <= 10) this.reset();
+	}
+
 
 	reset() {
 		this.x = Math.random() * this.width - this.width / 2;
 		this.y = Math.random() * this.height - this.height / 2;
 		this.z = Star.maxDepth;
+		this.z = Star.maxDepth;
 		this.color = colors[Math.floor(Math.random() * colors.length)];
+		this.glow.tint = this.color;
 		this.glow.tint = this.color;
 	}
 }
@@ -79,7 +119,7 @@ export default function SpaceBackground() {
 	const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 	const centerOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 	const location = useLocation();
-	const { getBackgroundFor, getGlobalBackgroundKey } = useBackground();
+	const { currentBackground } = useGlobalBackground();
 
 	const shouldRender = useMemo(() => {
 		const path = location.pathname || "";
@@ -266,6 +306,7 @@ export default function SpaceBackground() {
 		};
 	}, [shouldRender]);
 
+
 	if (!shouldRender) return null;
 	return (
 		<div
@@ -276,3 +317,4 @@ export default function SpaceBackground() {
 		</div>
 	);
 }
+

@@ -68,7 +68,6 @@ export default function Connection() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md px-6">
           
-          {/* Formulaire de connexion */}
           <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
@@ -80,7 +79,6 @@ export default function Connection() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
                   Email
@@ -99,7 +97,6 @@ export default function Connection() {
                 )}
               </div>
 
-              {/* Mot de passe */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
                   Mot de passe
@@ -118,7 +115,6 @@ export default function Connection() {
                 )}
               </div>
 
-              {/* Bouton de connexion */}
               <button
                 type="submit"
                 className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -127,7 +123,6 @@ export default function Connection() {
               </button>
             </form>
 
-            {/* Liens utiles */}
             <div className="mt-6 text-center">
               <p className="text-slate-400 text-sm">
                 Pas encore de compte ?{' '}

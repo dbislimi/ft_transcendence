@@ -80,5 +80,3 @@ export default function BackgroundPicker({ game }: { game?: 'bombparty' | 'pong'
     </div>
   );
 }
-
-
