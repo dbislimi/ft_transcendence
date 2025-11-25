@@ -110,7 +110,7 @@ export default function Profile() {
 
 	const fetchFriends = async () => {
 		try {
-			const res = await fetch("http://localhost:3000/friends", {
+			const res = await fetch("http://localhost:3001/friends", {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -124,7 +124,7 @@ export default function Profile() {
 
 	const fetchRequests = async () => {
 		try {
-			const res = await fetch("http://localhost:3000/friend-requests", {
+			const res = await fetch("http://localhost:3001/friend-requests", {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -138,7 +138,7 @@ export default function Profile() {
 
 	const fetchBlockedUsers = async () => {
 		try {
-			const res = await fetch("http://localhost:3000/blocked-users", {
+			const res = await fetch("http://localhost:3001/blocked-users", {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -159,7 +159,7 @@ export default function Profile() {
 		setHistoryLoading(true);
 		try {
 			const res = await fetch(
-				`http://localhost:3000/api/match-history/${user.id}?page=${page}&limit=10`,
+				`http://localhost:3001/api/match-history/${user.id}?page=${page}&limit=10`,
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				}
@@ -189,7 +189,7 @@ export default function Profile() {
 
 		try {
 			const res = await fetch(
-				`http://localhost:3000/api/user-stats/${user.id}`,
+				`http://localhost:3001/api/user-stats/${user.id}`,
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				}
@@ -252,7 +252,7 @@ export default function Profile() {
 		setFriendsError(null);
 
 		try {
-			const res = await fetch("http://localhost:3000/friend-requests", {
+			const res = await fetch("http://localhost:3001/friend-requests", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -281,7 +281,7 @@ export default function Profile() {
 	const acceptRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`http://localhost:3000/friend-requests/${senderId}/accept`,
+				`http://localhost:3001/friend-requests/${senderId}/accept`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -303,7 +303,7 @@ export default function Profile() {
 	const rejectRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`http://localhost:3000/friend-requests/${senderId}/reject`,
+				`http://localhost:3001/friend-requests/${senderId}/reject`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -326,7 +326,7 @@ export default function Profile() {
 
 		try {
 			const res = await fetch(
-				`http://localhost:3000/friends/${friendId}`,
+				`http://localhost:3001/friends/${friendId}`,
 				{
 					method: "DELETE",
 					headers: { Authorization: `Bearer ${token}` },
@@ -349,7 +349,7 @@ export default function Profile() {
 			return;
 
 		try {
-			const res = await fetch("http://localhost:3000/block-user", {
+			const res = await fetch("http://localhost:3001/block-user", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -377,7 +377,7 @@ export default function Profile() {
 
 		try {
 			const res = await fetch(
-				`http://localhost:3000/blocked-users/${userId}`,
+				`http://localhost:3001/blocked-users/${userId}`,
 				{
 					method: "DELETE",
 					headers: { Authorization: `Bearer ${token}` },
@@ -541,7 +541,7 @@ export default function Profile() {
 		}
 
 		try {
-			const res = await fetch("http://localhost:3000/me", {
+			const res = await fetch("http://localhost:3001/me", {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",

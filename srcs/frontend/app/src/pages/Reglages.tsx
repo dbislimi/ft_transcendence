@@ -10,7 +10,7 @@ export default function Reglages() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('http://localhost:3000/reglages', {
+        const response = await fetch('http://localhost:3001/reglages', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ export default function Reglages() {
 
   const update2fa = async () => {
     try {
-      const response = await fetch('http://localhost:3000/reglages', {
+      const response = await fetch('http://localhost:3001/reglages', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

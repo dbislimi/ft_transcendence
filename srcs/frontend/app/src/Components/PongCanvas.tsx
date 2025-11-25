@@ -1,12 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import type { GameState } from "../types/GameState";
-import { memo, useEffect, useRef } from "react";
-import type { RefObject } from "react";
-import type { GameState } from "../types/GameState";
 
-interface Props {
-	gameRef: RefObject<GameState>;
 interface Props {
 	gameRef: RefObject<GameState>;
 	scale: number;
@@ -60,10 +55,6 @@ function PongCanvas({
 			const { players, ball, bonuses } = gameRef.current;
 			const p1Size = players.p1.size * scale;
 			const p2Size = players.p2.size * scale;
-			if (!gameRef.current) return;
-			const { players, ball, bonuses } = gameRef.current;
-			const p1Size = players.p1.size * scale;
-			const p2Size = players.p2.size * scale;
 			c.clearRect(0, 0, canvas.width, canvas.height);
 
 			c.beginPath();
@@ -101,7 +92,6 @@ function PongCanvas({
 				c.fillStyle = "rgba(119, 45, 237, 1)";
 				c.fill();
 			}
-			c.fillStyle = "rgba(0,0,0,0.8)";
 			c.fillStyle = "rgba(0,0,0,0.8)";
 			c.fillRect(0, 0, canvas.width, canvas.height);
 			c.beginPath();

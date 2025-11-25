@@ -43,7 +43,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (!token) return;
 
 		try {
-			const res = await fetch("http://localhost:3000/friends", {
+			const res = await fetch("http://localhost:3001/friends", {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -166,14 +166,18 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const friendsWsRef = useRef<WebSocket | null>(null);
 	const pongRoutesRef = useRef(new Map<string, (data: any) => void>());
 
-	const { isAuthenticated, token } = useUser();
+	const { token } = useUser();
 
 	useEffect(() => {
-		if (!isAuthenticated) {
-			friendsWsRef.current?.close();
-			friendsWsRef.current = null;
+		pongWsRef.current?.close();
+		chatWsRef.current?.close();
+		friendsWsRef.current?.close();
+		pongWsRef.current = null;
+		chatWsRef.current = null;
+		friendsWsRef.current = null;
 
-			pongWsRef.current = new WebSocket(`ws://localhost:3000/game`);
+		if (!token) {
+			pongWsRef.current = new WebSocket(`ws://localhost:3001/game`);
 			pongWsRef.current.onopen = () =>
 				console.log("Pong Websocket connecté (guest)");
 			pongWsRef.current.onclose = () =>
@@ -191,28 +195,19 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				}
 			};
 
-			chatWsRef.current = new WebSocket(`ws://localhost:3000/chat`);
-			chatWsRef.current.onopen = () =>
-				console.log("Chat Websocket connecté (guest)");
-			chatWsRef.current.onclose = () =>
-				console.log("Chat Websocket fermé (guest)");
-			chatWsRef.current.onmessage = (event) => {
-				const data = JSON.parse(event.data);
-				setMessages((prev) => [...prev, data]);
-			};
 			return;
 		}
 
 		const tokenParam = encodeURIComponent(token!);
 
 		pongWsRef.current = new WebSocket(
-			`ws://localhost:3000/game?token=${tokenParam}`
+			`ws://localhost:3001/game?token=${tokenParam}`
 		);
 		chatWsRef.current = new WebSocket(
-			`ws://localhost:3000/chat?token=${tokenParam}`
+			`ws://localhost:3001/chat?token=${tokenParam}`
 		);
 		friendsWsRef.current = new WebSocket(
-			`ws://localhost:3000/ws-friends?token=${tokenParam}`
+			`ws://localhost:3001/ws-friends?token=${tokenParam}`
 		);
 
 		const onOpen = (name: string) =>
@@ -275,7 +270,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			pongWsRef.current = null;
 			friendsWsRef.current = null;
 		};
-	}, [isAuthenticated, token]);
+	}, [token]);
 
 	const sendMessage = (msg: {
 		type: string;

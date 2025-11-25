@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
-import ChatWidget from "./Chat";
+// import ChatWidget from "./Chat";
 import BackgroundSurface from "./BackgroundSurface";
 import Notifications from "./Notifications";
 

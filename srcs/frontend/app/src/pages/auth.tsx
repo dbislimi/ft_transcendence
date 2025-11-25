@@ -17,7 +17,7 @@ export default function EnterCode() {
       return;
     }
 
-    const response = await fetch('http://localhost:3000/check2fa', {
+    const response = await fetch('http://localhost:3001/check2fa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, code }),

@@ -14,6 +14,7 @@ interface User {
 	avatar?: string;
 	wins?: number;
 	losses?: number;
+	created_at?: string;
 	cosmetics: {
 		preferredSide: string;
 		paddleColor: string;
@@ -63,7 +64,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const logoutUser = async (currentToken?: string | null) => {
 		if (currentToken) {
 			try {
-				await fetch("http://localhost:3000/logout", {
+				await fetch("http://localhost:3001/logout", {
 					method: "POST",
 					headers: { Authorization: `Bearer ${currentToken}` },
 				});
@@ -71,7 +72,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				const blob = new Blob([JSON.stringify({})], {
 					type: "application/json",
 				});
-				navigator.sendBeacon("http://localhost:3000/logout", blob);
+				navigator.sendBeacon("http://localhost:3001/logout", blob);
 			}
 		}
 	};
@@ -166,7 +167,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 		try {
-			const res = await fetch("http://localhost:3000/me", {
+			const res = await fetch("http://localhost:3001/me", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -200,7 +201,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				const blob = new Blob([JSON.stringify({})], {
 					type: "application/json",
 				});
-				navigator.sendBeacon("http://localhost:3000/logout", blob);
+				navigator.sendBeacon("http://localhost:3001/logout", blob);
 			}
 		};
 

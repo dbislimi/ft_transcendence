@@ -151,12 +151,12 @@ export function SettingsCard({
 							<ChoiceGroup
 								label="Skin Paddle"
 								options={[
+									{ label: "White", color: "#ffffff" },
 									{ label: "Cyan", color: "#06b6d4" },
 									{ label: "Emerald", color: "#10b981" },
 									{ label: "Rose", color: "#f43f5e" },
 									{ label: "Blue", color: "#3b82f6" },
 									{ label: "Amber", color: "#f59e0b" },
-									{ label: "White", color: "#ffffff" },
 								]}
 								value={tempCosmetics.paddleColor}
 								onChange={(value) =>
@@ -172,12 +172,12 @@ export function SettingsCard({
 							<ChoiceGroup
 								label="Skin Balle"
 								options={[
+									{ label: "White", color: "#ffffff" },
 									{ label: "Cyan", color: "#06b6d4" },
 									{ label: "Emerald", color: "#10b981" },
 									{ label: "Rose", color: "#f43f5e" },
 									{ label: "Blue", color: "#3b82f6" },
 									{ label: "Amber", color: "#f59e0b" },
-									{ label: "White", color: "#ffffff" },
 								]}
 								value={tempCosmetics.ballColor}
 								onChange={(value) =>

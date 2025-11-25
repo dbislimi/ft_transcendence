@@ -77,6 +77,7 @@ export default function Pong() {
 	const { session, setSession, clearSession } = useGameSession();
 	const { mode, setParams } = usePongParams();
 
+	const prevAuthRef = useRef(isAuthenticated);
 	const trainingRef = useRef(false);
 	const trainingLabelsRef = useRef<PlayerLabels | null>(null);
 	const lastStartPayloadRef = useRef<Record<string, unknown> | null>(null);
@@ -273,6 +274,15 @@ export default function Pong() {
 	useEffect(() => {
 		if (!mode && view.kind !== "menu" && view.kind !== "settings") stop();
 	}, [mode, view.kind]);
+
+	
+	useEffect(() => {
+		if (prevAuthRef.current && !isAuthenticated && view.kind !== "menu") {
+			localStop();
+			setView({ kind: "menu" });
+		}
+		prevAuthRef.current = isAuthenticated;
+	}, [isAuthenticated, view.kind, localStop]);
 
 	useEffect(() => {
 		return () => {

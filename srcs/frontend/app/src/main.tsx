@@ -34,15 +34,13 @@ const router = createBrowserRouter([
 			{ path: "/Confirmation", element: <pages.Confirmation /> },
 			{ path: "/Registration", element: <pages.Registration /> },
 			{ path: "/about", element: <pages.About /> },
-			{ path: "/auth", element: <pages.auth /> },
-			{ path: "/Reglages", element: <pages.Reglages /> },
+			{ path: "/auth", element: <pages.Auth /> },
 			{ path: "*", element: <pages.NotFoundPage /> },
 		],
 	},
 ]);
 
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
 		<SettingsProvider>
 			<GlobalBackgroundProvider>
 				<BackgroundProvider>
@@ -62,5 +60,4 @@ createRoot(document.getElementById("root")!).render(
 				</BackgroundProvider>
 			</GlobalBackgroundProvider>
 		</SettingsProvider>
-	</StrictMode>
 );

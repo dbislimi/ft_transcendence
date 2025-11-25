@@ -40,7 +40,7 @@ export default function Friends() {
 
   const fetchFriends = async () => {
     try {
-      const res = await fetch("http://localhost:3000/friends", { 
+      const res = await fetch("http://localhost:3001/friends", { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {
@@ -54,7 +54,7 @@ export default function Friends() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("http://localhost:3000/friend-requests", { 
+      const res = await fetch("http://localhost:3001/friend-requests", { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {
@@ -68,7 +68,7 @@ export default function Friends() {
 
   const fetchBlockedUsers = async () => {
     try {
-      const res = await fetch("http://localhost:3000/blocked-users", { 
+      const res = await fetch("http://localhost:3001/blocked-users", { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       if (res.ok) {
@@ -83,7 +83,7 @@ export default function Friends() {
   useEffect(() => {
     if (!token || !user?.id) return;
 
-    const ws = new WebSocket(`ws://localhost:3000/ws-friends?token=${token}`);
+    const ws = new WebSocket(`ws://localhost:3001/ws-friends?token=${token}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -168,7 +168,7 @@ export default function Friends() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:3000/friend-requests", {
+      const res = await fetch("http://localhost:3001/friend-requests", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json", 
@@ -194,7 +194,7 @@ export default function Friends() {
 
   const acceptRequest = async (senderId: number) => {
     try {
-      const res = await fetch(`http://localhost:3000/friend-requests/${senderId}/accept`, {
+      const res = await fetch(`http://localhost:3001/friend-requests/${senderId}/accept`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -213,7 +213,7 @@ export default function Friends() {
 
   const rejectRequest = async (senderId: number) => {
     try {
-      const res = await fetch(`http://localhost:3000/friend-requests/${senderId}/reject`, {
+      const res = await fetch(`http://localhost:3001/friend-requests/${senderId}/reject`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -233,7 +233,7 @@ export default function Friends() {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/friends/${friendId}`, {
+      const res = await fetch(`http://localhost:3001/friends/${friendId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -253,7 +253,7 @@ export default function Friends() {
     if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?")) return;
 
     try {
-      const res = await fetch("http://localhost:3000/block-user", {
+      const res = await fetch("http://localhost:3001/block-user", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -279,7 +279,7 @@ export default function Friends() {
     if (!confirm("Êtes-vous sûr de vouloir débloquer cet utilisateur ?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/blocked-users/${userId}`, {
+      const res = await fetch(`http://localhost:3001/blocked-users/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

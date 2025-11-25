@@ -1,7 +1,6 @@
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import websocket from "@fastify/websocket";
 import gameController from "./gameController.ts";
 import chat from "./chat.ts";
 import dotenv from "dotenv";
@@ -106,7 +105,6 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 		}
 	);
 
-	fastify.register(websocket);
 	fastify.register(gameController);
 	fastify.register(chat);
 };
