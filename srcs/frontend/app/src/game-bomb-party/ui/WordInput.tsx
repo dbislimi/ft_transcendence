@@ -283,7 +283,7 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
             </p>
             {syllableInfo && (
               <div className="mt-2 text-xs text-slate-400">
-                {syllableInfo.availableWords} mots disponibles sur {syllableInfo.totalWords}
+                {syllableInfo.availableWords} {t('bombParty.input.availableWords')} {syllableInfo.totalWords}
               </div>
             )}
           </div>

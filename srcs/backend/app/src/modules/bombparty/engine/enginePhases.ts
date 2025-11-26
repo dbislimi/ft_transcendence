@@ -16,6 +16,14 @@ export function startTurn(state: GameState, getNewSyllable: () => string, getTur
     }
   }
 
+  // Validation du bonus vitesse eclair: verifier si la cible est toujours en vie
+  if (state.pendingFastForNextPlayerId) {
+    const targetPlayer = state.players.find(p => p.id === state.pendingFastForNextPlayerId);
+    if (!targetPlayer || targetPlayer.isEliminated) {
+      state.pendingFastForNextPlayerId = undefined;
+    }
+  }
+
   state.currentSyllable = getNewSyllable();
   state.currentSyllableDifficulty = getSyllableDifficulty(state.currentSyllable);
   state.phase = 'TURN_ACTIVE';
@@ -34,8 +42,8 @@ export function startTurn(state: GameState, getNewSyllable: () => string, getTur
 }
 
 export function resolveTurn(
-  state: GameState, 
-  wordValid: boolean, 
+  state: GameState,
+  wordValid: boolean,
   timeExpired: boolean,
   nextPlayerFn: () => void,
   startTurnFn: () => void
@@ -51,27 +59,32 @@ export function resolveTurn(
     return;
   }
 
-  bombPartyLogger.info({ 
-    playerId: currentPlayer.id, 
-    playerName: currentPlayer.name, 
-    wordValid, 
-    timeExpired, 
-    currentLives: currentPlayer.lives 
+  bombPartyLogger.info({
+    playerId: currentPlayer.id,
+    playerName: currentPlayer.name,
+    wordValid,
+    timeExpired,
+    currentLives: currentPlayer.lives
   }, '[resolveTurn] Début de résolution du tour');
+
+  // Nettoyage du bonus Double Chance à la fin du tour (qu'il ait été utilisé ou non)
+  if (currentPlayer.pendingEffects?.doubleChance) {
+    currentPlayer.pendingEffects.doubleChance = false;
+  }
 
   if (!wordValid || timeExpired) {
     const livesBefore = currentPlayer.lives;
     currentPlayer.streak = 0;
     currentPlayer.lives = Math.max(0, currentPlayer.lives - 1);
-    
-    bombPartyLogger.info({ 
-      playerId: currentPlayer.id, 
-      playerName: currentPlayer.name, 
-      livesBefore, 
-      livesAfter: currentPlayer.lives, 
-      reason: timeExpired ? 'Timer expiré' : 'Mot invalide' 
+
+    bombPartyLogger.info({
+      playerId: currentPlayer.id,
+      playerName: currentPlayer.name,
+      livesBefore,
+      livesAfter: currentPlayer.lives,
+      reason: timeExpired ? 'Timer expiré' : 'Mot invalide'
     }, '[resolveTurn] Perte de vie détectée');
-    
+
     if (currentPlayer.lives === 0) {
       currentPlayer.isEliminated = true;
       currentPlayer.isSpectator = true;
@@ -92,17 +105,17 @@ export function resolveTurn(
 
 export function nextPlayer(state: GameState): void {
   if (state.players.length === 0) return;
-  
+
   let attempts = 0;
   const maxAttempts = state.players.length * 2;
-  
+
   // boucle pour sauter les joueurs elimines, protection contre boucle infinie
   do {
     const step = state.turnDirection === 1 ? 1 : -1;
     const len = state.players.length;
     state.currentPlayerIndex = (state.currentPlayerIndex + step + len) % len;
     attempts++;
-    
+
     if (attempts > maxAttempts) {
       bombPartyLogger.error({ attempts, maxAttempts, playersCount: state.players.length }, 'Cannot find next player');
       break;
@@ -120,20 +133,20 @@ export function isTurnExpired(state: GameState): boolean {
   const now = Date.now();
   const turnEndsAt = state.turnStartedAt + state.turnDurationMs;
   const isExpired = now >= turnEndsAt;
-  
+
   if (isExpired) {
     const currentPlayer = state.players[state.currentPlayerIndex];
-    bombPartyLogger.info({ 
-      now, 
-      turnStartedAt: state.turnStartedAt, 
-      turnDurationMs: state.turnDurationMs, 
-      turnEndsAt, 
+    bombPartyLogger.info({
+      now,
+      turnStartedAt: state.turnStartedAt,
+      turnDurationMs: state.turnDurationMs,
+      turnEndsAt,
       elapsedMs: now - state.turnStartedAt,
       currentPlayer: currentPlayer?.name,
-      currentPlayerId: currentPlayer?.id 
+      currentPlayerId: currentPlayer?.id
     }, '[isTurnExpired] Tour expire detecte');
   }
-  
+
   return isExpired;
 }
 
@@ -142,9 +155,9 @@ export function checkAndEndExpiredTurn(
   resolveTurnFn: (wordValid: boolean, timeExpired: boolean) => void
 ): boolean {
   if (isTurnExpired(state)) {
-    bombPartyLogger.info({ 
+    bombPartyLogger.info({
       currentPlayerId: state.players[state.currentPlayerIndex]?.id,
-      currentPlayerName: state.players[state.currentPlayerIndex]?.name 
+      currentPlayerName: state.players[state.currentPlayerIndex]?.name
     }, '[checkAndEndExpiredTurn] Appel de resolveTurn pour expiration du timer');
     resolveTurnFn(false, true);
     return true;

@@ -126,10 +126,9 @@ export class BombPartyEngine {
     }
   }
 
-  submitWord(word: string, msTaken: number): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-    // Use local validation for immediate feedback (basic checks only)
-    // Backend validates in multiplayer; this is for local mode UX
-    const validation = validateLocal(word, this.state.currentSyllable, this.state.usedWords);
+  submitWord(word: string, msTaken: number, externalValidation?: { ok: boolean; reason?: string }): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
+    // Use external validation if provided (e.g. from backend), otherwise fallback to local
+    const validation = externalValidation || validateLocal(word, this.state.currentSyllable, this.state.usedWords);
     if (validation.ok) {
       this.state.usedWords.push(word.toLowerCase());
       this.state.history.push({

@@ -333,10 +333,18 @@
       "placeholder": "أدخل كلمتك...",
       "submit": "إرسال",
       "recentWords": "الكلمات الأخيرة:",
+      "availableWords": "كلمات متاحة من",
+      "enterWordContaining": "أدخل كلمة تحتوي على هذه الأحرف",
+      "waitingForGame": "في انتظار بدء اللعبة",
       "errors": {
         "tooShort": "يجب أن تحتوي الكلمة على 3 أحرف على الأقل",
         "duplicate": "كلمة مستخدمة مسبقاً"
       }
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
     }
   },
   "shop": {
@@ -424,6 +432,23 @@
         "description": "ليلة مرصعة بالنجوم"
       }
     }
+  },
+  "auth": {
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "namePlaceholder": "أدخل اسمك",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور",
+    "signIn": "تسجيل",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "passwordRequirements": "يجب أن تحتوي كلمة المرور على:\n- حرف كبير واحد\n- حرف صغير واحد\n- رقم واحد\n- حرف خاص واحد\n- 5 أحرف على الأقل",
+    "registrationSuccess": "تم التسجيل بنجاح",
+    "serverError": "خطأ في الخادم",
+    "networkError": "خطأ في الشبكة",
+    "error": "خطأ"
   },
   "common": {
     "back": "رجوع",

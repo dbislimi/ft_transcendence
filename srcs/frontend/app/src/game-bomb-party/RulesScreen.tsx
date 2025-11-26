@@ -38,7 +38,7 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 	};
 	return (
 		<BackgroundSurface game="bombparty">
-		<SpaceBackground />
+			<SpaceBackground />
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl relative">
 					<div className="flex items-center justify-between mb-6">
@@ -71,11 +71,10 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 							<button
 								type="button"
 								onClick={() => handleModeClick('local')}
-								className={`py-4 px-6 rounded-lg transition-all border ${
-									selectedMode === 'local'
+								className={`py-4 px-6 rounded-lg transition-all border ${selectedMode === 'local'
 										? 'bg-gradient-to-r from-green-600 to-emerald-600 border-green-500 text-white'
 										: 'bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-slate-500'
-								}`}
+									}`}
 							>
 								<div className="text-lg">🎮 {t("bombParty.rules.localMode")}</div>
 								<div className="text-sm opacity-80">{t("bombParty.rules.localModeDesc")}</div>

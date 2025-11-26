@@ -261,10 +261,18 @@
       "placeholder": "Entrez votre mot...",
       "submit": "Valider",
       "recentWords": "Mots récents :",
+      "availableWords": "mots disponibles sur",
+      "enterWordContaining": "Entrez un mot contenant ces lettres",
+      "waitingForGame": "En attente du début de la partie",
       "errors": {
         "tooShort": "Le mot doit contenir au moins 3 lettres",
         "duplicate": "Ce mot a déjà été utilisé dans cette partie"
       }
+    },
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
     },
     "gameOver": {
       "title": "Fin de partie !",
@@ -343,6 +351,23 @@
         "trigramDistribution": "Répartition des trigrammes"
       }
     }
+  },
+  "auth": {
+    "name": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "namePlaceholder": "Entrez votre nom",
+    "emailPlaceholder": "Entrez votre email",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
+    "signIn": "S'inscrire",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordRequirements": "Le mot de passe doit contenir :\n- 1 majuscule\n- 1 minuscule\n- 1 chiffre\n- 1 caractère spécial\n- 5 caractères minimum",
+    "registrationSuccess": "Inscription réussie",
+    "serverError": "Erreur serveur",
+    "networkError": "Erreur réseau",
+    "error": "Erreur"
   },
   "common": {
     "back": "Retour",

@@ -2,7 +2,7 @@ import type { GameState, ValidationResult, BonusKey, PlayerBonuses } from '../ty
 import { validateWithDictionarySync } from '../validator.ts';
 import { getRandomSyllable } from '../syllableSelector.ts';
 import { STREAK_FOR_BONUS } from './engineState.ts';
-import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '/usr/shared/bombparty/types.ts';
+import { BONUS_WEIGHTS, MAX_BONUS_PER_TYPE } from '../../../../../../shared/bombparty/types.ts';
 
 export function submitWord(
   state: GameState,
@@ -10,10 +10,10 @@ export function submitWord(
   msTaken: number,
   doubleChanceConsumedThisTurn: boolean,
   giveRandomBonus: (playerId: string) => void
-): { 
-  ok: boolean; 
-  reason?: string; 
-  consumedDoubleChance?: boolean 
+): {
+  ok: boolean;
+  reason?: string;
+  consumedDoubleChance?: boolean
 } {
   const validation = validateWithDictionarySync(word, state.currentSyllable, state.usedWords);
 
@@ -75,17 +75,17 @@ function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
   }
 
   const totalWeight = availableBonuses.reduce((sum, [, weight]) => sum + weight, 0);
-  
+
   // selection ponderee: random puis soustrait les poids jusqu'a <= 0
   let random = Math.random() * totalWeight;
-  
+
   for (const [key, weight] of availableBonuses) {
     random -= weight;
     if (random <= 0) {
       return key;
     }
   }
-  
+
   // fallback (ne devrait pas arriver)
   return availableBonuses[0][0];
 }
@@ -93,9 +93,9 @@ function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
 export function giveRandomBonus(state: GameState, playerId: string): void {
   const player = state.players.find(p => p.id === playerId);
   if (!player) return;
-  
+
   const selectedBonus = selectWeightedBonus(player.bonuses);
-  
+
   if (selectedBonus) {
     const currentCount = player.bonuses[selectedBonus] || 0;
     if (currentCount < MAX_BONUS_PER_TYPE) {

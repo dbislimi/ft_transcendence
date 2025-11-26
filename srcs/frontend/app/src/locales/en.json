@@ -239,10 +239,18 @@
       "placeholder": "Enter your word...",
       "submit": "Submit",
       "recentWords": "Recent words:",
+      "availableWords": "words available out of",
+      "enterWordContaining": "Enter a word containing these letters",
+      "waitingForGame": "Waiting for game to start",
       "errors": {
         "tooShort": "The word must contain at least 3 letters",
         "duplicate": "This word has already been used in this game"
       }
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
     },
     "gameOver": {
       "title": "Game Over!",
@@ -493,6 +501,23 @@
       "subtitle": "Return to the main page"
     },
     "close": "Close"
+  },
+  "auth": {
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "namePlaceholder": "Enter your name",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "signIn": "Sign in",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequirements": "Password must contain:\n- 1 uppercase letter\n- 1 lowercase letter\n- 1 number\n- 1 special character\n- At least 5 characters",
+    "registrationSuccess": "Registration successful",
+    "serverError": "Server error",
+    "networkError": "Network error",
+    "error": "Error"
   },
   "common": {
     "back": "Back",

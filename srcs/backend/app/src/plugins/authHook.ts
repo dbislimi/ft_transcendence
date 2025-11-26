@@ -18,6 +18,7 @@ export default fp(async function authHook(fastify: FastifyInstance<any, any, any
       "/game",           // WebSocket Pong endpoint (auth handled by getClient in websockets.ts)
       "/ws-friends",     // WebSocket friends endpoint (auth handled in ws-friends.ts)
       "/bombparty",
+      "/bomb-party",     // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
       "/api/bomb-party",  // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
     ];
 

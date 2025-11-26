@@ -1,4 +1,4 @@
-import type { GamePhase, BonusKey, PlayerBonuses, Player, GameState as SharedGameState, GameConfig, ValidationResult } from '../../../../shared/bombparty/types.ts';
+import type { GamePhase, BonusKey, PlayerBonuses, Player, GameState as SharedGameState, GameConfig, ValidationResult } from '../../../../../shared/bombparty/types.ts';
 
 export const ErrorCode = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',

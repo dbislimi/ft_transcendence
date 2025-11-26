@@ -246,10 +246,18 @@
       "placeholder": "Ingresa tu palabra...",
       "submit": "Enviar",
       "recentWords": "Palabras recientes:",
+      "availableWords": "palabras disponibles de",
+      "enterWordContaining": "Ingresa una palabra que contenga estas letras",
+      "waitingForGame": "Esperando a que comience el juego",
       "errors": {
         "tooShort": "La palabra debe tener al menos 3 letras",
         "duplicate": "Palabra ya utilizada"
       }
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
     },
     "gameOver": {
       "title": "¡Juego terminado!",
@@ -493,6 +501,23 @@
       "subtitle": "Volver a la página principal"
     },
     "close": "Cerrar"
+  },
+  "auth": {
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "namePlaceholder": "Ingrese su nombre",
+    "emailPlaceholder": "Ingrese su correo electrónico",
+    "passwordPlaceholder": "Ingrese su contraseña",
+    "confirmPasswordPlaceholder": "Confirme su contraseña",
+    "signIn": "Registrarse",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordRequirements": "La contraseña debe contener:\n- 1 mayúscula\n- 1 minúscula\n- 1 número\n- 1 carácter especial\n- Al menos 5 caracteres",
+    "registrationSuccess": "Registro exitoso",
+    "serverError": "Error del servidor",
+    "networkError": "Error de red",
+    "error": "Error"
   },
   "common": {
     "back": "Atrás",

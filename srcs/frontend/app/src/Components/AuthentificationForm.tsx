@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useNotifications } from "../contexts/NotificationContext";
 import { API_BASE_URL } from "../config/api";
 
 interface UserInfos {
@@ -13,6 +15,8 @@ interface Props {
 }
 
 export default function Form({ type }: Props) {
+  const { t } = useTranslation();
+  const { notify } = useNotifications();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const nav = useNavigate();
 
@@ -26,14 +30,13 @@ export default function Form({ type }: Props) {
     let formErrors: { [key: string]: string } = {};
 
     if (password !== confirmPassword) {
-      formErrors.password = 'Les mots de passe ne correspondent pas';
-      formErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+      formErrors.password = t('auth.passwordsDoNotMatch');
+      formErrors.confirmPassword = t('auth.passwordsDoNotMatch');
     }
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{5,}$/;
     if (!passwordRegex.test(password)) {
-      formErrors.password =
-        'Le mot de passe doit contenir :\n- 1 majuscule\n- 1 minuscule\n- 1 chiffre\n- 1 caractère spécial\n- 5 caractères minimum';
+      formErrors.password = t('auth.passwordRequirements');
     }
 
     if (Object.keys(formErrors).length > 0) {
@@ -51,14 +54,23 @@ export default function Form({ type }: Props) {
       });
 
       if (response.ok) {
-        alert('Inscription réussie');
+        notify({
+          variant: 'success',
+          message: t('auth.registrationSuccess'),
+        });
         nav('/auth');
       } else {
         const data = await response.json();
-        alert(`Erreur : ${data.error || 'Erreur serveur'}`);
+        notify({
+          variant: 'error',
+          message: `${t('auth.error')}: ${data.error || t('auth.serverError')}`,
+        });
       }
     } catch (error) {
-      alert('Erreur réseau');
+      notify({
+        variant: 'error',
+        message: t('auth.networkError'),
+      });
     }
   };
 
@@ -66,7 +78,7 @@ export default function Form({ type }: Props) {
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
-          alt="Your Company"
+          alt="Logo"
           src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
           className="mx-auto h-10 w-auto"
         />
@@ -77,14 +89,14 @@ export default function Form({ type }: Props) {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
-              Name
+              {t('auth.name')}
             </label>
             <div className="mt-2">
               <input
                 id="Name"
                 name="Name"
                 type="text"
-                placeholder="Enter your name"
+                placeholder={t('auth.namePlaceholder')}
                 required
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
               />
@@ -93,14 +105,14 @@ export default function Form({ type }: Props) {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
+              {t('auth.email')}
             </label>
             <div className="mt-2">
               <input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.emailPlaceholder')}
                 required
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
               />
@@ -109,14 +121,14 @@ export default function Form({ type }: Props) {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
+              {t('auth.password')}
             </label>
             <div className="mt-2">
               <input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('auth.passwordPlaceholder')}
                 required
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
               />
@@ -126,14 +138,14 @@ export default function Form({ type }: Props) {
 
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
-              Confirm Password
+              {t('auth.confirmPassword')}
             </label>
             <div className="mt-2">
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                placeholder="Confirm your password"
+                placeholder={t('auth.confirmPasswordPlaceholder')}
                 required
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
               />
@@ -146,76 +158,9 @@ export default function Form({ type }: Props) {
               type="submit"
               className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-indigo-600"
             >
-              Sign in
+              {t('auth.signIn')}
             </button>
           </div>
-        </form>
-      </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="Name" className="block text-sm font-medium text-gray-900">
-              Name
-            </label>
-            <input
-              id="Name"
-              name="Name"
-              type="text"
-              placeholder="Enter your name"
-              required
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Enter your email"
-              required
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              required
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              required
-              className="block w-full rounded-md px-3 py-1.5 text-base text-gray-900 outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-            />
-            {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
-          </div>
-
-          <button type="submit" className="w-full bg-indigo-600 text-white px-3 py-1.5 rounded-md">
-            Sign in
-          </button>
         </form>
       </div>
     </div>

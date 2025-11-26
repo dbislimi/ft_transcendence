@@ -8,11 +8,11 @@ export function broadcastToRoom(
   if (!room) return;
 
   const messageStr = JSON.stringify(message);
-  
+
   for (const [playerId, playerData] of room.players) {
     if (!excludePlayerIds.includes(playerId)) {
       const socketsToSend = playerData.sockets ? Array.from(playerData.sockets) : [playerData.ws];
-      
+
       for (const ws of socketsToSend) {
         try {
           if (ws.readyState === 1) {
@@ -127,10 +127,10 @@ export function cleanupEmptyRoom(
 ): void {
   if (room.players.size === 0) {
     const hasGameInProgress = roomEngines.has(roomId);
-    
+
     if (hasGameInProgress && gracePeriodMs > 0) {
       console.log(`[RoomUtils] Room vide avec partie en cours - grace period de ${gracePeriodMs}ms avant suppression`, { roomId });
-      
+
       if (!(room as any).emptyRoomTimeout) {
         (room as any).emptyRoomTimeout = setTimeout(() => {
           if (room.players.size === 0) {
@@ -149,9 +149,9 @@ export function cleanupEmptyRoom(
       }
       return;
     }
-    
+
     console.log(`[RoomUtils] Suppression immediate de la room vide`, { roomId, hasGame: hasGameInProgress });
-    
+
     if (roomEngines.has(roomId)) {
       roomEngines.delete(roomId);
     }
@@ -165,4 +165,11 @@ export function cleanupEmptyRoom(
       (room as any).emptyRoomTimeout = undefined;
     }
   }
+}
+
+export function incrementRoomState(room: Room): void {
+  if (!room.sequenceNumber) room.sequenceNumber = 0;
+  room.sequenceNumber++;
+  if (!room.stateVersion) room.stateVersion = 0;
+  room.stateVersion++;
 }

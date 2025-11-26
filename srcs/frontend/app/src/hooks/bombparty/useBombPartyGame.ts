@@ -222,7 +222,21 @@ export function useBombPartyGame(user: any) {
 
     if (gameMode === 'local') {
       const msTaken = Date.now() - turnStartTime;
-      const result = engine.submitWord(word, msTaken);
+
+      // Validate with backend even in local mode
+      let validationResult;
+      try {
+        validationResult = await bombPartyApiService.validateWord(
+          word,
+          gameState.currentSyllable,
+          gameState.usedWords
+        );
+      } catch (error) {
+        console.error('[useBombPartyGame] Error validating word with backend, falling back to local:', error);
+        // Fallback to local validation is handled inside submitWord if we pass undefined
+      }
+
+      const result = engine.submitWord(word, msTaken, validationResult);
 
       if (result.ok) {
         (async () => {

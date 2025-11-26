@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
 import { verifyToken } from '../utils/auth.ts';
+import { AsyncLock } from '../utils/AsyncLock.ts';
 
 interface Match {
   id: number;
@@ -35,8 +36,9 @@ declare module 'fastify' {
 }
 
 export default fp(async function matchesPlugin(fastify: FastifyInstance) {
-  
-  fastify.decorate("updateUserStats", async function(userId: number, isWin: boolean) {
+  const saveLock = new AsyncLock();
+
+  fastify.decorate("updateUserStats", async function (userId: number, isWin: boolean) {
     return new Promise<void>((resolve, reject) => {
       const column = isWin ? "wins" : "losses";
       fastify.db.run(
@@ -54,7 +56,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     });
   });
 
-  fastify.decorate("saveMatch", async function(
+  fastify.decorate("saveMatch", async function (
     player1Id: number,
     player2Id: number | null,
     winnerId: number | null,
@@ -62,57 +64,84 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     botDifficulty?: string,
     matchType: string = 'quick'
   ) {
-    const saveKey = `${player1Id}-${player2Id || 'bot'}-${winnerId}-${Date.now()}`;
-    
-    // Gestion anti-doublons
-    if (fastify.recentSaves && fastify.recentSaves.has(saveKey.substring(0, saveKey.lastIndexOf('-')))) {
-      fastify.log.warn(`match doublon ignore: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
-      return Promise.resolve();
-    }
-    
-    if (!fastify.recentSaves) {
-      fastify.recentSaves = new Set();
-    }
-    
-    return new Promise<void>((resolve, reject) => {
-      const isBot = player2Id === null;
-      const scoresJson = scores ? JSON.stringify(scores) : null;
-      const finalWinnerId = (winnerId === -1 || (isBot && winnerId === null)) ? null : winnerId;
-      
+    return saveLock.acquire(async () => {
+      const saveKey = `${player1Id}-${player2Id || 'bot'}-${winnerId}-${Date.now()}`;
+
+      // Gestion anti-doublons
+      if (fastify.recentSaves && fastify.recentSaves.has(saveKey.substring(0, saveKey.lastIndexOf('-')))) {
+        fastify.log.warn(`match doublon ignore: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
+        return;
+      }
+
+      if (!fastify.recentSaves) {
+        fastify.recentSaves = new Set();
+      }
+
       const baseKey = `${player1Id}-${player2Id || 'bot'}-${winnerId}`;
-      fastify.recentSaves?.add(baseKey);
-      
-      // TODO: Vérifier que la table 'matches' contient les colonnes: is_bot, bot_difficulty, scores, match_type
-      fastify.db.run(
-        `INSERT INTO matches (player1_id, player2_id, winner_id, is_bot, bot_difficulty, scores, match_type) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [player1Id, player2Id, finalWinnerId, isBot ? 1 : 0, botDifficulty || null, scoresJson, matchType],
-        async function(err: any) {
-          if (err) {
-            fastify.recentSaves?.delete(baseKey);
-            fastify.log.error("Erreur sauvegarde match:", err);
-            reject(err);
-          } else {
-            fastify.log.info(`Match sauvegardé ID: ${this.lastID} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
-            
-            try {
-              await fastify.updateUserStats(player1Id, winnerId === player1Id);
-              if (player2Id) {
-                await fastify.updateUserStats(player2Id, winnerId === player2Id);
+      fastify.recentSaves.add(baseKey);
+
+      return new Promise<void>((resolve, reject) => {
+        const isBot = player2Id === null;
+        const scoresJson = scores ? JSON.stringify(scores) : null;
+        const finalWinnerId = (winnerId === -1 || (isBot && winnerId === null)) ? null : winnerId;
+
+        fastify.db.serialize(() => {
+          fastify.db.run("BEGIN EXCLUSIVE TRANSACTION");
+
+          fastify.db.run(
+            `INSERT INTO matches (player1_id, player2_id, winner_id, is_bot, bot_difficulty, scores, match_type) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [player1Id, player2Id, finalWinnerId, isBot ? 1 : 0, botDifficulty || null, scoresJson, matchType],
+            function (err: any) {
+              if (err) {
+                fastify.recentSaves?.delete(baseKey);
+                fastify.log.error("Erreur sauvegarde match:", err);
+                fastify.db.run("ROLLBACK");
+                reject(err);
+                return;
               }
-              fastify.log.info(`Stats updated for match ${this.lastID}`);
-            } catch (statsError) {
-              fastify.log.error("Erreur mise à jour stats:", statsError);
+
+              const matchId = this.lastID;
+              fastify.log.info(`Match sauvegardé ID: ${matchId} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
+
+              // Update stats inline to ensure they are in the transaction
+              const p1Column = winnerId === player1Id ? "wins" : "losses";
+              fastify.db.run(`UPDATE users SET ${p1Column} = ${p1Column} + 1 WHERE id = ?`, [player1Id], (err: any) => {
+                if (err) {
+                  fastify.log.error("Erreur update stats P1:", err);
+                  fastify.db.run("ROLLBACK");
+                  reject(err);
+                  return;
+                }
+
+                if (player2Id) {
+                  const p2Column = winnerId === player2Id ? "wins" : "losses";
+                  fastify.db.run(`UPDATE users SET ${p2Column} = ${p2Column} + 1 WHERE id = ?`, [player2Id], (err: any) => {
+                    if (err) {
+                      fastify.log.error("Erreur update stats P2:", err);
+                      fastify.db.run("ROLLBACK");
+                      reject(err);
+                      return;
+                    }
+                    fastify.db.run("COMMIT");
+                    fastify.log.info(`Stats updated for match ${matchId}`);
+                    resolve();
+                  });
+                } else {
+                  fastify.db.run("COMMIT");
+                  fastify.log.info(`Stats updated for match ${matchId}`);
+                  resolve();
+                }
+              });
             }
-            
-            setTimeout(() => {
-              fastify.recentSaves?.delete(baseKey);
-            }, 2000);
-            
-            resolve();
-          }
-        }
-      );
+          );
+        });
+      });
+    }).finally(() => {
+      setTimeout(() => {
+        const baseKey = `${player1Id}-${player2Id || 'bot'}-${winnerId}`;
+        fastify.recentSaves?.delete(baseKey);
+      }, 2000);
     });
   });
 

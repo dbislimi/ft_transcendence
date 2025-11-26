@@ -1,103 +1,118 @@
-import type { 
-  DBResult, 
-  UserStats, 
-  MatchHistory, 
-  TrigramStats, 
-  MatchData, 
+import { AsyncLock } from '../../../utils/AsyncLock.ts';
+import type {
+  DBResult,
+  UserStats,
+  MatchHistory,
+  TrigramStats,
+  MatchData,
   MatchHistoryData,
-  RankingEntry 
+  RankingEntry
 } from './statsModel.ts';
 import { StatsModel } from './statsModel.ts';
-import { 
-  computeUpdatedUserStats, 
-  computeNewUserStats, 
-  computeUpdatedTrigramStats, 
-  computeNewTrigramStats 
+import {
+  computeUpdatedUserStats,
+  computeNewUserStats,
+  computeUpdatedTrigramStats,
+  computeNewTrigramStats
 } from './statsCompute.ts';
 
 export class StatsPersistence {
   private model: StatsModel;
+  private lock = new AsyncLock();
 
   constructor(model: StatsModel) {
     this.model = model;
   }
 
   async updateUserStats(userId: number, matchData: MatchData): Promise<DBResult<void>> {
-    return new Promise((resolve) => {
-      this.model.getDatabase().get(
-        'SELECT * FROM bp_user_stats WHERE user_id = ?',
-        [userId],
-        (err, existingStats) => {
-          if (err) {
-            console.error('stats error fetch', err);
-            resolve({ success: false, error: err.message });
-            return;
-          }
+    return this.lock.acquire(async () => {
+      return new Promise((resolve) => {
+        const db = this.model.getDatabase();
 
-          if (existingStats) {
-            const computed = computeUpdatedUserStats(existingStats, matchData);
-            
-            this.model.getDatabase().run(
-              `UPDATE bp_user_stats SET 
-                total_matches = ?, 
-                total_wins = ?, 
-                total_words_submitted = ?, 
-                total_valid_words = ?, 
-                best_streak = ?, 
-                average_response_time = ?, 
-                total_play_time = ?,
-                updated_at = CURRENT_TIMESTAMP
-               WHERE user_id = ?`,
-              [
-                computed.newTotalMatches,
-                computed.newTotalWins,
-                computed.newTotalWordsSubmitted,
-                computed.newTotalValidWords,
-                computed.newBestStreak,
-                computed.newAverageResponseTime,
-                computed.newTotalPlayTime,
-                userId
-              ],
-              function(err) {
-                if (err) {
-                  console.error('stats error update', err);
-                  resolve({ success: false, error: err.message });
-                } else {
-                  resolve({ success: true });
-                }
+        db.serialize(() => {
+          db.run('BEGIN EXCLUSIVE TRANSACTION');
+
+          db.get(
+            'SELECT * FROM bp_user_stats WHERE user_id = ?',
+            [userId],
+            (err, existingStats) => {
+              if (err) {
+                console.error('stats error fetch', err);
+                db.run('ROLLBACK');
+                resolve({ success: false, error: err.message });
+                return;
               }
-            );
-          } else {
-            const computed = computeNewUserStats(userId, matchData);
-            
-            this.model.getDatabase().run(
-              `INSERT INTO bp_user_stats (
-                user_id, total_matches, total_wins, total_words_submitted, 
-                total_valid_words, best_streak, average_response_time, 
-                total_play_time
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                userId,
-                computed.totalMatches,
-                computed.totalWins,
-                computed.totalWordsSubmitted,
-                computed.totalValidWords,
-                computed.bestStreak,
-                computed.averageResponseTime,
-                computed.totalPlayTime
-              ],
-              function(err) {
-                if (err) {
-                  console.error('stats error create', err);
-                  resolve({ success: false, error: err.message });
-                } else {
-                  resolve({ success: true });
-                }
+
+              if (existingStats) {
+                const computed = computeUpdatedUserStats(existingStats, matchData);
+
+                db.run(
+                  `UPDATE bp_user_stats SET 
+                    total_matches = ?, 
+                    total_wins = ?, 
+                    total_words_submitted = ?, 
+                    total_valid_words = ?, 
+                    best_streak = ?, 
+                    average_response_time = ?, 
+                    total_play_time = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                   WHERE user_id = ?`,
+                  [
+                    computed.newTotalMatches,
+                    computed.newTotalWins,
+                    computed.newTotalWordsSubmitted,
+                    computed.newTotalValidWords,
+                    computed.newBestStreak,
+                    computed.newAverageResponseTime,
+                    computed.newTotalPlayTime,
+                    userId
+                  ],
+                  function (err) {
+                    if (err) {
+                      console.error('stats error update', err);
+                      db.run('ROLLBACK');
+                      resolve({ success: false, error: err.message });
+                    } else {
+                      db.run('COMMIT');
+                      resolve({ success: true });
+                    }
+                  }
+                );
+              } else {
+                const computed = computeNewUserStats(userId, matchData);
+
+                db.run(
+                  `INSERT INTO bp_user_stats (
+                    user_id, total_matches, total_wins, total_words_submitted, 
+                    total_valid_words, best_streak, average_response_time, 
+                    total_play_time
+                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                  [
+                    userId,
+                    computed.totalMatches,
+                    computed.totalWins,
+                    computed.totalWordsSubmitted,
+                    computed.totalValidWords,
+                    computed.bestStreak,
+                    computed.averageResponseTime,
+                    computed.totalPlayTime
+                  ],
+                  function (err) {
+                    if (err) {
+                      console.error('stats error create', err);
+                      db.run('ROLLBACK');
+                      resolve({ success: false, error: err.message });
+                    } else {
+                      db.run('COMMIT');
+                      resolve({ success: true });
+                    }
+                  }
+                );
               }
-            );
-          }
-        }
-      );
+            }
+          );
+        });
+      });
     });
   }
 
@@ -121,7 +136,7 @@ export class StatsPersistence {
           matchData.finalLives,
           matchData.matchDuration
         ],
-        function(err) {
+        function (err) {
           if (err) {
             console.error(' [Stats] Error adding history:', err);
             resolve({ success: false, error: err.message });
@@ -158,8 +173,8 @@ export class StatsPersistence {
   }
 
   async getUserMatchHistory(
-    userId: number, 
-    limit: number = 20, 
+    userId: number,
+    limit: number = 20,
     offset: number = 0
   ): Promise<DBResult<MatchHistory[]>> {
     return new Promise((resolve) => {
@@ -184,7 +199,7 @@ export class StatsPersistence {
   }
 
   async getUserTrigramStats(
-    userId: number, 
+    userId: number,
     limit: number = 10
   ): Promise<DBResult<TrigramStats[]>> {
     // table supprimee, retour vide

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SyllableDifficulty } from '@shared/bombparty/types';
 import bombeImg from '../../../img/bombparty/bombe.png?url';
 
@@ -23,6 +24,7 @@ export default function BombTimer({
   flashExtend = false,
   difficulty,
 }: BombTimerProps) {
+  const { t } = useTranslation();
   const formatTime = (ms: number): string => {
     const seconds = Math.ceil(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -37,12 +39,12 @@ export default function BombTimer({
   const getDifficultyInfo = (diff?: SyllableDifficulty) => {
     switch (diff) {
       case 'easy':
-        return { color: 'text-green-400', bgColor: 'bg-green-500/20', borderColor: 'border-green-500/30', label: 'Facile', icon: '⭐' };
+        return { color: 'text-green-400', bgColor: 'bg-green-500/20', borderColor: 'border-green-500/30', label: t('bombParty.difficulty.easy'), icon: '⭐' };
       case 'hard':
-        return { color: 'text-red-400', bgColor: 'bg-red-500/20', borderColor: 'border-red-500/30', label: 'Difficile', icon: '🔥' };
+        return { color: 'text-red-400', bgColor: 'bg-red-500/20', borderColor: 'border-red-500/30', label: t('bombParty.difficulty.hard'), icon: '🔥' };
       case 'medium':
       default:
-        return { color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30', label: 'Moyen', icon: '⚡' };
+        return { color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30', label: t('bombParty.difficulty.medium'), icon: '⚡' };
     }
   };
   

@@ -246,10 +246,18 @@
       "placeholder": "Введите ваше слово...",
       "submit": "Отправить",
       "recentWords": "Недавние слова:",
+      "availableWords": "слов доступно из",
+      "enterWordContaining": "Введите слово, содержащее эти буквы",
+      "waitingForGame": "Ожидание начала игры",
       "errors": {
         "tooShort": "Слово должно содержать минимум 3 буквы",
         "duplicate": "Слово уже использовано"
       }
+    },
+    "difficulty": {
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно"
     },
     "gameOver": {
       "title": "Игра окончена!",
@@ -493,6 +501,23 @@
       "subtitle": "Вернуться на главную страницу"
     },
     "close": "Закрыть"
+  },
+  "auth": {
+    "name": "Имя",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "namePlaceholder": "Введите ваше имя",
+    "emailPlaceholder": "Введите вашу электронную почту",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "confirmPasswordPlaceholder": "Подтвердите ваш пароль",
+    "signIn": "Зарегистрироваться",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "passwordRequirements": "Пароль должен содержать:\n- 1 заглавную букву\n- 1 строчную букву\n- 1 цифру\n- 1 специальный символ\n- Минимум 5 символов",
+    "registrationSuccess": "Регистрация успешна",
+    "serverError": "Ошибка сервера",
+    "networkError": "Ошибка сети",
+    "error": "Ошибка"
   },
   "common": {
     "back": "Назад",

@@ -28,7 +28,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
-  
+
   const roomIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
@@ -39,7 +39,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   const timerRef = useRef(options?.timer);
   const onGameStateUpdateRef = useRef(options?.onGameStateUpdate);
   const onTurnStartRef = useRef(options?.onTurnStart);
-  
+
   const setGamePhase = useBombPartyStore((state) => state.setGamePhase);
   const setGameState = useBombPartyStore((state) => state.receiveServerState);
   const setCountdown = useBombPartyStore((state) => state.setCountdown);
@@ -59,7 +59,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
   useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
   useEffect(() => { playerIdRef.current = playerId; }, [playerId]);
-  
+
   useEffect(() => {
     timerRef.current = options?.timer;
     onGameStateUpdateRef.current = options?.onGameStateUpdate;
@@ -86,7 +86,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   }, [client, roomId]);
 
   const storeConnection = useBombPartyStore((s) => s.connection);
-  
+
   useEffect(() => {
     if (playerId !== storeConnection.playerId) setPlayerId(storeConnection.playerId);
     if (roomId !== storeConnection.roomId) setRoomId(storeConnection.roomId);
@@ -106,20 +106,20 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       const hasPrimaryService = connectionsInfo.allConnections.some(
         c => c.type === 'bombPartyService' && c.isActive && c.id === connectionsInfo.primaryConnection
       );
-      
+
       if (hasPrimaryService) {
         logger.debug('BombPartyService déjà actif, ne pas créer de connexion concurrente avec BombPartyClient');
         return false;
       }
       return true;
     };
-    
+
     const connect = () => {
       if (!checkPrimaryConnection()) {
         logger.debug('Connexion BombPartyClient annulée - BombPartyService est déjà primaire');
         return;
       }
-      
+
       logger.debug('Tentative de connexion WebSocket');
       client.connect();
     };
@@ -128,11 +128,11 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
     const handleConnected = () => {
       setIsAuthenticating(true);
       setPlayerId(null);
-      
+
       const guestId = Math.floor(Math.random() * 1000);
       const storedName = localStorage.getItem('bombparty_player_name');
       const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
-      
+
       logger.debug('Authentification avec le nom', { playerName });
       client.authenticate(playerName);
     };
@@ -162,13 +162,13 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
     const handleLobbyJoined = (payload: any) => {
       logger.debug('Lobby rejoint', { payload });
-      
+
       const curPlayerId = playerIdRef.current;
       const curRoomId = roomIdRef.current;
-      
+
       const isAlreadyInRoom = curRoomId === payload.roomId;
       const isMyJoin = payload.playerId === curPlayerId;
-      
+
       logger.debug('handleLobbyJoined debug', {
         isAlreadyInRoom,
         isMyJoin,
@@ -177,11 +177,11 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         myPlayerId: curPlayerId,
         payloadPlayerId: payload.playerId
       });
-      
+
       setRoomId(payload.roomId);
       setLobbyMaxPlayers(payload.maxPlayers || 4);
       setLobbyPlayers(payload.players || []);
-      
+
       if (isMyJoin) {
         if (payload.players && payload.players.length > 0 && curPlayerId) {
           const firstPlayer = payload.players[0];
@@ -204,11 +204,11 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       logger.debug('Joueur rejoint, nouveau state', { payload });
       const curRoomId = roomIdRef.current;
       const curPlayerId = playerIdRef.current;
-      
+
       if (payload.roomId === curRoomId) {
         setLobbyPlayers(payload.players || []);
         setLobbyMaxPlayers(payload.maxPlayers || 4);
-        
+
         const firstPlayer = payload.players?.[0];
         if (firstPlayer && curPlayerId) {
           const isHostPlayer = firstPlayer.id === curPlayerId;
@@ -233,15 +233,15 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         players: payload.players,
         currentPlayerId: playerId
       });
-      
+
       if (payload.roomId && payload.roomId !== roomId) {
         setRoomId(payload.roomId);
       }
-      
+
       if (!roomId || payload.roomId === roomId) {
         setLobbyPlayers(payload.players || []);
         setLobbyMaxPlayers(payload.maxPlayers || 4);
-        
+
         const firstPlayer = payload.players?.[0];
         if (firstPlayer && playerId) {
           const isHostPlayer = firstPlayer.id === playerId;
@@ -264,7 +264,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         winner: payload.winner,
         finalStats: payload.finalStats
       } as any);
-      
+
       setGamePhase('GAME_OVER');
     };
 
@@ -329,14 +329,14 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         payloadPhase: payload?.gameState?.phase,
         hasGameState: !!payload?.gameState
       });
-      
+
       const curRoom = roomIdRef.current;
       const curPlayerId = playerIdRef.current;
-      
+
       if (!payload?.roomId || payload.roomId !== curRoom) {
-        console.warn('[useBombPartyWebSocket] Ignorer l\'état du jeu pour une autre room', { 
-          currentRoomId: curRoom, 
-          payloadRoomId: payload?.roomId 
+        console.warn('[useBombPartyWebSocket] Ignorer l\'état du jeu pour une autre room', {
+          currentRoomId: curRoom,
+          payloadRoomId: payload?.roomId
         });
         logger.debug('Ignorer l\'état du jeu pour une autre room', { currentRoomId: curRoom, payloadRoomId: payload?.roomId });
         return;
@@ -364,7 +364,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
         if (serverTurnStart && turnDuration > 0) {
           setTurnStartTime(serverTurnStart);
-          
+
           if (timerRef.current) {
             console.log('[useBombPartyWebSocket] Démarrage du timer', {
               serverTurnStart,
@@ -380,10 +380,10 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
           if (onTurnStartRef.current) {
             onTurnStartRef.current(serverTurnStart, turnDuration);
           }
-          
+
           setTimerGracePeriod(true);
           setTimeout(() => setTimerGracePeriod(false), 5000);
-          
+
           logger.debug('Tour démarré - turnStartTime initialisé', {
             serverTurnStart,
             turnDuration,
@@ -408,13 +408,13 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
           playerId: payload.playerId,
           roomId: payload.roomId
         });
-        
+
         const currentState = gameState;
         const player = currentState?.players?.find((p: any) => p.id === payload.playerId);
         const playerName = player?.name || 'Un joueur';
-        
+
         setBonusNotification({ bonusKey: payload.bonusKey as BonusKey, playerName });
-        
+
         if (payload.bonusKey === 'plus5sec' && payload.meta?.extendMs && timerRef.current) {
           const currentPlayerId = currentState?.players?.[currentState?.currentPlayerIndex]?.id;
           if (payload.playerId === currentPlayerId && currentState?.phase === 'TURN_ACTIVE') {
@@ -423,7 +423,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
             setTimeout(() => setTimerFlash(false), 1000);
           }
         }
-        
+
         if (payload.bonusKey === 'vitesseEclair' && payload.meta?.targetId) {
           const currentPlayerId = playerIdRef.current;
           if (payload.meta.targetId === currentPlayerId) {
@@ -433,73 +433,76 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       }
     };
 
-    const authTimeout = setTimeout(() => {
-      const currentStore = useBombPartyStore.getState();
-      const hasPlayerId = playerIdRef.current !== null;
-      const isInGame = currentStore.gamePhase === 'GAME' && currentStore.gameState?.phase === 'TURN_ACTIVE';
-      
-      logger.warn('Authentication timeout check', {
-        isStillAuthenticating: !hasPlayerId,
-        isInGame,
-        hasPlayerId,
-        gamePhase: currentStore.gamePhase
-      });
-      
-      if (hasPlayerId) {
-        logger.info('Authentication already succeeded, ignoring timeout');
-        return;
-      }
-      
-      const connectionsInfo = wsCoordinator.getConnectionsInfo();
-      const isServicePrimary = connectionsInfo.primaryConnection && 
-        connectionsInfo.allConnections.some(
-          c => c.id === connectionsInfo.primaryConnection && c.type === 'bombPartyService'
-        );
-      
-      if (isInGame) {
-        logger.warn('Game in progress, not resetting auth - will retry later');
-        setTimeout(() => {
-          if (playerIdRef.current === null) {
-            const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
-            if (isServicePrimary) {
-              bombPartyService.authenticateWithName(playerName);
-            } else {
-              logger.warn('BombPartyService not primary, skipping authentication retry');
+    // Only set auth timeout if we are actually connecting (i.e. not using primary service)
+    if (checkPrimaryConnection()) {
+      const authTimeout = setTimeout(() => {
+        const currentStore = useBombPartyStore.getState();
+        const hasPlayerId = playerIdRef.current !== null;
+        const isInGame = currentStore.gamePhase === 'GAME' && currentStore.gameState?.phase === 'TURN_ACTIVE';
+
+        logger.warn('Authentication timeout check', {
+          isStillAuthenticating: !hasPlayerId,
+          isInGame,
+          hasPlayerId,
+          gamePhase: currentStore.gamePhase
+        });
+
+        if (hasPlayerId) {
+          logger.info('Authentication already succeeded, ignoring timeout');
+          return;
+        }
+
+        const connectionsInfo = wsCoordinator.getConnectionsInfo();
+        const isServicePrimary = connectionsInfo.primaryConnection &&
+          connectionsInfo.allConnections.some(
+            c => c.id === connectionsInfo.primaryConnection && c.type === 'bombPartyService'
+          );
+
+        if (isInGame) {
+          logger.warn('Game in progress, not resetting auth - will retry later');
+          setTimeout(() => {
+            if (playerIdRef.current === null) {
+              const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
+              if (isServicePrimary) {
+                bombPartyService.authenticateWithName(playerName);
+              } else {
+                logger.warn('BombPartyService not primary, skipping authentication retry');
+              }
             }
-          }
-        }, 2000);
-        return;
-      }
-      
-      const store = useBombPartyStore.getState();
-      const isConnected = store.connection.state === 'connected';
-      
-      if (!isConnected) {
-        logger.warn('Authentication timeout but connection not established, skipping re-auth', {
+          }, 2000);
+          return;
+        }
+
+        const store = useBombPartyStore.getState();
+        const isConnected = store.connection.state === 'connected';
+
+        if (!isConnected) {
+          logger.warn('Authentication timeout but connection not established, skipping re-auth', {
+            connectionState: store.connection.state,
+            isServicePrimary
+          });
+          setPlayerId(null);
+          setIsAuthenticating(false);
+          return;
+        }
+
+        logger.warn('Authentication timeout - attempting re-auth', {
           connectionState: store.connection.state,
           isServicePrimary
         });
         setPlayerId(null);
         setIsAuthenticating(false);
-        return;
-      }
-      
-      logger.warn('Authentication timeout - attempting re-auth', {
-        connectionState: store.connection.state,
-        isServicePrimary
-      });
-      setPlayerId(null);
-      setIsAuthenticating(false);
-      
-      const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
-      if (isServicePrimary) {
-        bombPartyService.authenticateWithName(playerName);
-      } else {
-        logger.warn('BombPartyService not primary, skipping authentication');
-      }
-    }, 10000) as unknown as number;
-    
-    authTimeoutRef.current = authTimeout;
+
+        const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
+        if (isServicePrimary) {
+          bombPartyService.authenticateWithName(playerName);
+        } else {
+          logger.warn('BombPartyService not primary, skipping authentication');
+        }
+      }, 10000) as unknown as number;
+
+      authTimeoutRef.current = authTimeout;
+    }
 
     const unsubscribeAuth = client.on('bp:auth:success', handleAuthSuccess);
     const unsubscribeCreated = client.on('bp:lobby:created', handleLobbyCreated);
@@ -520,7 +523,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
     return () => {
       cleanupCountRef.current++;
-      
+
       if (cleanupDoneRef.current) {
         if (cleanupCountRef.current > 3) {
           logger.warn('Cleanup called multiple times', {
@@ -538,18 +541,18 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         cleanupCount: cleanupCountRef.current,
         user: user?.name
       });
-      
+
       if (authTimeoutRef.current) {
         clearTimeout(authTimeoutRef.current);
         authTimeoutRef.current = null;
       }
       clearTimeout(connectionTimer);
-      
+
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
-      
+
       unsubscribeAuth();
       unsubscribeCreated();
       unsubscribeJoined();
@@ -572,16 +575,16 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       }
     };
   }, [client, user]);
-  
+
   useEffect(() => {
     cleanupDoneRef.current = false;
     cleanupCountRef.current = 0;
     mountedRef.current = true;
-    
+
     logger.debug('Component mounted', {
       user: user?.name
     });
-    
+
     return () => {
       logger.debug('Component will unmount', {
         user: user?.name,

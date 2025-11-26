@@ -1,4 +1,5 @@
 import React, { memo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBombPartyStore } from '../../store/useBombPartyStore';
 import { bombPartyService } from '../../services/bombPartyService';
 import { logger } from '../../utils/logger';
@@ -8,6 +9,7 @@ interface OptimizedWordInputProps {
 }
 
 const OptimizedWordInput: React.FC<OptimizedWordInputProps> = memo(({ className }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -280,7 +282,7 @@ const OptimizedWordInput: React.FC<OptimizedWordInputProps> = memo(({ className 
             {currentSyllable}
           </div>
           <div className="text-sm text-gray-600">
-            {isActive ? 'Enter a word containing these letters' : 'Waiting for game to start'}
+            {isActive ? t('bombParty.input.enterWordContaining') : t('bombParty.input.waitingForGame')}
           </div>
         </div>
         
