@@ -1,7 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import type { Client } from "./websockets.ts";
-import type { Client } from "./websockets.ts";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.ts";
 
@@ -103,7 +102,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 								socket.send(
 									JSON.stringify({
 										event: "tournaments",
-										to: "online_card",
+										to: "pong_lobby_list",
 										body: games.listTournaments(),
 									})
 								);

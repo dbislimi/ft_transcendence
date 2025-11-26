@@ -22,6 +22,7 @@ const defaultOptions: PlayersCountOption[] = [
   { value: 8, label: '8 joueurs', icon: '' },
   { value: 10, label: '10 joueurs', icon: '' },
   { value: 12, label: '12 joueurs', icon: '' },
+  { value: 16, label: '16 joueurs', icon: '' },
 ];
 
 export default function PlayersCountDropdown({

@@ -1,23 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SpaceBackground from "../Components/SpaceBackground";
-import GameOverlay from "../Components/GameOverlay";
-import GameOverOverlay from "../Components/GameOverOverlay";
+import GameOverlay from "../pong/GameOverlay";
+import GameOverOverlay from "../pong/GameOverOverlay";
 import Countdown from "../Components/Countdown";
-import SearchingOverlay from "../Components/SearchingOverlay";
+import SearchingOverlay from "../pong/SearchingOverlay";
 import WaitingOverlay from "../Components/WaitingOverlay";
-import { ReadyButton } from "../Components/ReadyButton";
+import { ReadyButton } from "../pong/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
-import { OfflineCard } from "../Components/OfflineCard";
-import usePongParams from "../hooks/usePongParams";
 import BackToMenuButton from "../Components/BackToMenuButton";
-import { OnlineCard } from "../Components/OnlineCard";
 import { useWebSocket } from "../context/WebSocketContext";
-import PongModeSelection from "../Components/PongModeSelection";
-import PongGameArea from "../Components/PongGameArea";
+import PongRulesScreen from "../pong/PongRulesScreen";
+import PongTournamentLobby from "../pong/PongTournamentLobby";
+import PongGameArea from "../pong/PongGameArea";
 import ActionButton from "../Components/ActionButton";
-import { SettingsCard } from "../Components/SettingsCard";
+import { SettingsCard } from "../pong/SettingsCard";
 import type { GameState } from "../types/GameState";
-import type { OfflineConfig } from "../Components/OfflineCard";
+
 import { useUser } from "../context/UserContext";
 import { useGameSession } from "../context/GameSessionContext";
 import { useGameSettings } from "../context/GameSettingsContext";
@@ -39,7 +37,9 @@ type GameOverData = {
 };
 
 type Ui =
-	| { kind: "menu" }
+	| { kind: "rules" }
+	| { kind: "lobby" }
+	| { kind: "menu" } // Keeping menu for fallback or transition, but rules is the main entry
 	| { kind: "search" }
 	| { kind: "training" }
 	| { kind: "play" }
@@ -75,7 +75,6 @@ export default function Pong() {
 	const { user, isAuthenticated } = useUser();
 	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 	const { session, setSession, clearSession } = useGameSession();
-	const { mode, setParams } = usePongParams();
 
 	const prevAuthRef = useRef(isAuthenticated);
 	const trainingRef = useRef(false);
@@ -84,13 +83,8 @@ export default function Pong() {
 	const activeSessionRef = useRef(false);
 	const gameRef = useRef<GameState>(initGameState());
 	const controlsReadyRef = useRef(false);
-	const sessionMetaRef = useRef<{
-		sessionType: "offline" | "online" | null;
-		isTournament: boolean;
-		tournamentDepth: number | null;
-	}>({ sessionType: null, isTournament: false, tournamentDepth: null });
 
-	const [view, setView] = useState<Ui>({ kind: "menu" });
+	const [view, setView] = useState<Ui>({ kind: "rules" });
 
 	const { settings: gameSettings, updateSettings } = useGameSettings();
 
@@ -132,17 +126,19 @@ export default function Pong() {
 		gameRef.current = initGameState();
 	}, []);
 
-	const applyTournamentRound = useCallback((body: any) => {
-		if (!body) return;
-		const depth: number | undefined = body.tournamentDepth;
-		if (depth) sessionMetaRef.current.tournamentDepth = depth;
-	}, []);
+	const applyTournamentRound = useCallback(
+		(body: any) => {
+			if (!body) return;
+			const depth: number | undefined = body.tournamentDepth;
+			if (depth && session)
+				setSession({ ...session, tournamentDepth: depth });
+		},
+		[session, setSession]
+	);
 
 	const localStop = useCallback(() => {
 		resetGameState();
 		setControlsReady(false);
-		sessionMetaRef.current.tournamentDepth = null;
-		sessionMetaRef.current.isTournament = false;
 		activeSessionRef.current = false;
 		clearSession();
 	}, [resetGameState, setControlsReady, clearSession]);
@@ -216,7 +212,7 @@ export default function Pong() {
 						break;
 					}
 					activeSessionRef.current = false;
-					const td = sessionMetaRef.current.tournamentDepth;
+					const td = session?.tournamentDepth;
 					const isTournamentFinalWin =
 						type === "tournament" &&
 						didWin === true &&
@@ -244,7 +240,7 @@ export default function Pong() {
 						window.alert(
 							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du délai."
 						);
-						setView({ kind: "menu" });
+						setView({ kind: "rules" });
 					}
 					break;
 			}
@@ -266,20 +262,12 @@ export default function Pong() {
 		resetGameState();
 		setControlsReady(false);
 		activeSessionRef.current = true;
-		setParams({
-			mode: session.sessionType === "offline" ? "offline" : "online",
-		});
-	}, [session, view.kind, setParams, resetGameState, setControlsReady]);
+	}, [session, view.kind, resetGameState, setControlsReady]);
 
 	useEffect(() => {
-		if (!mode && view.kind !== "menu" && view.kind !== "settings") stop();
-	}, [mode, view.kind]);
-
-	
-	useEffect(() => {
-		if (prevAuthRef.current && !isAuthenticated && view.kind !== "menu") {
+		if (prevAuthRef.current && !isAuthenticated && view.kind !== "rules") {
 			localStop();
-			setView({ kind: "menu" });
+			setView({ kind: "rules" });
 		}
 		prevAuthRef.current = isAuthenticated;
 	}, [isAuthenticated, view.kind, localStop]);
@@ -302,8 +290,7 @@ export default function Pong() {
 		(forceOnline: boolean = false) => {
 			const stopType =
 				forceOnline ||
-				(!trainingRef.current &&
-					!(sessionMetaRef.current.sessionType === "offline"))
+				(!trainingRef.current && session?.sessionType !== "offline")
 					? "online"
 					: "offline";
 			pongWsRef?.current?.send(
@@ -314,7 +301,7 @@ export default function Pong() {
 			);
 			localStop();
 		},
-		[localStop, pongWsRef]
+		[localStop, pongWsRef, session?.sessionType]
 	);
 
 	const sendStartEvent = useCallback(
@@ -328,17 +315,11 @@ export default function Pong() {
 
 	const handleBackToMenu = useCallback(() => {
 		stop(true);
-		setParams(mode ? { mode } : null);
-		sessionMetaRef.current.sessionType = mode as
-			| "offline"
-			| "online"
-			| null;
-		sessionMetaRef.current.isTournament = false;
 		activeSessionRef.current = false;
 		resetGameState();
 		clearSession();
-		setView({ kind: "menu" });
-	}, [mode, stop, setParams, clearSession, resetGameState]);
+		setView({ kind: "rules" });
+	}, [stop, clearSession, resetGameState]);
 
 	const handleOnQuitGameover = useCallback(() => {
 		resetGameState();
@@ -351,7 +332,7 @@ export default function Pong() {
 		)
 			stop(true);
 		else localStop();
-		setView({ kind: "menu" });
+		setView({ kind: "rules" });
 	}, [localStop, gameOverData, stop, resetGameState, clearSession]);
 
 	const handlePlayerReady = useCallback(() => {
@@ -386,7 +367,7 @@ export default function Pong() {
 					body: { action: "invite", friendId: opponentId },
 				})
 			);
-			setView({ kind: "menu" });
+			setView({ kind: "rules" });
 			return;
 		}
 		if (payload && payload.action) {
@@ -405,8 +386,6 @@ export default function Pong() {
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
-					opponent: offlineLabels.opponent,
-					self: offlineLabels.self,
 					side: null,
 					labels: offlineLabels,
 				});
@@ -455,85 +434,61 @@ export default function Pong() {
 		setControlsReady(false);
 	}, [pongWsRef, resetGameState, setControlsReady]);
 
-	const handleOnlineConfirm = useCallback(
-		(
-			selectedMode: string,
-			matchType: string,
-			size: number,
-			id: string,
-			passwd: string
-		) => {
-			setParams({ mode: "online" });
-			sessionMetaRef.current.sessionType = "online";
-			sessionMetaRef.current.isTournament = selectedMode === "Tournament";
-			if (!isAuthenticated && user?.name) {
-				pongWsRef.current?.send(
-					JSON.stringify({
-						event: "set_name",
-						name: user.name,
-					})
-				);
-			}
-			if (selectedMode === "Tournament") {
-				pongWsRef.current?.send(
-					JSON.stringify({
-						event: "tournament",
-						body: {
-							action: matchType.toLowerCase(),
-							id,
-							size,
-							passwd,
-							options: gameSettings,
-						},
-					})
-				);
+	const handleRulesContinue = useCallback(
+		(selectedMode: "offline" | "online", config?: any) => {
+			if (selectedMode === "offline") {
+				const { gamemode, botDiff } = config;
+
+				const diff = gamemode === "solo" ? botDiff : null;
+				const offlineLabels: PlayerLabels = diff
+					? {
+							self: user?.name
+								? `${user.name} (You)`
+								: PLAYER_LABELS.self,
+							opponent: `Bot (${
+								diff.charAt(0).toUpperCase() + diff.slice(1)
+							})`,
+					  }
+					: { self: "Player 1", opponent: "Player 2" };
+				setSession({
+					sessionType: "offline",
+					side: 0,
+					labels: offlineLabels,
+				});
+				resetGameState();
+				setControlsReady(false);
+				activeSessionRef.current = true;
+				sendStartEvent({
+					action: "play_offline",
+					diff,
+					options: gameSettings,
+				});
+				setView({ kind: "play" });
 			} else {
-				sendStartEvent({ action: "play_online" });
+				if (config.name) {
+					pongWsRef.current?.send(
+						JSON.stringify({
+							event: "set_name",
+							name: config.name,
+						})
+					);
+				}
+				if (config.type === "tournament") {
+					setView({ kind: "lobby" });
+				} else {
+					sendStartEvent({ action: "play_online" });
+				}
 			}
-		},
-		[sendStartEvent, setParams, pongWsRef, user]
-	);
-
-	const handleOfflineConfirm = useCallback(
-		({ gamemode, botDiff }: OfflineConfig) => {
-			setParams({ mode: "offline" });
-			sessionMetaRef.current.sessionType = "offline";
-
-			const diff = gamemode === "solo" ? botDiff : null;
-			const offlineLabels: PlayerLabels = diff
-				? {
-						self: user?.name
-							? `${user.name} (You)`
-							: PLAYER_LABELS.self,
-						opponent: `Bot (${
-							diff.charAt(0).toUpperCase() + diff.slice(1)
-						})`,
-				  }
-				: { self: "Player 1", opponent: "Player 2" };
-			setSession({
-				sessionType: "offline",
-				opponent: offlineLabels.opponent,
-				self: offlineLabels.self,
-				side: 0,
-				labels: offlineLabels,
-			});
-			resetGameState();
-			setControlsReady(false);
-			activeSessionRef.current = true;
-			sendStartEvent({
-				action: "play_offline",
-				diff,
-				options: gameSettings,
-			});
-			setView({ kind: "play" });
 		},
 		[
-			setParams,
 			user,
 			setSession,
 			resetGameState,
 			setControlsReady,
 			sendStartEvent,
+			isAuthenticated,
+			pongWsRef,
+			gameSettings,
 		]
 	);
 
@@ -563,9 +518,11 @@ export default function Pong() {
 			<SpaceBackground />
 			<GameOverlay
 				play={showGameField || isSearching || isTraining}
-				sessionType={sessionMetaRef.current.sessionType}
-				tournamentDepth={sessionMetaRef.current.tournamentDepth}
-				isTournament={sessionMetaRef.current.isTournament}
+				sessionType={
+					session?.sessionType === "offline" ? "offline" : "online"
+				}
+				tournamentDepth={session?.tournamentDepth ?? null}
+				isTournament={session?.sessionType === "tournament"}
 			/>
 			<GameOverOverlay
 				gameOver={gameOverData}
@@ -586,44 +543,15 @@ export default function Pong() {
 					<BackToMenuButton onClick={handleBackToMenu} />
 				</div>
 			)}
-			{view.kind === "menu" && !mode && (
-				<div className="flex flex-col items-center justify-center gap-8">
-					<PongModeSelection
-						onSelect={(nextMode) => setParams({ mode: nextMode })}
-					/>
-					<ActionButton
-						onClick={() => setView({ kind: "settings" })}
-						color="purple"
-						icon={
-							<span role="img" aria-label="settings">
-								⚙️
-							</span>
-						}
-						title="Paramètres"
-						subtitle="Personnalisez votre jeu"
-					/>
-				</div>
-			)}
-			{mode === "offline" && view.kind === "menu" && (
-				<OfflineCard
-					onCancel={() => {
-						setParams(null);
-						sessionMetaRef.current.sessionType = null;
-						clearSession();
-					}}
-					onConfirm={handleOfflineConfirm}
+			{view.kind === "rules" && (
+				<PongRulesScreen
+					onContinue={handleRulesContinue}
+					onBack={() => (window.location.href = "/")}
+					onSettings={() => setView({ kind: "settings" })}
 				/>
 			)}
-			{mode === "online" && view.kind === "menu" && (
-				<OnlineCard
-					onCancel={() => {
-						setParams(null);
-						sessionMetaRef.current.sessionType = null;
-						sessionMetaRef.current.isTournament = false;
-						clearSession();
-					}}
-					onConfirm={handleOnlineConfirm}
-				/>
+			{view.kind === "lobby" && (
+				<PongTournamentLobby onBack={handleBackToMenu} />
 			)}
 			{(isSearching || isTraining) && (
 				<SearchingOverlay
@@ -631,8 +559,7 @@ export default function Pong() {
 					onQuit={() => {
 						stop();
 						clearSession();
-						setParams({ mode: "online" });
-						setView({ kind: "menu" });
+						setView({ kind: "rules" });
 					}}
 					onQuitTraining={handleQuitTraining}
 					onTrain={(diff: Difficulty) => {
@@ -659,7 +586,7 @@ export default function Pong() {
 					remaining={readyView.remaining}
 					selfReady={readyView.selfReady}
 					opponentReady={readyView.opponentReady}
-					opponentName={readyView.opponentName}
+					sessionLabels={session?.labels}
 					onReady={handlePlayerReady}
 				/>
 			)}
@@ -676,7 +603,7 @@ export default function Pong() {
 			)}
 			{view.kind === "settings" && (
 				<SettingsCard
-					onCancel={() => setView({ kind: "menu" })}
+					onCancel={() => setView({ kind: "rules" })}
 					cosmetics={cosmetics}
 					onUpdateCosmetics={() => {}}
 					onUpdateGameSettings={updateSettings}

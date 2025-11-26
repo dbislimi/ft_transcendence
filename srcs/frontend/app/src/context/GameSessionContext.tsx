@@ -9,9 +9,7 @@ import React, {
 export type GameSession = {
 	sessionId?: string;
 	sessionType: "invite" | "quick" | "tournament" | "offline";
-	opponent: string;
 	opponentPaddleColor?: string;
-	self: string;
 	side: 0 | 1 | null;
 	labels: { self: string; opponent: string };
 	tournamentDepth?: number | null;

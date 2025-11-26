@@ -376,7 +376,7 @@ export default class GamesManager {
 		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
-			const winner = didWin ? c : (c === sent ? receiv : sent);
+			const winner = didWin ? c : c === sent ? receiv : sent;
 
 			if (!c.quit) {
 				c.socket?.send(
@@ -503,9 +503,7 @@ export default class GamesManager {
 							game.clients[1]?.id ?? ""
 						}`,
 						sessionType,
-						opponent,
 						opponentPaddleColor,
-						self: client.name,
 						side: client.inGameId ?? null,
 						labels: { self: `${client.name} (You)`, opponent },
 						...(tournamentDepth !== undefined
@@ -695,6 +693,7 @@ export default class GamesManager {
 			const tournament = this.tournaments[client.tournament.tournamentId];
 			if (!tournament) return;
 			tournament.disconnect(client);
+			this.removeRoom(client);
 		} else {
 			this.removeFromQueue(client);
 			const room = this.getRoom(client);

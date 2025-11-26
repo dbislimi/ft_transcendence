@@ -5,7 +5,7 @@ interface ReadyButtonProps {
 	remaining: number;
 	selfReady: boolean;
 	opponentReady: boolean;
-	opponentName: string;
+	sessionLabels?: { self: string; opponent: string };
 	onReady: () => void;
 }
 
@@ -13,10 +13,12 @@ export function ReadyButton({
 	remaining,
 	selfReady,
 	opponentReady,
-	opponentName,
+	sessionLabels,
 	onReady,
 }: ReadyButtonProps) {
 	const { t } = useTranslation();
+
+	const displayOpponentName = sessionLabels?.opponent || "Opponent";
 
 	return (
 		<div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
@@ -41,7 +43,8 @@ export function ReadyButton({
 								}`}
 							/>
 							<span className="text-white font-medium">
-								{t("readyPhase.you", "You")}
+								{sessionLabels?.self ||
+									t("readyPhase.you", "You")}
 							</span>
 						</div>
 						<span
@@ -65,7 +68,7 @@ export function ReadyButton({
 								}`}
 							/>
 							<span className="text-white font-medium">
-								{opponentName}
+								{displayOpponentName}
 							</span>
 						</div>
 						<span
