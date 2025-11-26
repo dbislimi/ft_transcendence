@@ -1,6 +1,6 @@
 import Board from "./Board.ts";
 
-const MAX_BALL_SPEED = 200; // Limite arbitraire, à ajuster selon le gameplay
+const MAX_BALL_SPEED = 200;
 
 export default class Ball {
 	private ballRadius: number;
@@ -18,11 +18,12 @@ export default class Ball {
 		this.speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
 		this.ballRadius = field.H / 70;
 	}
-	reset(field: Board) {
+	reset(field: Board, training: boolean = false) {
 		this.x = field.W / 2;
 		this.y = field.H / 2;
 		this.dx = Math.random() - 0.5 < 0.5 ? -30 : 30;
 		this.dy = Math.random() * 120 - 60;
+		this.speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
 		this.clampSpeed();
 	}
 	clampSpeed() {

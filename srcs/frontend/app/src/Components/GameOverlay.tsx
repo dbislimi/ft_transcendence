@@ -1,36 +1,35 @@
 import React from "react";
 
-type TournamentRound = { depth?: number; initialDepth?: number } | null;
-
 interface Props {
 	play: boolean;
 	sessionType?: "offline" | "online" | null;
-	tournamentRound?: TournamentRound;
+	tournamentDepth?: number | null;
+	isTournament?: boolean;
 }
 
 export default function GameOverlay({
 	play,
 	sessionType,
-	tournamentRound,
+	tournamentDepth,
+	isTournament,
 }: Props) {
 	if (!play) return null;
 
-	const isTournament = !!tournamentRound;
+	const isTournamentMode = isTournament || tournamentDepth != null;
 	const modeLabel =
 		sessionType === "offline"
 			? "Hors-ligne"
-			: isTournament
+			: isTournamentMode
 			? "Tournoi"
 			: "En ligne";
 
 	const renderRoundLabel = () => {
-		const d = tournamentRound?.depth;
+		const d = tournamentDepth;
 		if (d === undefined || d === null) return null;
 		if (d === 1) return "Finale";
 		if (d === 2) return "Demi-finale";
 		if (d === 3) return "Quart de finale";
-		if (typeof d === "number") return `${2 ** d}ème de finale`;
-		return null;
+		return `${2 ** d}ème de finale`;
 	};
 
 	const roundLabel = renderRoundLabel();
@@ -40,7 +39,7 @@ export default function GameOverlay({
 			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
 				<div className="font-semibold">Mode</div>
 				<div className="mt-1">{modeLabel}</div>
-				{isTournament && roundLabel && (
+				{isTournamentMode && roundLabel && (
 					<div className="mt-2 text-xs text-slate-200">
 						{roundLabel}
 					</div>
@@ -49,4 +48,3 @@ export default function GameOverlay({
 		</div>
 	);
 }
-

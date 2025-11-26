@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNotifications } from "../contexts/NotificationContext";
+import { useNotifications } from "../context/NotificationContext";
 import type {
 	NotificationItem,
 	NotificationVariant,
-	NotificationAction,
-} from "../contexts/NotificationContext";
+} from "../context/NotificationContext";
 
 type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
 
@@ -16,7 +15,7 @@ export default function NotificationsContainer({
 	const { notifications, dismiss } = useNotifications();
 
 	const containerPosition = useMemo(() => {
-		const base = "fixed z-50 p-4 gap-3 flex flex-col";
+		const base = "fixed z-[100] p-4 gap-3 flex flex-col";
 		switch (position) {
 			case "top-left":
 				return `${base} top-4 left-4`;
@@ -36,7 +35,7 @@ export default function NotificationsContainer({
 			aria-live="polite"
 			aria-atomic="false"
 		>
-			{notifications.map((n: NotificationItem) => (
+			{notifications.map((n) => (
 				<Toast key={n.id} item={n} onClose={() => dismiss(n.id)} />
 			))}
 		</div>
@@ -50,7 +49,6 @@ function Toast({
 	item: NotificationItem;
 	onClose: () => void;
 }) {
-	const [hovered, setHovered] = useState(false);
 	const [remaining, setRemaining] = useState(item.duration ?? 0);
 	const startRef = useRef<number | null>(null);
 	const rafRef = useRef<number | null>(null);
@@ -62,7 +60,7 @@ function Toast({
 			if (startRef.current == null) startRef.current = now;
 			const elapsed = now - startRef.current;
 			const base = typeof item.duration === "number" ? item.duration : 0;
-			const left = Math.max(0, (remaining || base) - elapsed);
+			const left = Math.max(0, base - elapsed);
 			setRemaining(left);
 			if (left <= 0) {
 				onClose();
@@ -71,17 +69,14 @@ function Toast({
 			rafRef.current = requestAnimationFrame(tick);
 		};
 
-		if (!hovered) {
-			startRef.current = performance.now();
-			rafRef.current = requestAnimationFrame(tick);
-		}
+		startRef.current = performance.now();
+		rafRef.current = requestAnimationFrame(tick);
 
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
-			if (!hovered) setRemaining((r: number) => r);
 		};
-	}, [hovered, item.duration]);
+	}, [item.duration]);
 
 	const variantClasses = getVariantClasses(item.variant);
 
@@ -92,8 +87,6 @@ function Toast({
 	return (
 		<div
 			className={`w-80 max-w-[90vw] rounded-lg border shadow-lg overflow-hidden ${variantClasses.container}`}
-			onMouseEnter={() => setHovered(true)}
-			onMouseLeave={() => setHovered(false)}
 			role="status"
 		>
 			<div className={`px-4 py-3 ${variantClasses.header}`}>
@@ -116,7 +109,7 @@ function Toast({
 						aria-label="Fermer la notification"
 						onClick={() => {
 							const action = item.actions?.find(
-								(a: NotificationAction) => a.type === "decline"
+								(a) => a.type === "decline"
 							);
 							if (action?.onPress) {
 								action.onPress();
@@ -130,7 +123,7 @@ function Toast({
 			</div>
 			{item.actions && item.actions.length > 0 && (
 				<div className="px-4 pb-3 pt-1 flex gap-2 justify-end bg-black/20">
-					{item.actions.map((a: NotificationAction, idx: number) => (
+					{item.actions.map((a, idx) => (
 						<button
 							key={idx}
 							type="button"

@@ -1,10 +1,16 @@
 import React from "react";
 
+interface ColorOption {
+	label: string;
+	color: string;
+}
+
 interface ChoiceGroupProps<T extends string | number> {
 	label?: string;
-	options: T[];
-	value: T | null;
-	onChange: (val: T) => void;
+	options: T[] | ColorOption[];
+	value: T | T[] | null;
+	onChange: (val: T | T[]) => void;
+	multiple?: boolean;
 	columns?: number;
 	variant?: "sm" | "md" | "lg";
 	className?: string;
@@ -30,6 +36,7 @@ export default function ChoiceGroup<T extends string | number>(
 		options,
 		value,
 		onChange,
+		multiple = false,
 		columns,
 		variant = "md",
 		className = "",
@@ -85,20 +92,62 @@ export default function ChoiceGroup<T extends string | number>(
 			)}
 			<div className={`grid ${gridColsClass} gap-2`}>
 				{options.map((opt) => {
-					const active = value === opt;
+					const isColorOption =
+						typeof opt === "object" &&
+						opt !== null &&
+						"label" in opt &&
+						"color" in opt;
+					const displayValue = isColorOption
+						? (opt as ColorOption).label
+						: String(opt);
+					const compareValue = isColorOption
+						? (opt as ColorOption).label
+						: opt;
+					const customColor = isColorOption
+						? (opt as ColorOption).color
+						: undefined;
+
+					const active = multiple
+						? ((value as T[] | null) || []).includes(
+								compareValue as T
+						  )
+						: value === compareValue;
+
 					const mode = active
 						? COLOR_ACTIVE[color]
 						: DEFAULT_INACTIVE;
+
+					const buttonStyle =
+						customColor && active
+							? {
+									borderColor: customColor,
+									backgroundColor: customColor + "33",
+									color: customColor,
+							  }
+							: {};
+
 					return (
 						<button
-							key={String(opt)}
+							key={displayValue}
 							type="button"
 							onClick={() => {
-								if (!active) onChange(opt);
+								if (multiple) {
+									const currentValues =
+										(value as T[] | null) || [];
+									const newValues = active
+										? currentValues.filter(
+												(v) => v !== compareValue
+										  )
+										: [...currentValues, compareValue as T];
+									onChange(newValues as any);
+								} else if (!active) {
+									onChange(compareValue as any);
+								}
 							}}
 							className={`rounded-lg border transition-all duration-200 font-medium ${variantClasses[variant]} ${mode}`}
+							style={buttonStyle}
 						>
-							{String(opt)}
+							{displayValue}
 						</button>
 					);
 				})}

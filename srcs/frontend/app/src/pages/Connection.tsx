@@ -2,20 +2,21 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 
 export default function Connection() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, setToken } = useUser();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
     const form = e.currentTarget;
-    const email = form.querySelector<HTMLInputElement>("#email")?.value || "";
-    const password = form.querySelector<HTMLInputElement>("#password")?.value || "";
+    const email = (form.querySelector<HTMLInputElement>("#email")?.value || "").trim();
+    const password = (form.querySelector<HTMLInputElement>("#password")?.value || "").trim();
 
     let formErrors: Record<string, string> = {};
 
@@ -32,46 +33,32 @@ export default function Connection() {
       setErrors(formErrors);
       return;
     }
-
     try {
+
       const response = await fetch("http://localhost:3001/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+      console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
-        const data = await response.json();
-
-        if (data.require2fa) {
-          if (data.userId) {
-            localStorage.setItem("for2FaUserId", String(data.userId));
-          }
+        if (data.require2fa){
+          localStorage.setItem("for2FaUserId", data.userId.toString());
           navigate("/auth");
-          return;
         }
-
-        const userData = {
-          id: Number(data.user?.id) || 1,
-          name: data.user?.name || email.split("@")[0],
-          email: email,
-        };
-
-        login(userData, data.token);
-        navigate("/");
-      } else {
+        else{
+          // Utiliser setToken au lieu de localStorage directement
+          setToken(data.token);
+          navigate("/");
+        }
+      } 
+      else {
         alert("Identifiants invalides");
       }
-    } catch (error) {
-      const userData = {
-        id: 1,
-        name: email.split('@')[0],
-        email: email
-      };
-      
-      // @ts-ignore
-      login(userData);
-      navigate("/");
+    } catch {
+      setErrors({ general: "Erreur réseau. Veuillez réessayer." });
     }
   };
 

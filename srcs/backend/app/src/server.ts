@@ -54,8 +54,8 @@ async function main() {
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 
-	// 3. Database (db est une instance directe, pas un plugin Fastify ici)
-	fastify.decorate('db', dbPlugin as any);
+	// 3. Database Plugin
+	await fastify.register(dbPlugin);
 
 	// 4. Nettoyage des statuts en ligne au démarrage
 	await new Promise<void>((resolve, reject) => {

@@ -1,8 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 interface FriendEvent {
   type: string;
@@ -14,10 +11,7 @@ interface FriendEvent {
   online?: boolean;
 }
 
-const SECRET = process.env.JWT_SECRET;
-if (!SECRET) {
-  throw new Error('JWT_SECRET must be defined in environment variables');
-}
+const SECRET = process.env.JWT_SECRET || "changeme";
 
 let globalActiveConnections = new Map<number, any>();
 
@@ -70,7 +64,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.send(JSON.stringify({
         type: "connected",
-        message: "Connecte au systeme d'amis"
+        message: "Connecté au système d'amis"
       }));
 
       connection.on('message', (message) => {

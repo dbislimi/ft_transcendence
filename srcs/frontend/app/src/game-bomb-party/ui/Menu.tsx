@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { GameConfig } from '../core/types';
-import SpaceBackground from '../../Components/SpaceBackground';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { GameConfig } from "../core/types";
+import SpaceBackground from "../../Components/SpaceBackground";
+import ChoiceGroup from "../../Components/ChoiceGroup";
+import GameCard from "../../Components/GameCard";
 
 interface MenuProps {
   onStart: (config: GameConfig) => void;

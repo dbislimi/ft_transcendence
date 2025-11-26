@@ -3,6 +3,8 @@ import GameCard from "./GameCard";
 import ChoiceGroup from "./ChoiceGroup";
 import GameInput from "./GameInput";
 import { useEffect, useState, type RefObject } from "react";
+import { useWebSocket } from "../context/WebSocketContext";
+import { useUser } from "../context/UserContext";
 
 interface OnlineCardProps {
 	onCancel: () => void;
@@ -13,7 +15,6 @@ interface OnlineCardProps {
 		id: string,
 		passwd: string
 	) => void;
-	wsRef?: RefObject<WebSocket | null>;
 }
 
 interface Tournament {
@@ -23,32 +24,35 @@ interface Tournament {
 	private: boolean;
 }
 
-export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
+export function OnlineCard({ onCancel, onConfirm }: OnlineCardProps) {
 	const { t } = useTranslation();
-	const [mode, setMode] = useState<"Tournament" | "Quick Match" | null>(null);
-	const [variant, setVariant] = useState("Create");
+	const { user, isAuthenticated, setGuestName } = useUser();
+	const isGuest = !isAuthenticated;
+	const [mode, setMode] = useState("Quick Match");
+	const [variant, setVariant] = useState("Join");
 	const [size, setSize] = useState(4);
 	const [name, setName] = useState("");
 	const [password, setPassword] = useState("");
 	const [priv, setPriv] = useState(false);
 	const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
+	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
+
 	useEffect(() => {
-		if (mode !== "Tournament" || variant !== "Join" || !wsRef?.current)
-			return;
-		const handler = (e: MessageEvent) => {
-			try {
-				const d = JSON.parse(e.data);
-				if (d.event === "tournaments") setTournaments(d.body);
-			} catch {}
+		if (mode !== "Tournament" || variant !== "Join") return;
+		const handler = (d: any) => {
+			if (!d) return;
+			if (d.event === "tournaments") setTournaments(d.body);
 		};
-		wsRef.current.addEventListener("message", handler);
+
+		addPongRoute("online_card", handler);
+
 		const ask = () => {
-			if (wsRef.current?.readyState === WebSocket.OPEN)
-				wsRef.current.send(
+			if (pongWsRef.current?.readyState === WebSocket.OPEN)
+				pongWsRef.current.send(
 					JSON.stringify({
-						event: "start",
-						body: { action: "list_tournaments" },
+						event: "tournament",
+						body: { action: "list" },
 					})
 				);
 		};
@@ -56,42 +60,52 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 		const id = setInterval(ask, 3000);
 		return () => {
 			clearInterval(id);
-			wsRef.current?.removeEventListener("message", handler);
+			removePongRoute("online_card", handler);
 		};
-	}, [mode, variant, wsRef]);
-	const disableTournament =
-		variant === "Create"
-			? (!priv && !name.trim()) || (priv && (!name.trim() || !password.trim()))
+	}, [mode, variant, addPongRoute, removePongRoute, pongWsRef]);
+
+	const disable =
+		(isGuest && !user?.name?.trim()) ||
+		(variant === "Create"
+			? (!priv && !name.trim()) ||
+			  (priv && (!name.trim() || !password.trim()))
 			: priv
 			? !name.trim() || !password.trim()
-			: !name.trim();
-	const onSubmit = () => {
-		if (!mode) return;
-		onConfirm(mode, variant, size, name, password);
-	};
-	const wsOpen = wsRef?.current?.readyState === WebSocket.OPEN;
+			: !name.trim());
 
-	const canStart = (() => {
-		if (!mode) return false;
-		if (mode === "Quick Match") return !!wsOpen;
-		return !disableTournament;
-	})();
+	const onSubmit = () => onConfirm(mode, variant, size, name, password);
+
 	return (
 		<div className="absolute inset-0 flex items-center justify-center p-4">
 			<GameCard
 				title="Online Mode"
-				confirmLabel="Start"
-				actionsDirection="vertical"
 				onCancel={onCancel}
 				onConfirm={onSubmit}
-				disabledConfirm={!canStart}
+				disabledConfirm={
+					mode === "Tournament"
+						? disable
+						: isGuest && !user?.name?.trim()
+				}
 			>
 				<div className="space-y-5">
+					{isGuest && (
+						<div>
+							<label className="block text-slate-300 text-sm mb-1">
+								Votre nom
+							</label>
+							<input
+								value={user?.name || ""}
+								onChange={(e) => setGuestName(e.target.value)}
+								className="w-full px-3 py-2 rounded bg-slate-700/60 border border-slate-600 text-white"
+								placeholder="Entrez votre nom"
+							/>
+						</div>
+					)}
 					<ChoiceGroup
 						label="Mode"
 						options={["Tournament", "Quick Match"]}
 						value={mode}
-						onChange={(v) => setMode(v as any)}
+						onChange={(val) => setMode(val as string)}
 						columns={2}
 						color="cyan"
 						variant="lg"
@@ -101,7 +115,7 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 							<ChoiceGroup
 								options={["Create", "Join"]}
 								value={variant}
-								onChange={setVariant}
+								onChange={(val) => setVariant(val as string)}
 								columns={2}
 								color="cyan"
 								variant="md"
@@ -112,7 +126,9 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 										label="Capacite"
 										options={[4, 8, 16, 32]}
 										value={size}
-										onChange={setSize}
+										onChange={(val) =>
+											setSize(val as number)
+										}
 										columns={4}
 										color="cyan"
 										variant="sm"
@@ -174,9 +190,7 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 														</span>
 														<div className="ml-auto flex items-center gap-1">
 															{tour.private && (
-																<svg className="w-3 h-3 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-																</svg>
+																<span>🔒</span>
 															)}
 															<span className="text-xs text-cyan-200 font-semibold">
 																{tour.players}/
@@ -218,11 +232,6 @@ export function OnlineCard({ onCancel, onConfirm, wsRef }: OnlineCardProps) {
 									})}
 								</div>
 							)}
-						</div>
-					)}
-					{mode === "Quick Match" && (
-						<div className="text-xs text-slate-400">
-							Click Start to enter matchmaking.
 						</div>
 					)}
 				</div>

@@ -1,1200 +1,1755 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
-import { useAuth } from "../contexts/AuthContext";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import { useUser } from "../context/UserContext";
+import { useWebSocket } from "../context/WebSocketContext";
+import { useGameSettings } from "../context/GameSettingsContext";
 import SpaceBackground from "../Components/SpaceBackground";
 
-// Interfaces
 interface Friend {
-  id: number;
-  display_name: string;
-  avatar?: string;
-  online?: number | boolean;
+	id: number;
+	display_name: string;
+	avatar?: string;
+	online?: number | boolean;
 }
 
 interface FriendRequest {
-  sender_id: number;
-  display_name: string;
-  avatar?: string;
-  status: string;
-  type: "sent" | "received";
+	sender_id: number;
+	display_name: string;
+	avatar?: string;
+	status: string;
+	type: "sent" | "received";
 }
 
 interface BlockedUser {
-  id: number;
-  display_name: string;
-  avatar?: string;
-  created_at: string;
+	id: number;
+	display_name: string;
+	avatar?: string;
+	created_at: string;
 }
 
 interface Stats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  botWins: number;
-  playerWins: number;
-  tournamentsWon: number;
+	totalGames: number;
+	wins: number;
+	losses: number;
+	winRate: number;
+	botWins: number;
+	playerWins: number;
+	tournamentsWon: number;
 }
 
 interface Match {
-  id: number;
-  opponent: {
-    name: string;
-    avatar: string;
-    isBot: boolean;
-  };
-  isWinner: boolean;
-  scores: number[] | null;
-  date: string;
-  matchType?: string;
+	id: number;
+	opponent: {
+		name: string;
+		avatar: string;
+		isBot: boolean;
+	};
+	isWinner: boolean;
+	scores: number[] | null;
+	date: string;
+	matchType?: string;
 }
 
 export default function Profile() {
-  const navigate = useNavigate();
-  const { user, refreshUser } = useUser();
-  const { token } = useAuth();
-  const { friendsWsRef } = useWebSocket();
-  
-  const [activeTab, setActiveTab] = useState("overview");
-  const [friendsSubTab, setFriendsSubTab] = useState<"list" | "requests" | "blocked">("list");
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  // Settings/Edit Mode States
-  const [editMode, setEditMode] = useState(false);
-  const [email, setEmail] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState("/avatars/avatar1.png");
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
+	const navigate = useNavigate();
+	const { user, refreshUser, token } = useUser();
+	const { pongWsRef, friendsWsRef } = useWebSocket();
+	const { settings: gameSettings } = useGameSettings();
+	const [activeTab, setActiveTab] = useState("overview");
+	const [friendsSubTab, setFriendsSubTab] = useState<
+		"list" | "requests" | "blocked"
+	>("list");
+	const [isLoaded, setIsLoaded] = useState(false);
 
-  // Data States
-  const [stats, setStats] = useState<Stats>({
-    totalGames: 0, wins: 0, losses: 0, winRate: 0, botWins: 0, playerWins: 0, tournamentsWon: 0
-  });
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [matchHistory, setMatchHistory] = useState<Match[]>([]);
-  
-  // Loading/Error States
-  const [isLoadingData, setIsLoadingData] = useState(true);
-  const [friendsLoading, setFriendsLoading] = useState(false);
-  const [friendsError, setFriendsError] = useState<string | null>(null);
-  const [newFriendName, setNewFriendName] = useState("");
-  
-  // History Pagination States
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+	const [editMode, setEditMode] = useState(false);
+	const [email, setEmail] = useState("");
+	const [displayName, setDisplayName] = useState("");
+	const [password, setPassword] = useState("");
+	const [avatar, setAvatar] = useState("/avatars/avatar1.png");
+	const [message, setMessage] = useState("");
+	const [isError, setIsError] = useState(false);
 
-  const API_URL = "http://localhost:3001";
+	const [stats, setStats] = useState<Stats>({
+		totalGames: 0,
+		wins: 0,
+		losses: 0,
+		winRate: 0,
+		botWins: 0,
+		playerWins: 0,
+		tournamentsWon: 0,
+	});
 
-  const avatars = [
-    "/avatars/avatar1.png", "/avatars/avatar2.png", "/avatars/avatar3.png",
-    "/avatars/avatar4.png", "/avatars/avatar5.png", "/avatars/avatar6.png",
-    "/avatars/avatar7.png", "/avatars/avatar8.png", "/avatars/avatar9.png",
-    "/avatars/avatar10.png"
-  ];
+	const [friends, setFriends] = useState<Friend[]>([]);
+	const [requests, setRequests] = useState<FriendRequest[]>([]);
+	const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
+	const [newFriend, setNewFriend] = useState("");
+	const [friendsLoading, setFriendsLoading] = useState(false);
+	const [friendsError, setFriendsError] = useState<string | null>(null);
+	const [wsStatus, setWsStatus] = useState<string>("Déconnecté");
 
-  const isOnline = (v?: number | boolean) => v === true || v === 1;
+	const [loading, setLoading] = useState(true);
+	const wsRef = useRef<WebSocket | null>(null);
 
-  // --- Data Fetching ---
+	const [matchHistory, setMatchHistory] = useState<Match[]>([]);
+	const [historyPage, setHistoryPage] = useState(1);
+	const [historyLoading, setHistoryLoading] = useState(false);
+	const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
-  const fetchAllData = async () => {
-    if (!token || !user) return;
-    setIsLoadingData(true);
-    try {
-      await Promise.all([
-        fetchFriends(),
-        fetchRequests(),
-        fetchBlockedUsers(),
-        fetchUserStats(),
-        fetchMatchHistory()
-      ]);
-    } catch (error) {
-      console.error("Error fetching profile data:", error);
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
+	const avatars = [
+		"/avatars/avatar1.png",
+		"/avatars/avatar2.png",
+		"/avatars/avatar3.png",
+		"/avatars/avatar4.png",
+		"/avatars/avatar5.png",
+		"/avatars/avatar6.png",
+		"/avatars/avatar7.png",
+		"/avatars/avatar8.png",
+		"/avatars/avatar9.png",
+		"/avatars/avatar10.png",
+	];
 
-  const fetchFriends = async () => {
-    const res = await fetch(`${API_URL}/friends`, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setFriends(await res.json());
-  };
+	const fetchFriends = async () => {
+		try {
+			const res = await fetch("http://localhost:3001/friends", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (res.ok) {
+				const data = await res.json();
+				setFriends(data);
+			}
+		} catch (err) {
+			console.error("Erreur lors du chargement des amis:", err);
+		}
+	};
 
-  const fetchRequests = async () => {
-    const res = await fetch(`${API_URL}/friend-requests`, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setRequests(await res.json());
-  };
+	const fetchRequests = async () => {
+		try {
+			const res = await fetch("http://localhost:3001/friend-requests", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (res.ok) {
+				const data = await res.json();
+				setRequests(data);
+			}
+		} catch (err) {
+			console.error("Erreur lors du chargement des demandes:", err);
+		}
+	};
 
-  const fetchBlockedUsers = async () => {
-    const res = await fetch(`${API_URL}/blocked-users`, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setBlockedUsers(await res.json());
-  };
+	const fetchBlockedUsers = async () => {
+		try {
+			const res = await fetch("http://localhost:3001/blocked-users", {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (res.ok) {
+				const data = await res.json();
+				setBlockedUsers(data);
+			}
+		} catch (err) {
+			console.error(
+				"Erreur lors du chargement des utilisateurs bloqués:",
+				err
+			);
+		}
+	};
 
-  const fetchUserStats = async () => {
-    if (!user?.id) return;
-    const res = await fetch(`${API_URL}/api/user-stats/${user.id}`, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setStats(await res.json());
-  };
+	const fetchMatchHistory = async (page = 1) => {
+		if (!token || !user) return;
 
-  const fetchMatchHistory = async (page = 1) => {
-    if (!user?.id) return;
-    
-    setHistoryLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/match-history/${user.id}?page=${page}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (res.ok) {
-        const matches = await res.json();
-        if (page === 1) {
-          setMatchHistory(matches);
-        } else {
-          setMatchHistory(prev => [...prev, ...matches]);
-        }
-        setHasMoreHistory(matches.length === 10);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'historique:", error);
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
+		setHistoryLoading(true);
+		try {
+			const res = await fetch(
+				`http://localhost:3001/api/match-history/${user.id}?page=${page}&limit=10`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-  const loadMoreHistory = () => {
-    if (!historyLoading && hasMoreHistory) {
-      const nextPage = historyPage + 1;
-      setHistoryPage(nextPage);
-      fetchMatchHistory(nextPage);
-    }
-  };
+			if (res.ok) {
+				const matches = await res.json();
+				if (page === 1) {
+					setMatchHistory(matches);
+				} else {
+					setMatchHistory((prev) => [...prev, ...matches]);
+				}
+				setHasMoreHistory(matches.length === 10);
+			}
+		} catch (error) {
+			console.error(
+				"Erreur lors de la récupération de l'historique:",
+				error
+			);
+		} finally {
+			setHistoryLoading(false);
+		}
+	};
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+	const fetchUserStats = async () => {
+		if (!token || !user) return;
 
-  // --- Profile Settings Functions ---
+		try {
+			const res = await fetch(
+				`http://localhost:3001/api/user-stats/${user.id}`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validateDisplayName = (pseudo: string) => /^[a-zA-Z0-9-]+$/.test(pseudo);
-  const validatePassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{6,}$/.test(password);
+			if (res.ok) {
+				const userStats = await res.json();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const body: any = {};
+				setStats({
+					...userStats,
+				});
+			}
+		} catch (error) {
+			console.error("Erreur lors de la récupération des stats:", error);
+		}
+	};
 
-    if (email && email !== user?.email) {
-      if (!validateEmail(email)) {
-        setIsError(true);
-        setMessage("Email invalide.");
-        return;
-      }
-      body.email = email;
-    }
+	const fetchData = async () => {
+		if (!token || !user) return;
 
-    if (displayName && displayName !== user?.display_name) {
-      if (!validateDisplayName(displayName)) {
-        setIsError(true);
-        setMessage("Le pseudo ne doit contenir que des lettres, chiffres ou tirets.");
-        return;
-      }
-      body.display_name = displayName;
-    }
+		setLoading(true);
+		try {
+			await Promise.all([
+				fetchFriends(),
+				fetchRequests(),
+				fetchBlockedUsers(),
+				fetchUserStats(),
+				fetchMatchHistory(),
+			]);
+		} catch (error) {
+			console.error("Erreur lors de la récupération des données:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-    if (password) {
-      if (!validatePassword(password)) {
-        setIsError(true);
-        setMessage("Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.");
-        return;
-      }
-      body.password = password;
-    }
+	const loadMoreHistory = () => {
+		if (!historyLoading && hasMoreHistory) {
+			const nextPage = historyPage + 1;
+			setHistoryPage(nextPage);
+			fetchMatchHistory(nextPage);
+		}
+	};
 
-    if (avatar && avatar !== user?.avatar) {
-      body.avatar = avatar;
-    }
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleDateString("fr-FR", {
+			day: "numeric",
+			month: "short",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	};
 
-    if (Object.keys(body).length === 0) {
-      setIsError(true);
-      setMessage("Aucune modification détectée.");
-      return;
-    }
+	const sendRequest = async () => {
+		if (!newFriend.trim()) return;
 
-    if (!token) {
-      navigate("/Connection");
-      return;
-    }
+		setFriendsLoading(true);
+		setFriendsError(null);
 
-    try {
-      const res = await fetch(`${API_URL}/me`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+		try {
+			const res = await fetch("http://localhost:3001/friend-requests", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ display_name: newFriend.trim() }),
+			});
 
-      const data = await res.json();
-      if (res.ok) {
-        setIsError(false);
-        setMessage("Profil mis à jour avec succès");
-        setPassword("");
-        setEditMode(false);
-        await refreshUser();
-        setTimeout(() => setMessage(""), 3000);
-      } else {
-        setIsError(true);
-        setMessage(data.error || "Erreur lors de la mise à jour");
-        setTimeout(() => setMessage(""), 3000);
-      }
-    } catch {
-      setIsError(true);
-      setMessage("Erreur réseau. Veuillez réessayer.");
-      setTimeout(() => setMessage(""), 3000);
-    }
-  };
+			const data = await res.json();
 
-  // --- Effects ---
+			if (res.ok) {
+				setNewFriend("");
+				fetchRequests();
+			} else {
+				setFriendsError(
+					data.error || "Erreur lors de l'envoi de la demande"
+				);
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		} finally {
+			setFriendsLoading(false);
+		}
+	};
 
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email || "");
-      setDisplayName(user.display_name || "");
-      setAvatar(user.avatar || "/avatars/avatar1.png");
-      fetchAllData();
-      setTimeout(() => setIsLoaded(true), 100);
-    }
-  }, [user, token]);
+	const acceptRequest = async (senderId: number) => {
+		try {
+			const res = await fetch(
+				`http://localhost:3001/friend-requests/${senderId}/accept`,
+				{
+					method: "POST",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-  // WebSocket Listeners (Friends)
-  useEffect(() => {
-    if (!friendsWsRef.current) return;
+			if (res.ok) {
+				fetchFriends();
+				fetchRequests();
+			} else {
+				const data = await res.json();
+				setFriendsError(data.error || "Erreur lors de l'acceptation");
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		}
+	};
 
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'status_update') {
-           setFriends(prev => prev.map(f => f.id === data.userId ? { ...f, online: data.online } : f));
-        } else if (['friend_request_received', 'friend_request_accepted', 'friend_removed', 'user_blocked'].includes(data.type)) {
-           fetchAllData(); // Refresh data on events
-        }
-      } catch (e) {}
-    };
+	const rejectRequest = async (senderId: number) => {
+		try {
+			const res = await fetch(
+				`http://localhost:3001/friend-requests/${senderId}/reject`,
+				{
+					method: "POST",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-    friendsWsRef.current.addEventListener('message', handleMessage);
-    return () => friendsWsRef.current?.removeEventListener('message', handleMessage);
-  }, [friendsWsRef]);
+			if (res.ok) {
+				fetchRequests();
+			} else {
+				const data = await res.json();
+				setFriendsError(data.error || "Erreur lors du rejet");
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		}
+	};
 
+	const removeFriend = async (friendId: number) => {
+		if (!confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) return;
 
-  // --- Actions ---
+		try {
+			const res = await fetch(
+				`http://localhost:3001/friends/${friendId}`,
+				{
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-  const handleAddFriend = async () => {
-    if (!newFriendName.trim()) return;
-    setFriendsLoading(true);
-    setFriendsError(null);
-    try {
-      const res = await fetch(`${API_URL}/friend-requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ display_name: newFriendName.trim() })
-      });
-      if (res.ok) {
-        setNewFriendName("");
-        fetchRequests();
-      } else {
-        const data = await res.json();
-        setFriendsError(data.error || "Erreur lors de l'envoi");
-      }
-    } catch (e) { setFriendsError("Erreur réseau"); }
-    finally { setFriendsLoading(false); }
-  };
+			if (res.ok) {
+				fetchFriends();
+			} else {
+				const data = await res.json();
+				setFriendsError(data.error || "Erreur lors de la suppression");
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		}
+	};
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !friendsLoading) {
-      handleAddFriend();
-    }
-  };
+	const blockUser = async (userId: number) => {
+		if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?"))
+			return;
 
-  const handleAcceptRequest = async (id: number) => {
-    await fetch(`${API_URL}/friend-requests/${id}/accept`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-    fetchAllData();
-  };
+		try {
+			const res = await fetch("http://localhost:3001/block-user", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ user_id: userId }),
+			});
 
-  const handleRejectRequest = async (id: number) => {
-    await fetch(`${API_URL}/friend-requests/${id}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-    fetchRequests();
-  };
+			if (res.ok) {
+				fetchFriends();
+				fetchRequests();
+				fetchBlockedUsers();
+			} else {
+				const data = await res.json();
+				setFriendsError(data.error || "Erreur lors du blocage");
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		}
+	};
 
-  const handleBlockUser = async (id: number) => {
-    if(!confirm("Bloquer cet utilisateur ?")) return;
-    await fetch(`${API_URL}/block-user`, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ user_id: id })
-    });
-    fetchAllData();
-  };
+	const unblockUser = async (userId: number) => {
+		if (!confirm("Êtes-vous sûr de vouloir débloquer cet utilisateur ?"))
+			return;
 
-  const handleUnblockUser = async (id: number) => {
-    await fetch(`${API_URL}/blocked-users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    fetchAllData();
-  };
+		try {
+			const res = await fetch(
+				`http://localhost:3001/blocked-users/${userId}`,
+				{
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
-  const handleRemoveFriend = async (id: number) => {
-    if(!confirm("Supprimer cet ami ?")) return;
-    await fetch(`${API_URL}/friends/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    fetchAllData();
-  };
+			if (res.ok) {
+				fetchBlockedUsers();
+			} else {
+				const data = await res.json();
+				setFriendsError(data.error || "Erreur lors du déblocage");
+			}
+		} catch (err) {
+			setFriendsError("Erreur réseau");
+		}
+	};
 
-  if (!user) {
-    return (
-      <>
-        <SpaceBackground />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-400">Chargement du profil...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
+	const handleKeyPress = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter" && !friendsLoading) {
+			sendRequest();
+		}
+	};
 
-  return (
-    <>
-      <SpaceBackground />
-      <div className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
-        <div className="max-w-7xl mx-auto px-6 py-8">
+	const isOnline = (v?: number | boolean) => v === true || v === 1;
 
-          {/* Header Profil */}
-          <div className="bg-gradient-to-r from-slate-800/80 via-purple-900/80 to-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/20 p-8 mb-8 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
-                <img
-                  src={user.avatar || "/avatars/avatar1.png"}
-                  alt="Avatar"
-                  className="relative w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover shadow-2xl"
-                />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-slate-800 flex items-center justify-center">
-                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 mb-2">
-                  {user.display_name}
-                </h1>
-                <p className="text-xl text-gray-400 mb-4">{user.email}</p>
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <div className="bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 border border-emerald-500/30 rounded-lg px-4 py-2">
-                    <span className="text-emerald-300 font-semibold">{stats.winRate}% WR</span>
-                  </div>
-                </div>
-              </div>
+	useEffect(() => {
+		if (!token || !user?.id || !friendsWsRef.current) return;
 
-              <button
-                onClick={() => navigate("/Dashboard")}
-                className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 hover:scale-105"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 group-hover:from-blue-600/20 group-hover:to-cyan-600/20 transition-all duration-300"></div>
-                <span className="relative text-blue-300 group-hover:text-blue-200 font-semibold transition-colors duration-300 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
-                  Retour
-                </span>
-              </button>
-            </div>
-          </div>
+		const ws = friendsWsRef.current;
 
-          {/* Navigation Onglets */}
-          <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 mb-8 shadow-2xl">
-            <div className="flex flex-wrap">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "overview"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
-              >
-                <span className="mr-2 inline-flex">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </span>
-                Vue d'ensemble
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("stats")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "stats"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
-              >
-                <span className="mr-2 inline-flex">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                </span>
-                Statistiques
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("history")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "history"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
-              >
-                <span className="mr-2 inline-flex">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </span>
-                Historique
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("friends")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "friends"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
-              >
-                <span className="mr-2 inline-flex">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </span>
-                Amis
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("settings")}
-                className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-                  activeTab === "settings"
-                    ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                }`}
-              >
-                <span className="mr-2 inline-flex">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </span>
-                Paramètres
-              </button>
-            </div>
-          </div>
+		const handleMessage = (event: MessageEvent) => {
+			try {
+				const data = JSON.parse(event.data);
 
-          {/* Contenu Onglets */}
-          <div className="space-y-8">
-            
-            {/* VUE D'ENSEMBLE */}
-            {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-6 flex items-center gap-2">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Statistiques rapides
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/30">
-                      <div className="text-3xl font-bold text-blue-300">{stats.totalGames}</div>
-                      <div className="text-gray-400">Parties jouées</div>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg border border-green-500/30">
-                      <div className="text-3xl font-bold text-green-300">{stats.wins}</div>
-                      <div className="text-gray-400">Victoires</div>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-r from-red-600/20 to-pink-600/20 rounded-lg border border-red-500/30">
-                      <div className="text-3xl font-bold text-red-300">{stats.losses}</div>
-                      <div className="text-gray-400">Défaites</div>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-lg border border-yellow-500/30">
-                      <div className="text-3xl font-bold text-yellow-300">{stats.winRate}%</div>
-                      <div className="text-gray-400">Winrate</div>
-                    </div>
-                  </div>
-                </div>
+				switch (data.type) {
+					case "connected":
+						setWsStatus("Connecté");
+						break;
 
-                <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6 flex items-center gap-2">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Amis en ligne
-                  </h3>
-                  <div className="space-y-3">
-                    {friends.filter(f => isOnline(f.online)).slice(0, 4).map((friend) => (
-                      <div key={friend.id} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
-                        <div className="relative">
-                          <img src={friend.avatar || "/avatars/avatar1.png"} alt={friend.display_name} className="w-10 h-10 rounded-full" />
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-white font-medium">{friend.display_name}</div>
-                          <div className="text-green-400 text-sm">En ligne</div>
-                        </div>
-                      </div>
-                    ))}
-                    {friends.filter(f => isOnline(f.online)).length === 0 && (
-                      <div className="text-center py-8 text-gray-400">
-                        <svg className="w-16 h-16 mx-auto mb-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <p>Aucun ami en ligne</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+					case "friend_request_received":
+						fetchRequests();
+						break;
 
-            {/* STATISTIQUES DÉTAILLÉES */}
-            {activeTab === 'stats' && (
-              <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-8 flex items-center gap-2">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                  Statistiques détaillées
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                  <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-                    <svg className="w-10 h-10 mx-auto mb-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="text-3xl font-bold text-white mb-1">{stats.totalGames}</div>
-                    <div className="text-gray-400 text-sm">Parties totales</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-                    <svg className="w-10 h-10 mx-auto mb-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    <div className="text-3xl font-bold text-white mb-1">{stats.winRate}%</div>
-                    <div className="text-gray-400 text-sm">Taux de victoire</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-                    <svg className="w-10 h-10 mx-auto mb-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div className="text-3xl font-bold text-white mb-1">{stats.botWins}</div>
-                    <div className="text-gray-400 text-sm">Victoires contre bots</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-                    <svg className="w-10 h-10 mx-auto mb-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <div className="text-3xl font-bold text-white mb-1">{stats.playerWins}</div>
-                    <div className="text-gray-400 text-sm">Victoires contre joueurs</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-                    <svg className="w-10 h-10 mx-auto mb-2 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                    <div className="text-3xl font-bold text-white mb-1">{stats.tournamentsWon}</div>
-                    <div className="text-gray-400 text-sm">Tournois gagnés</div>
-                  </div>
-                </div>
-              </div>
-            )}
+					case "friend_request_accepted":
+						fetchFriends();
+						fetchRequests();
+						break;
 
-            {/* HISTORIQUE */}
-            {activeTab === 'history' && (
-              <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-8 flex items-center gap-2">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Historique des parties
-                </h3>
+					case "friend_request_rejected":
+						fetchRequests();
+						break;
 
-                <div className="space-y-4">
-                  {matchHistory.length > 0 ? (
-                    <>
-                      {matchHistory.map((match) => (
-                        <div key={match.id} className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
-                          match.isWinner 
-                            ? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
-                            : "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
-                        }`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="relative">
-                                {match.opponent.isBot ? (
-                                  <div className="w-16 h-16 rounded-full border-2 border-slate-600 bg-gradient-to-br from-orange-600/20 to-red-600/20 flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                ) : (
-                                  <img 
-                                    src={match.opponent.avatar || "/avatars/avatar1.png"} 
-                                    alt={match.opponent.name}
-                                    className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
-                                  />
-                                )}
-                              </div>
-                              
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  {match.isWinner ? (
-                                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                    </svg>
-                                  ) : (
-                                    <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  )}
-                                  <span className={`font-bold text-lg ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
-                                    {match.isWinner ? "VICTOIRE" : "DÉFAITE"}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex items-center gap-2 text-gray-300">
-                                  <span className="text-white font-medium">vs {match.opponent.name}</span>
-                                  {match.opponent.isBot && (
-                                    <span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
-                                      BOT
-                                    </span>
-                                  )}
-                                  {match.matchType === 'tournament' && (
-                                    <span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-md text-xs border border-purple-500/30 flex items-center gap-1">
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                      </svg>
-                                      TOURNOI
-                                    </span>
-                                  )}
-                                  {match.matchType === 'quick' && !match.opponent.isBot && (
-                                    <span className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded-md text-xs border border-blue-500/30 flex items-center gap-1">
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                      </svg>
-                                      RAPIDE
-                                    </span>
-                                  )}
-                                  {match.matchType === 'offline' && match.opponent.isBot && (
-                                    <span className="px-2 py-1 bg-green-600/20 text-green-300 rounded-md text-xs border border-green-500/30 flex items-center gap-1">
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                      </svg>
-                                      ENTRAINEMENT
-                                    </span>
-                                  )}
-                                </div>
-                                
-                                <div className="text-sm text-gray-400 mt-1">
-                                  {formatDate(match.date)}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="text-right">
-                              {match.scores && (
-                                <div className={`text-2xl font-bold mb-2 ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
-                                  {match.scores[0]} - {match.scores[1]}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 text-sm">Match #{match.id}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {hasMoreHistory && (
-                        <div className="flex justify-center mt-8">
-                          <button
-                            onClick={loadMoreHistory}
-                            disabled={historyLoading}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {historyLoading ? (
-                              <span className="flex items-center gap-2">
-                                <div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
-                                Chargement...
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                                Charger plus de parties
-                              </span>
-                            )}
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-center py-16 text-gray-400">
-                      <svg className="w-32 h-32 mx-auto mb-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <h4 className="text-2xl font-bold text-gray-300 mb-2">Aucune partie jouée</h4>
-                      <p className="text-lg mb-4">Votre historique de parties apparaîtra ici</p>
-                      <button
-                        onClick={() => navigate("/pong")}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Jouer ma première partie
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+					case "friend_removed":
+						fetchFriends();
+						break;
 
-            {/* AMIS */}
-            {activeTab === 'friends' && (
-              <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-8 flex items-center gap-2">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  Gestion des amis
-                </h3>
+					case "user_blocked":
+						fetchFriends();
+						fetchRequests();
+						break;
 
-                {friendsError && (
-                  <div className="mb-6 p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400">
-                    <div className="flex justify-between items-center">
-                      <span>{friendsError}</span>
-                      <button 
-                        onClick={() => setFriendsError(null)}
-                        className="text-red-300 hover:text-red-200"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                )}
+					case "status_update":
+						setFriends((prev) =>
+							prev.map((friend) =>
+								friend.id === data.userId
+									? { ...friend, online: data.online }
+									: friend
+							)
+						);
+						break;
 
-                {/* Navigation des sous-onglets */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {[
-                    { id: "list", label: `Amis (${friends.length})`, icon: "👥" },
-                    { id: "requests", label: `Demandes (${requests.length})`, icon: "📩" },
-                    { id: "blocked", label: `Bloqués (${blockedUsers.length})`, icon: "🚫" }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setFriendsSubTab(tab.id as any)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                        friendsSubTab === tab.id
-                          ? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
-                          : "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-                      }`}
-                    >
-                      <span className="mr-2">{tab.icon}</span>
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+					case "heartbeat":
+						if (ws.readyState === WebSocket.OPEN) {
+							ws.send(JSON.stringify({ type: "pong" }));
+						}
+						break;
+				}
+			} catch (err) {
+				console.error("Erreur parsing message WebSocket:", err);
+			}
+		};
 
-                {/* Liste des amis */}
-                {friendsSubTab === "list" && (
-                  <div className="space-y-6">
-                    {/* Ajouter un ami */}
-                    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                      <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-                        ➕ Ajouter un ami
-                      </h4>
-                      <div className="flex gap-3">
-                        <input 
-                          value={newFriendName} 
-                          onChange={e => setNewFriendName(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Nom d'utilisateur" 
-                          className="flex-1 px-4 py-3 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
-                          disabled={friendsLoading}
-                        />
-                        <button 
-                          onClick={handleAddFriend} 
-                          disabled={friendsLoading || !newFriendName.trim()}
-                          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                        >
-                          {friendsLoading ? "⏳" : "📤"}
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-2">
-                        Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.
-                      </p>
-                    </div>
+		if (ws.readyState === WebSocket.OPEN) {
+			setWsStatus("Connecté");
+		}
 
-                    {/* Liste des amis */}
-                    <div className="space-y-4">
-                      {friends.length > 0 ? (
-                        friends.map((friend) => (
-                          <div key={friend.id} className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
-                            <div className="flex items-center gap-4">
-                              <div className="relative">
-                                <img 
-                                  src={friend.avatar || "/avatars/avatar1.png"} 
-                                  alt={friend.display_name}
-                                  className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
-                                />
-                                <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${isOnline(friend.online) ? 'bg-green-500' : 'bg-gray-500'} rounded-full border-2 border-slate-800`}></div>
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-lg font-bold text-white">{friend.display_name}</h4>
-                                <p className={`text-sm ${isOnline(friend.online) ? 'text-green-400' : 'text-gray-500'}`}>
-                                  {isOnline(friend.online) ? "🟢 En ligne" : "⚫ Hors ligne"}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                {isOnline(friend.online) && (
-                                  <button 
-                                    onClick={() => navigate(`/pong?invite=${friend.id}`)}
-                                    className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
-                                  >
-                                    🎮 Inviter à jouer
-                                  </button>
-                                )}
-                                <button 
-                                  onClick={() => handleBlockUser(friend.id)}
-                                  className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
-                                >
-                                  🚫 Bloquer
-                                </button>
-                                <button 
-                                  onClick={() => handleRemoveFriend(friend.id)}
-                                  className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
-                                >
-                                  🗑️ Supprimer
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-12 text-gray-400">
-                          <div className="text-6xl mb-4">👻</div>
-                          <p className="text-lg">Aucun ami pour l'instant</p>
-                          <p className="text-sm">Commencez par ajouter quelqu'un !</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+		ws.addEventListener("message", handleMessage);
 
-                {/* Demandes d'amis */}
-                {friendsSubTab === "requests" && (
-                  <div className="space-y-6">
-                    {/* Demandes reçues */}
-                    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                      <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
-                        📥 Demandes reçues ({requests.filter(r => r.type === "received").length})
-                      </h4>
-                      <div className="space-y-3">
-                        {requests.filter(r => r.type === "received").length > 0 ? (
-                          requests.filter(r => r.type === "received").map(r => (
-                            <div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-                              <div className="flex items-center gap-3">
-                                <img 
-                                  src={r.avatar || "/avatars/avatar1.png"} 
-                                  alt={r.display_name}
-                                  className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-                                />
-                                <span className="font-medium text-white">{r.display_name}</span>
-                              </div>
-                              <div className="flex gap-2">
-                                <button 
-                                  onClick={() => handleAcceptRequest(r.sender_id)} 
-                                  className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
-                                >
-                                  ✅ Accepter
-                                </button>
-                                <button 
-                                  onClick={() => handleRejectRequest(r.sender_id)} 
-                                  className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
-                                >
-                                  ❌ Refuser
-                                </button>
-                                <button 
-                                  onClick={() => handleBlockUser(r.sender_id)} 
-                                  className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
-                                >
-                                  🚫 Bloquer
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-8 text-gray-400">
-                            <div className="text-4xl mb-2">📪</div>
-                            <p>Aucune demande reçue</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+		return () => {
+			ws.removeEventListener("message", handleMessage);
+		};
+	}, [token, user?.id, friendsWsRef]);
 
-                    {/* Demandes envoyées */}
-                    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                      <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
-                        📤 Demandes envoyées ({requests.filter(r => r.type === "sent").length})
-                      </h4>
-                      <div className="space-y-3">
-                        {requests.filter(r => r.type === "sent").length > 0 ? (
-                          requests.filter(r => r.type === "sent").map(r => (
-                            <div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-                              <div className="flex items-center gap-3">
-                                <img 
-                                  src={r.avatar || "/avatars/avatar1.png"} 
-                                  alt={r.display_name}
-                                  className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-                                />
-                                <span className="font-medium text-white">{r.display_name}</span>
-                              </div>
-                              <span className="text-yellow-400 font-medium flex items-center gap-2">
-                                <div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full"></div>
-                                En attente...
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-8 text-gray-400">
-                            <div className="text-4xl mb-2">📭</div>
-                            <p>Aucune demande envoyée</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+	useEffect(() => {
+		if (user) {
+			setEmail(user.email || "");
+			setDisplayName(user.display_name || "");
+			setAvatar(user.avatar || "/avatars/avatar1.png");
+			fetchData();
+		}
+		setIsLoaded(true);
+	}, [user, token]);
 
-                {/* Utilisateurs bloqués */}
-                {friendsSubTab === "blocked" && (
-                  <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                    <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400 mb-4">
-                      🚫 Utilisateurs bloqués ({blockedUsers.length})
-                    </h4>
-                    <div className="space-y-3">
-                      {blockedUsers.length > 0 ? (
-                        blockedUsers.map(u => (
-                          <div key={u.id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-                            <div className="flex items-center gap-3">
-                              <img 
-                                src={u.avatar || "/avatars/avatar1.png"} 
-                                alt={u.display_name}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-slate-500 opacity-50"
-                              />
-                              <div>
-                                <span className="font-medium text-white">{u.display_name}</span>
-                                <div className="text-sm text-gray-400">
-                                  Bloqué le {new Date(u.created_at).toLocaleDateString()}
-                                </div>
-                              </div>
-                            </div>
-                            <button 
-                              onClick={() => handleUnblockUser(u.id)} 
-                              className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
-                            >
-                              🔓 Débloquer
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-8 text-gray-400">
-                          <div className="text-4xl mb-2">🕊️</div>
-                          <p>Aucun utilisateur bloqué</p>
-                          <p className="text-sm">Vous êtes en paix avec tout le monde !</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+	const validateEmail = (email: string) =>
+		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	const validateDisplayName = (pseudo: string) =>
+		/^[a-zA-Z0-9-]+$/.test(pseudo);
+	const validatePassword = (password: string) =>
+		/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{6,}$/.test(
+			password
+		);
 
-            {/* PARAMÈTRES */}
-            {activeTab === "settings" && (
-              <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">
-                    ⚙️ Paramètres du profil
-                  </h3>
-                  <button
-                    onClick={() => setEditMode(!editMode)}
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                      editMode 
-                        ? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
-                        : "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
-                    }`}
-                  >
-                    {editMode ? "❌ Annuler" : "✏️ Modifier"}
-                  </button>
-                </div>
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const body: any = {};
 
-                {message && (
-                  <div className={`mb-6 p-4 rounded-lg border ${
-                    isError 
-                      ? "bg-red-600/20 border-red-500/30 text-red-300" 
-                      : "bg-green-600/20 border-green-500/30 text-green-300"
-                  }`}>
-                    {message}
-                  </div>
-                )}
+		if (email && email !== user?.email) {
+			if (!validateEmail(email)) {
+				setIsError(true);
+				setMessage("Email invalide.");
+				return;
+			}
+			body.email = email;
+		}
 
-                {!editMode ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                      <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                        <h4 className="text-lg font-bold text-gray-200 mb-4">Informations personnelles</h4>
-                        <div className="space-y-3">
-                          <div>
-                            <span className="text-gray-400">Email :</span>
-                            <span className="text-white ml-2 font-medium">{user.email}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Pseudo :</span>
-                            <span className="text-white ml-2 font-medium">{user.display_name}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-                      <h4 className="text-lg font-bold text-gray-200 mb-4">Avatar actuel</h4>
-                      <div className="flex justify-center">
-                        <img
-                          src={user.avatar || "/avatars/avatar1.png"}
-                          alt="Avatar actuel"
-                          className="w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
-                            placeholder="votre@email.com"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Pseudo</label>
-                          <input
-                            type="text"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
-                            placeholder="Votre pseudo"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Nouveau mot de passe</label>
-                          <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
-                            placeholder="••••••••"
-                          />
-                        </div>
-                      </div>
+		if (displayName && displayName !== user?.display_name) {
+			if (!validateDisplayName(displayName)) {
+				setIsError(true);
+				setMessage(
+					"Le pseudo ne doit contenir que des lettres, chiffres ou tirets."
+				);
+				return;
+			}
+			body.display_name = displayName;
+		}
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-4">Choisir un avatar</label>
-                        <div className="grid grid-cols-5 gap-3">
-                          {avatars.map((avatarUrl) => (
-                            <button
-                              key={avatarUrl}
-                              type="button"
-                              onClick={() => setAvatar(avatarUrl)}
-                              className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-                                avatar === avatarUrl 
-                                  ? "ring-4 ring-purple-500 scale-110" 
-                                  : "hover:scale-105 opacity-70 hover:opacity-100"
-                              }`}
-                            >
-                              <img
-                                src={avatarUrl}
-                                alt="Avatar"
-                                className="w-16 h-16 object-cover"
-                              />
-                            </button>
-                          ))}
-                        </div>
-                        
-                        <div className="mt-6 flex justify-center">
-                          <div className="text-center">
-                            <p className="text-gray-400 text-sm mb-2">Aperçu</p>
-                            <img
-                              src={avatar}
-                              alt="Aperçu avatar"
-                              className="w-24 h-24 rounded-full border-4 border-purple-500/50 object-cover mx-auto"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+		if (password) {
+			if (!validatePassword(password)) {
+				setIsError(true);
+				setMessage(
+					"Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
+				);
+				return;
+			}
+			body.password = password;
+		}
 
-                    <div className="flex gap-4 justify-center">
-                      <button
-                        type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                      >
-                        💾 Sauvegarder
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditMode(false)}
-                        className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                      >
-                        ❌ Annuler
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
+		if (avatar && avatar !== user?.avatar) {
+			body.avatar = avatar;
+		}
 
-          </div>
-        </div>
-      </div>
-    </>
-  );
+		if (Object.keys(body).length === 0) {
+			setIsError(true);
+			setMessage("Aucune modification détectée.");
+			return;
+		}
+
+		if (!token) {
+			navigate("/Connection");
+			return;
+		}
+
+		try {
+			const res = await fetch("http://localhost:3001/me", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(body),
+			});
+
+			const data = await res.json();
+			if (res.ok) {
+				setIsError(false);
+				setMessage("Profil mis à jour avec succès");
+				setPassword("");
+				setEditMode(false);
+				await refreshUser();
+				setTimeout(() => setMessage(""), 3000);
+			} else {
+				setIsError(true);
+				setMessage(data.error || "Erreur lors de la mise à jour");
+				setTimeout(() => setMessage(""), 3000);
+			}
+		} catch {
+			setIsError(true);
+			setMessage("Erreur réseau. Veuillez réessayer.");
+			setTimeout(() => setMessage(""), 3000);
+		}
+	};
+
+	if (!user) {
+		return (
+			<>
+				<SpaceBackground />
+				<div className="flex items-center justify-center min-h-screen">
+					<div className="text-center">
+						<div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+						<p className="text-gray-400">Chargement du profil...</p>
+					</div>
+				</div>
+			</>
+		);
+	}
+
+	return (
+		<>
+			<SpaceBackground />
+			<div className="relative min-h-screen overflow-hidden">
+				<div
+					className={`relative z-10 min-h-screen transition-all duration-1000 ${
+						isLoaded
+							? "opacity-100 translate-y-0"
+							: "opacity-0 translate-y-10"
+					}`}
+				>
+					<div className="max-w-7xl mx-auto px-6 py-8">
+						{/* Header du profil */}
+						<div className="bg-gradient-to-r from-slate-800/80 via-purple-900/80 to-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/20 p-8 mb-8 shadow-2xl">
+							<div className="flex flex-col md:flex-row items-center gap-8">
+								<div className="relative">
+									<div className="absolute -inset-2 bg-gradient-to-r from-cyan-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
+									<img
+										src={
+											user.avatar ||
+											"/avatars/avatar1.png"
+										}
+										alt="Avatar"
+										className="relative w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover shadow-2xl"
+									/>
+									<div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-slate-800 flex items-center justify-center">
+										<div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+									</div>
+								</div>
+
+								<div className="flex-1 text-center md:text-left">
+									<h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 mb-2">
+										{user.display_name}
+									</h1>
+									<p className="text-xl text-gray-400 mb-4">
+										{user.display_name}
+									</p>
+									<div className="flex flex-wrap gap-4 justify-center md:justify-start">
+										<div className="bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 border border-emerald-500/30 rounded-lg px-4 py-2">
+											<span className="text-emerald-300 font-semibold">
+												{stats.winRate}% WR
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<button
+									onClick={() => navigate("/Dashboard")}
+									className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 hover:scale-105"
+								>
+									<div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 group-hover:from-blue-600/20 group-hover:to-cyan-600/20 transition-all duration-300"></div>
+									<span className="relative text-blue-300 group-hover:text-blue-200 font-semibold transition-colors duration-300">
+										🏠 Retour
+									</span>
+								</button>
+							</div>
+						</div>
+
+						{/* Navigation par onglets */}
+						<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 mb-8 shadow-2xl">
+							<div className="flex flex-wrap">
+								{[
+									{
+										id: "overview",
+										label: "Vue d'ensemble",
+										icon: "📊",
+									},
+									{
+										id: "stats",
+										label: "Statistiques",
+										icon: "🏆",
+									},
+									{
+										id: "history",
+										label: "Historique",
+										icon: "📜",
+									},
+									{
+										id: "friends",
+										label: "Amis",
+										icon: "👥",
+									},
+									{
+										id: "settings",
+										label: "Paramètres",
+										icon: "⚙️",
+									},
+								].map((tab) => (
+									<button
+										key={tab.id}
+										onClick={() => setActiveTab(tab.id)}
+										className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+											activeTab === tab.id
+												? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+												: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+										}`}
+									>
+										<span className="mr-2">{tab.icon}</span>
+										{tab.label}
+									</button>
+								))}
+							</div>
+						</div>
+
+						{/* Contenu des onglets */}
+						<div className="space-y-8">
+							{/* Vue d'ensemble */}
+							{activeTab === "overview" && (
+								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+									<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+										<h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-6">
+											🎯 Statistiques rapides
+										</h3>
+										<div className="grid grid-cols-2 gap-4">
+											<div className="text-center p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/30">
+												<div className="text-3xl font-bold text-blue-300">
+													{stats.totalGames}
+												</div>
+												<div className="text-gray-400">
+													Parties jouées
+												</div>
+											</div>
+											<div className="text-center p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg border border-green-500/30">
+												<div className="text-3xl font-bold text-green-300">
+													{stats.wins}
+												</div>
+												<div className="text-gray-400">
+													Victoires
+												</div>
+											</div>
+											<div className="text-center p-4 bg-gradient-to-r from-red-600/20 to-pink-600/20 rounded-lg border border-red-500/30">
+												<div className="text-3xl font-bold text-red-300">
+													{stats.losses}
+												</div>
+												<div className="text-gray-400">
+													Défaites
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+										<h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6">
+											👥 Amis en ligne
+										</h3>
+										<div className="space-y-3">
+											{friends
+												.filter((f) =>
+													isOnline(f.online)
+												)
+												.slice(0, 4)
+												.map((friend) => (
+													<div
+														key={friend.id}
+														className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30"
+													>
+														<div className="relative">
+															<img
+																src={
+																	friend.avatar
+																}
+																alt={
+																	friend.display_name
+																}
+																className="w-10 h-10 rounded-full"
+															/>
+															<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+														</div>
+														<div className="flex-1">
+															<div className="text-white font-medium">
+																{
+																	friend.display_name
+																}
+															</div>
+															<div className="text-green-400 text-sm">
+																{isOnline(
+																	friend.online
+																)
+																	? "En ligne"
+																	: "Hors ligne"}
+															</div>
+														</div>
+													</div>
+												))}
+										</div>
+									</div>
+								</div>
+							)}
+
+							{/* Statistiques détaillées */}
+							{activeTab === "stats" && (
+								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+									<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-8">
+										🏆 Statistiques détaillées
+									</h3>
+
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+										{[
+											{
+												label: "Parties totales",
+												value: stats.totalGames,
+												color: "blue",
+												icon: "🎮",
+											},
+											{
+												label: "Taux de victoire",
+												value: `${stats.winRate}%`,
+												color: "green",
+												icon: "📈",
+											},
+											{
+												label: "Victoires contre bots",
+												value: stats.botWins,
+												color: "purple",
+												icon: "🤖",
+											},
+											{
+												label: "Victoires contre joueurs",
+												value: stats.playerWins,
+												color: "yellow",
+												icon: "👥",
+											},
+											{
+												label: "Tournois gagnés",
+												value: stats.tournamentsWon,
+												color: "orange",
+												icon: "🏆",
+											},
+										].map((stat, index) => (
+											<div
+												key={index}
+												className={`text-center p-6 bg-gradient-to-r from-${stat.color}-600/20 to-${stat.color}-500/20 rounded-xl border border-${stat.color}-500/30`}
+											>
+												<div className="text-4xl mb-2">
+													{stat.icon}
+												</div>
+												<div
+													className={`text-3xl font-bold text-${stat.color}-300 mb-1`}
+												>
+													{stat.value}
+												</div>
+												<div className="text-gray-400 text-sm">
+													{stat.label}
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
+
+							{/* Historique des parties */}
+							{activeTab === "history" && (
+								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+									<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-8">
+										📜 Historique des parties
+									</h3>
+
+									<div className="space-y-4">
+										{matchHistory.length > 0 ? (
+											<>
+												{matchHistory.map((match) => (
+													<div
+														key={match.id}
+														className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
+															match.isWinner
+																? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
+																: "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
+														}`}
+													>
+														<div className="flex items-center justify-between">
+															<div className="flex items-center gap-4">
+																<div className="relative">
+																	{match
+																		.opponent
+																		.isBot ? (
+																		<div className="w-16 h-16 rounded-full border-2 border-slate-600 bg-gradient-to-br from-orange-600/20 to-red-600/20 flex items-center justify-center">
+																			<span className="text-2xl">
+																				🤖
+																			</span>
+																		</div>
+																	) : (
+																		<img
+																			src={
+																				match
+																					.opponent
+																					.avatar ||
+																				"/avatars/avatar1.png"
+																			}
+																			alt={
+																				match
+																					.opponent
+																					.name
+																			}
+																			className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
+																		/>
+																	)}
+																</div>
+
+																<div className="flex-1">
+																	<div className="flex items-center gap-2 mb-1">
+																		<span
+																			className={`text-2xl ${
+																				match.isWinner
+																					? "text-green-400"
+																					: "text-red-400"
+																			}`}
+																		>
+																			{match.isWinner
+																				? "🏆"
+																				: "💔"}
+																		</span>
+																		<span
+																			className={`font-bold text-lg ${
+																				match.isWinner
+																					? "text-green-300"
+																					: "text-red-300"
+																			}`}
+																		>
+																			{match.isWinner
+																				? "VICTOIRE"
+																				: "DÉFAITE"}
+																		</span>
+																	</div>
+
+																	<div className="flex items-center gap-2 text-gray-300">
+																		<span className="text-white font-medium">
+																			vs{" "}
+																			{
+																				match
+																					.opponent
+																					.name
+																			}
+																		</span>
+																		{match
+																			.opponent
+																			.isBot && (
+																			<span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
+																				BOT
+																			</span>
+																		)}
+																		{match.matchType ===
+																			"tournament" && (
+																			<span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-md text-xs border border-purple-500/30">
+																				🏆
+																				TOURNOI
+																			</span>
+																		)}
+																		{match.matchType ===
+																			"quick" &&
+																			!match
+																				.opponent
+																				.isBot && (
+																				<span className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded-md text-xs border border-blue-500/30">
+																					⚡
+																					RAPIDE
+																				</span>
+																			)}
+																		{match.matchType ===
+																			"offline" &&
+																			match
+																				.opponent
+																				.isBot && (
+																				<span className="px-2 py-1 bg-green-600/20 text-green-300 rounded-md text-xs border border-green-500/30">
+																					🎯
+																					ENTRAINEMENT
+																				</span>
+																			)}
+																	</div>
+
+																	<div className="text-sm text-gray-400 mt-1">
+																		{formatDate(
+																			match.date
+																		)}
+																	</div>
+																</div>
+															</div>
+
+															<div className="text-right">
+																{match.scores && (
+																	<div
+																		className={`text-2xl font-bold mb-2 ${
+																			match.isWinner
+																				? "text-green-300"
+																				: "text-red-300"
+																		}`}
+																	>
+																		{
+																			match
+																				.scores[0]
+																		}{" "}
+																		-{" "}
+																		{
+																			match
+																				.scores[1]
+																		}
+																	</div>
+																)}
+																<div className="flex items-center gap-2">
+																	<span className="text-gray-400 text-sm">
+																		Match #
+																		{
+																			match.id
+																		}
+																	</span>
+																</div>
+															</div>
+														</div>
+													</div>
+												))}
+
+												{hasMoreHistory && (
+													<div className="flex justify-center mt-8">
+														<button
+															onClick={
+																loadMoreHistory
+															}
+															disabled={
+																historyLoading
+															}
+															className="px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+														>
+															{historyLoading ? (
+																<span className="flex items-center gap-2">
+																	<div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
+																	Chargement...
+																</span>
+															) : (
+																"📜 Charger plus de parties"
+															)}
+														</button>
+													</div>
+												)}
+											</>
+										) : (
+											<div className="text-center py-16 text-gray-400">
+												<div className="text-8xl mb-6">
+													🎮
+												</div>
+												<h4 className="text-2xl font-bold text-gray-300 mb-2">
+													Aucune partie jouée
+												</h4>
+												<p className="text-lg mb-4">
+													Votre historique de parties
+													apparaîtra ici
+												</p>
+												<button
+													onClick={() =>
+														navigate("/pong")
+													}
+													className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+												>
+													🎯 Jouer ma première partie
+												</button>
+											</div>
+										)}
+									</div>
+								</div>
+							)}
+
+							{/* Liste des amis avec toutes les fonctionnalités */}
+							{activeTab === "friends" && (
+								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+									<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-8">
+										👥 Gestion des amis
+									</h3>
+
+									{friendsError && (
+										<div className="mb-6 p-4 rounded-lg border bg-red-500/10 border-red-500/30 text-red-400">
+											<div className="flex justify-between items-center">
+												<span>{friendsError}</span>
+												<button
+													onClick={() =>
+														setFriendsError(null)
+													}
+													className="text-red-300 hover:text-red-200"
+												>
+													✕
+												</button>
+											</div>
+										</div>
+									)}
+
+									{/* Navigation des sous-onglets */}
+									<div className="flex flex-wrap gap-2 mb-8">
+										{[
+											{
+												id: "list",
+												label: `Amis (${friends.length})`,
+												icon: "👥",
+											},
+											{
+												id: "requests",
+												label: `Demandes (${requests.length})`,
+												icon: "📩",
+											},
+											{
+												id: "blocked",
+												label: `Bloqués (${blockedUsers.length})`,
+												icon: "🚫",
+											},
+										].map((tab) => (
+											<button
+												key={tab.id}
+												onClick={() =>
+													setFriendsSubTab(
+														tab.id as any
+													)
+												}
+												className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+													friendsSubTab === tab.id
+														? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
+														: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+												}`}
+											>
+												<span className="mr-2">
+													{tab.icon}
+												</span>
+												{tab.label}
+											</button>
+										))}
+									</div>
+
+									{/* Liste des amis */}
+									{friendsSubTab === "list" && (
+										<div className="space-y-6">
+											{/* Ajouter un ami */}
+											<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+												<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
+													➕ Ajouter un ami
+												</h4>
+												<div className="flex gap-3">
+													<input
+														value={newFriend}
+														onChange={(e) =>
+															setNewFriend(
+																e.target.value
+															)
+														}
+														onKeyPress={
+															handleKeyPress
+														}
+														placeholder="Nom d'utilisateur"
+														className="flex-1 px-4 py-3 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+														disabled={
+															friendsLoading
+														}
+													/>
+													<button
+														onClick={sendRequest}
+														disabled={
+															friendsLoading ||
+															!newFriend.trim()
+														}
+														className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+													>
+														{friendsLoading
+															? "⏳"
+															: "📤"}
+													</button>
+												</div>
+												<p className="text-sm text-gray-400 mt-2">
+													Entrez le nom d'utilisateur
+													exact de la personne que
+													vous souhaitez ajouter.
+												</p>
+											</div>
+
+											{/* Liste des amis */}
+											<div className="space-y-4">
+												{friends.length > 0 ? (
+													friends.map((friend) => (
+														<div
+															key={friend.id}
+															className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all duration-300"
+														>
+															<div className="flex items-center gap-4">
+																<div className="relative">
+																	<img
+																		src={
+																			friend.avatar ||
+																			"/avatars/avatar1.png"
+																		}
+																		alt={
+																			friend.display_name
+																		}
+																		className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
+																	/>
+																	<div
+																		className={`absolute -bottom-1 -right-1 w-5 h-5 ${
+																			isOnline(
+																				friend.online
+																			)
+																				? "bg-green-500"
+																				: "bg-gray-500"
+																		} rounded-full border-2 border-slate-800`}
+																	></div>
+																</div>
+																<div className="flex-1">
+																	<h4 className="text-lg font-bold text-white">
+																		{
+																			friend.display_name
+																		}
+																	</h4>
+																	<p
+																		className={`text-sm ${
+																			isOnline(
+																				friend.online
+																			)
+																				? "text-green-400"
+																				: "text-gray-500"
+																		}`}
+																	>
+																		{isOnline(
+																			friend.online
+																		)
+																			? "🟢 En ligne"
+																			: "⚫ Hors ligne"}
+																	</p>
+																</div>
+																<div className="flex gap-2">
+																	{isOnline(
+																		friend.online
+																	) && (
+																		<button
+																			onClick={() => {
+																				if (
+																					pongWsRef
+																						.current
+																						?.readyState ===
+																					WebSocket.OPEN
+																				) {
+																					pongWsRef.current.send(
+																						JSON.stringify(
+																							{
+																								event: "invitation",
+																								body: {
+																									action: "invite",
+																									friendId:
+																										friend.id,
+																									options:
+																										gameSettings,
+																								},
+																							}
+																						)
+																					);
+																				}
+																			}}
+																			className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
+																		>
+																			🎮
+																			Inviter
+																			à
+																			jouer
+																		</button>
+																	)}
+																	<button
+																		onClick={() =>
+																			blockUser(
+																				friend.id
+																			)
+																		}
+																		className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
+																	>
+																		🚫
+																		Bloquer
+																	</button>
+																	<button
+																		onClick={() =>
+																			removeFriend(
+																				friend.id
+																			)
+																		}
+																		className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
+																	>
+																		🗑️
+																		Supprimer
+																	</button>
+																</div>
+															</div>
+														</div>
+													))
+												) : (
+													<div className="text-center py-12 text-gray-400">
+														<div className="text-6xl mb-4">
+															👻
+														</div>
+														<p className="text-lg">
+															Aucun ami pour
+															l'instant
+														</p>
+														<p className="text-sm">
+															Commencez par
+															ajouter quelqu'un !
+														</p>
+													</div>
+												)}
+											</div>
+										</div>
+									)}
+
+									{/* Demandes d'amis */}
+									{friendsSubTab === "requests" && (
+										<div className="space-y-6">
+											{/* Demandes reçues */}
+											<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+												<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
+													📥 Demandes reçues (
+													{
+														requests.filter(
+															(r) =>
+																r.type ===
+																"received"
+														).length
+													}
+													)
+												</h4>
+												<div className="space-y-3">
+													{requests.filter(
+														(r) =>
+															r.type ===
+															"received"
+													).length > 0 ? (
+														requests
+															.filter(
+																(r) =>
+																	r.type ===
+																	"received"
+															)
+															.map((r) => (
+																<div
+																	key={
+																		r.sender_id
+																	}
+																	className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+																>
+																	<div className="flex items-center gap-3">
+																		<img
+																			src={
+																				r.avatar ||
+																				"/avatars/avatar1.png"
+																			}
+																			alt={
+																				r.display_name
+																			}
+																			className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																		/>
+																		<span className="font-medium text-white">
+																			{
+																				r.display_name
+																			}
+																		</span>
+																	</div>
+																	<div className="flex gap-2">
+																		<button
+																			onClick={() =>
+																				acceptRequest(
+																					r.sender_id
+																				)
+																			}
+																			className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
+																		>
+																			✅
+																			Accepter
+																		</button>
+																		<button
+																			onClick={() =>
+																				rejectRequest(
+																					r.sender_id
+																				)
+																			}
+																			className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
+																		>
+																			❌
+																			Refuser
+																		</button>
+																		<button
+																			onClick={() =>
+																				blockUser(
+																					r.sender_id
+																				)
+																			}
+																			className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
+																		>
+																			🚫
+																			Bloquer
+																		</button>
+																	</div>
+																</div>
+															))
+													) : (
+														<div className="text-center py-8 text-gray-400">
+															<div className="text-4xl mb-2">
+																📪
+															</div>
+															<p>
+																Aucune demande
+																reçue
+															</p>
+														</div>
+													)}
+												</div>
+											</div>
+
+											{/* Demandes envoyées */}
+											<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+												<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
+													📤 Demandes envoyées (
+													{
+														requests.filter(
+															(r) =>
+																r.type ===
+																"sent"
+														).length
+													}
+													)
+												</h4>
+												<div className="space-y-3">
+													{requests.filter(
+														(r) => r.type === "sent"
+													).length > 0 ? (
+														requests
+															.filter(
+																(r) =>
+																	r.type ===
+																	"sent"
+															)
+															.map((r) => (
+																<div
+																	key={
+																		r.sender_id
+																	}
+																	className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+																>
+																	<div className="flex items-center gap-3">
+																		<img
+																			src={
+																				r.avatar ||
+																				"/avatars/avatar1.png"
+																			}
+																			alt={
+																				r.display_name
+																			}
+																			className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																		/>
+																		<span className="font-medium text-white">
+																			{
+																				r.display_name
+																			}
+																		</span>
+																	</div>
+																	<span className="text-yellow-400 font-medium flex items-center gap-2">
+																		<div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full"></div>
+																		En
+																		attente...
+																	</span>
+																</div>
+															))
+													) : (
+														<div className="text-center py-8 text-gray-400">
+															<div className="text-4xl mb-2">
+																📭
+															</div>
+															<p>
+																Aucune demande
+																envoyée
+															</p>
+														</div>
+													)}
+												</div>
+											</div>
+										</div>
+									)}
+
+									{/* Utilisateurs bloqués */}
+									{friendsSubTab === "blocked" && (
+										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400 mb-4">
+												🚫 Utilisateurs bloqués (
+												{blockedUsers.length})
+											</h4>
+											<div className="space-y-3">
+												{blockedUsers.length > 0 ? (
+													blockedUsers.map((u) => (
+														<div
+															key={u.id}
+															className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+														>
+															<div className="flex items-center gap-3">
+																<img
+																	src={
+																		u.avatar ||
+																		"/avatars/avatar1.png"
+																	}
+																	alt={
+																		u.display_name
+																	}
+																	className="w-12 h-12 rounded-full object-cover border-2 border-slate-500 opacity-50"
+																/>
+																<div>
+																	<span className="font-medium text-white">
+																		{
+																			u.display_name
+																		}
+																	</span>
+																	<div className="text-sm text-gray-400">
+																		Bloqué
+																		le{" "}
+																		{new Date(
+																			u.created_at
+																		).toLocaleDateString()}
+																	</div>
+																</div>
+															</div>
+															<button
+																onClick={() =>
+																	unblockUser(
+																		u.id
+																	)
+																}
+																className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
+															>
+																🔓 Débloquer
+															</button>
+														</div>
+													))
+												) : (
+													<div className="text-center py-8 text-gray-400">
+														<div className="text-4xl mb-2">
+															🕊️
+														</div>
+														<p>
+															Aucun utilisateur
+															bloqué
+														</p>
+														<p className="text-sm">
+															Vous êtes en paix
+															avec tout le monde !
+														</p>
+													</div>
+												)}
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+
+							{/* Paramètres du profil */}
+							{activeTab === "settings" && (
+								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
+									<div className="flex justify-between items-center mb-8">
+										<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">
+											⚙️ Paramètres du profil
+										</h3>
+										<button
+											onClick={() =>
+												setEditMode(!editMode)
+											}
+											className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+												editMode
+													? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
+													: "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
+											}`}
+										>
+											{editMode
+												? "❌ Annuler"
+												: "✏️ Modifier"}
+										</button>
+									</div>
+
+									{message && (
+										<div
+											className={`mb-6 p-4 rounded-lg border ${
+												isError
+													? "bg-red-600/20 border-red-500/30 text-red-300"
+													: "bg-green-600/20 border-green-500/30 text-green-300"
+											}`}
+										>
+											{message}
+										</div>
+									)}
+
+									{!editMode ? (
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+											<div className="space-y-6">
+												<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+													<h4 className="text-lg font-bold text-gray-200 mb-4">
+														Informations
+														personnelles
+													</h4>
+													<div className="space-y-3">
+														<div>
+															<span className="text-gray-400">
+																Email :
+															</span>
+															<span className="text-white ml-2 font-medium">
+																{user.email}
+															</span>
+														</div>
+														<div>
+															<span className="text-gray-400">
+																Pseudo :
+															</span>
+															<span className="text-white ml-2 font-medium">
+																{
+																	user.display_name
+																}
+															</span>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+												<h4 className="text-lg font-bold text-gray-200 mb-4">
+													Avatar actuel
+												</h4>
+												<div className="flex justify-center">
+													<img
+														src={
+															user.avatar ||
+															"/avatars/avatar1.png"
+														}
+														alt="Avatar actuel"
+														className="w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover"
+													/>
+												</div>
+											</div>
+										</div>
+									) : (
+										<form
+											onSubmit={handleSubmit}
+											className="space-y-8"
+										>
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+												<div className="space-y-6">
+													<div>
+														<label className="block text-sm font-medium text-gray-300 mb-2">
+															Email
+														</label>
+														<input
+															type="email"
+															value={email}
+															onChange={(e) =>
+																setEmail(
+																	e.target
+																		.value
+																)
+															}
+															className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+															placeholder="votre@email.com"
+														/>
+													</div>
+
+													<div>
+														<label className="block text-sm font-medium text-gray-300 mb-2">
+															Pseudo
+														</label>
+														<input
+															type="text"
+															value={displayName}
+															onChange={(e) =>
+																setDisplayName(
+																	e.target
+																		.value
+																)
+															}
+															className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+															placeholder="Votre pseudo"
+														/>
+													</div>
+
+													<div>
+														<label className="block text-sm font-medium text-gray-300 mb-2">
+															Nouveau mot de passe
+														</label>
+														<input
+															type="password"
+															value={password}
+															onChange={(e) =>
+																setPassword(
+																	e.target
+																		.value
+																)
+															}
+															className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+															placeholder="••••••••"
+														/>
+													</div>
+												</div>
+
+												<div>
+													<label className="block text-sm font-medium text-gray-300 mb-4">
+														Choisir un avatar
+													</label>
+													<div className="grid grid-cols-5 gap-3">
+														{avatars.map(
+															(avatarUrl) => (
+																<button
+																	key={
+																		avatarUrl
+																	}
+																	type="button"
+																	onClick={() =>
+																		setAvatar(
+																			avatarUrl
+																		)
+																	}
+																	className={`relative rounded-full overflow-hidden transition-all duration-300 ${
+																		avatar ===
+																		avatarUrl
+																			? "ring-4 ring-purple-500 scale-110"
+																			: "hover:scale-105 opacity-70 hover:opacity-100"
+																	}`}
+																>
+																	<img
+																		src={
+																			avatarUrl
+																		}
+																		alt="Avatar"
+																		className="w-16 h-16 object-cover"
+																	/>
+																</button>
+															)
+														)}
+													</div>
+
+													<div className="mt-6 flex justify-center">
+														<div className="text-center">
+															<p className="text-gray-400 text-sm mb-2">
+																Aperçu
+															</p>
+															<img
+																src={avatar}
+																alt="Aperçu avatar"
+																className="w-24 h-24 rounded-full border-4 border-purple-500/50 object-cover mx-auto"
+															/>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<div className="flex gap-4 justify-center">
+												<button
+													type="submit"
+													className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+												>
+													💾 Sauvegarder
+												</button>
+												<button
+													type="button"
+													onClick={() =>
+														setEditMode(false)
+													}
+													className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+												>
+													❌ Annuler
+												</button>
+											</div>
+										</form>
+									)}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+		</>
+	);
 }

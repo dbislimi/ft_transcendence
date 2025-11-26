@@ -38,7 +38,7 @@ export default function RulesScreen({ onContinue, onBack }: RulesScreenProps) {
 	};
 	return (
 		<BackgroundSurface game="bombparty">
-		<SpaceBackground />
+			<SpaceBackground />
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl relative">
 					<div className="flex items-center justify-between mb-6">
