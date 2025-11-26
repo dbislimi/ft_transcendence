@@ -3,9 +3,9 @@ services:
     build: ./nginx
     container_name: nginx
     ports:
-      - "443:443"
-      - "80:80"
-      - "8080:8080"
+      - "8443:443"
+      # - "8000:80"
+      # - "9090:8080"
     volumes:
       - ./certs:/etc/nginx/ssl:ro
     environment:

@@ -47,7 +47,7 @@ export function useBombPartyGame(user: any) {
   const [bonusNotification, setBonusNotification] = useState<{ bonusKey: BonusKey; playerName: string } | null>(null);
 
   const gamePhase = useBombPartyStore((state) => state.gamePhase);
-  const playerId = useBombPartyStore ((state) => state.connection.playerId);
+  const playerId = useBombPartyStore((state) => state.connection.playerId);
   const setGamePhase = useBombPartyStore((state) => state.setGamePhase);
   const storeGameState = useBombPartyStore((state) => state.gameState);
   const gameMode = useBombPartyStore((state) => state.gameMode);
@@ -59,15 +59,15 @@ export function useBombPartyGame(user: any) {
   }, [storeGameState, gameMode, gameState]);
 
   const previousTurnStartedAtRef = useRef<number | undefined>(undefined);
-  
+
   useEffect(() => {
     if (gameMode === 'multiplayer' && gameState.phase === 'TURN_ACTIVE' && gameState.turnStartedAt) {
       const newTurnStartedAt = gameState.turnStartedAt;
       const previousTurnStartedAt = previousTurnStartedAtRef.current;
-      
+
       const isNewTurn = previousTurnStartedAt !== undefined && previousTurnStartedAt !== newTurnStartedAt;
       const needsInitialization = turnStartTime === 0 || turnStartTime !== newTurnStartedAt;
-      
+
       if (needsInitialization) {
         console.log('[useBombPartyGame] 🎯 Mise à jour de turnStartTime', {
           turnStartedAt: newTurnStartedAt,
@@ -79,10 +79,10 @@ export function useBombPartyGame(user: any) {
           diff: Date.now() - newTurnStartedAt,
           currentPlayer: gameState.players[gameState.currentPlayerIndex]?.name
         });
-        
+
         setTurnStartTime(newTurnStartedAt);
         previousTurnStartedAtRef.current = newTurnStartedAt;
-        
+
         const turnDuration = gameState.turnDurationMs || (gameState.baseTurnSeconds * 1000) || 12000;
         if (turnDuration > 0) {
           console.log('[useBombPartyGame] Démarrage du timer', {
@@ -96,7 +96,7 @@ export function useBombPartyGame(user: any) {
         }
       }
     }
-    
+
     if (gameMode === 'local' && gameState.phase === 'TURN_ACTIVE') {
       if (turnStartTime === 0) {
         const now = Date.now();
@@ -107,10 +107,10 @@ export function useBombPartyGame(user: any) {
         setTurnStartTime(now);
       }
     }
-    
+
     if (gameState.phase !== 'TURN_ACTIVE') {
       previousTurnStartedAtRef.current = undefined;
-      
+
       if (timer.isTimerActive()) {
         console.log('[useBombPartyGame] Arrêt du timer - phase changée', {
           oldPhase: 'TURN_ACTIVE',
@@ -118,7 +118,7 @@ export function useBombPartyGame(user: any) {
         });
         timer.stop();
       }
-      
+
       if (turnStartTime > 0 && (gameState.phase === 'RESOLVE' || gameState.phase === 'GAME_OVER')) {
         console.log('[useBombPartyGame] Phase changée, conservation de turnStartTime pour traçabilité', {
           oldPhase: 'TURN_ACTIVE',
@@ -143,34 +143,34 @@ export function useBombPartyGame(user: any) {
       };
 
       const stats = bombPartyStatsService.calculateGameStats(
-        gameData, 
-        playerId, 
+        gameData,
+        playerId,
         user?.id || 'local'
       );
-      
+
       const player = gameState.players.find(p => p.id === playerId);
       const playerName = player?.name || `Guest_${playerId}`;
-      
+
       console.log('[useBombPartyGame] Sauvegarde stats:', {
         userId: user?.id,
         userObject: user,
         hasToken: !!localStorage.getItem('token'),
         stats: stats
       });
-      
+
       bombPartyStatsService.saveGameStats({
         ...stats,
         playerName: playerName
       }).catch(error => {
         console.error('Erreur sauvegarde statistiques:', error);
       });
-      
+
       const redirectTimer = setTimeout(() => {
         console.log("[useBombPartyGame] Partie terminée, redirection vers l'écran d'accueil");
         alert(t('bombParty.gameOver.redirectToMenu', 'Partie terminée. Retour à l\'écran d\'accueil...'));
         setGamePhase('RULES');
       }, 5000);
-      
+
       return () => clearTimeout(redirectTimer);
     }
   }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords, setGamePhase, user, t]);
@@ -184,7 +184,7 @@ export function useBombPartyGame(user: any) {
       turnStartTime,
       serverTurnStart: gameState.turnStartedAt
     });
-    
+
     if (turnStartTime === 0) {
       console.error('[useBombPartyGame] ⚠️ ERREUR: turnStartTime est 0 lors de la soumission!', {
         gameMode,
@@ -213,47 +213,23 @@ export function useBombPartyGame(user: any) {
       });
       setTurnStartTime(gameState.turnStartedAt);
     }
-    
+
     setWordJustSubmitted(true);
     setTurnInProgress(true);
-    
+
     const responseTime = turnStartTime > 0 ? Date.now() - turnStartTime : 0;
     bombPartyStatsService.recordTrigramAttempt(gameState.currentSyllable, true, responseTime);
 
     if (gameMode === 'local') {
       const msTaken = Date.now() - turnStartTime;
       const result = engine.submitWord(word, msTaken);
-      
+
       if (result.ok) {
-        engine.resolveTurn(true, false);
-        const newState = engine.getState();
-        setGameState(newState);
-        
-        if (!engine.isGameOver()) {
-          setTimeout(() => {
-            const updatedState = engine.getState();
-            const newTurnStart = updatedState.turnStartedAt || Date.now();
-            const newTurnDuration = updatedState.turnDurationMs || 15000;
-            setTurnStartTime(newTurnStart);
-            setGameState(updatedState);
-            
-            if (timer && newTurnStart && newTurnDuration) {
-              timer.startTurn(newTurnStart, newTurnDuration, Date.now());
-            }
-            
-            setTurnInProgress(false);
-            setWordJustSubmitted(false);
-          }, 500);
-        }
-      } else {
-        if (result.consumedDoubleChance) {
-          setTurnInProgress(false);
-          setWordJustSubmitted(false);
-        } else {
-          engine.resolveTurn(false, false);
+        (async () => {
+          await engine.resolveTurn(true, false);
           const newState = engine.getState();
           setGameState(newState);
-          
+
           if (!engine.isGameOver()) {
             setTimeout(() => {
               const updatedState = engine.getState();
@@ -261,15 +237,43 @@ export function useBombPartyGame(user: any) {
               const newTurnDuration = updatedState.turnDurationMs || 15000;
               setTurnStartTime(newTurnStart);
               setGameState(updatedState);
-              
+
               if (timer && newTurnStart && newTurnDuration) {
                 timer.startTurn(newTurnStart, newTurnDuration, Date.now());
               }
-              
+
               setTurnInProgress(false);
               setWordJustSubmitted(false);
             }, 500);
           }
+        })();
+      } else {
+        if (result.consumedDoubleChance) {
+          setTurnInProgress(false);
+          setWordJustSubmitted(false);
+        } else {
+          (async () => {
+            await engine.resolveTurn(false, false);
+            const newState = engine.getState();
+            setGameState(newState);
+
+            if (!engine.isGameOver()) {
+              setTimeout(() => {
+                const updatedState = engine.getState();
+                const newTurnStart = updatedState.turnStartedAt || Date.now();
+                const newTurnDuration = updatedState.turnDurationMs || 15000;
+                setTurnStartTime(newTurnStart);
+                setGameState(updatedState);
+
+                if (timer && newTurnStart && newTurnDuration) {
+                  timer.startTurn(newTurnStart, newTurnDuration, Date.now());
+                }
+
+                setTurnInProgress(false);
+                setWordJustSubmitted(false);
+              }, 500);
+            }
+          })();
         }
       }
     } else {
@@ -282,13 +286,13 @@ export function useBombPartyGame(user: any) {
         setTurnInProgress(false);
         return;
       }
-      
+
       let msTaken = 0;
       const clientNow = Date.now();
-      
+
       if (turnStartTime > 0) {
         msTaken = clientNow - turnStartTime;
-        
+
         if (gameState.turnStartedAt && Math.abs(turnStartTime - gameState.turnStartedAt) > 1000) {
           console.warn('[useBombPartyGame] ⚠️ turnStartTime désynchronisé du serveur, utilisation du temps serveur', {
             turnStartTime,
@@ -312,7 +316,7 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = 0;
       }
-      
+
       if (msTaken < 0) {
         console.error('[useBombPartyGame] ❌ msTaken négatif détecté, correction à 0', {
           msTaken,
@@ -322,7 +326,7 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = 0;
       }
-      
+
       if (msTaken > gameState.turnDurationMs + 2000) {
         console.warn('[useBombPartyGame] ⚠️ msTaken suspect (trop grand), limitation', {
           msTaken,
@@ -332,7 +336,7 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = Math.min(msTaken, gameState.turnDurationMs + 1000);
       }
-      
+
       console.log('[useBombPartyGame] ✅ Submitting word in multiplayer', {
         word,
         msTaken,
@@ -344,7 +348,7 @@ export function useBombPartyGame(user: any) {
         playerId,
         turnDurationMs: gameState.turnDurationMs
       });
-      
+
       try {
         bombPartyService.submitWord(word, msTaken);
         console.log('[useBombPartyGame] Word submitted to server');
@@ -364,9 +368,9 @@ export function useBombPartyGame(user: any) {
       if (result.ok) {
         const newState = engine.getState();
         setGameState(newState);
-        
+
         setBonusNotification({ bonusKey, playerName: currentPlayer.name });
-        
+
         if (bonusKey === 'plus5sec' && result.meta?.extendMs) {
           timer.extendTurn(result.meta.extendMs);
           setTimerFlash(true);
@@ -386,9 +390,9 @@ export function useBombPartyGame(user: any) {
 
   const startGame = useCallback((config: GameConfig, gameMode: 'local' | 'multiplayer', roomId: string | null) => {
     console.log('startGame appelé avec config:', config);
-    
+
     setGameStartTime(Date.now());
-    
+
     if (gameMode === 'local') {
       // recupere le nom user si log sinon on met un 
       const player1Name = user?.display_name || user?.name || undefined;
@@ -422,7 +426,7 @@ export function useBombPartyGame(user: any) {
     }
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const isTurn = currentPlayer && currentPlayer.id === playerId;
-    
+
     return isTurn;
   }, [gameState.players, gameState.currentPlayerIndex, gameState.phase]);
 

@@ -73,9 +73,14 @@ export default defineConfig({
   },
   server: {
     https: getHttpsOptions(),
+    hmr: {
+      port: 8443,
+      protocol: 'wss',
+      clientPort: 8443
+    },
     proxy: {
       '/bombparty/ws': {
-        target: `wss://${HOSTNAME}:3001`,
+        target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
         ws: true,
         changeOrigin: true,
         secure: false

@@ -43,7 +43,7 @@ const fastify = Fastify({
 
 async function main() {
 	await fastify.register(cors, {
-		origin: [`https://${HOSTNAME}:5173`, `https://${HOSTNAME}`],
+		origin: [`https://${HOSTNAME}:5173`, `https://${HOSTNAME}`, `https://${HOSTNAME}:8443`],
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		exposedHeaders: ["Content-Length"],

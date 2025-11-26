@@ -7,7 +7,7 @@ const HOSTNAME = import.meta.env.VITE_HOSTNAME || window.location.hostname;
 
 export const getWebSocketHost = (): string => {
     const isVitePort = window.location.port === '5173';
-    return isVitePort ? HOSTNAME : window.location.hostname;
+    return isVitePort ? `${HOSTNAME}:8443` : window.location.host;
 };
 
 export const API_ENDPOINTS = {

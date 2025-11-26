@@ -26,7 +26,7 @@ export interface BombPartyHooksState {
   infoOpen: boolean;
   playerId: string | null;
   roomId: string | null;
-  lobbyPlayers: Array<{id: string; name: string}>;
+  lobbyPlayers: Array<{ id: string; name: string }>;
   isHost: boolean;
   lobbyMaxPlayers: number;
   isAuthenticating: boolean;
@@ -48,7 +48,7 @@ export interface BombPartyHooksActions {
   setInfoOpen: (open: boolean) => void;
   setPlayerId: (id: string | null) => void;
   setRoomId: (id: string | null) => void;
-  setLobbyPlayers: (players: Array<{id: string; name: string}>) => void;
+  setLobbyPlayers: (players: Array<{ id: string; name: string }>) => void;
   setIsHost: (isHost: boolean) => void;
   setLobbyMaxPlayers: (max: number) => void;
   setIsAuthenticating: (auth: boolean) => void;
@@ -58,10 +58,10 @@ export interface BombPartyHooksActions {
 export function useBombPartyHooks(user: any) {
   const gameHook = useBombPartyGame(user);
   const lobbyHook = useBombPartyLobby();
-  
+
   const countdownIntervalRef = useRef<number | null>(null);
   const gracePeriodTimerRef = useRef<number | null>(null);
-  
+
   const wsHook = useBombPartyWebSocket(user, {
     timer: gameHook.timer,
     onGameStateUpdate: (gameState) => {
@@ -70,7 +70,7 @@ export function useBombPartyHooks(user: any) {
     onTurnStart: (turnStartedAt, turnDurationMs) => {
       gameHook.setTurnStartTime(turnStartedAt);
       gameHook.setTimerGracePeriod(true);
-      
+
       if (gracePeriodTimerRef.current) {
         timerService.clearTimeout(gracePeriodTimerRef.current);
       }
@@ -87,17 +87,17 @@ export function useBombPartyHooks(user: any) {
   const countdown = useBombPartyStore((state: BombPartyStore) => state.countdown);
   const profilePlayerId = useBombPartyStore((state: BombPartyStore) => state.ui.profilePlayerId);
   const infoOpen = useBombPartyStore((state: BombPartyStore) => state.ui.infoOpen);
-  
+
   const setGamePhase = useBombPartyStore((state: BombPartyStore) => state.setGamePhase);
   const setGameMode = useBombPartyStore((state: BombPartyStore) => state.setGameMode);
   const setMultiplayerType = useBombPartyStore((state: BombPartyStore) => state.setMultiplayerType);
   const setCountdown = useBombPartyStore((state: BombPartyStore) => state.setCountdown);
   const setProfilePlayerId = useBombPartyStore((state: BombPartyStore) => state.setProfilePlayerId);
   const setInfoOpen = useBombPartyStore((state: BombPartyStore) => state.setInfoOpen);
-  
+
   useEffect(() => {
     const storeRoomId = useBombPartyStore.getState().connection.roomId;
-    
+
     if (gameMode === 'multiplayer' && storeRoomId && gamePhase === 'RULES') {
       setGamePhase('GAME');
     }
@@ -154,7 +154,7 @@ export function useBombPartyHooks(user: any) {
 
   const startGame = useCallback((config: GameConfig) => {
     gameHook.setGameStartTime(Date.now());
-    
+
     if (gameMode === 'local') {
       gameHook.startGame(config, 'local', null);
       setGamePhase('GAME');
@@ -167,14 +167,14 @@ export function useBombPartyHooks(user: any) {
     }
   }, [gameHook, wsHook, gameMode, setGamePhase, setCountdown]);
 
-    const handleStartGame = useCallback(() => {
+  const handleStartGame = useCallback(() => {
     lobbyHook.handleStartGame(wsHook.roomId, lobbyHook.isHost, lobbyHook.lobbyPlayers);
   }, [lobbyHook, wsHook]);
 
   const handleWordSubmit = useCallback((word: string) => {
     gameHook.handleWordSubmit(word, gameMode, wsHook.roomId, wsHook.playerId);
   }, [gameHook, wsHook, gameMode]);
-  
+
   const handleActivateBonus = useCallback((bonusKey: BonusKey) => {
     return gameHook.handleActivateBonus(bonusKey, gameMode, wsHook.roomId, wsHook.playerId);
   }, [gameHook, wsHook, gameMode]);
@@ -188,7 +188,7 @@ export function useBombPartyHooks(user: any) {
       timerService.clearTimeout(gracePeriodTimerRef.current);
       gracePeriodTimerRef.current = null;
     }
-    
+
     gameHook.resetGame();
     setGamePhase('RULES');
     setCountdown(0);
@@ -201,25 +201,25 @@ export function useBombPartyHooks(user: any) {
     setMultiplayerType(null);
   }, [gameHook, wsHook, lobbyHook, setGameMode, setCountdown, setGamePhase, setMultiplayerType]);
 
-    const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1, multiplayerTypeParam?: 'quickmatch') => {
+  const handleModeSelect = useCallback((mode: 'local' | 'multiplayer', playersCount: number = 1, multiplayerTypeParam?: 'quickmatch') => {
     if (countdownIntervalRef.current) {
       timerService.clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
-    
+
     setGameMode(mode);
     if (mode === 'local') {
       setMultiplayerType(null);
       const config = { livesPerPlayer: 3, turnDurationMs: 15000, playersCount };
-      
+
       setGamePhase('GAME');
       setCountdown(3);
-      
+
       let count = 3;
       countdownIntervalRef.current = timerService.setInterval(() => {
         count--;
         setCountdown(count);
-        
+
         if (count === 0) {
           if (countdownIntervalRef.current) {
             timerService.clearInterval(countdownIntervalRef.current);
@@ -227,16 +227,19 @@ export function useBombPartyHooks(user: any) {
           }
           setCountdown(0);
           gameHook.startGame(config, 'local', null);
-          gameHook.engine.startTurn();
-          const engineState = gameHook.engine.getState();
-          gameHook.setGameState(engineState);
-          const turnStart = engineState.turnStartedAt || Date.now();
-          const turnDuration = engineState.turnDurationMs || 15000;
-          gameHook.setTurnStartTime(turnStart);
-          
-          if (gameHook.timer && turnStart && turnDuration) {
-            gameHook.timer.startTurn(turnStart, turnDuration, Date.now());
-          }
+
+          (async () => {
+            await gameHook.engine.startTurn();
+            const engineState = gameHook.engine.getState();
+            gameHook.setGameState(engineState);
+            const turnStart = engineState.turnStartedAt || Date.now();
+            const turnDuration = engineState.turnDurationMs || 15000;
+            gameHook.setTurnStartTime(turnStart);
+
+            if (gameHook.timer && turnStart && turnDuration) {
+              gameHook.timer.startTurn(turnStart, turnDuration, Date.now());
+            }
+          })();
         }
       }, 1000);
     } else {
