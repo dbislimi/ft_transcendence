@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
 import { useUser } from '../contexts/UserContext';
@@ -28,8 +28,58 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
     "/avatars/avatar7.png", "/avatars/avatar8.png", "/avatars/avatar9.png",
     "/avatars/avatar10.png"
   ];
-  
+
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || "/avatars/avatar1.png");
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetch2FAStatus = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch('http://localhost:3001/reglages', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setIs2FAEnabled(data.twoFAEnabled);
+          }
+        } catch (error) {
+          console.error('Error fetching 2FA status:', error);
+        }
+      };
+      fetch2FAStatus();
+    }
+  }, [isOpen]);
+
+  const toggle2FA = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/reglages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ enable2fa: !is2FAEnabled })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setIs2FAEnabled(data.twoFAEnabled);
+        notify({
+          variant: 'success',
+          message: `Double authentification ${data.twoFAEnabled ? 'activée' : 'désactivée'}`
+        });
+      } else {
+        notify({ variant: 'error', message: 'Erreur lors de la modification de la 2FA' });
+      }
+    } catch (error) {
+      notify({ variant: 'error', message: 'Erreur de connexion' });
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -86,7 +136,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -113,9 +163,9 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
             // Mode Lecture
             <div className="space-y-8">
               <div className="flex flex-col items-center justify-center space-y-4">
-                <img 
-                  src={user?.avatar || "/avatars/avatar1.png"} 
-                  alt="Profile" 
+                <img
+                  src={user?.avatar || "/avatars/avatar1.png"}
+                  alt="Profile"
                   className="w-32 h-32 rounded-full border-4 border-blue-500/50 object-cover"
                 />
                 <h3 className="text-2xl font-bold text-white">{user?.display_name}</h3>
@@ -158,9 +208,9 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                 <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-300">Avatar</label>
                   <div className="flex justify-center mb-4">
-                    <img 
-                      src={selectedAvatar} 
-                      alt="Selected Avatar" 
+                    <img
+                      src={selectedAvatar}
+                      alt="Selected Avatar"
                       className="w-24 h-24 rounded-full border-4 border-blue-500 object-cover"
                     />
                   </div>
@@ -170,9 +220,8 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                         key={av}
                         type="button"
                         onClick={() => setSelectedAvatar(av)}
-                        className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all ${
-                          selectedAvatar === av ? 'border-blue-500 scale-110' : 'border-transparent hover:border-gray-500'
-                        }`}
+                        className={`relative rounded-full overflow-hidden aspect-square border-2 transition-all ${selectedAvatar === av ? 'border-blue-500 scale-110' : 'border-transparent hover:border-gray-500'
+                          }`}
                       >
                         <img src={av} alt="Avatar choice" className="w-full h-full object-cover" />
                       </button>
@@ -201,6 +250,25 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Double Authentification (2FA)</label>
+                    <div className="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-600 rounded-lg">
+                      <span className="text-sm text-gray-400">
+                        {is2FAEnabled ? 'Activée' : 'Désactivée'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={toggle2FA}
+                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${is2FAEnabled
+                          ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                          : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                          }`}
+                      >
+                        {is2FAEnabled ? 'Désactiver' : 'Activer'}
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="pt-4 border-t border-gray-700/50">
                     <h4 className="text-sm font-semibold text-blue-300 mb-3">Changer le mot de passe</h4>
                     <div className="space-y-3">
@@ -208,21 +276,21 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                         type="password"
                         placeholder="Mot de passe actuel (si changement)"
                         value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
                       />
                       <input
                         type="password"
                         placeholder="Nouveau mot de passe"
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
                       />
                       <input
                         type="password"
                         placeholder="Confirmer le nouveau mot de passe"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
                       />
                     </div>

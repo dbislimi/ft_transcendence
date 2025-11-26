@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, any, any, any>) {
 
-    fastify.register(fastifyOauth2, {
+  fastify.register(fastifyOauth2, {
     name: 'transcendance',
     credentials: {
       client: {
@@ -22,13 +22,13 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
     startRedirectPath: '/auth/google',
     callbackUri: 'http://localhost:3001/auth/google/callback',
     scope: ['profile', 'email'],
-    });
+  });
 
-    fastify.get('/auth/google/callback', async function (req, reply) {
-      if (!req.query.code) {
-        return reply.send('Erreur : code manquant depuis Google');
-      }
-    
+  fastify.get('/auth/google/callback', async function (req, reply) {
+    if (!req.query.code) {
+      return reply.send('Erreur : code manquant depuis Google');
+    }
+
     const result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
 
     const userInfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -54,9 +54,9 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
           [name, email, null],
           function (err) {
             if (err)
-                reject(err);
-            else 
-                resolve(this.lastID);
+              reject(err);
+            else
+              resolve(this.lastID);
           }
         );
       });
@@ -82,8 +82,8 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
         return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
       }
 
-      return reply.redirect(`http://localhost:5173?require2fa=${user.twoFAEnabled}`);
-      }
+      return reply.redirect(`http://localhost:5173/google-callback?require2fa=${user.twoFAEnabled}&userId=${user.id}`);
+    }
 
     const jwtToken = jwt.sign(
       { id: user.id, name: user.name, email },
@@ -91,7 +91,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, a
       { expiresIn: '2h' }
     );
 
-    return reply.redirect(`http://localhost:5173?token=${jwtToken}`);
-    });
+    return reply.redirect(`http://localhost:5173/google-callback?token=${jwtToken}`);
+  });
 });
 

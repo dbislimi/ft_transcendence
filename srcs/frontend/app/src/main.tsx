@@ -33,6 +33,7 @@ const router = createBrowserRouter([
       { path: "/profileChat", element: <pages.ProfileChat /> },
       { path: "/about", element: <pages.About /> },
       { path: "/auth", element: <pages.auth /> },
+      { path: "/google-callback", element: <pages.GoogleCallback /> },
       { path: "/settings", element: <pages.Settings /> },
       { path: "*", element: <pages.NotFoundPage /> },
     ],

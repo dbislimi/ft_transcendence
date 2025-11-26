@@ -1,0 +1,42 @@
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+export default function GoogleCallback() {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
+    useEffect(() => {
+        const token = searchParams.get("token");
+        const require2fa = searchParams.get("require2fa");
+        const userId = searchParams.get("userId");
+
+        if (require2fa === "1" && userId) {
+            localStorage.setItem("for2FaUserId", userId);
+            navigate("/auth");
+        } else if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userData = {
+                    id: payload.id,
+                    name: payload.name,
+                    email: payload.email
+                };
+                login(userData, token);
+                navigate("/");
+            } catch (e) {
+                console.error("Failed to decode token", e);
+                navigate("/Connection");
+            }
+        } else {
+            navigate("/Connection");
+        }
+    }, [searchParams, navigate, login]);
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    );
+}

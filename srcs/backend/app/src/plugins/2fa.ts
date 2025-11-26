@@ -34,7 +34,7 @@ export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
 
   fastify.decorate('send2faEmail', async (email: string, otp: string) => {
     const message = {
-      from: '"2FA Service" <Transcendance06000@gmail.com>',
+      from: '"code d\'authentification" <Transcendance06000@gmail.com>',
       to: email,
       subject: 'Votre code de verification',
       text: `Votre code est : ${otp}`,

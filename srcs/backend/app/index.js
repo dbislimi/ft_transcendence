@@ -28,6 +28,7 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
 			losses INTEGER DEFAULT 0,
 			online INTEGER DEFAULT 0,
 			twoFAEnabled INTEGER DEFAULT 0,
+			twoFAOtp TEXT,
             tournaments_won INTEGER DEFAULT 0
 		);`);
 
