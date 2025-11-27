@@ -41,10 +41,9 @@ export default function Connection() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-      console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
         const data = await response.json();
+        console.log("Response /login:", { status: response.status, data });
 
         if (data.require2fa) {
           if (data.userId) {

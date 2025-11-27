@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -188,4 +189,4 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
   }, 15000);
 };
 
-export default wsFriends;
+export default fp(wsFriends);

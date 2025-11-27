@@ -10,26 +10,30 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 
 	fastify.get("/me", async (request, reply) => {
 		const decoded = verifyToken(request, reply);
-		if (!decoded) return;
+		if (!decoded) {
+			return reply.code(401).send({ error: "Token invalide ou manquant" });
+		}
 		await dbRun("UPDATE users SET online = 1 WHERE id = ?", [decoded.id]);
 		const user = await dbGet(
-			"SELECT id, display_name, email, avatar, online, wins, losses, preferred_side, paddle_color, ball_color FROM users WHERE id = ?",
+			"SELECT id, name, display_name, email, avatar, online, wins, losses FROM users WHERE id = ?",
 			[decoded.id]
 		);
 		if (!user)
 			return reply.code(404).send({ error: "Utilisateur introuvable" });
 		if (!user.avatar) user.avatar = "/avatars/avatar1.webp";
 		user.cosmetics = {
-			preferredSide: user.preferred_side || "left",
-			paddleColor: user.paddle_color || "White",
-			ballColor: user.ball_color || "Rose",
+			preferredSide: "left",
+			paddleColor: "White",
+			ballColor: "White",
 		};
 		return reply.send(user);
 	});
 
 	fastify.put("/me", async (request, reply) => {
 		const decoded = verifyToken(request, reply);
-		if (!decoded) return;
+		if (!decoded) {
+			return reply.code(401).send({ error: "Token invalide ou manquant" });
+		}
 		const {
 			email,
 			password,

@@ -68,14 +68,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const logoutUser = async (currentToken?: string | null) => {
 		if (currentToken) {
 			try {
-				await fetch(`${API_BASE_URL}/logout`, {
+				await fetch(`${API_BASE_URL}/api/logout`, {
 					headers: { Authorization: `Bearer ${token}` }
 				});
 			} catch (error) {
 				const blob = new Blob([JSON.stringify({})], {
 					type: "application/json",
 				});
-				navigator.sendBeacon(`${API_BASE_URL}/logout`, blob);
+				navigator.sendBeacon(`${API_BASE_URL}/api/logout`, blob);
 			}
 		}
 	};
@@ -170,7 +170,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 		try {
-			const res = await fetch(`${API_BASE_URL}/me`, {
+			const res = await fetch(`${API_BASE_URL}/api/me`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -201,7 +201,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	useEffect(() => {
 		const handleBeforeUnload = () => {
 			if (token) {
-				const blob = new Blob([JSON.stringify({})], {
+				const blob = new Blob([JSON.stringify({ token })], {
 					type: "application/json",
 				});
 				navigator.sendBeacon(`${API_BASE_URL}/api/logout`, blob);

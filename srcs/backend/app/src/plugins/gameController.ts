@@ -22,27 +22,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			const client = fastify.getClient(req, socket);
 			if (!client) return socket.close();
 
-			if (!client.cosmetics) {
-				fastify.db.get(
-					`SELECT preferred_side, paddle_color, ball_color FROM users WHERE id = ?`,
-					[client.id],
-					(err: any, row: any) => {
-						if (!err && row) {
-							client.cosmetics = {
-								preferredSide: row.preferred_side || "left",
-								paddleColor: row.paddle_color || "White",
-								ballColor: row.ball_color || "White",
-							};
-						} else {
-							client.cosmetics = {
-								preferredSide: "left",
-								paddleColor: "White",
-								ballColor: "White",
-							};
-						}
-					}
-				);
-			}
+		if (!client.cosmetics) {
+			// Use default cosmetics for now (cosmetics columns don't exist in DB yet)
+			client.cosmetics = {
+				preferredSide: "left",
+				paddleColor: "White",
+				ballColor: "White",
+			};
+		}
 
 			if (client.rejoinTimer) {
 				console.log(
