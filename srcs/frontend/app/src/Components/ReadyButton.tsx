@@ -5,6 +5,7 @@ interface ReadyButtonProps {
 	remaining: number;
 	selfReady: boolean;
 	opponentReady: boolean;
+	opponentName: string;
 	onReady: () => void;
 }
 
@@ -12,13 +13,14 @@ export function ReadyButton({
 	remaining,
 	selfReady,
 	opponentReady,
+	opponentName,
 	onReady,
 }: ReadyButtonProps) {
 	const { t } = useTranslation();
 
 	return (
 		<div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-			<div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full mx-4">
+			<div className="bg-linear-to-br from-gray-900 to-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full mx-4">
 				<div className="text-center mb-6">
 					<div className="text-6xl font-bold text-cyan-400 mb-2 font-mono">
 						{remaining}
@@ -63,7 +65,7 @@ export function ReadyButton({
 								}`}
 							/>
 							<span className="text-white font-medium">
-								{t("readyPhase.opponent", "Opponent")}
+								{opponentName}
 							</span>
 						</div>
 						<span

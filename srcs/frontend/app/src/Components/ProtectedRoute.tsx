@@ -1,4 +1,4 @@
-import { useUser } from "../contexts/UserContext";
+import { useUser } from "../context/UserContext";
 import { Navigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 

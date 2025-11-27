@@ -8,9 +8,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export default fp(async function GoogleAuth(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 
-  fastify.register(fastifyOauth2, {
+    fastify.register(fastifyOauth2, {
     name: 'transcendance',
     credentials: {
       client: {

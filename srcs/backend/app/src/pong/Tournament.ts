@@ -15,17 +15,19 @@ class Node {
 	depth?: number;
 	bracketId?: number;
 
-	constructor(N: { p?: Client; left?: Node; right?: Node; depth?: number; id?: number }) {
+	constructor(N: {
+		p?: Client;
+		left?: Node;
+		right?: Node;
+		depth?: number;
+		id?: number;
+	}) {
 		if (N === undefined) return;
 		this.winner = N.p;
 		this.left = N.left;
 		this.right = N.right;
 		this.depth = N.depth;
 		this.bracketId = N.id;
-	}
-
-	isLeaf() {
-		return !this.left && !this.right;
 	}
 }
 
@@ -44,10 +46,18 @@ export default class Tournament {
 	nodeId: number = 0;
 	onEnd: () => void;
 	initialDepth?: number;
-	private startCountdown: (game: Game, clients: (Client | undefined)[]) => void;
+	private startCountdown: (
+		game: Game,
+		clients: (Client | undefined)[]
+	) => void;
 
 	private cancelCountdown: (game: Game) => void;
 	private fastify: any;
+	private options?: {
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	};
 
 	constructor({
 		rooms,
@@ -59,6 +69,7 @@ export default class Tournament {
 		cancelCountdown,
 		setRoom,
 		fastify,
+		options,
 	}: {
 		rooms: WeakMap<Client, Game>;
 		id: string;
@@ -69,6 +80,11 @@ export default class Tournament {
 		cancelCountdown: (game: Game) => void;
 		setRoom: (client: Client, game: Game) => void;
 		fastify?: any;
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		};
 	}) {
 		this.rooms = rooms;
 		this.password = password;
@@ -79,18 +95,100 @@ export default class Tournament {
 		this.cancelCountdown = cancelCountdown;
 		this.setRoom = setRoom;
 		this.fastify = fastify;
+		this.options = options;
+	}
+
+	private sendRejoinPrompt(client: Client, timeout: number = 10) {
+		client.socket?.send(
+			JSON.stringify({
+				event: "tournament_rejoin_prompt",
+				to: "tournament_rejoin_prompt",
+				body: { tournamentId: this.id, timeout },
+			})
+		);
+	}
+
+	private scheduleRejoinTimeout(
+		client: Client,
+		durationMs: number,
+		onTimeout: () => void
+	) {
+		if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
+		client.rejoinTimer = setTimeout(() => {
+			client.rejoinTimer = undefined;
+			onTimeout();
+		}, durationMs);
+	}
+
+	private forfeit(parent: Node | undefined, quitter: Client) {
+		if (!parent) return;
+		if (parent.winner) return;
+		if (parent.waiting && parent.waiting !== quitter) {
+			const winner = parent.waiting;
+			parent.loser = quitter;
+			parent.winner = winner;
+			parent.waiting = undefined;
+			this.notifyRoundWinAndAdvance(winner, parent);
+		} else {
+			if (!parent.loser) {
+				parent.loser = quitter;
+				return;
+			}
+			if (parent.loser !== quitter) {
+				parent.winner = quitter;
+				parent.waiting = undefined;
+				this.notifyRoundWinAndAdvance(quitter, parent);
+			}
+		}
+	}
+
+	private notifyRoundWinAndAdvance(
+		winner: Client,
+		parent: Node,
+		scores: number[] = [0, 0]
+	) {
+		const game = this.rooms.get(winner);
+		if (game && game.clients[1] === undefined)
+			game.disconnectPlayer(winner);
+		const depth = parent.depth;
+		const loserName = parent.loser?.name;
+		this.clientNode.set(winner, parent);
+		winner.socket?.send(
+			JSON.stringify({
+				event: "result",
+				to: "pong",
+				body: {
+					is: "tournament",
+					didWin: true,
+					scores,
+					...(loserName ? { opponent: loserName } : {}),
+					...(depth !== undefined ? { tournamentDepth: depth } : {}),
+				},
+			})
+		);
+		const delay = depth !== undefined && depth === 1 ? 0 : 15000;
+		if (winner.winnerTimer) clearTimeout(winner.winnerTimer);
+		winner.winnerTimer = setTimeout(() => {
+			if (parent.winner === winner) {
+				winner.winnerTimer = undefined;
+				this.joinMatch(parent);
+			}
+		}, delay);
 	}
 
 	join(player: Client) {
 		if (!this.players.includes(player)) this.players.push(player);
-		player.socket?.send(JSON.stringify({ event: "searching" }));
+		player.socket?.send(JSON.stringify({ event: "searching", to: "pong" }));
 		console.log("Joined tournament: ", this.id);
 		console.log(`Nb of players: ${this.players.length}`);
 		if (this.players.length === this.capacity) this.startTournament();
 	}
 
-	quitQueue(player: Client) {
+	private removePlayer(player: Client) {
+		player.tournament = undefined;
 		this.players = this.players.filter((p) => p !== player);
+		console.log(`nb of players: ${this.players.length}`);
+		if (this.players.length === 0) this.onEnd();
 	}
 
 	buildBracket() {
@@ -112,7 +210,12 @@ export default class Tournament {
 			for (let i = 0; i < nodes.length; i += 2) {
 				const right = nodes[i]!;
 				const left = nodes[i + 1]!;
-				const parent = new Node({ right: right, left: left, depth: depth, id: this.nodeId++ });
+				const parent = new Node({
+					right: right,
+					left: left,
+					depth: depth,
+					id: this.nodeId++,
+				});
 				left.parent = parent;
 				right.parent = parent;
 				nextRound.push(parent);
@@ -128,7 +231,9 @@ export default class Tournament {
 		const parent = node.parent;
 		const player = node.winner;
 		console.log("joinMatch called");
-		console.log(`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`);
+		console.log(
+			`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`
+		);
 		if (!player) return;
 
 		if (!parent) {
@@ -145,25 +250,28 @@ export default class Tournament {
 					});
 			}
 
-			player.socket?.send(JSON.stringify({ event: "tournament_win" }));
+			if (player) this.removePlayer(player);
 			return;
 		}
 		if (parent.loser) {
-			console.log("bye");
-			parent.winner = player;
-			this.joinMatch(parent);
+			console.log(player.name, " passing by bye");
+			if (!parent.winner) {
+				parent.winner = player;
+				this.notifyRoundWinAndAdvance(player, parent);
+			}
 			return;
 		}
+		console.log("start");
+		sendTournamentMessage([waitingPlayer.id, currentPlayer.id], ` Nouveau match de tournoi : ${waitingPlayer.name} VS ${currentPlayer.name}`);
 		if (parent.waiting) {
 			const waitingPlayer = parent.waiting;
 			const currentPlayer = player;
-
-			console.log("start");
-			sendTournamentMessage([waitingPlayer.id, currentPlayer.id], ` Nouveau match de tournoi : ${waitingPlayer.name} VS ${currentPlayer.name}`);
+			const parentNode = parent;
 
 			parent.game = new Game({
-				p1: parent.waiting,
-				p2: player,
+				p1: waitingPlayer,
+				p2: currentPlayer,
+				options: this.options,
 				onEnd: async (client, didWin, scores) => {
 					console.log("game onEnd");
 
@@ -174,6 +282,28 @@ export default class Tournament {
 					const winner = didWin ? client : opponent;
 					const finalScores = scores || [0, 0];
 
+					if (!client.quit) {
+						const depth = parentNode.depth;
+						const opponentName =
+							parentNode.game?.getOpp(client)?.name;
+						client.socket?.send(
+							JSON.stringify({
+								event: "result",
+								to: "pong",
+								body: {
+									is: "tournament",
+									didWin,
+									scores: finalScores,
+									...(opponentName
+										? { opponent: opponentName }
+										: {}),
+									...(depth !== undefined
+										? { tournamentDepth: depth }
+										: {}),
+								},
+							})
+						);
+					}
 					// AJOUT: Sauvegarde du match de tournoi
 					try {
 						await this.saveTournamentMatch(
@@ -187,44 +317,58 @@ export default class Tournament {
 					}
 
 					this.rooms.delete(client);
-					if (!client.quit) {
-						client.socket?.send(
-							JSON.stringify({
-								event: "result",
-								body: { is: "tournament", didWin },
-							})
-						);
-					}
 					if (didWin === true) {
-						parent.winner = client;
+						parentNode.winner = client;
+						const depth = parentNode.depth;
+						const delay =
+							depth !== undefined && depth === 1 ? 0 : 15000;
 						if (client.winnerTimer)
 							clearTimeout(client.winnerTimer);
 						client.winnerTimer = setTimeout(() => {
-							if (parent.winner === client) {
+							if (parentNode.winner === client) {
 								client.winnerTimer = undefined;
-								this.joinMatch(parent!);
+								this.joinMatch(parentNode!);
 							}
-						}, 15000);
-					} else parent.loser = client;
+						}, delay);
+					} else {
+						parentNode.loser = client;
+						this.removePlayer(client);
+					}
 				},
 			});
 			this.gameNode.set(parent.game, parent);
-			this.clientNode.set(parent.waiting!, parent);
-			this.clientNode.set(player, parent);
-			this.setRoom(player, parent.game);
-			this.setRoom(parent.waiting, parent.game);
-
-			const body = { depth: parent.depth, initialDepth: this.initialDepth };
-			for (const c of parent.game.clients) {
-				c?.socket?.send(JSON.stringify({ event: "tournament_round", body }));
-			}
-
+			this.clientNode.set(waitingPlayer!, parent);
+			this.clientNode.set(currentPlayer, parent);
+			this.setRoom(currentPlayer, parent.game);
+			this.setRoom(waitingPlayer, parent.game);
 			this.startCountdown(parent.game, parent.game.clients);
 			parent.waiting = undefined;
 		} else {
 			parent.waiting = player;
-			if (parent.depth && this.initialDepth && parent.depth !== this.initialDepth) player.socket?.send(JSON.stringify({ event: "searching" }));
+			if (
+				parent.depth &&
+				this.initialDepth &&
+				parent.depth !== this.initialDepth
+			)
+				player.socket?.send(
+					JSON.stringify({
+						event: "searching",
+						to: "pong",
+						body:
+							parent.depth !== undefined
+								? { tournamentDepth: parent.depth }
+								: undefined,
+					})
+				);
 		}
+	}
+
+	getRoundContextForGame(game: Game): { depth: number } | undefined {
+		const node = this.gameNode.get(game);
+		if (!node) return undefined;
+		const depth = node.depth;
+		if (depth !== undefined) return { depth };
+		return undefined;
 	}
 	init() {
 		console.log(`leafs: ${this.leafs.length}`);
@@ -239,36 +383,70 @@ export default class Tournament {
 
 	reconnect(client: Client) {
 		const room: Game | undefined = this.rooms.get(client);
-		if (!room) return;
-		if (room.clients[0].socket && room.clients[1]?.socket) {
-			// send 'found' event directly (Game.send is private)
-			for (const c of room.clients) c?.socket?.send(JSON.stringify({ event: "found" }));
-			room.start();
+		const node = this.clientNode.get(client);
+
+		if (room) {
+			if (room.clients[0].socket && room.clients[1]?.socket) {
+				this.startCountdown(room, room.clients);
+				client.socket?.send(JSON.stringify(room.getData()));
+			}
+			return;
 		}
+		if (node) this.joinMatch(node);
 	}
 	disconnect(client: Client) {
-		if (this.started === false) this.quitQueue(client);
+		if (this.started === false) this.removePlayer(client);
 		else {
 			const game = this.rooms.get(client);
-			if (!game) return;
-
-			this.cancelCountdown(game);
-			if (client.tournament?.allowReconnect) {
-				client.tournament.allowReconnect = false;
-				client.socket?.send(JSON.stringify({ event: "tournament_rejoin_prompt", body: { tournamentId: this.id, timeout: 10 } }));
-				game.pause();
-				const opp = game.getOpp(client);
-				opp?.socket?.send(JSON.stringify({ event: "searching" }));
-
-				if (client.rejoinTimer) clearTimeout(client.rejoinTimer);
-				client.rejoinTimer = setTimeout(() => {
-					client.rejoinTimer = undefined;
+			// quit while in game
+			if (game) {
+				this.cancelCountdown(game);
+				if (client.id >= 0 && client.tournament?.allowReconnect) {
+					client.tournament.allowReconnect = false;
+					this.sendRejoinPrompt(client);
+					game.pause();
+					const opp = game.getOpp(client);
+					opp?.socket?.send(
+						JSON.stringify({
+							event: "waiting",
+							to: "pong",
+							who: client.name,
+						})
+					);
+					this.scheduleRejoinTimeout(client, 10000, () => {
+						game.disconnectPlayer(client);
+						this.removePlayer(client);
+					});
+				} else {
 					game.disconnectPlayer(client);
-					client.tournament = undefined;
-				}, 10000);
+					this.removePlayer(client);
+				}
+				return;
+			}
+
+			// quit while between games
+			const node = this.clientNode.get(client);
+			const parent = node?.parent;
+			if (parent && parent.waiting === client) parent.waiting = undefined;
+			if (!parent) {
+				this.removePlayer(client);
+				console.log("Tournament cleaned up after final disconnect");
+				return;
+			}
+			if (client.winnerTimer) {
+				clearTimeout(client.winnerTimer);
+				client.winnerTimer = undefined;
+			}
+			if (client.id >= 0 && client.tournament?.allowReconnect) {
+				client.tournament.allowReconnect = false;
+				this.sendRejoinPrompt(client);
+				this.scheduleRejoinTimeout(client, 10000, () => {
+					this.forfeit(parent, client);
+					this.removePlayer(client);
+				});
 			} else {
-				game.disconnectPlayer(client);
-				client.tournament = undefined;
+				this.forfeit(parent, client);
+				this.removePlayer(client);
 			}
 		}
 		console.log(`nb of players: ${this.players.length}`);
@@ -277,7 +455,7 @@ export default class Tournament {
 
 	printTree(root: Node | null = this.root) {
 		if (!root) {
-			console.log("(empty tree)");
+			console.log("(arbre vide)");
 			return;
 		}
 		const label = (n: Node) => {
@@ -286,11 +464,17 @@ export default class Tournament {
 			const depth = n.depth !== undefined ? ` d${n.depth}` : "";
 			return `${type}${id}${depth}`;
 		};
-		const traverse = (n: Node | undefined, prefix: string, isLeft: boolean) => {
+		const traverse = (
+			n: Node | undefined,
+			prefix: string,
+			isLeft: boolean
+		) => {
 			if (!n) return;
-			if (n.right) traverse(n.right, prefix + (isLeft ? "│   " : "    "), false);
+			if (n.right)
+				traverse(n.right, prefix + (isLeft ? "│   " : "    "), false);
 			console.log(prefix + (isLeft ? "└── " : "┌── ") + label(n));
-			if (n.left) traverse(n.left, prefix + (isLeft ? "    " : "│   "), true);
+			if (n.left)
+				traverse(n.left, prefix + (isLeft ? "    " : "│   "), true);
 		};
 		traverse(root, "", true);
 	}
@@ -302,14 +486,6 @@ export default class Tournament {
 		if (!this.root) return;
 		const node = this.clientNode.get(client);
 		if (node && node.parent?.waiting !== client) this.joinMatch(node);
-	}
-
-	getRoundContextForGame(game: Game): { depth: number } | undefined {
-		const node = this.gameNode.get(game);
-		if (!node) return undefined;
-		const depth = node.depth;
-		if (depth !== undefined) return { depth };
-		return undefined;
 	}
 
 	private async saveTournamentMatch(

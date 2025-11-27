@@ -1,16 +1,13 @@
-import Player, { type difficulty } from "./Player.ts";
+import Player from "./Player.ts";
 import Ball from "./Ball.ts";
-import BotController, { MediumBot } from "./Controller.ts";
-//import { EasyController } from "./Controller.ts";
-import type { BonusBase } from "./Bonus.ts";
-import { Bigger } from "./Bonus.ts";
-import { EasyBot } from "./Controller.ts";
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+
+========
+import BotController, { EasyBot, MediumBot, HardBot } from "./Bot.ts";
+import Bonus from "./Bonus.ts";
+import { Bigger, Smaller, Faster } from "./Bonus.ts";
 import plotRewards from "./chart.ts";
-import {
-	DEFAULT_MAX_SCORE,
-	DEFAULT_BONUS_TIME,
-	DEFAULT_BONUS_RADIUS,
-} from "./config.ts";
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 interface PlayerData {
 	size: number;
 	y: number;
@@ -22,13 +19,21 @@ type bounceParam = [player: null] | [player: Player, hitpoint: number];
 export default class Board {
 	private readonly height: number;
 	private readonly width: number;
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+	private playerSpeed: number = 100;
+	players: Player[];
+	private ball: Ball;
+	private score: number[] = [0, 0];
+========
 	players: [Player, Player];
 	ball: Ball;
 	private elapsedTime: number = 0;
-	bonus: BonusBase[] = [];
-	private bonusNb: number = 0;
-	private bonusTime: number = DEFAULT_BONUS_TIME;
-	private bonusRadius: number = DEFAULT_BONUS_RADIUS;
+	bonus: Bonus[] = [];
+	private bonusTypes = [Bigger, Smaller, Faster];
+	private bonusNb: number = 1;
+	private bonusSpawnInterval: number = 1;
+	private bonusSpawnTimer: number = 0;
+	private bonusRadius: number = 8;
 	private training: boolean = false;
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
@@ -36,17 +41,50 @@ export default class Board {
 	private gamesNb: number = 1;
 	normHitpoint: number = 0;
 	private onWin: (id: 0 | 1) => void;
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 
-	constructor(onWin: (id: 0 | 1) => void, maxScore: number = DEFAULT_MAX_SCORE, height: number = 100, width: number = 200) {
+	constructor(options: {
+		onWin: (id: number) => void;
+		maxScore?: number;
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	}) {
+		const {
+			onWin,
+			maxScore = 2,
+			bonusNb = 1,
+			bonusTypes = ["Bigger", "Smaller", "Faster"],
+			playerSpeed,
+		} = options;
 		this.onWin = onWin;
 		this.maxScore = maxScore;
-		this.height = height;
-		this.width = width;
+		this.height = 100;
+		this.width = 200;
+		this.bonusNb = bonusNb;
+		this.bonusTypes = bonusTypes.map((name) => {
+			switch (name) {
+				case "Bigger":
+					return Bigger;
+				case "Smaller":
+					return Smaller;
+				case "Faster":
+					return Faster;
+				default:
+					return Bigger;
+			}
+		});
 		this.ball = new Ball(this);
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
 		this.players = [new Player(this, 0), new Player(this, 1)];
+========
+		this.players = [
+			new Player(this, 0, playerSpeed),
+			new Player(this, 1, playerSpeed),
+		];
 		this.botController = [];
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 	}
-
 	setBallPos(x: number = this.width / 2, y: number = this.height / 2) {
 		this.ball.x = x;
 		this.ball.y = y;
@@ -55,38 +93,40 @@ export default class Board {
 		if (reset) {
 			this.ball.dx = this.ball.dx < 0 ? -30 : 30;
 			this.ball.dy = Math.random() * 120 - 60;
-			this.ball.speed = Math.sqrt(this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy);
 		}
 		this.ball.dx *= -1;
-		this.ball.speed *= 1.1;
-		this.ball.clampSpeed();
-		const angle = Math.atan2(this.ball.dy, this.ball.dx);
-		this.ball.dx = Math.cos(angle) * this.ball.speed;
-		this.ball.dy = Math.sin(angle) * this.ball.speed;
+		if (this.ball.dx <= 30) this.ball.dx *= 1.5;
 	}
 	bounceBallY(...arg: bounceParam) {
 		const [player, hitpoint] = arg;
 
 		if (player === null) this.ball.dy *= -1;
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+		else
+			this.ball.dy =
+				((2 * hitpoint) / player.size - 1) * Math.abs(this.ball.dx);
+========
 		else {
-			this.normHitpoint = (2 * hitpoint) / player.size - 1;
+			const clamped = Math.max(0, Math.min(hitpoint, player.size));
+			this.normHitpoint = (2 * clamped) / player.size - 1;
 			const angle = this.normHitpoint * (Math.PI / 4);
 			const dir = this.ball.dx < 0 ? -1 : 1;
 			this.ball.dx = Math.cos(angle) * this.ball.speed * dir;
 			this.ball.dy = Math.sin(angle) * this.ball.speed;
 		}
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 	}
-	private addScore(player: number) {
+	private addScore(player: 0 | 1) {
 		this.score[player]++;
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+========
 		this.bonus = [];
-		for (const player of this.players) {
-			for (const bonus of player.ActiveBonus) bonus.remove(player);
-			player.ActiveBonus = [];
-			player.y = this.height / 2 - player.size / 2;
-		}
+		for (const p of this.players) p.reset();
+		this.bonusSpawnTimer = 0;
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 		this.setBallPos();
 		this.bounceBallX(true);
-		if (this.score[player] === this.maxScore) this.onWin(player as 0 | 1);
+		if (this.score[player] === this.maxScore) this.onWin(player);
 	}
 	getBallSpeed(): number {
 		const pxlSecond = Math.hypot(this.ball.dx, this.ball.dy);
@@ -102,25 +142,47 @@ export default class Board {
 			p2: { ...this.players[1].getData(), score: this.score[1] },
 		};
 	}
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+========
 	getBonusData() {
-		return this.bonus.map((b) => ({ name: b.name, y: b.y, radius: b.radius }));
+		return this.bonus.map((b) => ({
+			name: b.name,
+			y: b.y,
+			radius: b.radius,
+		}));
 	}
 	checkBonusCollision() {
-		const player: number = this.ball.dx > 0 ? 0 : 1;
-		if (this.ball.x >= this.width / 2 - this.bonusRadius && this.ball.x <= this.width / 2 + this.bonusRadius)
+		const player: 0 | 1 = this.ball.dx > 0 ? 0 : 1;
+
+		if (
+			this.ball.x >= this.width / 2 - this.bonusRadius &&
+			this.ball.x <= this.width / 2 + this.bonusRadius
+		)
 			this.bonus = this.bonus.filter((bonus) => {
-				if ((this.ball.x - this.width / 2) * (this.ball.x - this.width / 2) + (this.ball.y - bonus.y) * (this.ball.y - bonus.y) <= (this.ball.radius + bonus.radius) * (this.ball.radius + bonus.radius)) {
+				if (
+					(this.ball.x - this.width / 2) *
+						(this.ball.x - this.width / 2) +
+						(this.ball.y - bonus.y) * (this.ball.y - bonus.y) <=
+					(this.ball.radius + bonus.radius) *
+						(this.ball.radius + bonus.radius)
+				) {
+					this.players[player].bonusCollectedTotal++;
 					if (bonus.is === "bonus") {
-						if (bonus.apply(this.players[player])) this.players[player].ActiveBonus.push(bonus);
+						if (bonus.apply(this.players[player]))
+							this.players[player].ActiveBonus.push(bonus);
 					} else {
-						bonus.apply(this.players[(player + 1) % 2]);
-						this.players[(player + 1) % 2].ActiveBonus.push(bonus);
+						const opp = this.players[(player + 1) % 2];
+						if (opp && bonus.apply(opp))
+							opp.ActiveBonus.push(bonus);
 					}
+
 					return false;
 				}
 				return true;
 			});
 	}
+
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 	updateBallPosition(dt: number): void {
 		const { x, y } = this.ball.getXY();
 		let { nextX, nextY } = this.ball.getNextXY(dt);
@@ -135,7 +197,6 @@ export default class Board {
 		const nextLeftEdge = nextX - radius;
 		const prevRightEdge = x + radius;
 		const nextRightEdge = nextX + radius;
-		this.checkBonusCollision();
 		if (nextY - radius <= 0 || nextY + radius >= this.height) {
 			this.bounceBallY(null);
 			nextY = Math.max(radius, Math.min(nextY, this.height - radius));
@@ -159,7 +220,40 @@ export default class Board {
 				this.bounceBallY(this.players[1], yCross - y2);
 			}
 		}
-
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+		this.ball.x = nextX;
+		this.ball.y = nextY;
+		if (nextX + radius >= this.width) this.addScore(0);
+		else if (nextX - radius <= 0) this.addScore(1);
+	}
+	updatePlayersPosition(dt: number) {
+		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
+		if (p2.bot) {
+			if (this.ball.y + this.ball.radius < p2.y) {
+				p2.moveUp(true);
+				p2.moveDown(false);
+			} else if (this.ball.y - this.ball.radius > p2.y + p2.size) {
+				p2.moveUp(false);
+				p2.moveDown(true);
+			}
+		}
+		if (p1.up && p1.down) return;
+		if (p1.up && p1.y > 0) {
+			if (p1.y - this.playerSpeed * dt < 0) p1.y = 0;
+			else p1.y -= this.playerSpeed * dt;
+		} else if (p1.down && p1.y + p1.size < this.height) {
+			if (p1.y + this.playerSpeed * dt > this.height - p1.size)
+				p1.y = this.height - p1.size;
+			else p1.y += this.playerSpeed * dt;
+		}
+		if (p2.up && p2.y > 0) {
+			if (p2.y - this.playerSpeed * dt < 0) p2.y = 0;
+			else p2.y -= this.playerSpeed * dt;
+		} else if (p2.down && p2.y + p1.size < this.height) {
+			if (p2.y + this.playerSpeed * dt > this.height - p2.size)
+				p2.y = this.height - p2.size;
+			else p2.y += this.playerSpeed * dt;
+========
 		nextX = Math.max(radius, Math.min(nextX, this.width - radius));
 		nextY = Math.max(radius, Math.min(nextY, this.height - radius));
 		this.ball.x = nextX;
@@ -173,18 +267,8 @@ export default class Board {
 		}
 	}
 	updatePlayersPosition(dt: number) {
-		const { p1, p2 } = { p1: this.players[0], p2: this.players[1] };
-		if (p2.bot === "hard") {
-			if (this.ball.y < p2.y + p2.size / 2) {
-				p2.moveUp(true);
-				p2.moveDown(false);
-			} else if (this.ball.y > p2.y + p2.size / 2) {
-				p2.moveUp(false);
-				p2.moveDown(true);
-			}
-		}
-		this.move(p1, dt);
-		this.move(p2, dt);
+		this.move(this.players[0], dt);
+		this.move(this.players[1], dt);
 	}
 	move(p: Player, dt: number) {
 		if (!(p.up && p.down)) {
@@ -192,28 +276,49 @@ export default class Board {
 				if (p.y - p.speed * dt < 0) p.y = 0;
 				else p.y -= p.speed * dt;
 			} else if (p.down && p.y + p.size < this.height) {
-				if (p.y + p.speed * dt > this.height - p.size) p.y = this.height - p.size;
+				if (p.y + p.speed * dt > this.height - p.size)
+					p.y = this.height - p.size;
 				else p.y += p.speed * dt;
 			}
 		}
 	}
+
 	updateBonus(dt: number) {
-		if (this.bonus.length < this.bonusNb) {
-			this.bonusTime -= dt;
-			if (this.bonusTime <= 0) {
+		this.bonusSpawnTimer += dt;
+		if (this.bonusSpawnTimer >= this.bonusSpawnInterval) {
+			this.bonusSpawnTimer -= this.bonusSpawnInterval;
+			if (this.bonus.length < this.bonusNb) {
 				let retries = 2;
-				let y = Math.floor(Math.random() * (this.height - this.bonusRadius * 2) + this.bonusRadius);
+
+				let y = Math.floor(
+					Math.random() * (this.height - this.bonusRadius * 2) +
+						this.bonusRadius
+				);
 				for (let i = 0; i < this.bonus.length && retries; ) {
-					if (Math.abs(this.bonus[i].y - y) < this.bonusRadius * 2) {
-						y = Math.floor(Math.random() * (this.height - 2 * this.bonusRadius) + this.bonusRadius);
+					const bonusi = this.bonus[i];
+					if (
+						bonusi &&
+						Math.abs(bonusi.y - y) < this.bonusRadius * 3
+					) {
+						y = Math.floor(
+							Math.random() *
+								(this.height - 2 * this.bonusRadius) +
+								this.bonusRadius
+						);
 						i = 0;
 						--retries;
 						continue;
 					}
 					++i;
 				}
-				if (retries) this.bonus.push(new Bigger(y, this.bonusRadius));
-				this.bonusTime = DEFAULT_BONUS_TIME;
+				if (retries) {
+					const bonus =
+						this.bonusTypes[
+							Math.floor(Math.random() * this.bonusTypes.length)
+						]!;
+					const newBonus = new bonus(y, this.bonusRadius);
+					this.bonus.push(newBonus);
+				}
 			}
 		}
 		for (const player of this.players) {
@@ -229,40 +334,35 @@ export default class Board {
 		}
 	}
 	updateBot(dt: number) {
-		// debug: verifier l'etat du tableau une fois par seconde
-		if (this.elapsedTime >= 1) {
-			console.log(`[updateBot] botController.length=${this.botController.length}`);
-			console.log(`[updateBot] bot[0]=${this.botController[0] ? 'EXISTS' : 'undefined'}, bot[1]=${this.botController[1] ? 'EXISTS' : 'undefined'}`);
-		}
-		
-		// methode manuelle pour eviter les problemes avec forEach sur sparse arrays
-		for (let index = 0; index < this.botController.length; index++) {
-			const bot = this.botController[index];
+		for (const [index, bot] of this.botController.entries()) {
 			if (!bot) continue;
-			
 			bot.aiLag += dt;
-			if (bot.aiLag >= 1) {
-				console.log(`[Board] Bot ${index} taking decision, aiLag=${bot.aiLag.toFixed(3)}`);
-				bot.takeDecision(this, this.players[index]);
+			if (this.training || bot.aiLag >= 1) {
+				bot.takeDecision(this, this.players[index]!);
 				bot.aiLag -= 1;
 			}
-			bot.update(this.players[index], this, dt);
+			if (bot.reachedDecisionLimit()) {
+				console.log("Decision limit reached");
+				this.onWin(0);
+				return false;
+			}
+			bot.update(this.players[index]!, this, dt);
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 		}
+		return true;
 	}
 	update(dt: number) {
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+		this.updatePlayersPosition(dt);
+		this.updateBallPosition(dt);
+	}
+========
 		this.elapsedTime += dt;
-		if (this.elapsedTime >= 1) {
+		if (this.elapsedTime % 10 === 0) {
 			console.log("game running");
-			// Debug: track paddles once per second
-			try {
-				const p1 = this.players[0];
-				const p2 = this.players[1];
-				console.log(`[paddles] p1 y=${p1.y.toFixed(1)} up=${p1.up} down=${p1.down} | p2 y=${p2.y.toFixed(1)} up=${p2.up} down=${p2.down}`);
-			} catch {}
-			this.elapsedTime -= 1;
 		}
 		this.updateBonus(dt);
-		this.updateBot(dt);
+		if (!this.updateBot(dt)) return;
 		this.updatePlayersPosition(dt);
 		this.updateBallPosition(dt);
 	}
@@ -274,7 +374,6 @@ export default class Board {
 	}
 	connectBot(id: 0 | 1, diff: difficulty, training: boolean = false) {
 		this.players[id].bot = diff;
-		console.log(`[Board] connectBot called: id=${id}, diff=${diff}, training=${training}`);
 		switch (diff) {
 			case "easy":
 				this.botController[id] = new EasyBot({
@@ -285,7 +384,6 @@ export default class Board {
 					epsilon_min: 0.01,
 					training: training,
 				});
-				console.log("debug");
 				break;
 			case "medium":
 				this.botController[id] = new MediumBot({
@@ -297,24 +395,47 @@ export default class Board {
 					training: training,
 				});
 				break;
+			case "hard":
+				this.botController[id] = new HardBot({
+					learning_rate: 0.2,
+					discount_factor: 0.98,
+					epsilon: 1,
+					epsilon_decay: 0.0001,
+					epsilon_min: 0.2,
+					training: training,
+				});
+				break;
 		}
-		console.log(`[Board] Bot connected at index ${id}, botController.length=${this.botController.length}`);
 	}
 
-	restart() {
+	reset() {
 		this.score = [0, 0];
-		this.ball.reset(this);
+		this.ball.reset(this, this.training);
 		for (const player of this.players) player.reset();
-		if (this.training && this.botController.length !== 0) {
-			if (this.gamesNb % 10 === 0) this.botController[0].save(this.gamesNb);
+		this.bonus.length = 0;
+		this.elapsedTime = 0;
+		if (this.training && this.botController[0] !== undefined) {
+			if (this.gamesNb % 50 === 0)
+				this.botController[0].save(this.gamesNb + 400);
 			if (this.gamesNb % 100 === 0) {
-				plotRewards("rewards", this.botController[0].rewards, this.botController[0].type, this.gamesNb);
-				plotRewards("epsilons", this.botController[0].epislons, this.botController[0].type, this.gamesNb);
+				plotRewards(
+					"rewards",
+					this.botController[0].rewards,
+					this.botController[0].type,
+					this.gamesNb
+				);
+				plotRewards(
+					"epsilons",
+					this.botController[0].epislons,
+					this.botController[0].type,
+					this.gamesNb
+				);
 			}
 			this.botController[0].newEpisode();
 		}
 		++this.gamesNb;
 	}
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 	get H(): number {
 		return this.height;
 	}
@@ -324,13 +445,18 @@ export default class Board {
 	get ballRadius() {
 		return this.ball.radius;
 	}
-	get scores(): [p1: number, p2: number] {
-		return this.score;
+	getPlayerInput(id: 0 | 1): { up: boolean; down: boolean } {
+		return { up: this.players[id].up, down: this.players[id].down };
 	}
+<<<<<<<< HEAD:srcs/backend/app/src/game/Board.ts
+	connect() {
+		this.players[0].bot = false;
+========
 	set Training(flag: boolean) {
 		this.training = flag;
 	}
 	get Rewards() {
-		return this.botController[0].rewards;
+		return this.botController[0]!.rewards;
+>>>>>>>> game-back:srcs/backend/app/src/pong/Board.ts
 	}
 }

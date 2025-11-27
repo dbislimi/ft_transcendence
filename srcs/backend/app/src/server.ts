@@ -14,7 +14,7 @@ import authPlugin from "./plugins/auth.ts";
 import authHook from "./plugins/authHook.ts";
 import userPlugin from "./plugins/user.ts";
 import wsFriends from "./plugins/ws-friends.ts";
-import matchesPlugin from "./plugins/matches.ts";
+//import matchesPlugin from "./plugins/matches.ts";
 import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
@@ -22,16 +22,15 @@ import twoFaPlugin from "./plugins/2fa.ts";
 import pongConfig from "./plugins/pongConfig.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
+import matchHistoryPlugin from "./plugins/matchHistory.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
-	logger: {
-		transport: {
-			target: "pino-pretty",
-		},
-	},
+  logger: {
+    transport: { target: "pino-pretty" }
+  }
 });
 
 async function main() {
@@ -80,7 +79,7 @@ async function main() {
 	await fastify.register(userPlugin);
 	await fastify.register(settingsPlugin);
 	await fastify.register(twoFaPlugin);
-	await fastify.register(matchesPlugin);
+	await fastify.register(matchHistoryPlugin);
 	await fastify.register(friendsPlugin);
 
 	// 7. Pong config

@@ -1,10 +1,9 @@
-import { StrictMode } from "react";
+import { Children, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./i18n";
-import "./index.css";
-import Layout from "./Components/Layout";
-import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import * as pages from "./pages";
+import Layout from "./Components/Layout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
 import { BackgroundProvider } from "./contexts/BackgroundContext";

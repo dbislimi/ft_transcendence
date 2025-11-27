@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export default fp(async function authHook(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function authHook(fastify: FastifyInstance) {
   fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
     // Exclude public/auth routes and WebSocket endpoints used for BombParty and Game
     const excludedRoutes = [
@@ -38,8 +38,7 @@ export default fp(async function authHook(fastify: FastifyInstance<any, any, any
           name: string;
           email: string;
         };
-        // attach decoded user to request (fastify extended type)
-        (request as any).user = decoded;
+      request.user = decoded;
       } catch (err) {
         console.warn("Token invalide :", err);
       }

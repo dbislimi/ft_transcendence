@@ -18,29 +18,20 @@ export default function Countdown({
 
 	useEffect(() => {
 		if (!isControlled) return;
-		if (controlledValue !== null && controlledValue !== undefined) {
-			setValue(controlledValue);
-		}
+		setValue(controlledValue ?? 0);
 	}, [controlledValue, isControlled]);
 
 	useEffect(() => {
-		if (isControlled) {
-			return;
-		}
+		if (isControlled) return;
 		if (value <= 0) return;
 		const id = setInterval(() => {
-			setValue((prev) => {
-				const next = prev > 0 ? prev - 1 : 0;
-				return next;
-			});
+			setValue((prev) => (prev > 0 ? prev - 1 : 0));
 		}, 1000);
 		return () => clearInterval(id);
 	}, [isControlled, value]);
 
 	useEffect(() => {
-		if (value === 0) {
-			onComplete?.();
-		}
+		if (value === 0) onComplete?.();
 	}, [value, onComplete]);
 
 	if (value <= 0) return null;

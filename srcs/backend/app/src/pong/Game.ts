@@ -1,9 +1,8 @@
 import Board from "./Board.ts";
-import { DEFAULT_GAME_SPEED } from "./config.ts";
 import type { difficulty } from "./Player.ts";
-import type { Client } from "../plugins/gameController.ts";
+import type { Client } from "../plugins/websockets.ts";
 
-let GAMESPEED: number = DEFAULT_GAME_SPEED;
+let GAMESPEED: number = 1;
 
 export default class Game {
 	readonly board: Board;
@@ -18,7 +17,9 @@ export default class Game {
 	private onResolve: (() => void) | undefined;
 	private onAbort!: () => void;
 	private signal: AbortSignal | undefined = undefined;
-	private winner: 0 | 1 | undefined = undefined;
+
+	elaspedTime: number = 0;
+	private winner: number | undefined = undefined;
 
 	constructor({
 		p1,
@@ -26,6 +27,7 @@ export default class Game {
 		onEnd,
 		botDiff,
 		train = false,
+		options = {},
 	}: {
 		p1: Client;
 		p2?: Client;
@@ -34,62 +36,47 @@ export default class Game {
 			| null;
 		botDiff?: difficulty | null;
 		train?: boolean;
+		options?: {
+			maxScore?: number;
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		};
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board((id: 0 | 1) => (this.winner = id));
+		this.board = new Board({
+			onWin: (id: number) => {
+				this.winner = id;
+			},
+			...options,
+		});
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
 		if (p2 !== undefined) {
 			p2.inGameId = 1;
 			this.clients = [p1, p2];
 			this.clientsId.set(p2, 1);
-			this.send(JSON.stringify({ event: "found" }));
 			return;
 		}
 		this.clients = [p1, undefined];
 		if (botDiff === undefined)
 			throw Error("Bot difficulty must be specified if p2 isn't set.");
 		if (botDiff === null) return;
-		if (train === false) {
-			console.log(`[Game] Connecting bot with difficulty: ${botDiff}`);
-			this.board.connectBot(1, botDiff);
-		}
+		if (train === false) this.board.connectBot(1, botDiff);
 		else {
-			console.log("connectbot ", botDiff);
 			this.board.Training = true;
-			GAMESPEED = 100;
+			GAMESPEED = 2.5;
 			this.board.connectBot(0, botDiff, true);
-			this.board.connectBot(1, "hard");
+			this.board.connectBot(1, "impossible");
 		}
 	}
 
 	connectPlayer(p: Client) {
 		this.board.disconnectBot();
-		this.board.restart();
+		this.board.reset();
 		this.clients[1] = p;
 		p.inGameId = 1;
 		this.clientsId.set(p, 1);
-		this.send(JSON.stringify({ event: "found" }));
-
-		// evenement enrichi: informer les joueurs de l'adversaire
-		const p1 = this.clients[0];
-		const p2 = this.clients[1];
-		if (p1 && p1.socket) {
-			p1.socket.send(
-				JSON.stringify({
-					event: "players",
-					body: { opponent: p2?.name || "Opponent" },
-				})
-			);
-		}
-		if (p2 && p2.socket) {
-			p2.socket.send(
-				JSON.stringify({
-					event: "players",
-					body: { opponent: p1?.name || "Opponent" },
-				})
-			);
-		}
 	}
 
 	disconnectPlayer(p: Client) {
@@ -99,7 +86,7 @@ export default class Game {
 		console.log("disconnected");
 		this.stop(((id + 1) % 2) as 0 | 1);
 	}
-	private send(
+	send(
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {
@@ -130,38 +117,13 @@ export default class Game {
 		clearTimeout(this.timeoutId);
 		this.timeoutId = null;
 	}
-	private stop(winner: 0 | 1): void {
+	private stop(winner: number): void {
 		this.pause();
 		this.signal?.removeEventListener("abort", this.onAbort);
 		if (this.onResolve) {
 			this.onResolve();
 			return;
 		}
-
-		// evenement enrichi: envoyer le resultat detaille
-		const resultData = {
-			event: "result",
-			body: {
-				is: this.clients[1] ? "quick" : "offline",
-				scores: this.board.scores,
-			},
-		};
-
-		// envoyer le resultat a chaque joueur avec son statut de victoire
-		if (this.clients[0] && this.clients[0].socket) {
-			const didWin = this.clients[0].inGameId === winner;
-			this.clients[0].socket.send(
-				JSON.stringify({ ...resultData, body: { ...resultData.body, didWin } })
-			);
-		}
-		if (this.clients[1] && this.clients[1].socket) {
-			const didWin = this.clients[1].inGameId === winner;
-			this.clients[1].socket.send(
-				JSON.stringify({ ...resultData, body: { ...resultData.body, didWin } })
-			);
-		}
-
-		// appeler le callback onEnd si defini (pour compatibilite)
 		if (!this.onEnd) return;
 		this.onEnd(
 			this.clients[0],
@@ -177,7 +139,7 @@ export default class Game {
 	}
 	private restart() {
 		console.log("game restarted");
-		this.board.restart();
+		this.winner = undefined;
 		this.start();
 	}
 	private up(type: string, player: 0 | 1) {
@@ -204,20 +166,10 @@ export default class Game {
 		this.board.setBallPos(x, y);
 	}
 
-	private gameLoop(): void {
-		const now = performance.now();
-		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
-		const MAX_DELTA = 0.1;
-		deltaTime = Math.min(deltaTime, MAX_DELTA);
-		this.prevTime = now;
-
-		if (this.winner !== undefined) {
-			this.stop(this.winner);
-			return;
-		}
-		this.board.update(deltaTime);
-		const data = {
+	getData() {
+		return {
 			event: "data",
+			to: "pong",
 			body: {
 				ball: {
 					...this.board.getBallData(),
@@ -230,8 +182,22 @@ export default class Game {
 				},
 			},
 		};
-		this.send(JSON.stringify(data));
+	}
+	private gameLoop(): void {
+		const now = performance.now();
+		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
+		const MAX_DELTA = 0.08;
+		deltaTime = Math.min(deltaTime, MAX_DELTA);
+		this.prevTime = now;
 
+		if (this.winner !== undefined) {
+			this.stop(this.winner);
+			return;
+		}
+		this.board.update(deltaTime);
+		this.elaspedTime += deltaTime;
+		const data = this.getData();
+		this.send(JSON.stringify(data));
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);

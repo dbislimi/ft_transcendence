@@ -138,7 +138,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               date: new Date().toISOString(),
             };
 
-            // Sauvegarde en base
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
               [msg.from, msg.to, msg.text, msg.date]
