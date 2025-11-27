@@ -239,11 +239,11 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 						const hasChanged =
 							currentCosmetics.preferredSide !==
-								newCosmetics.preferredSide ||
+							newCosmetics.preferredSide ||
 							currentCosmetics.paddleColor !==
-								newCosmetics.paddleColor ||
+							newCosmetics.paddleColor ||
 							currentCosmetics.ballColor !==
-								newCosmetics.ballColor;
+							newCosmetics.ballColor;
 
 						if (!hasChanged) return;
 						client.cosmetics = newCosmetics;
@@ -266,14 +266,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						break;
 					default:
 						break;
-					}
-					games.doInvitationAction(
-						action,
-						client as any,
-						invitationId
-					);
-					break;
 				}
+
 			});
 			socket.on("close", () => {
 				console.log("close ", client.name);
