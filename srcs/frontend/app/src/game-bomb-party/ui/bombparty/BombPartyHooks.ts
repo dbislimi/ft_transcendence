@@ -70,7 +70,6 @@ export function useBombPartyHooks(user: any) {
     onTurnStart: (turnStartedAt, turnDurationMs) => {
       gameHook.setTurnStartTime(turnStartedAt);
       gameHook.setTimerGracePeriod(true);
-
       if (gracePeriodTimerRef.current) {
         timerService.clearTimeout(gracePeriodTimerRef.current);
       }
@@ -87,7 +86,6 @@ export function useBombPartyHooks(user: any) {
   const countdown = useBombPartyStore((state: BombPartyStore) => state.countdown);
   const profilePlayerId = useBombPartyStore((state: BombPartyStore) => state.ui.profilePlayerId);
   const infoOpen = useBombPartyStore((state: BombPartyStore) => state.ui.infoOpen);
-
   const setGamePhase = useBombPartyStore((state: BombPartyStore) => state.setGamePhase);
   const setGameMode = useBombPartyStore((state: BombPartyStore) => state.setGameMode);
   const setMultiplayerType = useBombPartyStore((state: BombPartyStore) => state.setMultiplayerType);
@@ -154,7 +152,6 @@ export function useBombPartyHooks(user: any) {
 
   const startGame = useCallback((config: GameConfig) => {
     gameHook.setGameStartTime(Date.now());
-
     if (gameMode === 'local') {
       gameHook.startGame(config, 'local', null);
       setGamePhase('GAME');
@@ -174,7 +171,6 @@ export function useBombPartyHooks(user: any) {
   const handleWordSubmit = useCallback((word: string) => {
     gameHook.handleWordSubmit(word, gameMode, wsHook.roomId, wsHook.playerId);
   }, [gameHook, wsHook, gameMode]);
-
   const handleActivateBonus = useCallback((bonusKey: BonusKey) => {
     return gameHook.handleActivateBonus(bonusKey, gameMode, wsHook.roomId, wsHook.playerId);
   }, [gameHook, wsHook, gameMode]);
@@ -188,7 +184,6 @@ export function useBombPartyHooks(user: any) {
       timerService.clearTimeout(gracePeriodTimerRef.current);
       gracePeriodTimerRef.current = null;
     }
-
     gameHook.resetGame();
     setGamePhase('RULES');
     setCountdown(0);
@@ -206,7 +201,6 @@ export function useBombPartyHooks(user: any) {
       timerService.clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
-
     setGameMode(mode);
     if (mode === 'local') {
       setMultiplayerType(null);
@@ -219,7 +213,6 @@ export function useBombPartyHooks(user: any) {
       countdownIntervalRef.current = timerService.setInterval(() => {
         count--;
         setCountdown(count);
-
         if (count === 0) {
           if (countdownIntervalRef.current) {
             timerService.clearInterval(countdownIntervalRef.current);

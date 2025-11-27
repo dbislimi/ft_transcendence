@@ -24,7 +24,6 @@ interface Ball {
 	radius: number;
 	x: number;
 	y: number;
-	speed: number;
 }
 
 export interface GameState {

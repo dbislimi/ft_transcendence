@@ -179,13 +179,55 @@
       "show": "Show debug",
       "hide": "Hide debug"
     },
+      "join": "Join",
+      "connecting": "Connecting...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connectionRequired": "Connection required",
+      "playersCount": "Number of players",
+      "availableLobbies": "Available Lobbies",
+      "noLobbies": "No lobby available",
+      "noLobbiesDesc": "Create a new lobby to start playing!",
+      "refresh": "Refresh",
+      "joinPrivate": "Join a private lobby",
+      "privatePasswordDesc": "This lobby is password-protected. Please enter the password to join.",
+      "enterPassword": "Enter the password",
+      "cancel": "Cancel",
+      "inProgress": "In progress",
+      "full": "Full",
+      "waiting": "Waiting",
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} min ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
+    },
+    "debug": {
+      "show": "Show debug",
+      "hide": "Hide debug"
+    },
     "chat": {
       "placeholder": "Type here...",
       "send": "Send",
       "inputAria": "Chat input",
       "sendAria": "Send message"
+      "sendAria": "Send message"
     },
     "bonus": {
+      "inversion": {
+        "name": "Inversion"
+      },
+      "plus5sec": {
+        "name": "+5 seconds"
+      },
+      "vitesseEclair": {
+        "name": "Lightning speed"
+      },
+      "doubleChance": {
+        "name": "Double chance"
+      },
+      "extraLife": {
+        "name": "Extra life"
+      }
       "inversion": {
         "name": "Inversion"
       },
@@ -218,6 +260,9 @@
     "game": {
       "countdown": "Starting in"
     },
+    "game": {
+      "countdown": "Starting in"
+    },
     "rules": {
       "title": "Game Rules",
       "languageNotice": "This game is played only in French. Only valid French words are accepted.",
@@ -225,6 +270,14 @@
       "rule2": "Each turn is timed. If time runs out, you lose a life.",
       "rule3": "No duplicate words.",
       "rule4": "Last player standing wins.",
+      "modeSelection": "Mode Selection",
+      "localMode": "Local Mode",
+      "multiplayerMode": "Multiplayer Mode",
+      "localPlayers": "Local Players",
+      "localModeDesc": "Play alone or with others on the same screen",
+      "multiplayerModeDesc": "Play online with other players",
+      "players": "players",
+      "startLocalGame": "Start Local Game"
       "modeSelection": "Mode Selection",
       "localMode": "Local Mode",
       "multiplayerMode": "Multiplayer Mode",
@@ -243,6 +296,8 @@
       "enterWordContaining": "Enter a word containing these letters",
       "waitingForGame": "Waiting for game to start",
       "errors": {
+        "tooShort": "The word must contain at least 3 letters",
+        "duplicate": "This word has already been used in this game"
         "tooShort": "The word must contain at least 3 letters",
         "duplicate": "This word has already been used in this game"
       }
@@ -280,6 +335,7 @@
       "fastTurn": "Fast turn",
       "wordSuggestions": "Word suggestions"
     },
+    "backToMenu": "Back to Menu",
     "backToMenu": "Back to Menu",
     "stats": {
       "title": "Bomb Party Statistics",

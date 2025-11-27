@@ -1,4 +1,4 @@
-import type { Client } from "../plugins/gameController.ts";
+import type { Client } from "../plugins/websockets.ts";
 
 export type InvitationState =
 	| "pending"
@@ -8,13 +8,18 @@ export type InvitationState =
 	| "expired";
 
 export interface Invitation {
-	id: string;
+	id: string; // sentId:receivId
 	sent: Client;
 	receiv: Client;
 	createdAt: number;
 	expiresAt: number;
 	state: InvitationState;
 	timeoutRef: ReturnType<typeof setTimeout> | null;
+	options?: {
+		bonusNb?: number;
+		bonusTypes?: string[];
+		playerSpeed?: number;
+	};
 }
 
 type Action = "accept" | "decline" | "cancel";
@@ -64,7 +69,22 @@ export default class InvitManager {
 		return !this.hasPendingOutgoing(client);
 	}
 
-	create(sent: Client, receiv: Client): void {
+	create(
+		sent: Client,
+		receiv: Client,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
+	): void {
+		const sentList = this.sentInvit.get(sent.id);
+		if (sentList) {
+			const existing = sentList.find(
+				(i) => i.state === "pending" && i.receiv.id === receiv.id
+			);
+			if (existing) return;
+		}
 		const received = this.receivInvit.get(sent.id);
 		if (received) {
 			const same = received.find(
@@ -87,6 +107,7 @@ export default class InvitManager {
 			expiresAt: now + this.ttlMs,
 			state: "pending",
 			timeoutRef: null,
+			options,
 		};
 		const outList = this.sentInvit.get(sent.id);
 		if (!outList) this.sentInvit.set(sent.id, [invitation]);
@@ -163,8 +184,7 @@ export default class InvitManager {
 		const receivList = this.receivInvit.get(inv.receiv.id);
 		if (receivList) {
 			const newTab = receivList.filter((x) => x !== inv);
-			if (newTab.length > 0)
-				this.receivInvit.set(inv.receiv.id, newTab);
+			if (newTab.length > 0) this.receivInvit.set(inv.receiv.id, newTab);
 			else this.receivInvit.delete(inv.receiv.id);
 		}
 	}
@@ -185,4 +205,3 @@ export default class InvitManager {
 		this.removeForClient(accepted.receiv);
 	}
 }
-

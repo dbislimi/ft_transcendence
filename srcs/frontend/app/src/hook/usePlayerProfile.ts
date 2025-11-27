@@ -60,6 +60,5 @@ export function usePlayerProfile(userId: string | null) {
             cancelled = true;
         };
     }, [userId]);
-
     return { profile, loading, error };
 }

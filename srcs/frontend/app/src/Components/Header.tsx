@@ -3,12 +3,17 @@ import Logo from "../assets/logo.png";
 import LanguageDropdown from "./LanguageDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 
 export default function Header() {
   const { t } = useTranslation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { user, token, setToken } = useUser();
+  const isAuthenticated = !!token && !!user;
   
+  const logout = () => {
+    setToken(null);
+  };
+
   return (
     <header className="relative z-20 w-full backdrop-blur-xl border-b" style={{
       background: 'var(--bg-header)',

@@ -1,18 +1,19 @@
-import { StrictMode } from "react";
+import { Children, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./i18n";
-import "./index.css";
-import Layout from "./Components/Layout";
-import * as pages from "./pages";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import "./index.css";
+import * as pages from "./pages";
+import Layout from "./Components/Layout";
 import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
 import { BackgroundProvider } from "./contexts/BackgroundContext";
+import { WebSocketProvider, FriendsProvider } from "./context/WebSocketContext";
+import { UserProvider } from "./context/UserContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { GameSessionProvider } from "./context/GameSessionContext";
+import { GameSettingsProvider } from "./context/GameSettingsContext";
+import ProtectedRoute from "./Components/ProtectedRoute";
 import { SettingsProvider } from "./contexts/SettingsContext";
-import { UserProvider } from "./contexts/UserContext";
-import { NotificationProvider } from "./contexts/NotificationContext";
-import { WebSocketProvider } from "./contexts/WebSocketContext";
-import { GameSessionProvider } from "./contexts/GameSessionContext";
 
 const router = createBrowserRouter([
   {
@@ -60,21 +61,23 @@ const router = createBrowserRouter([
 // );
 
 createRoot(document.getElementById("root")!).render(
-    <SettingsProvider>
-      <GlobalBackgroundProvider>
-        <BackgroundProvider>
-          <AuthProvider>
-            <UserProvider>
-              <WebSocketProvider>
-                <NotificationProvider>
-                  <GameSessionProvider>
-                    <RouterProvider router={router} />
-                  </GameSessionProvider>
-                </NotificationProvider>
-              </WebSocketProvider>
-            </UserProvider>
-          </AuthProvider>
-        </BackgroundProvider>
-      </GlobalBackgroundProvider>
-    </SettingsProvider>
+		<SettingsProvider>
+			<GlobalBackgroundProvider>
+				<BackgroundProvider>
+					<UserProvider>
+						<WebSocketProvider>
+							<FriendsProvider>
+								<NotificationProvider>
+									<GameSessionProvider>
+										<GameSettingsProvider>
+											<RouterProvider router={router} />
+										</GameSettingsProvider>
+									</GameSessionProvider>
+								</NotificationProvider>
+							</FriendsProvider>
+						</WebSocketProvider>
+					</UserProvider>
+				</BackgroundProvider>
+			</GlobalBackgroundProvider>
+		</SettingsProvider>
 );

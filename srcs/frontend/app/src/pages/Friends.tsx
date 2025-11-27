@@ -37,7 +37,6 @@ export default function Friends() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"friends" | "requests" | "blocked">("friends");
   const [wsStatus, setWsStatus] = useState<string>("Déconnecté");
-
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchFriends = async () => {

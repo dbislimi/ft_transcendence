@@ -1,6 +1,4 @@
 import Game from "./Game.ts";
-import { DEFAULT_COUNTDOWN_SECONDS } from "./config.ts";
-import WebSocket from "ws";
 import type { difficulty } from "./Player.ts";
 import plotRewards from "./chart.ts";
 import Tournament from "./Tournament.ts";
@@ -19,14 +17,16 @@ export default class GamesManager {
 			p1Ready: boolean;
 			p2Ready: boolean;
 			cancelled: boolean;
-			timer: ReturnType<typeof setTimeout> | null;
+			timer: NodeJS.Timeout | null;
+			remaining: number;
 		}
 	> = new WeakMap();
 	private invitManager: InvitManager;
 	private savedGames: WeakSet<Game> = new WeakSet();
-	private static readonly COUNTDOWN_SECONDS = DEFAULT_COUNTDOWN_SECONDS;
+	private static readonly COUNTDOWN_SECONDS = 3;
 	private static readonly READY_PHASE_SECONDS = 30;
 	private fastify: any;
+	private onAbort: (() => void) | undefined;
 
 	constructor() {
 		this.invitManager = new InvitManager({
@@ -48,7 +48,9 @@ export default class GamesManager {
 		matchType: string = "quick"
 	) {
 		if (!this.fastify) {
-			console.warn("Fastify instance not available for saving game result");
+			console.warn(
+				"Fastify instance not available for saving game result"
+			);
 			return;
 		}
 
@@ -102,17 +104,12 @@ export default class GamesManager {
 				break;
 			}
 			case "accepted": {
-				this.wsSend(inv.sent, {
-					event: "invitation_accepted",
-					to: "invitation_events",
-					body: { by: inv.receiv.name, invitationId: inv.id },
-				});
-				this.wsSend(inv.receiv, {
-					event: "invitation_accepted",
-					to: "invitation_events",
-					body: { inviter: inv.sent.name, invitationId: inv.id },
-				});
-				this.startInvitedGame(inv.sent, inv.receiv);
+				this.startInvitedGame(
+					inv.sent,
+					inv.receiv,
+					inv.id,
+					inv.options
+				);
 				break;
 			}
 			case "declined": {
@@ -147,11 +144,6 @@ export default class GamesManager {
 					to: "invitation_events",
 					body: { to: inv.receiv.name, invitationId: inv.id },
 				});
-				this.wsSend(inv.receiv, {
-					event: "invitation_expired",
-					to: "invitation_events",
-					body: { from: inv.sent.name, invitationId: inv.id },
-				});
 				break;
 			}
 		}
@@ -161,11 +153,20 @@ export default class GamesManager {
 		client: Client,
 		id: string,
 		size: number,
-		passwd: string
+		passwd: string,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
 	): boolean {
 		if (this.tournaments[id]) {
 			client.socket?.send(
-				JSON.stringify({ event: "error", msg: "tournamentId" })
+				JSON.stringify({
+					event: "error",
+					to: "pong",
+					msg: "tournamentId",
+				})
 			);
 			return false;
 		}
@@ -179,8 +180,7 @@ export default class GamesManager {
 				console.log("onEnd tour called");
 			},
 			startCountdown: (game, clients) =>
-				this.startWithReadyPhase(game, clients),
-			setRoom: (client, game) => this.setRoom(client, game),
+				this.startWithReadyPhase(game, clients, "tournament"),
 			cancelCountdown: (game) => {
 				const entry = this.countdowns.get(game);
 				if (entry) {
@@ -196,20 +196,21 @@ export default class GamesManager {
 					this.readyPhases.delete(game);
 				}
 			},
+			setRoom: (client, game) => this.setRoom(client, game),
 			fastify: this.fastify,
+			options,
 		});
 		this.joinTournament(client, id, passwd);
 		return true;
 	}
-
 	joinTournament(client: Client, id: string, passwd?: string) {
 		const tournament: Tournament | undefined = this.tournaments[id];
 		if (!tournament || tournament.started) return;
 		if (tournament.password && (!passwd || passwd !== tournament.password))
 			return;
 		tournament.join(client);
+		this.invitManager.removeForClient(client);
 	}
-
 	listTournaments() {
 		return Object.values(this.tournaments)
 			.map((t) => ({
@@ -221,17 +222,12 @@ export default class GamesManager {
 			}))
 			.filter((t) => !t.started);
 	}
-
-	async trainBot(ws: WebSocket, bot: difficulty, games: number) {
+	async trainBot(ws: any, bot: difficulty, games: number) {
 		const controller = new AbortController();
 		const { signal } = controller;
-
-		ws.on("close", () => controller.abort());
-		const trainingClient: Client = {
-			id: -1,
-			name: "trainer",
-			socket: ws,
-		} as Client;
+		this.onAbort = () => controller.abort();
+		ws.on("close", this.onAbort);
+		const trainingClient: Client = { id: -1, name: "trainer", socket: ws };
 		const game = new Game({
 			p1: trainingClient,
 			botDiff: bot,
@@ -245,38 +241,65 @@ export default class GamesManager {
 				await game.startAsync(signal);
 			} catch (e) {
 				console.log("test");
-				if (signal.aborted) console.log("Training aborted during game ", i);
+				if (signal.aborted)
+					console.log("Training aborted during game ", i);
 				break;
 			}
 		}
-		const controllerBot = game.board.botController[0];
-		if (controllerBot) plotRewards("rewards", controllerBot.rewards, bot);
+		if (game.board.botController[0] !== undefined)
+			plotRewards(
+				"rewards",
+				game.board.botController[0].rewards,
+				game.board.botController[0].type
+			);
 		console.log("Training loop ended.");
+		const totalSeconds = Math.floor(game.elaspedTime);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+		console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
 	}
-
-	startTraining(ws: WebSocket, bot: difficulty) {
+	startTraining(ws: any, bot: difficulty) {
 		this.trainBot(ws, bot, 100);
 		console.log("debug");
 		return { playerId: "train" };
 	}
-
 	startOffline(
 		client: Client,
 		diff: difficulty | null,
-		skipCountdown?: boolean
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
 	): boolean {
 		const game = new Game({
 			p1: client,
 			botDiff: diff,
-			onEnd: async (c: Client, didWin: boolean, scores: number[]) => {
+			onEnd: (c: Client, didWin: boolean, scores: number[]) => {
+				if (!c.quit) {
+					c.socket?.send(
+						JSON.stringify({
+							event: "result",
+							to: "pong",
+							body: {
+								is: "offline",
+								didWin,
+								scores,
+							},
+						})
+					);
+				}
 				if (diff !== null && !this.savedGames.has(game)) {
 					const winnerId = didWin ? c.id : -1;
 					console.log(
-						`Saving bot match: ${c.name} vs Bot (${diff}), Winner: ${
+						`Saving bot match: ${
+							c.name
+						} vs Bot (${diff}), Winner: ${
 							didWin ? c.name : `Bot (${diff})`
 						}`
 					);
-					await this.saveGameResult(
+					this.saveGameResult(
 						c,
 						null,
 						{
@@ -293,41 +316,30 @@ export default class GamesManager {
 						`Bot match already saved for ${c.name} vs Bot (${diff})`
 					);
 				}
-
 				this.removeRoom(c);
-				if (!c.quit) {
-					c.socket?.send(
-						JSON.stringify({
-							event: "result",
-							body: { is: "offline", didWin, scores },
-						})
-					);
-				}
 			},
+			options,
 		});
 		this.setRoom(client, game);
-		if (skipCountdown) game.start();
-		else this.startWithCountdown(game, game.clients);
+		game.start();
 		return diff === null;
 	}
 
-	invite(client: Client, friend: Client, flag: boolean = false) {
+	invite(
+		client: Client,
+		friend: Client,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
+	) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
 			client.socket?.send(
 				JSON.stringify({
 					event: "invitation_error",
 					to: "invitation_events",
 					body: { reason: "in_game" },
-				})
-			);
-			return;
-		}
-		if (client.id === friend.id) {
-			client.socket?.send(
-				JSON.stringify({
-					event: "invitation_error",
-					to: "invitation_events",
-					body: { reason: "self" },
 				})
 			);
 			return;
@@ -342,7 +354,7 @@ export default class GamesManager {
 			);
 			return;
 		}
-		this.invitManager.create(client, friend);
+		this.invitManager.create(client, friend, options);
 	}
 
 	doInvitationAction(
@@ -353,14 +365,19 @@ export default class GamesManager {
 		this.invitManager.do(action, client, invitationId);
 	}
 
-	private startInvitedGame(sent: Client, receiv: Client) {
-		const onEnd = async (c: Client, didWin: boolean, scores: number[]) => {
+	private startInvitedGame(
+		sent: Client,
+		receiv: Client,
+		invitationId?: string,
+		options?: {
+			bonusNb?: number;
+			bonusTypes?: string[];
+			playerSpeed?: number;
+		}
+	) {
+		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 			const winner = didWin ? c : c === sent ? receiv : sent;
-			console.log(
-				`Invited game ended: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
-			);
 
-			this.removeRoom(c);
 			if (!c.quit) {
 				c.socket?.send(
 					JSON.stringify({
@@ -375,118 +392,95 @@ export default class GamesManager {
 					})
 				);
 			}
-
-			if (!this.savedGames.has(game)) {
-				this.saveGameResult(
-					sent,
-					receiv,
-					winner,
-					scores,
-					undefined,
-					"quick"
-				);
-				this.savedGames.add(game);
-			}
+			this.saveGameResult(
+				sent,
+				receiv,
+				winner,
+				scores,
+				undefined,
+				"quick"
+			);
+			this.removeRoom(c);
 		};
-		const game = new Game({ p1: sent, p2: receiv, onEnd });
+		this.invitManager.removeForClient(sent);
+		this.invitManager.removeForClient(receiv);
+		const game = new Game({ p1: sent, p2: receiv, onEnd, options });
 		this.setRoom(sent, game);
 		this.setRoom(receiv, game);
-		sent.socket?.send(
-			JSON.stringify({
-				event: "game_session_ready",
-				to: "game_session",
-				body: {
-					sessionId: `${sent.id}:${receiv.id}`,
-					sessionType: "invite",
-					opponent: receiv.name,
-					self: sent.name,
-					side: sent.inGameId ?? null,
-					labels: {
-						self: `${sent.name} (You)`,
-						opponent: receiv.name,
-					},
-				},
-			})
-		);
-		receiv.socket?.send(
-			JSON.stringify({
-				event: "game_session_ready",
-				to: "game_session",
-				body: {
-					sessionId: `${sent.id}:${receiv.id}`,
-					sessionType: "invite",
-					opponent: sent.name,
-					self: receiv.name,
-					side: receiv.inGameId ?? null,
-					labels: {
-						self: `${receiv.name} (You)`,
-						opponent: sent.name,
-					},
-				},
-			})
-		);
-		this.startWithReadyPhase(game, [sent, receiv]);
+		this.wsSend(sent, {
+			event: "invitation_game_found",
+			to: "invitation_events",
+			body: { opponent: receiv.name, invitationId },
+		});
+		this.wsSend(receiv, {
+			event: "invitation_game_found",
+			to: "invitation_events",
+			body: { opponent: sent.name },
+		});
+		this.startWithReadyPhase(game, [sent, receiv], "invite");
 	}
-
 	startOnline(client: Client) {
 		this.invitManager.removeForClient(client);
 		if (this.waitingClient && this.waitingClient !== client) {
 			const opponent = this.waitingClient;
 			this.waitingClient = null;
-			console.log(
-				`[Matchmaking] Pairing ${opponent.name} vs ${client.name}`
-			);
-			const onEnd = async (c: Client, didWin: boolean, scores: number[]) => {
+			this.invitManager.removeForClient(opponent);
+			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				const winner = didWin ? c : c === opponent ? client : opponent;
-				
-				if (!this.savedGames.has(game)) {
-					console.log(
-						`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
-					);
-					await this.saveGameResult(
-						opponent,
-						client,
-						winner,
-						scores,
-						undefined,
-						"quick"
-					);
-					this.savedGames.add(game);
-				}
+				console.log(
+					`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
+				);
 
-				this.removeRoom(c);
 				if (!c.quit) {
 					c.socket?.send(
 						JSON.stringify({
 							event: "result",
-							body: { is: "quick", didWin, scores },
+							to: "pong",
+							body: {
+								is: "quick",
+								didWin,
+								scores,
+								opponent:
+									this.getRoom(c)?.getOpp(c)?.name ?? null,
+							},
 						})
 					);
 				}
+				this.saveGameResult(
+					opponent,
+					client,
+					winner,
+					scores,
+					undefined,
+					"quick"
+				);
+				this.removeRoom(c);
 			};
-			const game = new Game({ p1: opponent, p2: client, onEnd });
+			const game = new Game({
+				p1: opponent,
+				p2: client,
+				onEnd,
+			});
 			this.setRoom(opponent, game);
 			this.setRoom(client, game);
-			this.startWithReadyPhase(game, [opponent, client]);
+			this.startWithReadyPhase(game, [opponent, client], "quick");
 			return;
 		}
-		console.log(`[Matchmaking] ${client.name} queued for quick match`);
-		client.socket?.send(JSON.stringify({ event: "searching" }));
+		client.socket?.send(JSON.stringify({ event: "searching", to: "pong" }));
 		this.waitingClient = client;
 	}
-
 	removeFromQueue(client: Client) {
 		if (this.waitingClient && client === this.waitingClient) {
 			console.log("waiting client removed");
 			this.waitingClient = null;
 		}
 	}
-
-	private broadcastPlayersInfo(game: Game, clients: (Client | undefined)[]) {
+	private broadcastPlayersInfo(
+		game: Game,
+		clients: (Client | undefined)[],
+		sessionType: string
+	) {
 		const anyClient = clients.find((c) => !!c);
-		const sessionType: "tournament" | "quick" = anyClient?.tournament
-			? "tournament"
-			: "quick";
 		let tournamentDepth: number | undefined = undefined;
 		if (sessionType === "tournament" && anyClient?.tournament) {
 			const t = this.tournaments[anyClient.tournament.tournamentId];
@@ -498,6 +492,8 @@ export default class GamesManager {
 		for (const client of clients) {
 			if (!client?.socket) continue;
 			const opponent = game.getOpp(client)?.name ?? "Opponent";
+			const opponentPaddleColor =
+				game.getOpp(client)?.cosmetics?.paddleColor ?? "#ffffff";
 			client.socket.send(
 				JSON.stringify({
 					event: "game_session_ready",
@@ -507,8 +503,7 @@ export default class GamesManager {
 							game.clients[1]?.id ?? ""
 						}`,
 						sessionType,
-						opponent,
-						self: client.name,
+						opponentPaddleColor,
 						side: client.inGameId ?? null,
 						labels: { self: `${client.name} (You)`, opponent },
 						...(tournamentDepth !== undefined
@@ -532,11 +527,17 @@ export default class GamesManager {
 			if (!client?.socket) continue;
 			const selfReady = client.inGameId === 0 ? p1Ready : p2Ready;
 			const opponentReady = client.inGameId === 0 ? p2Ready : p1Ready;
+			const opponentClient = clients[1 - client.inGameId];
 			client.socket.send(
 				JSON.stringify({
 					event: "ready_phase",
 					to: "pong",
-					body: { remaining, selfReady, opponentReady },
+					body: {
+						remaining,
+						selfReady,
+						opponentReady,
+						opponentName: opponentClient?.name || "Opponent",
+					},
 				})
 			);
 		}
@@ -544,54 +545,43 @@ export default class GamesManager {
 
 	private async startWithReadyPhase(
 		game: Game,
-		clients: (Client | undefined)[]
+		clients: (Client | undefined)[],
+		sessionType: string
 	) {
 		const readyState = {
 			p1Ready: false,
 			p2Ready: false,
 			cancelled: false,
-			timer: null as ReturnType<typeof setTimeout> | null,
+			timer: null as NodeJS.Timeout | null,
+			remaining: GamesManager.READY_PHASE_SECONDS,
 		};
 		this.readyPhases.set(game, readyState);
-
-		this.broadcastPlayersInfo(game, clients);
-
-		let elapsed = 0;
-		const checkInterval = 100;
-
+		this.broadcastPlayersInfo(game, clients, sessionType);
+		const checkInterval = 1000;
 		const checkReady = async () => {
-			while (elapsed < GamesManager.READY_PHASE_SECONDS * 1000) {
+			while (readyState.remaining > 0) {
 				if (readyState.cancelled) {
 					this.readyPhases.delete(game);
 					return;
 				}
-
 				if (readyState.p1Ready && readyState.p2Ready) {
 					this.readyPhases.delete(game);
 					await this.startWithCountdown(game, clients);
 					return;
 				}
-
-				if (elapsed % 1000 === 0) {
-					const remainingSeconds = Math.ceil(
-						(GamesManager.READY_PHASE_SECONDS * 1000 - elapsed) /
-							1000
-					);
-					this.broadcastReadyPhase(
-						game,
-						clients,
-						remainingSeconds,
-						readyState.p1Ready,
-						readyState.p2Ready
-					);
-				}
+				this.broadcastReadyPhase(
+					game,
+					clients,
+					readyState.remaining,
+					readyState.p1Ready,
+					readyState.p2Ready
+				);
 
 				await new Promise((resolve) =>
 					setTimeout(resolve, checkInterval)
 				);
-				elapsed += checkInterval;
+				readyState.remaining -= 1;
 			}
-
 			if (!readyState.cancelled) {
 				this.readyPhases.delete(game);
 				await this.startWithCountdown(game, clients);
@@ -607,17 +597,15 @@ export default class GamesManager {
 
 		const readyState = this.readyPhases.get(room);
 		if (!readyState) return;
-
 		if (client.inGameId === 0) {
 			readyState.p1Ready = true;
 		} else if (client.inGameId === 1) {
 			readyState.p2Ready = true;
 		}
-
 		this.broadcastReadyPhase(
 			room,
 			room.clients,
-			GamesManager.READY_PHASE_SECONDS,
+			readyState.remaining,
 			readyState.p1Ready,
 			readyState.p2Ready
 		);
@@ -630,67 +618,33 @@ export default class GamesManager {
 	) {
 		const entry = { cancelled: false };
 		this.countdowns.set(game, entry);
-		// broadcastPlayersInfo was already called in readyPhase, or prior.
-		console.log(`[Countdown] init for game with ${seconds}s`);
-
-		let started = false;
-		const failsafeId = setTimeout(() => {
-			if (!entry.cancelled && !started) {
-				console.log(`[Countdown] failsafe start triggered`);
-				this.countdowns.delete(game);
-				game.start();
-			}
-		}, (seconds + 2) * 1000);
-
 		for (let remaining = seconds; remaining > 0; remaining--) {
 			if (entry.cancelled) {
-				console.log(
-					`[Countdown] cancelled during countdown at ${remaining}`
-				);
-				clearTimeout(failsafeId);
 				this.countdowns.delete(game);
 				return;
 			}
-			// console.log(`[Countdown] remaining=${remaining}`);
-			try {
-				this.broadcastCountdown(clients, remaining);
-			} catch (err) {
-				console.error(
-					`[Countdown] broadcast error at ${remaining}:`,
-					err
-				);
-			}
+			this.broadcastCountdown(clients, remaining);
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 		}
 		if (entry.cancelled) {
-			console.log(`[Countdown] cancelled after loop`);
-			clearTimeout(failsafeId);
 			this.countdowns.delete(game);
 			return;
 		}
-		try {
-			this.broadcastCountdown(clients, 0);
-		} catch (err) {
-			console.error(`[Countdown] broadcast error at 0:`, err);
-		}
+		this.broadcastCountdown(clients, 0);
 		this.countdowns.delete(game);
-		started = true;
-		clearTimeout(failsafeId);
-		console.log(`[Countdown] starting game now`);
 		game.start();
 	}
-
 	private broadcastCountdown(
 		clients: (Client | undefined)[],
 		remaining: number
 	) {
 		const payload = JSON.stringify({
 			event: "countdown",
+			to: "pong",
 			body: { remaining },
 		});
 		for (const client of clients) client?.socket?.send(payload);
 	}
-
 	setRoom(client: Client, game: Game) {
 		const room = this.rooms.get(client);
 		if (room) {
@@ -704,11 +658,9 @@ export default class GamesManager {
 		client.quit = false;
 		this.rooms.set(client, game);
 	}
-
 	getRoom(client: Client) {
 		return this.rooms.get(client);
 	}
-
 	removeRoom(client: Client) {
 		console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
@@ -731,18 +683,17 @@ export default class GamesManager {
 			this.readyPhases.delete(game);
 		}
 	}
-
 	stop_offline(client: Client) {
 		client.quit = true;
 		this.removeRoom(client);
 	}
-
 	stop_online(client: Client) {
 		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
 			if (!tournament) return;
 			tournament.disconnect(client);
+			this.removeRoom(client);
 		} else {
 			this.removeFromQueue(client);
 			const room = this.getRoom(client);
@@ -766,16 +717,11 @@ export default class GamesManager {
 	}
 
 	playerReady(client: Client) {
-		// Handle tournament ready
-		if (client.tournament) {
-			const t = this.tournaments[client.tournament.tournamentId];
-			if (t) {
-				if (this.getRoom(client)) return;
-				t.playerReady(client);
-			}
-		}
-		// Handle game ready phase
-		this.markPlayerReady(client);
+		if (!client.tournament) return;
+		const t = this.tournaments[client.tournament.tournamentId];
+		if (!t) return;
+		if (this.getRoom(client)) return;
+		t.playerReady(client);
 	}
 
 	handleRejoin(client: Client) {

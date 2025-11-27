@@ -16,7 +16,6 @@ export default function BackgroundPicker({ game }: { game?: 'bombparty' | 'pong'
   const current = game ? getBackgroundFor(game) : getGlobalBackgroundKey();
 
   const cards: Card[] = useMemo(() => {
-    // Filtrer les backgrounds cachés (comme 42background) et utiliser tous les autres du catalog
     const backgrounds = availableBackgrounds.filter(bg => bg.id !== '42background');
     
     return backgrounds.map((bg) => ({

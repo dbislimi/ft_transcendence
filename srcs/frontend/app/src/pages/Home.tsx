@@ -1,21 +1,19 @@
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
 import ShopModal from "../Components/ShopModal";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 
 export default function Home() {
-  const { t } = useTranslation();
-  const { isAuthenticated, user } = useAuth();
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [openShop, setOpenShop] = useState(false);
-  
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+	const { t } = useTranslation();
+	const { isAuthenticated, user } = useUser();
+	const [isLoaded, setIsLoaded] = useState(false);
+	const [openShop, setOpenShop] = useState(false);
 
-  const handleMouseMove = (_e: React.MouseEvent) => {};
+	useEffect(() => {
+		setIsLoaded(true);
+	}, []);
 
   return (
     <>

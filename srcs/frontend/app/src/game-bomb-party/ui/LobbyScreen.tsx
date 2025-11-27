@@ -32,7 +32,7 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 
 	return (
 		<BackgroundSurface game="bombparty">
-		<SpaceBackground />
+			<SpaceBackground />
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl">
 					<div className="flex items-center justify-between mb-6">
@@ -123,7 +123,9 @@ export default function LobbyScreen({ onCreate, onJoin, onBack, isAuthenticated 
 							</div>
 							{isPrivate && (
 								<div>
-									<label className="block text-slate-300 text-sm mb-1">{t("bombParty.lobby.password")}</label>
+									<label className="block text-slate-300 text-sm mb-1">
+										{t("bombParty.lobby.passwordOpt")}
+									</label>
 									<input
 										type="password"
 										value={password}

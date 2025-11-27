@@ -68,6 +68,25 @@ export default function RealtimeNotifications() {
 	useEffect(() => {
 		const sentNotifs = new Map<string, string>();
 		const receivNotifs = new Map<string, string>();
+
+		const dismissNotificationById = (invitationId: string) => {
+			// Check sent notifications
+			const sentNotif = sentNotifs.get(invitationId);
+			if (sentNotif) {
+				dismiss(sentNotif);
+				sentNotifs.delete(invitationId);
+				return true;
+			}
+			// Check received notifications
+			const receivNotif = receivNotifs.get(invitationId);
+			if (receivNotif) {
+				dismiss(receivNotif);
+				receivNotifs.delete(invitationId);
+				return true;
+			}
+			return false;
+		};
+
 		const onInvitationEvent = (data: any) => {
 			if (!data) return;
 			switch (data.event) {
@@ -189,10 +208,26 @@ export default function RealtimeNotifications() {
 				}
 
 				case "invitation_game_found": {
+					const invitationId = data.body?.invitationId;
+					if (invitationId) {
+						// Close specific invitation notification
+						dismissNotificationById(invitationId);
+					} else {
+						// Fallback: close all remaining invitation notifications
+						for (const notifId of sentNotifs.values()) {
+							dismiss(notifId);
+						}
+						sentNotifs.clear();
+						for (const notifId of receivNotifs.values()) {
+							dismiss(notifId);
+						}
+						receivNotifs.clear();
+					}
+					const opponent = data.body?.opponent ?? "votre ami";
 					notify({
-						variant: "success",
-						title: "Partie lancée !",
-						message: "La partie commence avec votre ami.",
+						variant: "info",
+						title: "Partie lancée",
+						message: `La partie commence avec ${opponent}`,
 						duration: 3000,
 					});
 					navigate("/pong?mode=online");
@@ -229,12 +264,11 @@ export default function RealtimeNotifications() {
 						if (n) dismiss(n);
 						sentNotifs.delete(invitationId);
 					}
+					const by = data.body?.by ?? "Un joueur";
 					notify({
-						variant: "warning",
-						title: "Invitation refusée",
-						message: data.body?.by
-							? `${data.body.by} a refusé votre invitation`
-							: "Invitation refusée",
+						variant: "info",
+						title: "Invitation déclinée",
+						message: `${by} a décliné votre invitation`,
 						duration: 3000,
 					});
 					break;
@@ -295,24 +329,15 @@ export default function RealtimeNotifications() {
 					const invitationId: string | undefined =
 						data.body?.invitationId;
 					if (invitationId) {
-						const ns = sentNotifs.get(invitationId);
-						if (ns) dismiss(ns);
-						sentNotifs.delete(invitationId);
-						const nr = receivNotifs.get(invitationId);
-						if (nr) dismiss(nr);
-						receivNotifs.delete(invitationId);
+						dismissNotificationById(invitationId);
 					}
-					const from = data.body?.from;
 					const to = data.body?.to;
-					const message = from
-						? `L'invitation de ${from} a expiré`
-						: to
-						? `Votre invitation à ${to} a expiré`
-						: "L'invitation a expiré";
 					notify({
-						variant: "warning",
+						variant: "info",
 						title: "Invitation expirée",
-						message,
+						message: to
+							? `Votre invitation à ${to} a expiré`
+							: "Votre invitation a expiré",
 						duration: 3000,
 					});
 					break;
@@ -320,25 +345,22 @@ export default function RealtimeNotifications() {
 
 				case "invitation_error": {
 					const reason = data.body?.reason ?? "unknown";
-					const errorMessages: Record<string, string> = {
-						in_game: "Le joueur est déjà en partie",
-						searching: "Le joueur est déjà en recherche de partie",
-						friend_not_found: "Ami introuvable",
-						inviter_busy: "Vous avez déjà une invitation en cours",
-						invitee_busy:
-							"Le joueur a déjà une invitation en cours",
-						self: "Vous ne pouvez pas vous inviter vous-même",
-						id_required: "L'identifiant de l'invitation est requis",
-						accept_failed: "Échec de l'acceptation de l'invitation",
-						decline_failed: "Échec du refus de l'invitation",
-						cancel_failed: "Échec de l'annulation de l'invitation",
-					};
-					notify({
-						variant: "error",
-						title: "Erreur d'invitation",
-						message: errorMessages[reason] ?? `Erreur: ${reason}`,
-						duration: 5000,
-					});
+					if (reason === "friend_not_found") {
+						notify({
+							variant: "warning",
+							title: "Erreur",
+							message: "Ami introuvable",
+							duration: 3000,
+						});
+					} else if (reason === "in_game" || reason === "searching") {
+						notify({
+							variant: "warning",
+							title: "Erreur",
+							message: "Le joueur est occupé",
+							duration: 3000,
+						});
+					}
+					// Ignore other errors
 					break;
 				}
 			}

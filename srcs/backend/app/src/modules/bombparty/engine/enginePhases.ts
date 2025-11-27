@@ -16,7 +16,7 @@ export function startTurn(state: GameState, getNewSyllable: () => string, getTur
     }
   }
 
-  // Validation du bonus vitesse eclair: verifier si la cible est toujours en vie
+  // Validation du Bonus vts eclair: verifier si la cible est toujours en vie
   if (state.pendingFastForNextPlayerId) {
     const targetPlayer = state.players.find(p => p.id === state.pendingFastForNextPlayerId);
     if (!targetPlayer || targetPlayer.isEliminated) {
@@ -115,7 +115,6 @@ export function nextPlayer(state: GameState): void {
     const len = state.players.length;
     state.currentPlayerIndex = (state.currentPlayerIndex + step + len) % len;
     attempts++;
-
     if (attempts > maxAttempts) {
       bombPartyLogger.error({ attempts, maxAttempts, playersCount: state.players.length }, 'Cannot find next player');
       break;

@@ -2,9 +2,9 @@ import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET must be defined in environment variables');
+  throw new Error("JWT_SECRET non défini");
 }
 
 declare module "fastify" {
@@ -20,8 +20,7 @@ export function verifyToken(
   request: FastifyRequest,
   reply: FastifyReply
 ): { id: number; name?: string; email?: string } | null {
-  const authHeader = ((request as any).raw?.headers as any)?.authorization as string | undefined;
-  
+  const authHeader = request.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     reply.log.warn("Header Authorization manquant ou malformé");
     return null;
@@ -48,8 +47,7 @@ export function verifyTokenFromQuery(token: string): { id: number; name?: string
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: number;
       name?: string;
-      email?: string;
-    };
+      email?: string };
     return decoded;
   } catch (error) {
     console.error("Token JWT invalide depuis query:", {
@@ -61,7 +59,7 @@ export function verifyTokenFromQuery(token: string): { id: number; name?: string
   }
 }
 
-export default fp(async function authPlugin(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function authPlugin(fastify: FastifyInstance) {
   fastify.decorate("authenticate", async (req: FastifyRequest, reply: FastifyReply) => {
     const decoded = verifyToken(req, reply);
     if (!decoded) {

@@ -1,5 +1,5 @@
 import Board from "./Board.ts";
-import type { BonusBase } from "./Bonus.ts";
+import Bonus from "./Bonus.ts";
 
 export type difficulty = "easy" | "medium" | "hard" | "impossible";
 
@@ -14,10 +14,10 @@ export default class Player {
 	private movingDown: boolean = false;
 	bot: difficulty | undefined = undefined;
 	readonly id: 0 | 1;
-	ActiveBonus: BonusBase[] = [];
+	ActiveBonus: Bonus[] = [];
 	bonusCollectedTotal: number = 0;
 
-	constructor(field: Board, id: 0 | 1) {
+	constructor(field: Board, id: 0 | 1, speed?: number) {
 		this.boardHeight = field.H;
 		this.size = field.H / 4;
 		this.y = field.H / 2 - this.size / 2;
@@ -25,6 +25,7 @@ export default class Player {
 		this.id = id;
 		if (id == 0) this.x = Player.playerWidth;
 		else this.x = field.W - 2 * Player.playerWidth;
+		if (speed !== undefined) this.speed = speed;
 	}
 
 	public moveUp(state: boolean) {
@@ -38,7 +39,9 @@ export default class Player {
 		return { size: this.size, y: this.y };
 	}
 	reset() {
+		//this.bot = undefined;
 		this.ActiveBonus = this.ActiveBonus.filter((bonus) => {
+			bonus.remove(this);
 			return false;
 		});
 		this.y = this.boardHeight / 2 - this.size / 2;

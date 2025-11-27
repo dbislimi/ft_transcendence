@@ -48,7 +48,6 @@ export async function sendTournamentMessage(
 
 export default fp(async function Chat(fastify: FastifyInstance) {
 
-  // Vérifie si un utilisateur bloque un autre
   async function isBlocked(blockerId: number, senderId: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -62,7 +61,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     });
   }
 
-  // Récupère la liste des IDs bloqués par un utilisateur
   async function getBlockedIds(blockerId: number): Promise<number[]> {
     return new Promise((resolve, reject) => {
       fastify.db.all(
@@ -75,8 +73,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
       );
     });
   }
-
-  // Récupère la liste des utilisateurs qui ont bloqué un utilisateur spécifique
   async function getBlockers(blockedId: number): Promise<number[]> {
     return new Promise((resolve, reject) => {
       fastify.db.all(
@@ -89,8 +85,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
       );
     });
   }
-
-  // Envoi vers un client spécifique
   function sendToClient(client: Client, data: any) {
     try {
       if (client.socket.readyState === 1) {
@@ -101,8 +95,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
   }
 
-
-  // Envoie la liste des utilisateurs connectés à tous
   async function broadcastUsers() {
     const snapshot = await clientsLock.acquire(() => [...clients]);
     const allUsers = snapshot.map(c => ({ id: c.id, name: c.name }));
@@ -143,7 +135,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
       clientsLock.acquire(() => {
         clients.push(client);
       }).then(() => {
-        fastify.log.info(`✅ ${client.name} connecté (${clients.length} clients)`);
+        fastify.log.info(`${client.name} connecté (${clients.length} clients)`);
         broadcastUsers();
       });
 
@@ -224,9 +216,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           const index = clients.findIndex(c => c.socket === socket);
           if (index !== -1) {
             const [removedClient] = clients.splice(index, 1);
-            fastify.log.info(`❌ ${removedClient.name} déconnecté (${clients.length} restants)`);
+            fastify.log.info(`${removedClient.name} déconnecté (${clients.length} restants)`);
           } else {
-            fastify.log.info(`❌ Client inconnu déconnecté`);
+            fastify.log.info(`Client inconnu déconnecté`);
           }
         });
         broadcastUsers();
@@ -237,4 +229,3 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
   });
 });
-

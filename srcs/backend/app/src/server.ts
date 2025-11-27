@@ -49,6 +49,7 @@ async function main() {
 		exposedHeaders: ["Content-Length"],
 		credentials: true,
 		maxAge: 86400,
+		strictPreflight: true
 	});
 
 	await fastify.register(websocket);

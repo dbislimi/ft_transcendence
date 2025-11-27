@@ -28,7 +28,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
-
   const roomIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
@@ -39,7 +38,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   const timerRef = useRef(options?.timer);
   const onGameStateUpdateRef = useRef(options?.onGameStateUpdate);
   const onTurnStartRef = useRef(options?.onTurnStart);
-
   const setGamePhase = useBombPartyStore((state) => state.setGamePhase);
   const setGameState = useBombPartyStore((state) => state.receiveServerState);
   const setCountdown = useBombPartyStore((state) => state.setCountdown);
@@ -59,7 +57,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
   useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
   useEffect(() => { playerIdRef.current = playerId; }, [playerId]);
-
   useEffect(() => {
     timerRef.current = options?.timer;
     onGameStateUpdateRef.current = options?.onGameStateUpdate;
@@ -86,7 +83,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
   }, [client, roomId]);
 
   const storeConnection = useBombPartyStore((s) => s.connection);
-
   useEffect(() => {
     if (playerId !== storeConnection.playerId) setPlayerId(storeConnection.playerId);
     if (roomId !== storeConnection.roomId) setRoomId(storeConnection.roomId);
@@ -106,20 +102,17 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       const hasPrimaryService = connectionsInfo.allConnections.some(
         c => c.type === 'bombPartyService' && c.isActive && c.id === connectionsInfo.primaryConnection
       );
-
       if (hasPrimaryService) {
         logger.debug('BombPartyService déjà actif, ne pas créer de connexion concurrente avec BombPartyClient');
         return false;
       }
       return true;
     };
-
     const connect = () => {
       if (!checkPrimaryConnection()) {
         logger.debug('Connexion BombPartyClient annulée - BombPartyService est déjà primaire');
         return;
       }
-
       logger.debug('Tentative de connexion WebSocket');
       client.connect();
     };
@@ -264,7 +257,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         winner: payload.winner,
         finalStats: payload.finalStats
       } as any);
-
       setGamePhase('GAME_OVER');
     };
 
@@ -364,7 +356,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
         if (serverTurnStart && turnDuration > 0) {
           setTurnStartTime(serverTurnStart);
-
           if (timerRef.current) {
             console.log('[useBombPartyWebSocket] Démarrage du timer', {
               serverTurnStart,
@@ -423,7 +414,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
             setTimeout(() => setTimerFlash(false), 1000);
           }
         }
-
         if (payload.bonusKey === 'vitesseEclair' && payload.meta?.targetId) {
           const currentPlayerId = playerIdRef.current;
           if (payload.meta.targetId === currentPlayerId) {
@@ -523,7 +513,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
     return () => {
       cleanupCountRef.current++;
-
       if (cleanupDoneRef.current) {
         if (cleanupCountRef.current > 3) {
           logger.warn('Cleanup called multiple times', {
@@ -541,18 +530,15 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         cleanupCount: cleanupCountRef.current,
         user: user?.name
       });
-
       if (authTimeoutRef.current) {
         clearTimeout(authTimeoutRef.current);
         authTimeoutRef.current = null;
       }
       clearTimeout(connectionTimer);
-
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
-
       unsubscribeAuth();
       unsubscribeCreated();
       unsubscribeJoined();
@@ -575,7 +561,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       }
     };
   }, [client, user]);
-
   useEffect(() => {
     cleanupDoneRef.current = false;
     cleanupCountRef.current = 0;

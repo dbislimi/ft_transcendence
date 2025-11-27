@@ -297,7 +297,6 @@ export class BombPartyEngine {
         return key;
       }
     }
-
     return availableBonuses[0][0];
   }
 

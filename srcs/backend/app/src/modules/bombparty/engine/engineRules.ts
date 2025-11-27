@@ -85,7 +85,6 @@ function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
       return key;
     }
   }
-
   // fallback (ne devrait pas arriver)
   return availableBonuses[0][0];
 }

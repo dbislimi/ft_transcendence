@@ -8,7 +8,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "node --no-deprecation dist/server.js",
     "dev": "nodemon src/server.ts"
   },
   "keywords": [],
@@ -24,6 +24,7 @@
     "@fastify/websocket": "^11.1.0",
     "@napi-rs/canvas": "^0.1.73",
     "bcrypt": "^6.0.0",
+    "dotenv": "^16.5.0",
     "chart.js": "^4.5.0",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",

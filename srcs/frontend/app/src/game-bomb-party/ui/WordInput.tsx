@@ -95,7 +95,6 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
     if (!word.trim()) return;
 
     const trimmedWord = word.trim();
-
     if (trimmedWord.length < 3) {
       const errorMsg = t('bombParty.input.errors.tooShort');
       setError(errorMsg);
@@ -215,7 +214,6 @@ export default function WordInput({ syllable, usedWords, onSubmit, isActive, eng
           const rarity = BONUS_RARITY[it.key];
           const rarityStyles = getRarityStyles(rarity);
           const isAtMax = count >= MAX_BONUS_PER_TYPE;
-
           return (
             <button
               key={it.key}

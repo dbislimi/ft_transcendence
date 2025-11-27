@@ -5,13 +5,13 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { API_BASE_URL } from "../config/api";
 
 interface UserInfos {
-  name: string;
-  email: string;
-  password: string;
+	name: string;
+	email: string;
+	password: string;
 }
 
 interface Props {
-  type: string;
+	type: string;
 }
 
 export default function Form({ type }: Props) {
@@ -20,14 +20,14 @@ export default function Form({ type }: Props) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const nav = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const name = e.currentTarget.Name.value;
-    const email = e.currentTarget.email.value;
-    const password = e.currentTarget.password.value;
-    const confirmPassword = e.currentTarget.confirmPassword.value;
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const name = e.currentTarget.Name.value;
+		const email = e.currentTarget.email.value;
+		const password = e.currentTarget.password.value;
+		const confirmPassword = e.currentTarget.confirmPassword.value;
 
-    let formErrors: { [key: string]: string } = {};
+		let formErrors: { [key: string]: string } = {};
 
     if (password !== confirmPassword) {
       formErrors.password = t('auth.passwordsDoNotMatch');
@@ -39,12 +39,7 @@ export default function Form({ type }: Props) {
       formErrors.password = t('auth.passwordRequirements');
     }
 
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
-    }
-
-    const info: UserInfos = { name, email, password };
+		const info: UserInfos = { name, email, password };
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/register`, {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import { getWebSocketHost } from "../config/api";
+import { useUser } from "../context/UserContext";
 
 export function useGameWebsocket(
 	api: string,
@@ -8,7 +8,7 @@ export function useGameWebsocket(
 ) {
 	const wsRef = useRef<WebSocket | null>(null);
 	const onMessageRef = useRef(onMessage);
-	const { token, isAuthenticated } = useAuth();
+	const { token, isAuthenticated } = useUser();
 
 	useEffect(() => {
 		onMessageRef.current = onMessage;
@@ -41,6 +41,28 @@ export function useGameWebsocket(
 				? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(authToken)}`
 				: `${wsProtocol}//${wsHost}/${api}`;
 			console.log(`[ws:${api}] Attempting to connect to: ${url.replace(/token=[^&]+/, 'token=***')}`);
+
+
+
+
+			// const wsHost =
+			// 	window.location.hostname === "localhost"
+			// 		? "localhost:3001"
+			// 		: `${window.location.hostname}:3001`;
+
+			// const wsProtocol =
+			// 	window.location.protocol === "https:" ? "wss:" : "ws:";
+			// const url = authToken
+			// 	? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(
+			// 			authToken
+			// 	  )}`
+			// 	: `${wsProtocol}//${wsHost}/${api}`;
+			// console.log(
+			// 	`[ws:${api}] Attempting to connect to: ${url.replace(
+			// 		/token=[^&]+/,
+			// 		"token=***"
+			// 	)}`
+			// );
 
 			try {
 				ws = new WebSocket(url);

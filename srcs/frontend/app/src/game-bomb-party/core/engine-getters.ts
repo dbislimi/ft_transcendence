@@ -99,7 +99,6 @@ export class BombPartyEngineGetters {
         baseDuration = 15000;
         break;
     }
-
     return Math.min(baseDuration, 25000);
   }
 }

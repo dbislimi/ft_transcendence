@@ -59,7 +59,6 @@ export function useBombPartyGame(user: any) {
   }, [storeGameState, gameMode, gameState]);
 
   const previousTurnStartedAtRef = useRef<number | undefined>(undefined);
-
   useEffect(() => {
     if (gameMode === 'multiplayer' && gameState.phase === 'TURN_ACTIVE' && gameState.turnStartedAt) {
       const newTurnStartedAt = gameState.turnStartedAt;
@@ -96,7 +95,6 @@ export function useBombPartyGame(user: any) {
         }
       }
     }
-
     if (gameMode === 'local' && gameState.phase === 'TURN_ACTIVE') {
       if (turnStartTime === 0) {
         const now = Date.now();
@@ -118,7 +116,6 @@ export function useBombPartyGame(user: any) {
         });
         timer.stop();
       }
-
       if (turnStartTime > 0 && (gameState.phase === 'RESOLVE' || gameState.phase === 'GAME_OVER')) {
         console.log('[useBombPartyGame] Phase changée, conservation de turnStartTime pour traçabilité', {
           oldPhase: 'TURN_ACTIVE',
@@ -157,7 +154,6 @@ export function useBombPartyGame(user: any) {
         hasToken: !!localStorage.getItem('token'),
         stats: stats
       });
-
       bombPartyStatsService.saveGameStats({
         ...stats,
         playerName: playerName
@@ -184,7 +180,6 @@ export function useBombPartyGame(user: any) {
       turnStartTime,
       serverTurnStart: gameState.turnStartedAt
     });
-
     if (turnStartTime === 0) {
       console.error('[useBombPartyGame] ⚠️ ERREUR: turnStartTime est 0 lors de la soumission!', {
         gameMode,
@@ -330,7 +325,6 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = 0;
       }
-
       if (msTaken < 0) {
         console.error('[useBombPartyGame] ❌ msTaken négatif détecté, correction à 0', {
           msTaken,
@@ -340,7 +334,6 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = 0;
       }
-
       if (msTaken > gameState.turnDurationMs + 2000) {
         console.warn('[useBombPartyGame] ⚠️ msTaken suspect (trop grand), limitation', {
           msTaken,
@@ -350,7 +343,6 @@ export function useBombPartyGame(user: any) {
         });
         msTaken = Math.min(msTaken, gameState.turnDurationMs + 1000);
       }
-
       console.log('[useBombPartyGame] ✅ Submitting word in multiplayer', {
         word,
         msTaken,
@@ -362,7 +354,6 @@ export function useBombPartyGame(user: any) {
         playerId,
         turnDurationMs: gameState.turnDurationMs
       });
-
       try {
         bombPartyService.submitWord(word, msTaken);
         console.log('[useBombPartyGame] Word submitted to server');
@@ -440,7 +431,6 @@ export function useBombPartyGame(user: any) {
     }
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const isTurn = currentPlayer && currentPlayer.id === playerId;
-
     return isTurn;
   }, [gameState.players, gameState.currentPlayerIndex, gameState.phase]);
 
