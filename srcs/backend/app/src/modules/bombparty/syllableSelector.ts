@@ -16,7 +16,7 @@ const frenchLexicon: Set<string> = new Set(
 const syllablesPath = new URL('./data/syllabes.txt', import.meta.url);
 
 if (!fs.existsSync(syllablesPath)) {
-  throw new Error(`[BP] ERREUR CRITIQUE: Le fichier syllabes.txt est introuvable à ${syllablesPath.pathname}. Veuillez exécuter generateSyllables.ts pour le créer.`);
+  throw new Error(`[BP] ERREUR CRITIQUE: Le fichier syllabes.txt est introuvable à ${syllablesPath.pathname}. Veuillez executer generateSyllables.ts pour le creer.`);
 }
 
 const syllablesData = fs.readFileSync(syllablesPath, 'utf8');
@@ -27,10 +27,10 @@ const availableFragments: string[] = syllablesData
   .map(syllable => normalizeText(syllable));
 
 if (availableFragments.length === 0) {
-  throw new Error('[BP] ERREUR CRITIQUE: Le fichier syllabes.txt est vide. Veuillez exécuter generateSyllables.ts pour le régénérer.');
+  throw new Error('[BP] ERREUR CRITIQUE: Le fichier syllabes.txt est vide. Veuillez executer generateSyllables.ts pour le regenerer.');
 }
 
-console.log(`[BP] ✓ ${availableFragments.length} syllabes valides chargées depuis syllabes.txt`);
+console.log(`[BP] ✓ ${availableFragments.length} syllabes valides chargees depuis syllabes.txt`);
 console.log(`[BP] Exemples de syllabes: ${availableFragments.slice(0, 5).join(', ')}...`);
 
 const fragmentIndex: Map<string, Set<string>> = new Map();
@@ -54,12 +54,12 @@ for (const word of frenchLexicon) {
     }
     wordCount++;
     if (wordCount % 5000 === 0) {
-      console.log(`[BP] Traité ${wordCount} mots...`);
+      console.log(`[BP] Traite ${wordCount} mots...`);
     }
   }
 }
 
-console.log(`[BP] Index des fragments initialisé pour ${fragmentIndex.size} syllabes valides`);
+console.log(`[BP] Index des fragments initialise pour ${fragmentIndex.size} syllabes valides`);
 
 const recentSyllablesHistory: string[] = [];
 const MAX_HISTORY_SIZE = 15;
@@ -80,7 +80,7 @@ export function getRandomSyllable(excludeSyllable?: string): string {
   let candidates = availableFragments.filter(s => !excludeSet.has(s));
   
   if (candidates.length === 0) {
-    console.log('[BP] Toutes les syllabes sont récentes, réduction de l\'historique...');
+    console.log('[BP] Toutes les syllabes sont recentes, reduction de l\'historique...');
     recentSyllablesHistory.splice(0, Math.floor(MAX_HISTORY_SIZE / 2));
     excludeSet.clear();
     if (normalizedExclude) {
@@ -133,7 +133,7 @@ export function getRandomSyllable(excludeSyllable?: string): string {
     console.error(`[BP] ERREUR: Syllabe "${selected}" n'est pas dans availableFragments!`);
     const fallback = availableFragments[0];
     if (!fallback) {
-      throw new Error('[BP] ERREUR CRITIQUE: Impossible de sélectionner une syllabe valide.');
+      throw new Error('[BP] ERREUR CRITIQUE: Impossible de selectionner une syllabe valide.');
     }
     return fallback.toUpperCase();
   }

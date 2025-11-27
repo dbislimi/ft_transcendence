@@ -14,7 +14,7 @@ HOSTNAME=${HOSTNAME:-localhost}
 mkdir -p "$CERT_DIR"
 
 if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
-    echo "Génération des certificats SSL pour $HOSTNAME..."
+    echo "Generation des certificats SSL pour $HOSTNAME..."
     openssl req -x509 -newkey rsa:4096 \
         -keyout "$KEY_FILE" \
         -out "$CERT_FILE" \
@@ -24,12 +24,12 @@ if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
     chmod 600 "$KEY_FILE"
     chmod 644 "$CERT_FILE"
     
-    echo "Certificats générés dans $CERT_DIR"
+    echo "Certificats generes dans $CERT_DIR"
 else
     CERT_CN=$(openssl x509 -noout -subject -in "$CERT_FILE" 2>/dev/null | sed -n 's/.*CN=\([^,]*\).*/\1/p' || echo "")
     
     if [ "$CERT_CN" != "$HOSTNAME" ]; then
-        echo "🔐 Régénération des certificats pour $HOSTNAME..."
+        echo "🔐 Regeneration des certificats pour $HOSTNAME..."
         openssl req -x509 -newkey rsa:4096 \
             -keyout "$KEY_FILE" \
             -out "$CERT_FILE" \
@@ -38,6 +38,6 @@ else
         
         chmod 600 "$KEY_FILE"
         chmod 644 "$CERT_FILE"
-        echo "Certificats régénérés"
+        echo "Certificats regeneres"
     fi
 fi

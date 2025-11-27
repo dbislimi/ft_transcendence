@@ -134,7 +134,7 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                             <div className="bg-white/90 text-black px-3 py-1 rounded-full text-xs font-semibold">
-                              {isActive ? t('shop.equipped') || 'Équipé' : t('shop.select') || 'Sélectionner'}
+                              {isActive ? t('shop.equipped') || 'equipe' : t('shop.select') || 'Selectionner'}
                             </div>
                           </div>
                         </div>
@@ -153,7 +153,7 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
                         {isActive && (
                           <div className="flex items-center space-x-1 mt-1">
                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                            <span className="text-xs text-green-400 font-medium">{t('shop.equipped') || 'Équipé'}</span>
+                            <span className="text-xs text-green-400 font-medium">{t('shop.equipped') || 'equipe'}</span>
                           </div>
                         )}
                       </div>

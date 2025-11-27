@@ -30,7 +30,7 @@ async function Send2faMail() {
     };
     try {
         let info = await transporter.sendMail(Message);
-        console.log('Email envoyé : %s', info.messageId);
+        console.log('Email envoye : %s', info.messageId);
         return true;
     } catch (error) {
         console.error('Erreur lors de l"envoi du mail:', error);

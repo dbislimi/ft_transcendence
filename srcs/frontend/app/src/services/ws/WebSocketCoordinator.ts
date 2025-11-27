@@ -26,7 +26,7 @@ class WebSocketCoordinator {
   }
   
   public registerConnection(id: string, type: ConnectionType, priority: number = 1): boolean {
-    console.log(`[WebSocketCoordinator] Enregistrement de la connexion [${id}] de type [${type}] avec priorité ${priority}`);
+    console.log(`[WebSocketCoordinator] Enregistrement de la connexion [${id}] de type [${type}] avec priorite ${priority}`);
     
     if (this.activeConnections.has(id)) {
       const existing = this.activeConnections.get(id)!;
@@ -35,7 +35,7 @@ class WebSocketCoordinator {
         return this.primaryConnection === id;
       }
       existing.isActive = true;
-      existing.priority = priority; // Mettre à jour la priorité si elle a changé
+      existing.priority = priority; // Mettre à jour la priorite si elle a change
       existing.timestamp = Date.now(); // Mettre à jour le timestamp
     } else {
       const info: RegistrationInfo = {

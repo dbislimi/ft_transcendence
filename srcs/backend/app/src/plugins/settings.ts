@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 const Settings = async (fastify: FastifyInstance) => {
   fastify.get('/reglages', async (request, reply) => {
   if (!request.user) {
-    return reply.code(401).send({ error: 'Non autorisé' });
+    return reply.code(401).send({ error: 'Non autorise' });
   }
 
   try {
@@ -29,7 +29,7 @@ const Settings = async (fastify: FastifyInstance) => {
 
   fastify.post('/reglages', async (request, reply) => {
     if (!request.user) {
-      return reply.code(401).send({ error: 'Non autorisé' });
+      return reply.code(401).send({ error: 'Non autorise' });
     }
 
     const { enable2fa } = request.body as { enable2fa: boolean };

@@ -43,7 +43,7 @@ const createSound = (audioContext: AudioContext, type: SoundType): AudioBuffer |
         return null;
     }
   } catch (e) {
-    console.warn('Impossible de créer le son:', e);
+    console.warn('Impossible de creer le son:', e);
     return null;
   }
 };

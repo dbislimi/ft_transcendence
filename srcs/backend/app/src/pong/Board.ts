@@ -1,7 +1,7 @@
 import Player, { type difficulty } from "./Player.ts";
 import Ball from "./Ball.ts";
 import BotController, { EasyBot, MediumBot, HardBot } from "./Bot.ts";
-import Bonus from "./Bonus.ts";
+import { BonusBase as Bonus } from "./Bonus.ts";
 import { Bigger, Smaller, Faster } from "./Bonus.ts";
 import plotRewards from "./chart.ts";
 import {
@@ -141,10 +141,10 @@ export default class Board {
 			this.bonus = this.bonus.filter((bonus) => {
 				if (
 					(this.ball.x - this.width / 2) *
-						(this.ball.x - this.width / 2) +
-						(this.ball.y - bonus.y) * (this.ball.y - bonus.y) <=
+					(this.ball.x - this.width / 2) +
+					(this.ball.y - bonus.y) * (this.ball.y - bonus.y) <=
 					(this.ball.radius + bonus.radius) *
-						(this.ball.radius + bonus.radius)
+					(this.ball.radius + bonus.radius)
 				) {
 					this.players[player].bonusCollectedTotal++;
 					if (bonus.is === "bonus") {
@@ -237,9 +237,9 @@ export default class Board {
 
 				let y = Math.floor(
 					Math.random() * (this.height - this.bonusRadius * 2) +
-						this.bonusRadius
+					this.bonusRadius
 				);
-				for (let i = 0; i < this.bonus.length && retries; ) {
+				for (let i = 0; i < this.bonus.length && retries;) {
 					const bonusi = this.bonus[i];
 					if (
 						bonusi &&
@@ -247,8 +247,8 @@ export default class Board {
 					) {
 						y = Math.floor(
 							Math.random() *
-								(this.height - 2 * this.bonusRadius) +
-								this.bonusRadius
+							(this.height - 2 * this.bonusRadius) +
+							this.bonusRadius
 						);
 						i = 0;
 						--retries;
@@ -259,7 +259,7 @@ export default class Board {
 				if (retries) {
 					const bonus =
 						this.bonusTypes[
-							Math.floor(Math.random() * this.bonusTypes.length)
+						Math.floor(Math.random() * this.bonusTypes.length)
 						]!;
 					const newBonus = new bonus(y, this.bonusRadius);
 					this.bonus.push(newBonus);
@@ -284,12 +284,12 @@ export default class Board {
 			console.log(`[updateBot] botController.length=${this.botController.length}`);
 			console.log(`[updateBot] bot[0]=${this.botController[0] ? 'EXISTS' : 'undefined'}, bot[1]=${this.botController[1] ? 'EXISTS' : 'undefined'}`);
 		}
-		
+
 		// methode manuelle pour eviter les problemes avec forEach sur sparse arrays
 		for (let index = 0; index < this.botController.length; index++) {
 			const bot = this.botController[index];
 			if (!bot) continue;
-			
+
 			bot.aiLag += dt;
 			if (this.training || bot.aiLag >= 1) {
 				bot.takeDecision(this, this.players[index]!);

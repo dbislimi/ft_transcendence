@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, WS_BASE_URL } from "../config/api";
 
@@ -26,7 +26,7 @@ interface BlockedUser {
 }
 
 export default function Friends() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const token = localStorage.getItem("token") || undefined;
   const navigate = useNavigate();
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -36,7 +36,7 @@ export default function Friends() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"friends" | "requests" | "blocked">("friends");
-  const [wsStatus, setWsStatus] = useState<string>("Déconnecté");
+  const [wsStatus, setWsStatus] = useState<string>("Deconnecte");
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchFriends = async () => {
@@ -77,7 +77,7 @@ export default function Friends() {
         setBlockedUsers(data);
       }
     } catch (err) {
-      console.error("Erreur lors du chargement des utilisateurs bloqués:", err);
+      console.error("Erreur lors du chargement des utilisateurs bloques:", err);
     }
   };
 
@@ -87,7 +87,7 @@ export default function Friends() {
     const ws = new WebSocket(`${WS_BASE_URL}/ws-friends?token=${token}`);
     wsRef.current = ws;
 
-    ws.onopen = () => setWsStatus("Connecté");
+    ws.onopen = () => setWsStatus("Connecte");
 
     ws.onmessage = (event) => {
       try {
@@ -126,7 +126,7 @@ export default function Friends() {
       }
     };
 
-    ws.onclose = () => setWsStatus("Déconnecté");
+    ws.onclose = () => setWsStatus("Deconnecte");
     ws.onerror = (error) => { console.error("Erreur WebSocket:", error); setWsStatus("Erreur"); };
 
     return () => { if (ws && ws.readyState === WebSocket.OPEN) ws.close(); };
@@ -151,7 +151,7 @@ export default function Friends() {
       });
       const data = await res.json();
       if (res.ok) { setNewFriend(""); fetchRequests(); } else { setError(data.error || "Erreur lors de l'envoi de la demande"); }
-    } catch (err) { setError("Erreur réseau"); }
+    } catch (err) { setError("Erreur reseau"); }
     finally { setLoading(false); }
   };
 
@@ -159,14 +159,14 @@ export default function Friends() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) { fetchFriends(); fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors de l'acceptation"); }
-    } catch (err) { setError("Erreur réseau"); }
+    } catch (err) { setError("Erreur reseau"); }
   };
 
   const rejectRequest = async (senderId: number) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) { fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors du rejet"); }
-    } catch (err) { setError("Erreur réseau"); }
+    } catch (err) { setError("Erreur reseau"); }
   };
 
   const removeFriend = async (friendId: number) => {
@@ -174,7 +174,7 @@ export default function Friends() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) fetchFriends(); else { const data = await res.json(); setError(data.error || "Erreur lors de la suppression"); }
-    } catch (err) { setError("Erreur réseau"); }
+    } catch (err) { setError("Erreur reseau"); }
   };
 
   const blockUser = async (userId: number) => {
@@ -182,15 +182,15 @@ export default function Friends() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/block-user`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ user_id: userId }) });
       if (res.ok) { fetchFriends(); fetchRequests(); fetchBlockedUsers(); } else { const data = await res.json(); setError(data.error || "Erreur lors du blocage"); }
-    } catch (err) { setError("Erreur réseau"); }
+    } catch (err) { setError("Erreur reseau"); }
   };
 
   const unblockUser = async (userId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir débloquer cet utilisateur ?")) return;
+    if (!confirm("Êtes-vous sûr de vouloir debloquer cet utilisateur ?")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/blocked-users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || "Erreur lors du déblocage"); }
-    } catch (err) { setError("Erreur réseau"); }
+      if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || "Erreur lors du deblocage"); }
+    } catch (err) { setError("Erreur reseau"); }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === "Enter" && !loading) sendRequest(); };
@@ -211,7 +211,7 @@ export default function Friends() {
           <nav className="flex space-x-8">
             <button onClick={() => setActiveTab("friends")} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "friends" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}>Amis ({friends.length})</button>
             <button onClick={() => setActiveTab("requests")} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "requests" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}>Demandes ({requests.length})</button>
-            <button onClick={() => setActiveTab("blocked")} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "blocked" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover;border-gray-300"}`}>Bloqués ({blockedUsers.length})</button>
+            <button onClick={() => setActiveTab("blocked")} className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "blocked" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover;border-gray-300"}`}>Bloques ({blockedUsers.length})</button>
           </nav>
         </div>
 
@@ -272,7 +272,7 @@ export default function Friends() {
               )}
             </div>
 
-            <h3 className="text-xl font-bold mb-4">Demandes envoyées ({requests.filter(r => r.type === "sent").length})</h3>
+            <h3 className="text-xl font-bold mb-4">Demandes envoyees ({requests.filter(r => r.type === "sent").length})</h3>
             <div className="space-y-2">
               {requests.filter(r => r.type === "sent").length > 0 ? (
                 requests.filter(r => r.type === "sent").map(r => (
@@ -285,7 +285,7 @@ export default function Friends() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 italic">Aucune demande envoyée</p>
+                <p className="text-gray-500 italic">Aucune demande envoyee</p>
               )}
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function Friends() {
 
         {activeTab === "blocked" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Utilisateurs bloqués ({blockedUsers.length})</h2>
+            <h2 className="text-2xl font-bold mb-4">Utilisateurs bloques ({blockedUsers.length})</h2>
             <div className="space-y-2">
               {blockedUsers.length > 0 ? (
                 blockedUsers.map(u => (
@@ -302,14 +302,14 @@ export default function Friends() {
                       {u.avatar && (<img src={u.avatar} alt={u.display_name} className="w-8 h-8 rounded-full object-cover" />)}
                       <div>
                         <span className="font-medium">{u.display_name}</span>
-                        <div className="text-sm text-gray-500">Bloqué le {new Date(u.created_at).toLocaleDateString()}</div>
+                        <div className="text-sm text-gray-500">Bloque le {new Date(u.created_at).toLocaleDateString()}</div>
                       </div>
                     </div>
-                    <button onClick={() => unblockUser(u.id)} className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors">Débloquer</button>
+                    <button onClick={() => unblockUser(u.id)} className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors">Debloquer</button>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 italic">Aucun utilisateur bloqué</p>
+                <p className="text-gray-500 italic">Aucun utilisateur bloque</p>
               )}
             </div>
           </div>

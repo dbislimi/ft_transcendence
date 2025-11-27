@@ -103,14 +103,14 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         c => c.type === 'bombPartyService' && c.isActive && c.id === connectionsInfo.primaryConnection
       );
       if (hasPrimaryService) {
-        logger.debug('BombPartyService déjà actif, ne pas créer de connexion concurrente avec BombPartyClient');
+        logger.debug('BombPartyService dejà actif, ne pas creer de connexion concurrente avec BombPartyClient');
         return false;
       }
       return true;
     };
     const connect = () => {
       if (!checkPrimaryConnection()) {
-        logger.debug('Connexion BombPartyClient annulée - BombPartyService est déjà primaire');
+        logger.debug('Connexion BombPartyClient annulee - BombPartyService est dejà primaire');
         return;
       }
       logger.debug('Tentative de connexion WebSocket');
@@ -131,7 +131,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
     };
 
     const handleAuthSuccess = (payload: any) => {
-      logger.info('Authentification réussie', { playerId: payload.playerId });
+      logger.info('Authentification reussie', { playerId: payload.playerId });
       if (authTimeoutRef.current) {
         clearTimeout(authTimeoutRef.current);
         authTimeoutRef.current = null;
@@ -205,7 +205,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         const firstPlayer = payload.players?.[0];
         if (firstPlayer && curPlayerId) {
           const isHostPlayer = firstPlayer.id === curPlayerId;
-          logger.debug('Vérification hôte', {
+          logger.debug('Verification hôte', {
             playerId: curPlayerId,
             firstPlayerId: firstPlayer.id,
             isHost: isHostPlayer
@@ -238,7 +238,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         const firstPlayer = payload.players?.[0];
         if (firstPlayer && playerId) {
           const isHostPlayer = firstPlayer.id === playerId;
-          logger.debug('Vérification statut hôte', {
+          logger.debug('Verification statut hôte', {
             playerId,
             firstPlayerId: firstPlayer.id,
             isNowHost: isHostPlayer,
@@ -308,7 +308,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       logger.debug('Reçu bp:game:start', { payload });
       const curRoom = roomIdRef.current;
       if (payload.roomId === curRoom) {
-        logger.info('Démarrage du jeu pour la room', { roomId: payload.roomId });
+        logger.info('Demarrage du jeu pour la room', { roomId: payload.roomId });
         setGamePhase("GAME");
         setCountdown(0);
         setGameStartTime(Date.now());
@@ -316,7 +316,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
     };
 
     const handleGameState = (payload: any) => {
-      console.log('[useBombPartyWebSocket] handleGameState appelé', {
+      console.log('[useBombPartyWebSocket] handleGameState appele', {
         payloadRoomId: payload?.roomId,
         payloadPhase: payload?.gameState?.phase,
         hasGameState: !!payload?.gameState
@@ -326,15 +326,15 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       const curPlayerId = playerIdRef.current;
 
       if (!payload?.roomId || payload.roomId !== curRoom) {
-        console.warn('[useBombPartyWebSocket] Ignorer l\'état du jeu pour une autre room', {
+        console.warn('[useBombPartyWebSocket] Ignorer l\'etat du jeu pour une autre room', {
           currentRoomId: curRoom,
           payloadRoomId: payload?.roomId
         });
-        logger.debug('Ignorer l\'état du jeu pour une autre room', { currentRoomId: curRoom, payloadRoomId: payload?.roomId });
+        logger.debug('Ignorer l\'etat du jeu pour une autre room', { currentRoomId: curRoom, payloadRoomId: payload?.roomId });
         return;
       }
 
-      logger.debug('Mise à jour de l\'état du jeu', {
+      logger.debug('Mise à jour de l\'etat du jeu', {
         phase: payload.gameState.phase,
         playerId: curPlayerId,
         currentPlayerId: payload.gameState.currentPlayerId,
@@ -357,14 +357,14 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         if (serverTurnStart && turnDuration > 0) {
           setTurnStartTime(serverTurnStart);
           if (timerRef.current) {
-            console.log('[useBombPartyWebSocket] Démarrage du timer', {
+            console.log('[useBombPartyWebSocket] Demarrage du timer', {
               serverTurnStart,
               turnDuration,
               currentTime: Date.now(),
               timerIsActive: timerRef.current.isTimerActive()
             });
             timerRef.current.startTurn(serverTurnStart, turnDuration, Date.now());
-            console.log('[useBombPartyWebSocket] Timer démarré, isActive:', timerRef.current.isTimerActive());
+            console.log('[useBombPartyWebSocket] Timer demarre, isActive:', timerRef.current.isTimerActive());
           } else {
             console.warn('[useBombPartyWebSocket] timerRef.current est null !');
           }
@@ -375,14 +375,14 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
           setTimerGracePeriod(true);
           setTimeout(() => setTimerGracePeriod(false), 5000);
 
-          logger.debug('Tour démarré - turnStartTime initialisé', {
+          logger.debug('Tour demarre - turnStartTime initialise', {
             serverTurnStart,
             turnDuration,
             currentTime: Date.now(),
             timeOffset: Date.now() - serverTurnStart
           });
         } else {
-          logger.warn('Données de tour invalides - turnStartTime non initialisé', {
+          logger.warn('Donnees de tour invalides - turnStartTime non initialise', {
             serverTurnStart,
             turnDuration,
             phase: payload.gameState.phase
@@ -394,7 +394,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
     const handleBonusApplied = (payload: any) => {
       const curRoom = roomIdRef.current;
       if (payload?.roomId === curRoom && payload?.playerId && payload?.bonusKey) {
-        logger.debug('Bonus activé reçu par tous les joueurs', {
+        logger.debug('Bonus active reçu par tous les joueurs', {
           bonusKey: payload.bonusKey,
           playerId: payload.playerId,
           roomId: payload.roomId

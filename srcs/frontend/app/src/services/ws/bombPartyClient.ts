@@ -256,7 +256,7 @@ export class BombPartyClient {
           const delay = this.calculateReconnectDelay(this.maxNonPriorityAttempts);
           this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;
-            this.nonPriorityAttempts = 0; // Réinitialiser pour une nouvelle série de tentatives
+            this.nonPriorityAttempts = 0; // Reinitialiser pour une nouvelle serie de tentatives
             this.connect();
           }, delay);
           return;
@@ -311,7 +311,7 @@ export class BombPartyClient {
           this.connectionTimeout = null;
         }
 
-        logger.debug(`[BombPartyClient] Connexion établie [${this.connectionId}]`);
+        logger.debug(`[BombPartyClient] Connexion etablie [${this.connectionId}]`);
 
         this.startPingInterval();
 

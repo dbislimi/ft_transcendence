@@ -59,7 +59,7 @@ db.serialize(() => {
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
 	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
 
-	console.log("✅ Tables Bomb Party initialisées");
+	console.log("✅ Tables Bomb Party initialisees");
 });
 
 export default db;

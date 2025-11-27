@@ -35,7 +35,7 @@ function generateNameFromFilename(filename: string): string {
     'kitti': 'Kitti',
     '1': 'Interstellar',
     'pexels-padrinan-19670': 'Paysage Naturel',
-    'pexels-umkreisel-app-956999': 'Ciel Étoilé'
+    'pexels-umkreisel-app-956999': 'Ciel etoile'
   };
 
   return specialNames[basename] || basename
@@ -46,26 +46,26 @@ function generateNameFromFilename(filename: string): string {
 
 function generateDescription(name: string, filename: string): string {
   const descriptions: Record<string, string> = {
-    '42': 'Logo emblématique de 42',
-    'Halloween': 'Ambiance mystérieuse d\'Halloween',
+    '42': 'Logo emblematique de 42',
+    'Halloween': 'Ambiance mysterieuse d\'Halloween',
     'Matrix 42': 'Style Matrix avec code',
-    'Neige': 'Flocons de neige animés',
+    'Neige': 'Flocons de neige animes',
     'Matrix': 'Effet Matrix digital',
     'Forêt': 'Paysage forestier naturel',
-    'Grace': 'Ambiance gracieuse et élégante',
+    'Grace': 'Ambiance gracieuse et elegante',
     'Batman': 'Univers sombre de Gotham',
-    'Dark Souls': 'Atmosphère épique et mystérieuse',
+    'Dark Souls': 'Atmosphere epique et mysterieuse',
     'The Last of Us': 'Post-apocalyptique',
     'Windows 95': 'Nostalgie',
-    'Bit Cloud': 'Nuages pixelisés',
+    'Bit Cloud': 'Nuages pixelises',
     'Gta 5': 'Ambiance urbaine nocturne',
     'Kitti': 'Chaton',
-    'Interstellar': 'Voyage à travers les étoiles', 
+    'Interstellar': 'Voyage à travers les etoiles', 
     'Paysage Naturel': 'Vue panoramique de la nature',
-    'Ciel Étoilé': 'Nuit étoilée'
+    'Ciel etoile': 'Nuit etoilee'
   };
 
-  return descriptions[name] || `Arrière-plan ${name.toLowerCase()}`;
+  return descriptions[name] || `Arriere-plan ${name.toLowerCase()}`;
 }
 
 function getFileType(filename: string): 'image' | 'svg' {
@@ -83,10 +83,10 @@ function buildCatalog(): BackgroundItem[] {
   const items: BackgroundItem[] = [];
   items.push({
     id: 'default',
-    name: 'Par défaut',
+    name: 'Par defaut',
     url: null,
     type: 'default',
-    description: 'Arrière-plan simple et épuré',
+    description: 'Arriere-plan simple et epure',
     tags: ['default', 'simple']
   });
   for (const [path, url] of Object.entries(backgroundFiles)) {
@@ -119,15 +119,15 @@ function buildCatalog(): BackgroundItem[] {
       name: '42',
       url: theme42Url,
       type: 'svg',
-      description: 'Logo emblématique de 42',
+      description: 'Logo emblematique de 42',
       tags: ['42', 'logo', 'special', 'hidden']
     });
     if (import.meta.env.DEV) {
-      console.log('[Backgrounds] 42background ajouté au store avec ID "42":', theme42Url);
+      console.log('[Backgrounds] 42background ajoute au store avec ID "42":', theme42Url);
     }
   } else {
     if (import.meta.env.DEV) {
-      console.warn('[Backgrounds] 42background non trouvé dans backgroundFiles:', Object.keys(backgroundFiles));
+      console.warn('[Backgrounds] 42background non trouve dans backgroundFiles:', Object.keys(backgroundFiles));
     }
   }
 

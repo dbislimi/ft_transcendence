@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 
 export default function EnterCode() {
@@ -10,32 +11,32 @@ export default function EnterCode() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try{
-    const userId = localStorage.getItem("for2FaUserId"); 
-    if (!userId){
-      setCode("utilisateur non trouver");
-      return;
+    try {
+      const userId = localStorage.getItem("for2FaUserId");
+      if (!userId) {
+        setCode("utilisateur non trouver");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/check2fa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, code }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('token', data.token);
+        navigate('/Dashboard');
+      }
+      else {
+        setError(data.error || 'code incorrect');
+      }
+    } catch (error) {
+      setError('erreur reseau, veuillez reessayer.');
     }
-
-    const response = await fetch('http://localhost:3001/check2fa', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, code }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success){
-      localStorage.setItem('token', data.token);
-      navigate('/Dashboard');
-    }
-    else {
-      setError(data.error || 'code incorrect');
-    } 
-  } catch (error){
-    setError('erreur reseau, veuillez reessayer.');
   }
-}
 
   return (
     <div style={{ padding: '20px', maxWidth: '300px', margin: 'auto' }}>

@@ -51,7 +51,7 @@ export default function Countdown({
 		>
 			<div className="text-center select-none">
 				<div className="text-2xl text-slate-300 mb-4 tracking-wide">
-					Démarrage dans
+					Demarrage dans
 				</div>
 				<div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse">
 					{value}

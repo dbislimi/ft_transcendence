@@ -47,7 +47,7 @@ export function validateRoomJoin(
   }
 
   if (player.roomId && player.roomId !== room.id) {
-    return { valid: false, error: 'Déjà dans une autre salle' };
+    return { valid: false, error: 'Dejà dans une autre salle' };
   }
 
   if (room.players.size >= room.maxPlayers) {
@@ -77,7 +77,7 @@ export function validateRoomCreation(
   }
 
   if (creator.roomId) {
-    return { valid: false, error: 'Déjà dans une salle' };
+    return { valid: false, error: 'Dejà dans une salle' };
   }
 
   if (roomName !== undefined) {
@@ -88,8 +88,8 @@ export function validateRoomCreation(
     if (trimmedName.length > 50) {
       return { valid: false, error: 'Le nom du lobby ne peut pas depasser 50 caracteres' };
     }
-    if (!/^[a-zA-Z0-9\s\-_àáâãäåèéêëìíîïòóôõöùúûüýÿçÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝŸÇ]+$/.test(trimmedName)) {
-      return { valid: false, error: 'Le nom du lobby contient des caractères invalides' };
+    if (!/^[a-zA-Z0-9\s\-_àáâãäåeeêëìíîïòóôõöùúûüýÿçÀÁÂÃÄÅeeÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝŸÇ]+$/.test(trimmedName)) {
+      return { valid: false, error: 'Le nom du lobby contient des caracteres invalides' };
     }
   }
 
@@ -112,7 +112,7 @@ export function validateGameStart(room: Room, hasEngine: boolean): { valid: bool
   }
 
   if (hasEngine) {
-    return { valid: false, error: 'Partie déjà en cours' };
+    return { valid: false, error: 'Partie dejà en cours' };
   }
 
   return { valid: true };

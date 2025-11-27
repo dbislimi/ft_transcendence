@@ -99,7 +99,7 @@ class BombPartyStatsService {
           });
         }
 
-        console.log('Statistiques sauvegardées avec succès (utilisateur authentifié)');
+        console.log('Statistiques sauvegardees avec succes (utilisateur authentifie)');
       } else {
         console.log('[bombPartyStatsService] Sauvegarde en mode local/guest');
         const playerName = stats.playerName || `Guest_${Date.now()}`;
@@ -119,7 +119,7 @@ class BombPartyStatsService {
           throw new Error(`Erreur ${response.status}: ${response.statusText}`);
         }
 
-        console.log('Statistiques sauvegardées avec succès (mode local)');
+        console.log('Statistiques sauvegardees avec succes (mode local)');
       }
 
       this.trigramAttempts = [];

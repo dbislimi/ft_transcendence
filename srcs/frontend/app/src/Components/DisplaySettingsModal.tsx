@@ -45,10 +45,10 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   ];
 
   const sections = [
-    { id: 'theme', label: t('settings.display.theme') || 'Thème', icon: '🎨' },
-    { id: 'accessibility', label: t('settings.display.accessibility') || 'Accessibilité', icon: '♿' },
+    { id: 'theme', label: t('settings.display.theme') || 'Theme', icon: '🎨' },
+    { id: 'accessibility', label: t('settings.display.accessibility') || 'Accessibilite', icon: '♿' },
     { id: 'language', label: t('settings.display.language') || 'Langue', icon: '🌍' },
-    { id: 'background', label: t('settings.display.background') || 'Arrière-plan', icon: '🖼️' },
+    { id: 'background', label: t('settings.display.background') || 'Arriere-plan', icon: '🖼️' },
     { id: 'performance', label: t('settings.display.performance') || 'Performance', icon: '⚡' },
   ];
 
@@ -61,11 +61,11 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   };
 
   const getContrastLabel = (value: number): string => {
-    if (value <= 0.7) return t('settings.display.contrastVeryLow') || 'Très faible';
+    if (value <= 0.7) return t('settings.display.contrastVeryLow') || 'Tres faible';
     if (value <= 0.9) return t('settings.display.contrastLow') || 'Faible';
     if (value >= 0.95 && value <= 1.05) return t('settings.display.contrastNormal') || 'Normal';
-    if (value <= 1.5) return t('settings.display.contrastHigh') || 'Élevé';
-    return t('settings.display.contrastVeryHigh') || 'Très élevé';
+    if (value <= 1.5) return t('settings.display.contrastHigh') || 'eleve';
+    return t('settings.display.contrastVeryHigh') || 'Tres eleve';
   };
 
   const handleLanguageChange = (language: Language) => {
@@ -85,7 +85,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   };
 
   const handleBackgroundChange = (backgroundId: string, theme: 'light' | 'dark') => {
-    console.log('[Background] Changement vers:', backgroundId, 'pour le thème:', theme);
+    console.log('[Background] Changement vers:', backgroundId, 'pour le theme:', theme);
     setBackgroundForTheme(backgroundId, theme);
   };
 
@@ -105,7 +105,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
         <div className="flex items-center justify-between p-6 border-b border-gray-600/30">
           <h2 className="text-2xl font-bold section-title-aesthetic flex items-center gap-3">
             <span className="text-3xl">👁️</span>
-            {t('settings.display.title') || 'Réglages d\'affichage'}
+            {t('settings.display.title') || 'Reglages d\'affichage'}
           </h2>
           <button
             onClick={onClose}
@@ -143,7 +143,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                 <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.appearance') || 'Apparence'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
-                  <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.theme') || 'Thème'}</h4>
+                  <h4 className="text-lg font-medium text-white mb-4">{t('settings.display.theme') || 'Theme'}</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       onClick={() => handleThemeChange('light')}
@@ -177,7 +177,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                           {t('settings.display.autoChangeBackground') || 'Changement automatique de fond'}
                         </h4>
                         <p className="text-sm text-gray-400">
-                          {t('settings.display.autoChangeBackgroundDesc') || 'Change automatiquement le fond d\'écran lorsque vous basculez entre les modes clair et sombre'}
+                          {t('settings.display.autoChangeBackgroundDesc') || 'Change automatiquement le fond d\'ecran lorsque vous basculez entre les modes clair et sombre'}
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -222,7 +222,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
 
             {activeSection === 'accessibility' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.accessibility') || 'Accessibilité'}</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.accessibility') || 'Accessibilite'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
                   <div>
@@ -233,7 +233,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       </span>
                     </div>
                     <p className="text-gray-400 text-sm mb-6">
-                      {t('settings.display.contrastDesc') || 'Ajuste le contraste et la luminosité du texte'}
+                      {t('settings.display.contrastDesc') || 'Ajuste le contraste et la luminosite du texte'}
                     </p>
                     
                     <div className="space-y-4">
@@ -250,7 +250,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{t('settings.display.contrastLow') || 'Faible'}</span>
                         <span>{t('settings.display.contrastNormal') || 'Normal'}</span>
-                        <span>{t('settings.display.contrastHigh') || 'Élevé'}</span>
+                        <span>{t('settings.display.contrastHigh') || 'eleve'}</span>
                       </div>
                       
                       <div className="mt-4 p-3 rounded-lg bg-gray-700/50 border border-gray-600">
@@ -299,7 +299,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
 
             {activeSection === 'background' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.background') || 'Arrière-plan'}</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.background') || 'Arriere-plan'}</h3>
                 
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex gap-2 mb-6 bg-gray-800/50 rounded-lg p-1">
@@ -384,7 +384,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                                 </svg>
                               </div>
                               <div className="absolute bottom-3 left-3 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">
-                                {t('settings.display.equipped') || 'Équipé'}
+                                {t('settings.display.equipped') || 'equipe'}
                               </div>
                             </>
                           )}
@@ -395,7 +395,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                   
                   <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <p className="text-blue-300 text-sm">
-                      {t('settings.display.backgroundTip') || '💡 Astuce : Choisissez un arrière-plan pour le mode clair et un pour le mode sombre. L\'arrière-plan changera automatiquement lorsque vous basculerez entre les modes.'}
+                      {t('settings.display.backgroundTip') || '💡 Astuce : Choisissez un arriere-plan pour le mode clair et un pour le mode sombre. L\'arriere-plan changera automatiquement lorsque vous basculerez entre les modes.'}
                     </p>
                   </div>
                 </div>
@@ -427,8 +427,8 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                 <div className="settings-section rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-lg font-medium text-white">{t('settings.display.energySaver') || 'Mode économie d\'énergie'}</h4>
-                      <p className="text-gray-400 text-sm">{t('settings.display.energySaverDesc') || 'Réduit les effets visuels pour économiser la batterie'}</p>
+                      <h4 className="text-lg font-medium text-white">{t('settings.display.energySaver') || 'Mode economie d\'energie'}</h4>
+                      <p className="text-gray-400 text-sm">{t('settings.display.energySaverDesc') || 'Reduit les effets visuels pour economiser la batterie'}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -448,7 +448,7 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
 
         <div className="flex items-center justify-between p-6 border-t border-gray-600/30">
           <div className="text-sm text-gray-400">
-            {t('settings.display.autoSave') || 'Les modifications sont sauvegardées automatiquement'}
+            {t('settings.display.autoSave') || 'Les modifications sont sauvegardees automatiquement'}
           </div>
           <button
             onClick={onClose}

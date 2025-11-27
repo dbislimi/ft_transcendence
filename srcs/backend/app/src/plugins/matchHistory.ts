@@ -28,7 +28,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
     const saveKey = `${player1Id}-${player2Id || 'bot'}-${winnerId}-${Date.now()}`;
     
     if (this.recentSaves && this.recentSaves.has(saveKey.substring(0, saveKey.lastIndexOf('-')))) {
-      fastify.log.warn(`Match doublon ignoré: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
+      fastify.log.warn(`Match doublon ignore: P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}`);
       return Promise.resolve();
     }
     
@@ -54,7 +54,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
             fastify.log.error("Erreur sauvegarde match:", err);
             reject(err);
           } else {
-            fastify.log.info(`Match sauvegardé ID: ${this.lastID} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
+            fastify.log.info(`Match sauvegarde ID: ${this.lastID} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
             
             try {
               await fastify.updateUserStats(player1Id, winnerId === player1Id);
@@ -102,7 +102,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
         [userId],
         (err: any) => {
           if (err) {
-            fastify.log.error("Erreur mise à jour tournois gagnés:", err);
+            fastify.log.error("Erreur mise à jour tournois gagnes:", err);
             reject(err);
           } else {
             fastify.log.info(`Tournament win added for user ${userId}`);
@@ -147,7 +147,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
         [userId, userId, limit, offset],
         (err: any, rows: Match[]) => {
           if (err) {
-            fastify.log.error("Erreur récupération historique:", err);
+            fastify.log.error("Erreur recuperation historique:", err);
             reply.code(500).send({ error: "Erreur serveur" });
             reject(err);
           } else {
@@ -192,11 +192,11 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
         [userId, userId, userId, userId, userId],
         (err: any, row: any) => {
           if (err) {
-            fastify.log.error("Erreur récupération stats:", err);
+            fastify.log.error("Erreur recuperation stats:", err);
             reply.code(500).send({ error: "Erreur serveur" });
             reject(err);
           } else if (!row) {
-            reply.code(404).send({ error: "Utilisateur non trouvé" });
+            reply.code(404).send({ error: "Utilisateur non trouve" });
             reject(new Error("User not found"));
           } else {
             const stats = {

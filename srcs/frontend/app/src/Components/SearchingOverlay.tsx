@@ -103,7 +103,7 @@ export default function SearchingOverlay({
 							<div className="space-y-4">
 								<fieldset className="flex gap-4 justify-center items-center">
 									<legend className="sr-only">
-										Sélectionnez la difficulté
+										Selectionnez la difficulte
 									</legend>
 									<label className="inline-flex items-center space-x-2">
 										<input

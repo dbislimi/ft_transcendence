@@ -385,13 +385,13 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
         let code: ErrorCode = ErrorCode.STATE_ERROR;
         const errorMsg = result.error || 'Error joining lobby';
         
-        if (errorMsg.includes('non trouvée') || errorMsg.includes('not found')) {
+        if (errorMsg.includes('non trouvee') || errorMsg.includes('not found')) {
           code = ErrorCode.STATE_ERROR;
         } else if (errorMsg.includes('pleine') || errorMsg.includes('full')) {
           code = ErrorCode.STATE_ERROR;
         } else if (errorMsg.includes('mot de passe') || errorMsg.includes('password') || errorMsg.includes('Mot de passe requis')) {
           code = ErrorCode.AUTH_ERROR;
-        } else if (errorMsg.includes('déjà dans') || errorMsg.includes('already in')) {
+        } else if (errorMsg.includes('dejà dans') || errorMsg.includes('already in')) {
           code = ErrorCode.STATE_ERROR;
         } else if (errorMsg.includes('Invalid') || errorMsg.includes('invalide')) {
           code = ErrorCode.VALIDATION_ERROR;
@@ -567,7 +567,7 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           code, 
           reason: reason.toString(),
           gracePeriodMs
-        }, 'WebSocket fermé - Grace period de 5s avant éjection');
+        }, 'WebSocket ferme - Grace period de 5s avant ejection');
         
         setTimeout(() => {
           const room = roomManager.getRoom(roomId);
@@ -586,11 +586,11 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
             Array.from(roomPlayer.sockets).some(ws => ws.readyState === 1); // OPEN = 1
           
           if (hasActiveSocket) {
-            bombPartyLogger.info({ playerId, roomId }, '✅ Joueur reconnecté pendant grace period - pas d\'éjection');
+            bombPartyLogger.info({ playerId, roomId }, '✅ Joueur reconnecte pendant grace period - pas d\'ejection');
             return;
           }
           
-          bombPartyLogger.info({ playerId, roomId }, '❌ Pas de reconnexion après grace period - éjection du joueur');
+          bombPartyLogger.info({ playerId, roomId }, '❌ Pas de reconnexion apres grace period - ejection du joueur');
           roomManager.leaveRoom(playerId, roomId, socket);
         }, gracePeriodMs);
       }

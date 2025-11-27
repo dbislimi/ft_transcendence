@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTurnTimer } from '../core/timer';
 import { isTimerExpired } from '../core/timerUtils';
-import { useAuth } from '../../contexts/AuthContext';
+import { useUser } from '../../context/UserContext';
 import RulesScreen from '../RulesScreen';
 import { bombPartyService } from '../../services/bombPartyService';
 import {
@@ -14,7 +14,7 @@ import {
 import { useBombPartyStore } from '../../store/useBombPartyStore';
 
 export default function BombPartyPage() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const serviceInitializedRef = useRef<boolean>(false);

@@ -46,7 +46,7 @@ export default function GameSettingsModal({ isOpen, onClose }: GameSettingsModal
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">
-              {t('settings.game.title') || 'Réglages de jeu'}
+              {t('settings.game.title') || 'Reglages de jeu'}
             </h2>
             <button
               onClick={onClose}
@@ -64,7 +64,7 @@ export default function GameSettingsModal({ isOpen, onClose }: GameSettingsModal
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-lg font-medium text-white">
-                    {t('settings.game.soundsEnabled') || 'Sons activés'}
+                    {t('settings.game.soundsEnabled') || 'Sons actives'}
                   </h4>
                   <p className="text-gray-400 text-sm">
                     {t('settings.game.soundsEnabledDesc') || 'Activer les effets sonores du jeu'}
@@ -86,10 +86,10 @@ export default function GameSettingsModal({ isOpen, onClose }: GameSettingsModal
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-lg font-medium text-white">
-                    {t('settings.game.reducedMotion') || 'Réduire les animations'}
+                    {t('settings.game.reducedMotion') || 'Reduire les animations'}
                   </h4>
                   <p className="text-gray-400 text-sm">
-                    {t('settings.game.reducedMotionDesc') || 'Réduire les animations pour améliorer les performances'}
+                    {t('settings.game.reducedMotionDesc') || 'Reduire les animations pour ameliorer les performances'}
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -130,7 +130,7 @@ export default function GameSettingsModal({ isOpen, onClose }: GameSettingsModal
 
         <div className="flex items-center justify-between p-6 border-t border-gray-600/30">
           <div className="text-sm text-gray-400">
-            {t('settings.game.autoSave') || 'Les modifications sont sauvegardées automatiquement'}
+            {t('settings.game.autoSave') || 'Les modifications sont sauvegardees automatiquement'}
           </div>
           <button
             onClick={onClose}

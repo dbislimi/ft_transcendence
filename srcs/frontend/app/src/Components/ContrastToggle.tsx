@@ -36,8 +36,8 @@ export default function ContrastToggle() {
         className="px-3 py-1 bg-slate-800 border border-purple-500/30 rounded-md text-sm text-white"
       >
         <option value="normal">Normal</option>
-        <option value="high">Élevé</option>
-        <option value="veryHigh">Très élevé</option>
+        <option value="high">eleve</option>
+        <option value="veryHigh">Tres eleve</option>
       </select>
     </div>
   );

@@ -51,7 +51,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 				[email.trim(), decoded.id]
 			);
 			if (existing)
-				return reply.code(409).send({ error: "Email déjà utilisé" });
+				return reply.code(409).send({ error: "Email dejà utilise" });
 			updates.push("email = ?");
 			values.push(email.trim());
 		}
@@ -75,7 +75,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 				[display_name.trim(), decoded.id]
 			);
 			if (existing)
-				return reply.code(409).send({ error: "Pseudo déjà utilisé" });
+				return reply.code(409).send({ error: "Pseudo dejà utilise" });
 			updates.push("display_name = ?");
 			values.push(display_name.trim());
 		}
@@ -115,7 +115,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (updates.length === 0)
 			return reply
 				.code(400)
-				.send({ error: "Aucune donnée à mettre à jour" });
+				.send({ error: "Aucune donnee à mettre à jour" });
 		values.push(decoded.id);
 		await dbRun(
 			`UPDATE users SET ${updates.join(", ")} WHERE id = ?`,

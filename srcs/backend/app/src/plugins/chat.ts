@@ -135,11 +135,11 @@ export default fp(async function Chat(fastify: FastifyInstance) {
       clientsLock.acquire(() => {
         clients.push(client);
       }).then(() => {
-        fastify.log.info(`${client.name} connecté (${clients.length} clients)`);
+        fastify.log.info(`${client.name} connecte (${clients.length} clients)`);
         broadcastUsers();
       });
 
-      // Réception de message
+      // Reception de message
       socket.on("message", async (raw: Buffer) => {
         try {
           const data = JSON.parse(raw.toString());
@@ -161,7 +161,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             const snapshot = await clientsLock.acquire(() => [...clients]);
 
             if (msg.to) {
-              // Message privé
+              // Message prive
               const targets = snapshot.filter(c => c.id === msg.to);
               for (const t of targets) {
                 if (!(await isBlocked(t.id, client.id))) {
@@ -171,7 +171,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               sendToClient(client, { type: "private", ...msg });
             } else {
               // Message global
-              // Optimisation: Récupérer tous ceux qui m'ont bloqué en une seule requête
+              // Optimisation: Recuperer tous ceux qui m'ont bloque en une seule requête
               const blockers = await getBlockers(client.id);
 
               for (const c of snapshot) {
@@ -187,8 +187,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               [client.id, data.userId],
               (err) => {
                 if (err) return fastify.log.error("Erreur DB block:", err);
-                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} bloqué` });
-                // Rediffuser la liste des utilisateurs pour que le statut "bloqué" soit à jour
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} bloque` });
+                // Rediffuser la liste des utilisateurs pour que le statut "bloque" soit à jour
                 broadcastUsers();
               }
             );
@@ -200,7 +200,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               [client.id, data.userId],
               (err) => { // Ajout du callback
                 if (err) return fastify.log.error("Erreur DB unblock:", err);
-                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} débloqué` });
+                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} debloque` });
                 // Rediffuser la liste des utilisateurs
                 broadcastUsers();
               }
@@ -216,9 +216,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           const index = clients.findIndex(c => c.socket === socket);
           if (index !== -1) {
             const [removedClient] = clients.splice(index, 1);
-            fastify.log.info(`${removedClient.name} déconnecté (${clients.length} restants)`);
+            fastify.log.info(`${removedClient.name} deconnecte (${clients.length} restants)`);
           } else {
-            fastify.log.info(`Client inconnu déconnecté`);
+            fastify.log.info(`Client inconnu deconnecte`);
           }
         });
         broadcastUsers();

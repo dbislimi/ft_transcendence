@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNotifications } from "../contexts/NotificationContext";
+import { useNotifications } from "../context/NotificationContext";
 import type {
 	NotificationItem,
 	NotificationVariant,
 	NotificationAction,
-} from "../contexts/NotificationContext";
+} from "../context/NotificationContext";
 
 type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
 

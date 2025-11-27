@@ -10,7 +10,7 @@ export function sanitizePlayerName(name: string): string {
     sanitized = sanitized.substring(0, 50);
   }
   
-  sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-_àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '');
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-_àáâãäåæçéèêëìíîïðñòóôõöøùúûüýþÿ]/g, '');
   
   sanitized = sanitized.replace(/\s+/g, ' ');
   

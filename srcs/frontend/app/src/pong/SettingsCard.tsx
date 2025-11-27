@@ -123,15 +123,15 @@ export function SettingsCard({
 					<div className="space-y-8">
 						<ChoiceGroup
 							label={t("settings.display.title") || "Mode"}
-							options={["Cosmétique", "Jeu"]}
+							options={["Cosmetique", "Jeu"]}
 							value={
 								selectedMode === "cosmetics"
-									? "Cosmétique"
+									? "Cosmetique"
 									: "Jeu"
 							}
 							onChange={(value) =>
 								setSelectedMode(
-									value === "Cosmétique"
+									value === "Cosmetique"
 										? "cosmetics"
 										: "gameSettings"
 								)
@@ -144,7 +144,7 @@ export function SettingsCard({
 						{selectedMode === "cosmetics" ? (
 							<div className="space-y-6 animate-slideIn">
 								<ChoiceGroup
-									label="Côté préféré"
+									label="Côte prefere"
 									options={["Gauche", "Droite"]}
 									value={
 										tempCosmetics.preferredSide === "left"
@@ -210,7 +210,7 @@ export function SettingsCard({
 						) : (
 							<div className="space-y-6 animate-slideIn">
 								<ChoiceGroup
-									label="Nombre de bonus simultanés"
+									label="Nombre de bonus simultanes"
 									options={["0", "1", "2", "3", "4"]}
 									value={bonusNb.toString()}
 									onChange={(value) =>

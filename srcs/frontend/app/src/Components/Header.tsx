@@ -90,7 +90,7 @@ export default function Header() {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 to-pink-600/0 group-hover:from-red-600/20 group-hover:to-pink-600/20 transition-all duration-300"></div>
                 <span className="relative text-red-300 group-hover:text-red-200 font-semibold transition-colors duration-300">
-                  {t('nav.logout') || 'Déconnexion'}
+                  {t('nav.logout') || 'Deconnexion'}
                 </span>
               </button>
             )}

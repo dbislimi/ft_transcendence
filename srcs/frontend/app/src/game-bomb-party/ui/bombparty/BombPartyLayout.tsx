@@ -149,7 +149,7 @@ export default function BombPartyLayout({
           {eliminatedPlayers.length > 0 && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800/80 backdrop-blur-md border border-slate-600 rounded-lg p-3 max-w-md">
               <div className="text-xs text-slate-400 mb-2 text-center">
-                {t('bombParty.spectator.eliminatedPlayers', 'Joueurs éliminés')}
+                {t('bombParty.spectator.eliminatedPlayers', 'Joueurs elimines')}
               </div>
               <div className="flex flex-wrap gap-2 justify-center">
                 {eliminatedPlayers.map((player: Player) => (

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
-import { useUser } from '../contexts/UserContext';
-import { useNotifications } from '../contexts/NotificationContext';
+import { useUser } from '../context/UserContext'; 
+import { useNotifications } from '../context/NotificationContext';
 import { API_BASE_URL } from '../config/api';
 
 interface AccountSettingsModalProps {
@@ -69,7 +69,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
       const data = await res.json();
 
       if (res.ok) {
-        notify({ variant: 'success', message: 'Profil mis à jour avec succès' });
+        notify({ variant: 'success', message: 'Profil mis à jour avec succes' });
         await refreshUser();
         setIsEditing(false);
         // Reset password fields
@@ -99,7 +99,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
           <div className="flex items-center space-x-3">
             <span className="text-3xl">👤</span>
             <h2 className="text-2xl font-bold text-white">
-              {t('settings.account.title') || 'Réglages de compte'}
+              {t('settings.account.title') || 'Reglages de compte'}
             </h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
@@ -153,7 +153,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
               </div>
             </div>
           ) : (
-            // Mode Édition
+            // Mode edition
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">

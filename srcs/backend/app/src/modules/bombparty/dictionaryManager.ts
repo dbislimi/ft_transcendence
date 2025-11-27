@@ -35,7 +35,7 @@ export class DictionaryManager {
     if (this.initialized) return;
 
     if (!fs.existsSync(this.partitionsDir) || this.getPartitionFiles().length === 0) {
-      console.log('[DictionaryManager] Création des partitions...');
+      console.log('[DictionaryManager] Creation des partitions...');
       await this.createPartitions();
     } else {
       this.partitionFiles = this.getPartitionFiles();
@@ -46,7 +46,7 @@ export class DictionaryManager {
     this.totalWords = allWords.split('\n').filter(line => line.trim().length > 0).length;
 
     this.initialized = true;
-    console.log(`[DictionaryManager] Initialisé: ${this.totalWords} mots, ${this.partitionCount} partitions`);
+    console.log(`[DictionaryManager] Initialise: ${this.totalWords} mots, ${this.partitionCount} partitions`);
   }
 
   private ensurePartitionsDir(): void {
@@ -97,7 +97,7 @@ export class DictionaryManager {
 
     this.partitionCount = partitionIndex;
     this.partitionFiles = this.getPartitionFiles();
-    console.log(`[DictionaryManager] ${this.partitionCount} partitions créées`);
+    console.log(`[DictionaryManager] ${this.partitionCount} partitions creees`);
   }
 
   private async savePartition(index: number, words: string[]): Promise<void> {

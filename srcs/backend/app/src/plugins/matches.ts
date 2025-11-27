@@ -102,7 +102,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
               }
 
               const matchId = this.lastID;
-              fastify.log.info(`Match sauvegardé ID: ${matchId} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
+              fastify.log.info(`Match sauvegarde ID: ${matchId} (P1=${player1Id}, P2=${player2Id}, Winner=${winnerId}, Bot=${isBot}, Type=${matchType})`);
 
               // Update stats inline to ensure they are in the transaction
               const p1Column = winnerId === player1Id ? "wins" : "losses";
@@ -153,7 +153,7 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     const offset = (page - 1) * limit;
 
     return new Promise((resolve, reject) => {
-      // TODO: Vérifier que la table 'matches' contient les colonnes: is_bot, bot_difficulty, scores, match_type
+      // TODO: Verifier que la table 'matches' contient les colonnes: is_bot, bot_difficulty, scores, match_type
       fastify.db.all(
         `SELECT 
           m.id,
@@ -211,8 +211,8 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     const { userId } = request.params;
 
     return new Promise((resolve, reject) => {
-      // TODO: Vérifier que la table 'users' contient la colonne 'tournaments_won'
-      // TODO: Vérifier que la table 'matches' contient les colonnes 'is_bot'
+      // TODO: Verifier que la table 'users' contient la colonne 'tournaments_won'
+      // TODO: Verifier que la table 'matches' contient les colonnes 'is_bot'
       fastify.db.get(
         `SELECT 
           wins,
@@ -225,11 +225,11 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
         [userId, userId, userId, userId, userId],
         (err: any, row: any) => {
           if (err) {
-            fastify.log.error("Erreur récupération stats:", err);
+            fastify.log.error("Erreur recuperation stats:", err);
             reply.code(500).send({ error: "Erreur serveur" });
             reject(err);
           } else if (!row) {
-            reply.code(404).send({ error: "Utilisateur non trouvé" });
+            reply.code(404).send({ error: "Utilisateur non trouve" });
             reject(new Error("User not found"));
           } else {
             const stats = {

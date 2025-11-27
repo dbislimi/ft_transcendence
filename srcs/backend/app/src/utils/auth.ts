@@ -4,7 +4,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET non défini");
+  throw new Error("JWT_SECRET non defini");
 }
 
 declare module "fastify" {
@@ -22,7 +22,7 @@ export function verifyToken(
 ): { id: number; name?: string; email?: string } | null {
   const authHeader = request.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
-    reply.log.warn("Header Authorization manquant ou malformé");
+    reply.log.warn("Header Authorization manquant ou malforme");
     return null;
   }
   try {
@@ -34,7 +34,7 @@ export function verifyToken(
     };
     return decoded;
   } catch (error) {
-    reply.log.error("Erreur de vérification JWT:", {
+    reply.log.error("Erreur de verification JWT:", {
       error: error instanceof Error ? error.message : String(error),
       tokenExists: !!authHeader
     });

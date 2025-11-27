@@ -6,6 +6,8 @@ import React, {
 	useCallback,
 } from "react";
 
+import { API_BASE_URL, WS_BASE_URL } from "../config/api";
+
 interface User {
 	id: number;
 	name: string;
@@ -38,14 +40,14 @@ interface UserContextType {
 const UserContext = createContext<UserContextType>({
 	isLoading: true,
 	user: null,
-	refreshUser: async () => {},
-	setToken: () => {},
+	refreshUser: async () => { },
+	setToken: () => { },
 	token: null,
-	login: () => {},
-	logout: () => {},
+	login: () => { },
+	logout: () => { },
 	isAuthenticated: false,
-	setUser: () => {},
-	setGuestName: () => {},
+	setUser: () => { },
+	setGuestName: () => { },
 });
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -55,7 +57,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [user, setUser] = useState<User | null>(null);
 	const [token, setTokenState] = useState<string | null>(() => {
 		try {
-			return sessionStorage.getItem("token");
+			const storedToken = sessionStorage.getItem("token");
+			if (storedToken === "undefined") return null;
+			return storedToken;
 		} catch {
 			return null;
 		}
@@ -64,21 +68,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const logoutUser = async (currentToken?: string | null) => {
 		if (currentToken) {
 			try {
-				await fetch("http://localhost:3001/logout", {
-					method: "POST",
-					headers: { Authorization: `Bearer ${currentToken}` },
+				await fetch(`${API_BASE_URL}/logout`, {
+					headers: { Authorization: `Bearer ${token}` }
 				});
 			} catch (error) {
 				const blob = new Blob([JSON.stringify({})], {
 					type: "application/json",
 				});
-				navigator.sendBeacon("http://localhost:3001/logout", blob);
+				navigator.sendBeacon(`${API_BASE_URL}/logout`, blob);
 			}
 		}
 	};
 
 	const setToken = async (newToken: string | null) => {
-		if (newToken) {
+		if (newToken && newToken !== "undefined") {
 			sessionStorage.setItem("token", newToken);
 			setTokenState(newToken);
 		} else {
@@ -167,7 +170,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 		try {
-			const res = await fetch("http://localhost:3001/me", {
+			const res = await fetch(`${API_BASE_URL}/me`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -201,7 +204,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				const blob = new Blob([JSON.stringify({})], {
 					type: "application/json",
 				});
-				navigator.sendBeacon("http://localhost:3001/logout", blob);
+				navigator.sendBeacon(`${API_BASE_URL}/api/logout`, blob);
 			}
 		};
 

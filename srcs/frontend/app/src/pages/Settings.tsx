@@ -53,7 +53,7 @@ export default function Settings() {
           {/* titre principal */}
           <div className="relative mb-12">
             <h1 className="text-6xl md:text-8xl font-black text-white tracking-wider">
-              {t('nav.settings') || 'RÉGLAGES'}
+              {t('nav.settings') || 'ReGLAGES'}
             </h1>
           </div>
           
@@ -72,7 +72,7 @@ export default function Settings() {
                   {t('settings.display.title') || 'Affichage'}
                 </h3>
                 <p className="text-sm description-aesthetic">
-                  {t('settings.display.description') || 'Thème, contraste, langue, arrière-plan, animations'}
+                  {t('settings.display.description') || 'Theme, contraste, langue, arriere-plan, animations'}
                 </p>
               </div>
             </button>
@@ -90,7 +90,7 @@ export default function Settings() {
                   {t('settings.game.title') || 'Jeu'}
                 </h3>
                 <p className="text-sm description-aesthetic">
-                  {t('settings.game.description') || 'Contrôles et préférences'}
+                  {t('settings.game.description') || 'Contrôles et preferences'}
                 </p>
               </div>
             </button>
@@ -108,7 +108,7 @@ export default function Settings() {
                   {t('settings.account.title') || 'Compte'}
                 </h3>
                 <p className="text-sm description-aesthetic">
-                  {t('settings.account.description') || 'Profil et sécurité'}
+                  {t('settings.account.description') || 'Profil et securite'}
                 </p>
               </div>
             </button>
@@ -123,7 +123,7 @@ export default function Settings() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <h3 className="text-lg font-semibold btn-text-aesthetic">
-                  {t('settings.advanced.title') || 'Avancés'}
+                  {t('settings.advanced.title') || 'Avances'}
                 </h3>
                 <p className="text-sm description-aesthetic">
                   {t('settings.advanced.description') || 'Options techniques'}
@@ -174,8 +174,8 @@ export default function Settings() {
         <PlaceholderModal
           isOpen={true}
           onClose={closeModal}
-          title={t('settings.advanced.title') || 'Réglages avancés'}
-          description={t('settings.advanced.description') || 'Options techniques et configurations avancées'}
+          title={t('settings.advanced.title') || 'Reglages avances'}
+          description={t('settings.advanced.description') || 'Options techniques et configurations avancees'}
         />
       )}
     </>

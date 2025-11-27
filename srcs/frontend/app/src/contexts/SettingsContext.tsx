@@ -130,7 +130,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des réglages:', error);
+      console.error('Erreur lors du chargement des reglages:', error);
     }
   }, [i18n]);
 
@@ -138,7 +138,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem('app-settings', JSON.stringify(settings));
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde des réglages:', error);
+      console.error('Erreur lors de la sauvegarde des reglages:', error);
     }
   }, [settings]);
 
@@ -199,7 +199,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setSettings({ ...DEFAULT_SETTINGS, ...imported });
       return true;
     } catch (error) {
-      console.error('Erreur lors de l\'import des réglages:', error);
+      console.error('Erreur lors de l\'import des reglages:', error);
       return false;
     }
   };

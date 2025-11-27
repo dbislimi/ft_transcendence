@@ -52,7 +52,7 @@ export default function PlayerProfileModal({ playerId, open, onClose }: PlayerPr
                 <p className="text-green-400 font-bold text-xl">{profile.stats.wins}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-sm">Défaites</p>
+                <p className="text-slate-400 text-sm">Defaites</p>
                 <p className="text-red-400 font-bold text-xl">{profile.stats.losses}</p>
               </div>
             </div>

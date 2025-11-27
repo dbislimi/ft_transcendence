@@ -29,7 +29,7 @@ export default function GameOverOverlay({
 		? "Champion du tournoi !"
 		: didWin
 		? "Victoire !"
-		: "Défaite";
+		: "Defaite";
 
 	const scoreLabel =
 		Array.isArray(scores) && scores.length >= 2
@@ -48,14 +48,14 @@ export default function GameOverOverlay({
 				<div className="text-2xl font-bold mb-2">{title}</div>
 				{finalTournamentWin && (
 					<div className="mb-4 text-sm text-slate-200">
-						Félicitations, vous avez remporté le tournoi !
+						Felicitations, vous avez remporte le tournoi !
 					</div>
 				)}
 				{!finalTournamentWin && (
 					<>
 						<div className="mb-2 text-sm">
 							{didWin
-								? "Vous avez gagné cette manche."
+								? "Vous avez gagne cette manche."
 								: "Vous avez perdu cette manche."}
 						</div>
 						{scoreLabel && (

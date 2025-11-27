@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BombPartyEngine } from '../../game-bomb-party/core/engine';
 import { TurnTimer } from '../../game-bomb-party/core/timer';
 import { bombPartyStatsService } from '../../services/bombPartyStatsService';
+import { bombPartyApiService } from '../../services/bombPartyApiService';
 import { bombPartyService } from '../../services/bombPartyService';
 import { useBombPartyStore } from '../../store/useBombPartyStore';
 import type { GameConfig, BonusKey } from '../../game-bomb-party/core/types';
@@ -26,7 +27,7 @@ export interface UseBombPartyGameReturn {
   setTimerFlash: (value: boolean) => void;
   setGameStartTime: (time: number | null) => void;
   setBonusNotification: (notification: { bonusKey: BonusKey; playerName: string } | null) => void;
-  handleWordSubmit: (word: string, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null, client: any) => void;
+  handleWordSubmit: (word: string, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null, client: any) => Promise<void>;
   handleActivateBonus: (bonusKey: BonusKey, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null, client: any) => boolean;
   startGame: (config: GameConfig, gameMode: 'local' | 'multiplayer', roomId: string | null, client: any) => void;
   resetGame: () => void;
@@ -84,14 +85,14 @@ export function useBombPartyGame(user: any) {
 
         const turnDuration = gameState.turnDurationMs || (gameState.baseTurnSeconds * 1000) || 12000;
         if (turnDuration > 0) {
-          console.log('[useBombPartyGame] Démarrage du timer', {
+          console.log('[useBombPartyGame] Demarrage du timer', {
             turnStartedAt: newTurnStartedAt,
             turnDuration,
             currentTime: Date.now(),
             timerIsActive: timer.isTimerActive()
           });
           timer.startTurn(newTurnStartedAt, turnDuration, Date.now());
-          console.log('[useBombPartyGame] Timer démarré, isActive:', timer.isTimerActive());
+          console.log('[useBombPartyGame] Timer demarre, isActive:', timer.isTimerActive());
         }
       }
     }
@@ -110,14 +111,14 @@ export function useBombPartyGame(user: any) {
       previousTurnStartedAtRef.current = undefined;
 
       if (timer.isTimerActive()) {
-        console.log('[useBombPartyGame] Arrêt du timer - phase changée', {
+        console.log('[useBombPartyGame] Arrêt du timer - phase changee', {
           oldPhase: 'TURN_ACTIVE',
           newPhase: gameState.phase
         });
         timer.stop();
       }
       if (turnStartTime > 0 && (gameState.phase === 'RESOLVE' || gameState.phase === 'GAME_OVER')) {
-        console.log('[useBombPartyGame] Phase changée, conservation de turnStartTime pour traçabilité', {
+        console.log('[useBombPartyGame] Phase changee, conservation de turnStartTime pour traçabilite', {
           oldPhase: 'TURN_ACTIVE',
           newPhase: gameState.phase,
           turnStartTime,
@@ -162,8 +163,8 @@ export function useBombPartyGame(user: any) {
       });
 
       const redirectTimer = setTimeout(() => {
-        console.log("[useBombPartyGame] Partie terminée, redirection vers l'écran d'accueil");
-        alert(t('bombParty.gameOver.redirectToMenu', 'Partie terminée. Retour à l\'écran d\'accueil...'));
+        console.log("[useBombPartyGame] Partie terminee, redirection vers l'ecran d'accueil");
+        alert(t('bombParty.gameOver.redirectToMenu', 'Partie terminee. Retour à l\'ecran d\'accueil...'));
         setGamePhase('RULES');
       }, 5000);
 
@@ -171,7 +172,7 @@ export function useBombPartyGame(user: any) {
     }
   }, [gameState.phase, gameStartTime, playerId, gameState.players, gameState.history, gameState.usedWords, setGamePhase, user, t]);
 
-  const handleWordSubmit = useCallback((word: string, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null) => {
+  const handleWordSubmit = useCallback(async (word: string, gameMode: 'local' | 'multiplayer', roomId: string | null, playerId: string | null) => {
     console.log('[useBombPartyGame] handleWordSubmit called', {
       word,
       gameMode,
@@ -186,7 +187,7 @@ export function useBombPartyGame(user: any) {
         phase: gameState.phase,
         currentPlayer: gameState.players[gameState.currentPlayerIndex]?.name,
         serverTurnStartedAt: gameState.turnStartedAt,
-        message: 'Le turnStartTime aurait dû être initialisé au début du tour'
+        message: 'Le turnStartTime aurait dû être initialise au debut du tour'
       });
       if (gameState.turnStartedAt) {
         console.warn('[useBombPartyGame] 🔄 Utilisation du fallback avec gameState.turnStartedAt');
@@ -199,7 +200,7 @@ export function useBombPartyGame(user: any) {
         });
       }
     } else if (gameState.turnStartedAt && Math.abs(turnStartTime - gameState.turnStartedAt) > 1000) {
-      console.warn('[useBombPartyGame] ⚠️ Désynchronisation détectée, resynchronisation avec le serveur', {
+      console.warn('[useBombPartyGame] ⚠️ Desynchronisation detectee, resynchronisation avec le serveur', {
         turnStartTime,
         serverTurnStartedAt: gameState.turnStartedAt,
         diff: Math.abs(turnStartTime - gameState.turnStartedAt),
@@ -303,7 +304,7 @@ export function useBombPartyGame(user: any) {
         msTaken = clientNow - turnStartTime;
 
         if (gameState.turnStartedAt && Math.abs(turnStartTime - gameState.turnStartedAt) > 1000) {
-          console.warn('[useBombPartyGame] ⚠️ turnStartTime désynchronisé du serveur, utilisation du temps serveur', {
+          console.warn('[useBombPartyGame] ⚠️ turnStartTime desynchronise du serveur, utilisation du temps serveur', {
             turnStartTime,
             serverTurnStartedAt: gameState.turnStartedAt,
             diff: Math.abs(turnStartTime - gameState.turnStartedAt)
@@ -326,7 +327,7 @@ export function useBombPartyGame(user: any) {
         msTaken = 0;
       }
       if (msTaken < 0) {
-        console.error('[useBombPartyGame] ❌ msTaken négatif détecté, correction à 0', {
+        console.error('[useBombPartyGame] ❌ msTaken negatif detecte, correction à 0', {
           msTaken,
           turnStartTime,
           serverTurnStartedAt: gameState.turnStartedAt,
@@ -394,7 +395,7 @@ export function useBombPartyGame(user: any) {
   }, [engine, gameState, timer]);
 
   const startGame = useCallback((config: GameConfig, gameMode: 'local' | 'multiplayer', roomId: string | null) => {
-    console.log('startGame appelé avec config:', config);
+    console.log('startGame appele avec config:', config);
 
     setGameStartTime(Date.now());
 
@@ -407,7 +408,7 @@ export function useBombPartyGame(user: any) {
       setTurnStartTime(Date.now());
     } else {
       if (!roomId) {
-        console.log('Pas de roomId pour démarrer le jeu');
+        console.log('Pas de roomId pour demarrer le jeu');
         return;
       }
       console.log('Envoi de bp:lobby:start au serveur');

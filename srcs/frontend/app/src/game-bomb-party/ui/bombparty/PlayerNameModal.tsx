@@ -31,17 +31,17 @@ export default function PlayerNameModal({ isOpen, onSubmit }: PlayerNameModalPro
     }
     
     if (trimmedName.length < 2) {
-      setError(t('bombParty.playerName.tooShort', 'Le nom doit contenir au moins 2 caractères'));
+      setError(t('bombParty.playerName.tooShort', 'Le nom doit contenir au moins 2 caracteres'));
       return;
     }
     
     if (trimmedName.length > 20) {
-      setError(t('bombParty.playerName.tooLong', 'Le nom ne peut pas dépasser 20 caractères'));
+      setError(t('bombParty.playerName.tooLong', 'Le nom ne peut pas depasser 20 caracteres'));
       return;
     }
     
     if (!/^[a-zA-Z0-9_\-À-ÿ\s]+$/.test(trimmedName)) {
-      setError(t('bombParty.playerName.invalidChars', 'Le nom contient des caractères invalides'));
+      setError(t('bombParty.playerName.invalidChars', 'Le nom contient des caracteres invalides'));
       return;
     }
     
@@ -89,7 +89,7 @@ export default function PlayerNameModal({ isOpen, onSubmit }: PlayerNameModalPro
               </p>
             )}
             <p className="mt-2 text-xs text-slate-500">
-              {t('bombParty.playerName.hint', '2-20 caractères, lettres, chiffres, espaces, - et _')}
+              {t('bombParty.playerName.hint', '2-20 caracteres, lettres, chiffres, espaces, - et _')}
             </p>
           </div>
 

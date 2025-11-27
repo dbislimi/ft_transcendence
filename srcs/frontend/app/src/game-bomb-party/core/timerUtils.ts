@@ -34,7 +34,7 @@ export function computeRemainingTime(
   
   // log si remaining=0 mais calculatedRemaining > 0 (bug potentiel)
   if (remaining === 0 && calculatedRemaining > 0) {
-    console.error('[computeRemainingTime] BUG DÉTECTÉ - remaining=0 mais calculatedRemaining > 0', {
+    console.error('[computeRemainingTime] BUG DeTECTe - remaining=0 mais calculatedRemaining > 0', {
       turnStartedAt,
       turnDurationMs,
       currentTime,

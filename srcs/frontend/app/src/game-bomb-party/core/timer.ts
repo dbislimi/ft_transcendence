@@ -10,7 +10,7 @@ export class TurnTimer {
   private driftHistory: number[] = [];
 
   startTurn(turnStartedAt: number, turnDurationMs: number, clientNow: number = Date.now()): void {
-    console.log('[TurnTimer] startTurn appelé', {
+    console.log('[TurnTimer] startTurn appele', {
       turnStartedAt,
       turnDurationMs,
       clientNow,
@@ -55,7 +55,7 @@ export class TurnTimer {
 
   getRemainingMs(): number {
     if (!this.isActive) {
-      console.warn('[TurnTimer] getRemainingMs appelé mais timer inactif', {
+      console.warn('[TurnTimer] getRemainingMs appele mais timer inactif', {
         isActive: this.isActive,
         turnStartedAt: this.turnStartedAt,
         turnDurationMs: this.turnDurationMs
@@ -75,7 +75,7 @@ export class TurnTimer {
       const serverNow = now + this.serverTimeOffset;
       const turnEndsAt = this.turnStartedAt + this.turnDurationMs;
       const elapsed = serverNow - this.turnStartedAt;
-      console.warn('[TurnTimer] getRemainingMs retourne 0 ou négatif', {
+      console.warn('[TurnTimer] getRemainingMs retourne 0 ou negatif', {
         remaining,
         turnStartedAt: this.turnStartedAt,
         turnDurationMs: this.turnDurationMs,
@@ -117,7 +117,7 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
   const [remainingMs, setRemainingMs] = useState(0);
 
   const updateTimer = useCallback(() => {
-    console.log('[useTurnTimer] updateTimer appelé', {
+    console.log('[useTurnTimer] updateTimer appele', {
       isActive,
       timerIsActive: timer.isTimerActive(),
       turnStartedAt: (timer as any).turnStartedAt,

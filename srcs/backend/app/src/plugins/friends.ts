@@ -184,7 +184,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
                       if (areFriends) {
                         fastify.db.run("ROLLBACK");
-                        reply.code(400).send({ error: "Vous êtes déjà amis" });
+                        reply.code(400).send({ error: "Vous êtes dejà amis" });
                         resolve();
                         return;
                       }
@@ -202,9 +202,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
                           if (pendingRequest) {
                             fastify.db.run("ROLLBACK");
                             if (pendingRequest.sender_id === decoded.id) {
-                              reply.code(400).send({ error: "Demande déjà envoyée" });
+                              reply.code(400).send({ error: "Demande dejà envoyee" });
                             } else {
-                              reply.code(400).send({ error: "Cet utilisateur vous a déjà envoyé une demande" });
+                              reply.code(400).send({ error: "Cet utilisateur vous a dejà envoye une demande" });
                             }
                             resolve();
                             return;
@@ -249,7 +249,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
                                       }
                                     });
 
-                                    reply.send({ message: "Demande d'ami envoyée avec succès" });
+                                    reply.send({ message: "Demande d'ami envoyee avec succes" });
                                     resolve();
                                   });
                                 }
@@ -373,7 +373,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
                                   }
                                 });
 
-                                reply.send({ message: "Demande acceptée" });
+                                reply.send({ message: "Demande acceptee" });
                                 resolve();
                               });
                             }
@@ -439,7 +439,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
       } catch (err) {
       }
 
-      return reply.send({ message: "Demande rejetée" });
+      return reply.send({ message: "Demande rejetee" });
 
     } catch (error) {
       return reply.code(500).send({ error: "Erreur serveur" });
@@ -499,7 +499,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
       } catch (err) {
       }
 
-      return reply.send({ message: "Ami supprimé" });
+      return reply.send({ message: "Ami supprime" });
 
     } catch (error) {
       return reply.code(500).send({ error: "Erreur serveur" });
@@ -589,7 +589,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
       } catch (err) {
       }
 
-      return reply.send({ message: "Utilisateur bloqué avec succès" });
+      return reply.send({ message: "Utilisateur bloque avec succes" });
 
     } catch (error) {
       return reply.code(500).send({ error: "Erreur serveur" });
@@ -620,10 +620,10 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
       });
 
       if (deleted === 0) {
-        return reply.code(404).send({ error: "Utilisateur non bloqué" });
+        return reply.code(404).send({ error: "Utilisateur non bloque" });
       }
 
-      return reply.send({ message: "Utilisateur débloqué avec succès" });
+      return reply.send({ message: "Utilisateur debloque avec succes" });
 
     } catch (error) {
       return reply.code(500).send({ error: "Erreur serveur" });

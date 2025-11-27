@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useNotifications } from "../contexts/NotificationContext";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import { useNotifications } from "../context/NotificationContext";
+import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useGameSession } from "../contexts/GameSessionContext";
+import { useGameSession } from "../context/GameSessionContext";
 
 export default function RealtimeNotifications() {
 	const { notify, dismiss } = useNotifications();
@@ -19,7 +19,7 @@ export default function RealtimeNotifications() {
 					variant: "info",
 					title: "Tournoi en cours",
 					message:
-						"Vous avez quitté une manche. Rejoindre avant expiration.",
+						"Vous avez quitte une manche. Rejoindre avant expiration.",
 					duration: timeoutSec * 1000,
 					actions: [
 						{
@@ -95,7 +95,7 @@ export default function RealtimeNotifications() {
 						variant: "info",
 						title: "Partie interrompue",
 						message:
-							"Vous avez quitté une partie invitée. Rejoindre ou abandonner.",
+							"Vous avez quitte une partie invitee. Rejoindre ou abandonner.",
 						duration: undefined,
 						actions: [
 							{
@@ -133,8 +133,8 @@ export default function RealtimeNotifications() {
 					if (n) dismiss(n);
 					const notifId = notify({
 						variant: "info",
-						title: "Invitation envoyée",
-						message: `Invitation envoyée à ${to}. En attente d'acceptation ou de refus.`,
+						title: "Invitation envoyee",
+						message: `Invitation envoyee à ${to}. En attente d'acceptation ou de refus.`,
 						duration: undefined,
 						actions: [
 							{
@@ -226,7 +226,7 @@ export default function RealtimeNotifications() {
 					const opponent = data.body?.opponent ?? "votre ami";
 					notify({
 						variant: "info",
-						title: "Partie lancée",
+						title: "Partie lancee",
 						message: `La partie commence avec ${opponent}`,
 						duration: 3000,
 					});
@@ -249,8 +249,8 @@ export default function RealtimeNotifications() {
 						data.body?.by ?? data.body?.inviter ?? "Un joueur";
 					notify({
 						variant: "success",
-						title: "Invitation acceptée",
-						message: `${by} a accepté votre invitation`,
+						title: "Invitation acceptee",
+						message: `${by} a accepte votre invitation`,
 						duration: 3000,
 					});
 					break;
@@ -267,8 +267,8 @@ export default function RealtimeNotifications() {
 					const by = data.body?.by ?? "Un joueur";
 					notify({
 						variant: "info",
-						title: "Invitation déclinée",
-						message: `${by} a décliné votre invitation`,
+						title: "Invitation declinee",
+						message: `${by} a decline votre invitation`,
 						duration: 3000,
 					});
 					break;
@@ -283,8 +283,8 @@ export default function RealtimeNotifications() {
 					}
 					notify({
 						variant: "warning",
-						title: "Invitation refusée",
-						message: "Vous avez refusé l'invitation",
+						title: "Invitation refusee",
+						message: "Vous avez refuse l'invitation",
 						duration: 3000,
 					});
 					break;
@@ -300,10 +300,10 @@ export default function RealtimeNotifications() {
 					}
 					notify({
 						variant: "warning",
-						title: "Invitation annulée",
+						title: "Invitation annulee",
 						message: data.body?.by
-							? `${data.body.by} a annulé son invitation`
-							: "Invitation annulée",
+							? `${data.body.by} a annule son invitation`
+							: "Invitation annulee",
 						duration: 3000,
 					});
 					break;
@@ -318,8 +318,8 @@ export default function RealtimeNotifications() {
 					}
 					notify({
 						variant: "warning",
-						title: "Invitation annulée",
-						message: "Vous avez annulé l'invitation",
+						title: "Invitation annulee",
+						message: "Vous avez annule l'invitation",
 						duration: 3000,
 					});
 					break;
@@ -334,10 +334,10 @@ export default function RealtimeNotifications() {
 					const to = data.body?.to;
 					notify({
 						variant: "info",
-						title: "Invitation expirée",
+						title: "Invitation expiree",
 						message: to
-							? `Votre invitation à ${to} a expiré`
-							: "Votre invitation a expiré",
+							? `Votre invitation à ${to} a expire`
+							: "Votre invitation a expire",
 						duration: 3000,
 					});
 					break;
@@ -356,7 +356,7 @@ export default function RealtimeNotifications() {
 						notify({
 							variant: "warning",
 							title: "Erreur",
-							message: "Le joueur est occupé",
+							message: "Le joueur est occupe",
 							duration: 3000,
 						});
 					}

@@ -14,4 +14,4 @@ else
     echo "HOSTNAME=$HOSTNAME" > "$ENV_FILE"
 fi
 
-echo "Hostname configuré: $HOSTNAME"
+echo "Hostname configure: $HOSTNAME"

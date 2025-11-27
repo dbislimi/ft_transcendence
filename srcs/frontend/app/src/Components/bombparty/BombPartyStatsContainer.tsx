@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useUser } from '../../context/UserContext';
 import { bombPartyStatsService } from '../../services/bombPartyStatsService';
 import { logger } from '../../utils/logger';
 import { BombPartyStatsCharts } from './BombPartyStatsCharts';
@@ -12,7 +12,7 @@ import type { UserStats, MatchHistory, RankingEntry } from './BombPartyStatsType
 
 export default function BombPartyStatsContainer() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const hasToken = !!localStorage.getItem('token');
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'ranking'>((user?.id && hasToken) ? 'overview' : 'ranking');
@@ -30,14 +30,14 @@ export default function BombPartyStatsContainer() {
 
   const loadUserData = async () => {
     logger.debug('loadUserData called', { userId: user?.id });
-    
+
     setLoading(true);
     setError(null);
 
     try {
       if (user?.id) {
         logger.debug('Loading complete data for user', { userId: user.id });
-        
+
         try {
           const [statsResponse, historyResponse, rankingResponse] = await Promise.all([
             bombPartyStatsService.getUserStats(user.id),
@@ -45,7 +45,7 @@ export default function BombPartyStatsContainer() {
             bombPartyStatsService.getGlobalRanking()
           ]);
 
-          logger.debug('data loaded', { 
+          logger.debug('data loaded', {
             hasStats: !!statsResponse,
             hasHistory: !!historyResponse,
             hasRanking: !!rankingResponse
@@ -62,7 +62,7 @@ export default function BombPartyStatsContainer() {
         }
       } else {
         logger.debug('Loading global ranking only');
-        
+
         const rankingResponse = await bombPartyStatsService.getGlobalRanking();
 
         logger.debug('Global ranking loaded', { count: rankingResponse.data?.length || 0 });
@@ -119,7 +119,7 @@ export default function BombPartyStatsContainer() {
             {t('bombParty.stats.title')}
           </h1>
           <p className="text-gray-300">
-            {user?.id 
+            {user?.id
               ? t('bombParty.stats.subtitle')
               : t('bombParty.stats.subtitleGuest')}
           </p>
@@ -149,8 +149,8 @@ export default function BombPartyStatsContainer() {
         </div>
       )}
 
-      <BombPartyStatsFilters 
-          activeTab={activeTab}
+      <BombPartyStatsFilters
+        activeTab={activeTab}
         onTabChange={setActiveTab}
         isAuthenticated={!!user?.id}
       />
@@ -160,7 +160,7 @@ export default function BombPartyStatsContainer() {
       )}
 
       {activeTab === 'history' && (
-        <BombPartyStatsTable 
+        <BombPartyStatsTable
           type="history"
           data={matchHistory}
           user={user}
@@ -168,7 +168,7 @@ export default function BombPartyStatsContainer() {
       )}
 
       {activeTab === 'ranking' && (
-        <BombPartyStatsTable 
+        <BombPartyStatsTable
           type="ranking"
           data={globalRanking}
           user={user}

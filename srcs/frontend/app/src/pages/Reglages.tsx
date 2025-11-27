@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from "../config/api";
 
 export default function Reglages() {
   const [enable2fa, setEnable2fa] = useState(false);
@@ -10,7 +11,7 @@ export default function Reglages() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('http://localhost:3001/reglages', {
+        const response = await fetch(`${API_BASE_URL}/reglages`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -22,7 +23,7 @@ export default function Reglages() {
         if (response.ok) {
           setEnable2fa(data.twoFAEnabled);
         } else {
-          setMessage(data.error || 'Erreur lors du chargement des réglages');
+          setMessage(data.error || 'Erreur lors du chargement des reglages');
         }
       } catch (error) {
         setMessage('Erreur de connexion au serveur');
@@ -36,7 +37,7 @@ export default function Reglages() {
 
   const update2fa = async () => {
     try {
-      const response = await fetch('http://localhost:3001/reglages', {
+      const response = await fetch(`${API_BASE_URL}/reglages`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,7 +50,7 @@ export default function Reglages() {
 
       if (response.ok) {
         setEnable2fa(data.twoFAEnabled);
-        setMessage('Mise à jour réussie');
+        setMessage('Mise à jour reussie');
       } else {
         setMessage(data.error || 'Erreur inconnue');
       }
@@ -60,7 +61,7 @@ export default function Reglages() {
 
   return (
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h1>Réglages</h1>
+      <h1>Reglages</h1>
 
       <label>
         <input

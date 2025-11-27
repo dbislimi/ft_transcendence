@@ -74,12 +74,40 @@ export default defineConfig({
   server: {
     https: getHttpsOptions(),
     hmr: {
-      port: 8443,
       protocol: 'wss',
       clientPort: 8443
     },
     proxy: {
       '/bombparty/ws': {
+        target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      },
+      '/game': {
+        target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      },
+      '/chat': {
+        target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      },
+      '/ws-friends': {
+        target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      },
+      '/api': {
+        target: `https://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
+        changeOrigin: true,
+        secure: false
+      },
+      '/socket.io': {
         target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,
         ws: true,
         changeOrigin: true,

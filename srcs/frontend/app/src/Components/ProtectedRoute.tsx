@@ -1,10 +1,10 @@
-import { useUser } from "../contexts/UserContext";
+import { useUser } from "../context/UserContext";
 import { Navigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 
 export default function ProtectedRoute() {
 	const { user, isLoading } = useUser();
-	
+
 	console.log("Protected Route, redirection ...");
 	console.log(`isLoading: ${isLoading}, user: ${user?.name}`)
 	if (isLoading) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '../context/UserContext';
 import { bombPartyStatsService } from '../services/bombPartyStatsService';
 import { logger } from '../utils/logger';
 import type { UserProgress, Badge } from '@shared/bombparty/types';
@@ -17,7 +17,7 @@ const RARITY_COLORS: Record<string, string> = {
 
 export default function BombPartyProfilePage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +57,8 @@ export default function BombPartyProfilePage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="text-red-400 text-6xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-white mb-2">Accès restreint</h2>
-          <p className="text-gray-300 mb-4">Vous devez être connecté pour voir votre profil</p>
+          <h2 className="text-xl font-bold text-white mb-2">Acces restreint</h2>
+          <p className="text-gray-300 mb-4">Vous devez être connecte pour voir votre profil</p>
           <button
             onClick={() => navigate('/Connection')}
             className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
@@ -92,7 +92,7 @@ export default function BombPartyProfilePage() {
             onClick={loadProfileData}
             className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
           >
-            Réessayer
+            Reessayer
           </button>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function BombPartyProfilePage() {
           <h3 className="text-xl font-bold text-white mb-4">📊 Statistiques</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-300">Parties jouées</span>
+              <span className="text-gray-300">Parties jouees</span>
               <span className="text-white font-semibold">{userStats.totalMatches}</span>
             </div>
             <div className="flex justify-between items-center">
@@ -181,7 +181,7 @@ export default function BombPartyProfilePage() {
               <span className="text-green-400 font-semibold">{userStats.totalValidWords}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-300">Précision</span>
+              <span className="text-gray-300">Precision</span>
               <span className="text-white font-semibold">{userStats.accuracy.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
@@ -207,16 +207,15 @@ export default function BombPartyProfilePage() {
           </h3>
           {progress.badges.length === 0 ? (
             <p className="text-gray-400 text-center py-8">
-              Aucun badge débloqué pour le moment
+              Aucun badge debloque pour le moment
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
               {progress.badges.map((badge) => (
                 <div
                   key={badge.id}
-                  className={`bg-gradient-to-br from-gray-700 to-gray-800 border-2 ${
-                    RARITY_COLORS[badge.rarity] || 'border-gray-600'
-                  } rounded-lg p-3 hover:scale-105 transition-transform`}
+                  className={`bg-gradient-to-br from-gray-700 to-gray-800 border-2 ${RARITY_COLORS[badge.rarity] || 'border-gray-600'
+                    } rounded-lg p-3 hover:scale-105 transition-transform`}
                 >
                   <div className="text-3xl mb-2 text-center">{badge.icon}</div>
                   <div className="text-sm font-semibold text-white text-center mb-1">
@@ -238,20 +237,19 @@ export default function BombPartyProfilePage() {
       </div>
 
       <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 mb-6">
-        <h3 className="text-xl font-bold text-white mb-4">🎁 Récompenses débloquées</h3>
+        <h3 className="text-xl font-bold text-white mb-4">🎁 Recompenses debloquees</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="text-lg font-semibold text-purple-300 mb-3">Thèmes ({progress.unlockedThemes.length})</h4>
+            <h4 className="text-lg font-semibold text-purple-300 mb-3">Themes ({progress.unlockedThemes.length})</h4>
             {progress.unlockedThemes.length === 0 ? (
-              <p className="text-gray-400">Aucun thème débloqué</p>
+              <p className="text-gray-400">Aucun theme debloque</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {progress.unlockedThemes.map((theme) => (
                   <span
                     key={theme}
-                    className={`px-3 py-1 rounded-lg bg-purple-600/30 border border-purple-500/50 text-purple-200 ${
-                      progress.currentTheme === theme ? 'ring-2 ring-purple-400' : ''
-                    }`}
+                    className={`px-3 py-1 rounded-lg bg-purple-600/30 border border-purple-500/50 text-purple-200 ${progress.currentTheme === theme ? 'ring-2 ring-purple-400' : ''
+                      }`}
                   >
                     {theme}
                   </span>
@@ -262,15 +260,14 @@ export default function BombPartyProfilePage() {
           <div>
             <h4 className="text-lg font-semibold text-blue-300 mb-3">Avatars ({progress.unlockedAvatars.length})</h4>
             {progress.unlockedAvatars.length === 0 ? (
-              <p className="text-gray-400">Aucun avatar débloqué</p>
+              <p className="text-gray-400">Aucun avatar debloque</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {progress.unlockedAvatars.map((avatar) => (
                   <span
                     key={avatar}
-                    className={`px-3 py-1 rounded-lg bg-blue-600/30 border border-blue-500/50 text-blue-200 ${
-                      progress.currentAvatar === avatar ? 'ring-2 ring-blue-400' : ''
-                    }`}
+                    className={`px-3 py-1 rounded-lg bg-blue-600/30 border border-blue-500/50 text-blue-200 ${progress.currentAvatar === avatar ? 'ring-2 ring-blue-400' : ''
+                      }`}
                   >
                     {avatar}
                   </span>
@@ -286,7 +283,7 @@ export default function BombPartyProfilePage() {
           onClick={() => navigate('/bomb-party/stats')}
           className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
         >
-          Voir les statistiques détaillées
+          Voir les statistiques detaillees
         </button>
       </div>
     </div>

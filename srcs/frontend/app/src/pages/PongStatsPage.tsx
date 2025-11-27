@@ -18,7 +18,7 @@ export default function PongStatsPage() {
       <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-600/30">
         <div className="text-6xl mb-4">🏓</div>
         <p className="text-gray-300 text-lg">
-          Page en cours de développement
+          Page en cours de developpement
         </p>
       </div>
     </div>

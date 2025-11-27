@@ -80,7 +80,7 @@ export class BombPartyRoomManager {
           if (!engine) return; // Engine might have been removed while waiting for lock
 
           if (engine.checkAndEndExpiredTurn()) {
-            console.log('[RoomManager] Tour expiré détecté, broadcast de l\'état mis à jour');
+            console.log('[RoomManager] Tour expire detecte, broadcast de l\'etat mis à jour');
             const room = this.rooms.get(roomId);
             if (room) {
               const gameState = engine.getState();
@@ -370,7 +370,7 @@ export class BombPartyRoomManager {
           this.roomEngines.delete(roomId);
           this.rooms.delete(roomId);
           this.roomLocks.delete(roomId);
-          console.log(`[RoomManager] Lobby inactif supprimé: ${roomId}`);
+          console.log(`[RoomManager] Lobby inactif supprime: ${roomId}`);
         }
       });
     }

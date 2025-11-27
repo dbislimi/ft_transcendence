@@ -45,12 +45,12 @@ type Ui =
 	| { kind: "play" }
 	| { kind: "wait"; opponentName: string }
 	| {
-			kind: "ready";
-			remaining: number;
-			selfReady: boolean;
-			opponentReady: boolean;
-			opponentName: string;
-	  }
+		kind: "ready";
+		remaining: number;
+		selfReady: boolean;
+		opponentReady: boolean;
+		opponentName: string;
+	}
 	| { kind: "countdown"; value: number }
 	| { kind: "result"; gameOver: GameOverData }
 	| { kind: "settings" };
@@ -96,8 +96,7 @@ export default function Pong() {
 
 	const labels = useMemo((): PlayerLabels => {
 		console.log(
-			`Labels: ${view.kind}, ${
-				view.kind === "result" && view.gameOver?.opponent
+			`Labels: ${view.kind}, ${view.kind === "result" && view.gameOver?.opponent
 			}`
 		);
 		const defaultSelf = user?.name
@@ -234,11 +233,11 @@ export default function Pong() {
 				case "error":
 					if (data.msg === "tournamentId")
 						window.alert(
-							"Le nom de tournoi est deja utilisé. Choisissez-en un autre"
+							"Le nom de tournoi est deja utilise. Choisissez-en un autre"
 						);
 					else if (data.msg === "rejoin_active") {
 						window.alert(
-							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du délai."
+							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du delai."
 						);
 						setView({ kind: "rules" });
 					}
@@ -290,7 +289,7 @@ export default function Pong() {
 		(forceOnline: boolean = false) => {
 			const stopType =
 				forceOnline ||
-				(!trainingRef.current && session?.sessionType !== "offline")
+					(!trainingRef.current && session?.sessionType !== "offline")
 					? "online"
 					: "offline";
 			pongWsRef?.current?.send(
@@ -376,13 +375,12 @@ export default function Pong() {
 				const diff = payload.diff ?? null;
 				const offlineLabels: PlayerLabels = diff
 					? {
-							self: user?.name
-								? `${user.name} (You)`
-								: PLAYER_LABELS.self,
-							opponent: `Bot (${
-								diff.charAt(0).toUpperCase() + diff.slice(1)
+						self: user?.name
+							? `${user.name} (You)`
+							: PLAYER_LABELS.self,
+						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
-					  }
+					}
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
@@ -442,13 +440,12 @@ export default function Pong() {
 				const diff = gamemode === "solo" ? botDiff : null;
 				const offlineLabels: PlayerLabels = diff
 					? {
-							self: user?.name
-								? `${user.name} (You)`
-								: PLAYER_LABELS.self,
-							opponent: `Bot (${
-								diff.charAt(0).toUpperCase() + diff.slice(1)
+						self: user?.name
+							? `${user.name} (You)`
+							: PLAYER_LABELS.self,
+						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
-					  }
+					}
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
@@ -533,16 +530,19 @@ export default function Pong() {
 				side={session?.side ?? 0}
 			/>
 			{waitingView && showGameField && (
-				<WaitingOverlay opponentName={waitingView.opponentName} />
+				<WaitingOverlay
+					onQuit={handleBackToMenu}
+					onTrain={(d) => console.log("Training not implemented yet", d)}
+				/>
 			)}
 			{(isSearching ||
 				isTraining ||
 				(view.kind === "play" &&
 					session?.sessionType === "offline")) && (
-				<div className="absolute top-4 left-4 z-50">
-					<BackToMenuButton onClick={handleBackToMenu} />
-				</div>
-			)}
+					<div className="absolute top-4 left-4 z-50">
+						<BackToMenuButton onClick={handleBackToMenu} />
+					</div>
+				)}
 			{view.kind === "rules" && (
 				<PongRulesScreen
 					onContinue={handleRulesContinue}
@@ -574,9 +574,8 @@ export default function Pong() {
 							self: user?.name
 								? `${user.name} (You)`
 								: PLAYER_LABELS.self,
-							opponent: `Bot (${
-								diff.charAt(0).toUpperCase() + diff.slice(1)
-							})`,
+							opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
+								})`,
 						};
 					}}
 				/>
@@ -605,7 +604,7 @@ export default function Pong() {
 				<SettingsCard
 					onCancel={() => setView({ kind: "rules" })}
 					cosmetics={cosmetics}
-					onUpdateCosmetics={() => {}}
+					onUpdateCosmetics={() => { }}
 					onUpdateGameSettings={updateSettings}
 				/>
 			)}

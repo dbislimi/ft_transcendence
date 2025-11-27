@@ -1,4 +1,4 @@
-const VOYELLES = 'aeiouyàâäéèêëïîôöùûüÿ';
+const VOYELLES = 'aeiouyàâäeeêëïîôöùûüÿ';
 const CONSONNES = 'bcdfghjklmnpqrstvwxz';
 
 function isVoyelle(char: string): boolean {

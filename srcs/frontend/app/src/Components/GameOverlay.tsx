@@ -29,7 +29,7 @@ export default function GameOverlay({
 		if (d === 1) return "Finale";
 		if (d === 2) return "Demi-finale";
 		if (d === 3) return "Quart de finale";
-		if (typeof d === "number") return `${2 ** d}ème de finale`;
+		if (typeof d === "number") return `${2 ** d}eme de finale`;
 		return null;
 	};
 

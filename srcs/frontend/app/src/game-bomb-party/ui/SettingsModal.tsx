@@ -30,7 +30,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <div className="bg-slate-800/95 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 max-w-md w-full mx-4 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-            {t('bombParty.settings.title', 'Paramètres')}
+            {t('bombParty.settings.title', 'Parametres')}
           </h2>
           <button
             onClick={onClose}
@@ -70,7 +70,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </div>
             </label>
             <p className="text-xs text-slate-400 mt-2">
-              {t('bombParty.settings.suggestionsEnabledDesc', 'Active ou désactive l\'affichage des suggestions de mots')}
+              {t('bombParty.settings.suggestionsEnabledDesc', 'Active ou desactive l\'affichage des suggestions de mots')}
             </p>
           </div>
           {userPreferences.suggestionsEnabled && (
@@ -101,7 +101,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {userPreferences.suggestionsEnabled && userPreferences.suggestionsCount > 0 && (
             <div>
               <label className="block text-slate-200 font-medium mb-3">
-                {t('bombParty.settings.suggestionsDifficulty', 'Difficulté des suggestions')}
+                {t('bombParty.settings.suggestionsDifficulty', 'Difficulte des suggestions')}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {(['all', 'easy', 'medium', 'hard'] as const).map((difficulty) => (
@@ -125,7 +125,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 ))}
               </div>
               <p className="text-xs text-slate-400 mt-2">
-                {t('bombParty.settings.suggestionsDifficultyDesc', 'Filtrez les suggestions selon leur difficulté')}
+                {t('bombParty.settings.suggestionsDifficultyDesc', 'Filtrez les suggestions selon leur difficulte')}
               </p>
             </div>
           )}
@@ -135,7 +135,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             onClick={handleReset}
             className="w-full py-2 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors duration-200 font-medium"
           >
-            {t('bombParty.settings.reset', 'Réinitialiser les paramètres')}
+            {t('bombParty.settings.reset', 'Reinitialiser les parametres')}
           </button>
         </div>
       </div>

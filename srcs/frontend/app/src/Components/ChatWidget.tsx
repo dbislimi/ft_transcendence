@@ -48,8 +48,8 @@ export default function ChatWidget() {
 
         const ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => console.log("WS connecté");
-        ws.onclose = () => console.log("WS fermé");
+        ws.onopen = () => console.log("WS connecte");
+        ws.onclose = () => console.log("WS ferme");
         ws.onerror = (e) => console.error("WS erreur:", e);
 
         ws.onmessage = (event) => {
@@ -62,7 +62,7 @@ export default function ChatWidget() {
                     return;
                 }
 
-                // Messages globaux ou privés
+                // Messages globaux ou prives
                 if (data.type === "global" || data.type === "private" || data.type === "info") {
                     setMessages((prev) => [...prev, data]);
                 }
@@ -135,7 +135,7 @@ export default function ChatWidget() {
                                 onClick={() => setView("users")}
                                 className={`px-2 py-1 rounded ${view === "users" ? "bg-blue-800" : "hover:bg-blue-700"}`}
                             >
-                                Chat Privé
+                                Chat Prive
                             </button>
                         </div>
                         <button onClick={() => setOpen(false)}>✖</button>
@@ -158,7 +158,7 @@ export default function ChatWidget() {
                                         >
                                             {msg.type !== "info" && (
                                                 <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                                                    {msg.fromName} {msg.type === "private" ? "(privé)" : ""}
+                                                    {msg.fromName} {msg.type === "private" ? "(prive)" : ""}
                                                 </span>
                                             )}
                                             <div>{msg.text ?? msg.message}</div>
@@ -177,11 +177,11 @@ export default function ChatWidget() {
                                             onClick={() => setTarget(u.id)}
                                             className="text-left text-sm text-blue-700 hover:underline"
                                         >
-                                            {u.name} {u.blocked ? "(bloqué)" : ""}
+                                            {u.name} {u.blocked ? "(bloque)" : ""}
                                         </button>
                                         {u.blocked ? (
                                             <button onClick={() => unblockUser(u.id)} className="text-green-600 hover:underline">
-                                                Débloquer
+                                                Debloquer
                                             </button>
                                         ) : (
                                             <button onClick={() => blockUser(u.id)} className="text-red-600 hover:underline">
@@ -201,7 +201,7 @@ export default function ChatWidget() {
                             placeholder={
                                 target
                                     ? `Message à ${users.find(u => u.id === target)?.name}`
-                                    : "Écrire..."
+                                    : "ecrire..."
                             }
                             onChange={e => setInput(e.target.value)}
                             onKeyDown={e => e.key === "Enter" && sendMessage()}

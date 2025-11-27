@@ -29,7 +29,7 @@ export function useBombPartyLobby() {
   const connectionState = useBombPartyStore((state) => state.connection.state);
 
   const handleLobbyCreate = useCallback((meta: { name: string; isPrivate: boolean; password?: string; maxPlayers: number; }, client?: any) => {
-    logger.info('handleLobbyCreate appelé', { 
+    logger.info('handleLobbyCreate appele', { 
       maxPlayers: meta.maxPlayers, 
       name: meta.name,
       isPrivate: meta.isPrivate,
@@ -39,34 +39,34 @@ export function useBombPartyLobby() {
     });
     
     if (!playerId || isAuthenticating) {
-      logger.warn('Impossible de créer le lobby: non authentifié', { 
+      logger.warn('Impossible de creer le lobby: non authentifie', { 
         playerId, 
         isAuthenticating,
         connectionState 
       });
-      useBombPartyStore.getState().setLastError('Vous devez être connecté pour créer un lobby');
+      useBombPartyStore.getState().setLastError('Vous devez être connecte pour creer un lobby');
       return;
     }
     
     if (connectionState !== 'connected') {
-      logger.warn('Impossible de créer le lobby: connexion non établie', { connectionState });
-      useBombPartyStore.getState().setLastError('Connexion non établie. Veuillez réessayer.');
+      logger.warn('Impossible de creer le lobby: connexion non etablie', { connectionState });
+      useBombPartyStore.getState().setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
     
     if (!meta.name || meta.name.trim().length === 0) {
-      logger.error('Impossible de créer le lobby: nom invalide', undefined, { name: meta.name });
+      logger.error('Impossible de creer le lobby: nom invalide', undefined, { name: meta.name });
       useBombPartyStore.getState().setLastError('Le nom du lobby ne peut pas être vide');
       return;
     }
     
     if (meta.maxPlayers < 2 || meta.maxPlayers > 12) {
-      logger.error('Impossible de créer le lobby: nombre de joueurs invalide', undefined, { maxPlayers: meta.maxPlayers });
+      logger.error('Impossible de creer le lobby: nombre de joueurs invalide', undefined, { maxPlayers: meta.maxPlayers });
       useBombPartyStore.getState().setLastError('Le nombre de joueurs doit être entre 2 et 12');
       return;
     }
     
-    logger.info('Création du lobby via bombPartyService', { 
+    logger.info('Creation du lobby via bombPartyService', { 
       name: meta.name, 
       isPrivate: meta.isPrivate, 
       maxPlayers: meta.maxPlayers,
@@ -75,23 +75,23 @@ export function useBombPartyLobby() {
     
     try {
       bombPartyService.createRoom(meta.name, meta.isPrivate, meta.password, meta.maxPlayers);
-      logger.info('bombPartyService.createRoom appelé avec succès');
+      logger.info('bombPartyService.createRoom appele avec succes');
     } catch (err) {
-      logger.error('Erreur lors de la création du lobby', err, { playerId, meta, error: err });
-      useBombPartyStore.getState().setLastError('Erreur lors de la création du lobby');
+      logger.error('Erreur lors de la creation du lobby', err, { playerId, meta, error: err });
+      useBombPartyStore.getState().setLastError('Erreur lors de la creation du lobby');
     }
   }, [playerId, isAuthenticating, connectionState]);
 
   const handleLobbyJoin = useCallback((roomId: string, password: string | undefined, client?: any) => {
     if (!playerId || isAuthenticating) {
-      logger.warn('Impossible de rejoindre le lobby: non authentifié', { playerId, isAuthenticating, roomId });
-      useBombPartyStore.getState().setLastError('Vous devez être connecté pour rejoindre un lobby');
+      logger.warn('Impossible de rejoindre le lobby: non authentifie', { playerId, isAuthenticating, roomId });
+      useBombPartyStore.getState().setLastError('Vous devez être connecte pour rejoindre un lobby');
       return;
     }
     
     if (connectionState !== 'connected') {
-      logger.warn('Impossible de rejoindre le lobby: connexion non établie', { connectionState, roomId });
-      useBombPartyStore.getState().setLastError('Connexion non établie. Veuillez réessayer.');
+      logger.warn('Impossible de rejoindre le lobby: connexion non etablie', { connectionState, roomId });
+      useBombPartyStore.getState().setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
     
@@ -105,7 +105,7 @@ export function useBombPartyLobby() {
     
     try {
       bombPartyService.joinRoom(roomId, password);
-      logger.info('bombPartyService.joinRoom appelé avec succès');
+      logger.info('bombPartyService.joinRoom appele avec succes');
     } catch (err) {
       logger.error('Erreur lors de la connexion au lobby', err, { playerId, roomId });
       useBombPartyStore.getState().setLastError('Erreur lors de la connexion au lobby');
@@ -120,7 +120,7 @@ export function useBombPartyLobby() {
           payload: { roomId }
         });
       } catch (err) {
-        logger.error('Erreur lors de la déconnexion du lobby', err, { roomId });
+        logger.error('Erreur lors de la deconnexion du lobby', err, { roomId });
       }
     }
     setGamePhase('RULES');
@@ -130,11 +130,11 @@ export function useBombPartyLobby() {
 
   const handleStartGame = useCallback((roomId: string | null, isHost: boolean, lobbyPlayers: Array<{id: string; name: string}>, client?: BombPartyClient) => {
     if (startingGameRef.current) {
-      logger.warn('Démarrage déjà en cours, appel ignoré');
+      logger.warn('Demarrage dejà en cours, appel ignore');
       return;
     }
     
-    logger.debug('Démarrage du jeu demandé', {
+    logger.debug('Demarrage du jeu demande', {
       roomId,
       isHost,
       playersCount: lobbyPlayers.length,
@@ -142,18 +142,18 @@ export function useBombPartyLobby() {
     });
     
     if (!roomId) {
-      logger.error('Impossible de démarrer: pas de roomId', undefined, { isHost, playersCount: lobbyPlayers.length });
+      logger.error('Impossible de demarrer: pas de roomId', undefined, { isHost, playersCount: lobbyPlayers.length });
       useBombPartyStore.getState().setLastError('Room ID manquant');
       return;
     }
     if (!isHost) {
-      logger.warn('Impossible de démarrer: pas hôte', { roomId, isHost });
-      useBombPartyStore.getState().setLastError('Seul l\'hôte peut démarrer la partie');
+      logger.warn('Impossible de demarrer: pas hôte', { roomId, isHost });
+      useBombPartyStore.getState().setLastError('Seul l\'hôte peut demarrer la partie');
       return;
     }
     if (lobbyPlayers.length < 2) {
-      logger.warn('Impossible de démarrer: pas assez de joueurs', { roomId, playersCount: lobbyPlayers.length });
-      useBombPartyStore.getState().setLastError('Il faut au moins 2 joueurs pour démarrer');
+      logger.warn('Impossible de demarrer: pas assez de joueurs', { roomId, playersCount: lobbyPlayers.length });
+      useBombPartyStore.getState().setLastError('Il faut au moins 2 joueurs pour demarrer');
       return;
     }
     
@@ -161,8 +161,8 @@ export function useBombPartyLobby() {
     
     const store = useBombPartyStore.getState();
     if (store.connection.state !== 'connected') {
-      logger.warn('Impossible de démarrer: connexion non établie', { connectionState: store.connection.state, roomId });
-      store.setLastError('Connexion non établie. Veuillez réessayer.');
+      logger.warn('Impossible de demarrer: connexion non etablie', { connectionState: store.connection.state, roomId });
+      store.setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
     
@@ -174,18 +174,18 @@ export function useBombPartyLobby() {
       store.setRoomId(roomId);
     }
     
-    logger.info('Envoi du démarrage au serveur via bombPartyService', { roomId, playersCount: lobbyPlayers.length });
+    logger.info('Envoi du demarrage au serveur via bombPartyService', { roomId, playersCount: lobbyPlayers.length });
     
     try {
       bombPartyService.startGame();
-      logger.info('bombPartyService.startGame appelé avec succès');
+      logger.info('bombPartyService.startGame appele avec succes');
       
       setTimeout(() => {
         startingGameRef.current = false;
       }, 2000);
     } catch (err) {
-      logger.error('Erreur lors du démarrage du jeu', err, { roomId });
-      useBombPartyStore.getState().setLastError('Erreur lors du démarrage du jeu');
+      logger.error('Erreur lors du demarrage du jeu', err, { roomId });
+      useBombPartyStore.getState().setLastError('Erreur lors du demarrage du jeu');
       startingGameRef.current = false;
     }
   }, []);

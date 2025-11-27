@@ -28,7 +28,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
 
       if (existingEmail) {
-        return reply.code(409).send({ exists: true, error: "Email déjà utilisé." });
+        return reply.code(409).send({ exists: true, error: "Email dejà utilise." });
       }
 
       const existingDisplayName = await new Promise<any>((resolve, reject) => {
@@ -39,7 +39,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
 
       if (existingDisplayName) {
-        return reply.code(409).send({ exists: true, error: "Ce pseudo est déjà utilisé." });
+        return reply.code(409).send({ exists: true, error: "Ce pseudo est dejà utilise." });
       }
 
       return reply.send({ exists: false });
@@ -82,7 +82,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
 
     if (!passwordRegex.test(password)) {
       return reply.code(400).send({
-        error: "Le mot de passe doit contenir au moins 6 caractères, avec 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial."
+        error: "Le mot de passe doit contenir au moins 6 caracteres, avec 1 majuscule, 1 minuscule, 1 chiffre et 1 caractere special."
       });
     }
 
@@ -95,7 +95,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
 
       if (existingUser) {
-        return reply.code(409).send({ error: "Email déjà utilisé." });
+        return reply.code(409).send({ error: "Email dejà utilise." });
       }
 
       const existingDisplayName = await new Promise<any>((resolve, reject) => {
@@ -171,7 +171,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
       console.log("le user id que j'utilise moi " + user.id);
       if (!user) {
-        return reply.code(401).send({ error: "Utilisateur non trouvé." });
+        return reply.code(401).send({ error: "Utilisateur non trouve." });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -198,7 +198,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
         return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
       }
 
-      return reply.send({ success: true, message: "OTP envoyé", require2fa: true, userId: user.id });
+      return reply.send({ success: true, message: "OTP envoye", require2fa: true, userId: user.id });
       }
 
     //console.log("EREN YEAGER");
@@ -232,7 +232,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
       });
 
       if (!user) {
-        return reply.code(404).send({ error: "Utilisateur non trouvé." });
+        return reply.code(404).send({ error: "Utilisateur non trouve." });
       }
 
       const { password, twoFAOtp, ...userInfo } = user;

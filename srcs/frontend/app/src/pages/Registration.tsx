@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
+import { API_BASE_URL } from "../config/api";
 
 export default function Registration() {
 	const navigate = useNavigate();
@@ -61,12 +62,12 @@ export default function Registration() {
 		if (!passwordRegex.test(password)) {
 			setIsError(true);
 			setMessage(
-				"Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
+				"Le mot de passe doit contenir au moins 6 caracteres, une majuscule, une minuscule, un chiffre et un caractere special."
 			);
 			return;
 		}
 
-		const res = await fetch("http://localhost:3001/check-user", {
+		const res = await fetch(`${API_BASE_URL}/check-user`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ email, display_name: displayName }),
@@ -75,7 +76,7 @@ export default function Registration() {
 		const data = await res.json();
 		if (!res.ok || data.exists) {
 			setIsError(true);
-			setMessage(data.error || "Email ou pseudo déjà utilisé.");
+			setMessage(data.error || "Email ou pseudo dejà utilise.");
 			return;
 		}
 
@@ -87,7 +88,7 @@ export default function Registration() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		const res = await fetch("http://localhost:3001/register", {
+		const res = await fetch(`${API_BASE_URL}/register`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -102,7 +103,7 @@ export default function Registration() {
 
 		if (res.ok) {
 			setIsError(false);
-			setMessage("Inscription réussie ! Redirection...");
+			setMessage("Inscription reussie ! Redirection...");
 			setTimeout(() => navigate("/connection"), 2000);
 		} else {
 			setIsError(true);
@@ -129,9 +130,8 @@ export default function Registration() {
 							<div className="flex-1 relative">
 								<div className="h-2 bg-slate-700 rounded-full overflow-hidden">
 									<div
-										className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500 ${
-											step === 1 ? "w-1/2" : "w-full"
-										}`}
+										className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500 ${step === 1 ? "w-1/2" : "w-full"
+											}`}
 									/>
 								</div>
 							</div>
@@ -142,11 +142,10 @@ export default function Registration() {
 
 						{message && (
 							<div
-								className={`mb-6 p-4 rounded-lg border ${
-									isError
-										? "bg-red-500/10 border-red-500/30 text-red-400"
-										: "bg-green-500/10 border-green-500/30 text-green-400"
-								}`}
+								className={`mb-6 p-4 rounded-lg border ${isError
+									? "bg-red-500/10 border-red-500/30 text-red-400"
+									: "bg-green-500/10 border-green-500/30 text-green-400"
+									}`}
 							>
 								<p className="text-center text-sm">{message}</p>
 							</div>
@@ -254,7 +253,7 @@ export default function Registration() {
 									<div className="relative">
 										<img
 											src={avatar}
-											alt="Avatar sélectionné"
+											alt="Avatar selectionne"
 											className="w-32 h-32 rounded-full object-cover border-4 border-blue-400/50 shadow-lg"
 										/>
 										<div className="absolute inset-0 rounded-full bg-linear-to-br from-blue-400/20 to-purple-400/20"></div>
@@ -267,11 +266,10 @@ export default function Registration() {
 											<img
 												src={a}
 												alt="Avatar"
-												className={`w-16 h-16 rounded-full object-cover border-2 cursor-pointer transition-all duration-200 group-hover:scale-110 ${
-													avatar === a
-														? "border-blue-400 shadow-lg shadow-blue-400/50"
-														: "border-slate-600 hover:border-slate-400"
-												}`}
+												className={`w-16 h-16 rounded-full object-cover border-2 cursor-pointer transition-all duration-200 group-hover:scale-110 ${avatar === a
+													? "border-blue-400 shadow-lg shadow-blue-400/50"
+													: "border-slate-600 hover:border-slate-400"
+													}`}
 												onClick={() => setAvatar(a)}
 											/>
 											{avatar === a && (
@@ -328,7 +326,7 @@ export default function Registration() {
 						<div className="mt-8 pt-6 border-t border-slate-600/30">
 							<div className="text-center">
 								<p className="text-slate-400 text-sm">
-									Déjà inscrit ?{" "}
+									Dejà inscrit ?{" "}
 									<button
 										onClick={() => navigate("/connection")}
 										className="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium"

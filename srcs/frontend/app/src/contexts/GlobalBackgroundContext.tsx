@@ -49,7 +49,7 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
         : (savedDarkId && getBackgroundById(savedDarkId) ? savedDarkId : 'default');
       setLastUsedBackgroundId(initialBackgroundId);
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'arrière-plan:', error);
+      console.error('Erreur lors du chargement de l\'arriere-plan:', error);
     }
   }, []);
 

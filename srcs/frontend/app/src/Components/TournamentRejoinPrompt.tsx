@@ -20,7 +20,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 					variant: "info",
 					title: "Tournoi en cours",
 					message:
-						"Vous avez quitté une manche. Rejoindre avant expiration.",
+						"Vous avez quitte une manche. Rejoindre avant expiration.",
 					duration: timeoutSec * 1000,
 					actions: [
 						{
@@ -131,7 +131,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 					Rejoindre le tournoi
 				</div>
 				<div className="text-sm mb-4">
-					Vous avez quitté une manche. Voulez-vous rejoindre ?
+					Vous avez quitte une manche. Voulez-vous rejoindre ?
 				</div>
 				<div className="flex items-center gap-3">
 					<button

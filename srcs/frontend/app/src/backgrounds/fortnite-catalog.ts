@@ -89,12 +89,12 @@ function generateNameFromFilename(filename: string): { name: string; category: F
 
 function generateDescription(name: string, category: FortniteBackgroundItem['category']): string {
   const categoryDescriptions: Record<string, string> = {
-    halloween: 'Événement Halloween',
-    noel: 'Événement de Noël',
+    halloween: 'evenement Halloween',
+    noel: 'evenement de Noël',
     season: 'Saison classique',
     chapter: 'Nouveau chapitre',
-    event: 'Événement spécial',
-    location: 'Lieu emblématique'
+    event: 'evenement special',
+    location: 'Lieu emblematique'
   };
   
   return `${name} - ${categoryDescriptions[category]}`;

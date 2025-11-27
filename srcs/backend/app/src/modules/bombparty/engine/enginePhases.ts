@@ -65,9 +65,9 @@ export function resolveTurn(
     wordValid,
     timeExpired,
     currentLives: currentPlayer.lives
-  }, '[resolveTurn] Début de résolution du tour');
+  }, '[resolveTurn] Debut de resolution du tour');
 
-  // Nettoyage du bonus Double Chance à la fin du tour (qu'il ait été utilisé ou non)
+  // Nettoyage du bonus Double Chance à la fin du tour (qu'il ait ete utilise ou non)
   if (currentPlayer.pendingEffects?.doubleChance) {
     currentPlayer.pendingEffects.doubleChance = false;
   }
@@ -82,20 +82,20 @@ export function resolveTurn(
       playerName: currentPlayer.name,
       livesBefore,
       livesAfter: currentPlayer.lives,
-      reason: timeExpired ? 'Timer expiré' : 'Mot invalide'
-    }, '[resolveTurn] Perte de vie détectée');
+      reason: timeExpired ? 'Timer expire' : 'Mot invalide'
+    }, '[resolveTurn] Perte de vie detectee');
 
     if (currentPlayer.lives === 0) {
       currentPlayer.isEliminated = true;
       currentPlayer.isSpectator = true;
-      bombPartyLogger.info({ playerId: currentPlayer.id, playerName: currentPlayer.name }, '[resolveTurn] Joueur éliminé');
+      bombPartyLogger.info({ playerId: currentPlayer.id, playerName: currentPlayer.name }, '[resolveTurn] Joueur elimine');
     }
   }
 
   const alivePlayers = getAlivePlayers(state);
   if (alivePlayers.length <= 1) {
     state.phase = 'GAME_OVER';
-    bombPartyLogger.info({ alivePlayers: alivePlayers.length }, '[resolveTurn] Partie terminée');
+    bombPartyLogger.info({ alivePlayers: alivePlayers.length }, '[resolveTurn] Partie terminee');
     return;
   }
 

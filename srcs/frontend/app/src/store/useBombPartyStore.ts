@@ -59,7 +59,7 @@ function loadPreferencesFromStorage(): UserPreferences {
       return { ...defaultPreferences, ...parsed };
     }
   } catch (error) {
-    logger.warn('Erreur lors du chargement des préférences', { error: error instanceof Error ? error.message : String(error) });
+    logger.warn('Erreur lors du chargement des preferences', { error: error instanceof Error ? error.message : String(error) });
   }
   return defaultPreferences;
 }
@@ -68,7 +68,7 @@ function savePreferencesToStorage(preferences: UserPreferences): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   } catch (error) {
-    logger.warn('Erreur lors de la sauvegarde des préférences', { error: error instanceof Error ? error.message : String(error) });
+    logger.warn('Erreur lors de la sauvegarde des preferences', { error: error instanceof Error ? error.message : String(error) });
   }
 }
 
@@ -200,7 +200,7 @@ export const useBombPartyStore = create<BombPartyStore>()(
       
       if (currentState && gameState.sequenceNumber !== undefined && currentState.sequenceNumber !== undefined) {
         if (gameState.sequenceNumber < currentState.sequenceNumber) {
-          logger.debug('Message obsolète ignoré', {
+          logger.debug('Message obsolete ignore', {
             received: gameState.sequenceNumber,
             current: currentState.sequenceNumber
           });
@@ -219,7 +219,7 @@ export const useBombPartyStore = create<BombPartyStore>()(
         }
         
         if (serverPlayer && currentPlayer && serverPlayer.lives === currentPlayer.lives) {
-          logger.debug('Correction de l\'état optimiste', {
+          logger.debug('Correction de l\'etat optimiste', {
             playerId: optimisticLoss.playerId,
             serverLives: serverPlayer.lives,
             optimisticLives: currentPlayer.lives
@@ -252,7 +252,7 @@ export const useBombPartyStore = create<BombPartyStore>()(
       
       if (sequenceNumber !== undefined && currentState.sequenceNumber !== undefined) {
         if (sequenceNumber < currentState.sequenceNumber) {
-          logger.debug('Delta obsolète ignoré', {
+          logger.debug('Delta obsolete ignore', {
             received: sequenceNumber,
             current: currentState.sequenceNumber
           });
@@ -399,8 +399,8 @@ export const useBombPartyStore = create<BombPartyStore>()(
         try {
           bombPartyService.leaveRoom();
         } catch (err) {
-          logger.error('Erreur lors de la déconnexion de la room', err);
-          get().setLastError('Erreur lors de la déconnexion de la room');
+          logger.error('Erreur lors de la deconnexion de la room', err);
+          get().setLastError('Erreur lors de la deconnexion de la room');
         }
       });
     },
@@ -410,8 +410,8 @@ export const useBombPartyStore = create<BombPartyStore>()(
         try {
           bombPartyService.createRoom(name, isPrivate, password, maxPlayers);
         } catch (err) {
-          logger.error('Erreur lors de la création de la room', err);
-          get().setLastError('Erreur lors de la création de la room');
+          logger.error('Erreur lors de la creation de la room', err);
+          get().setLastError('Erreur lors de la creation de la room');
         }
       });
     },
@@ -421,8 +421,8 @@ export const useBombPartyStore = create<BombPartyStore>()(
         try {
           bombPartyService.startGame();
         } catch (err) {
-          logger.error('Erreur lors du démarrage de la partie', err);
-          get().setLastError('Erreur lors du démarrage de la partie');
+          logger.error('Erreur lors du demarrage de la partie', err);
+          get().setLastError('Erreur lors du demarrage de la partie');
         }
       });
     },
@@ -558,7 +558,7 @@ export const useBombPartyStore = create<BombPartyStore>()(
       const prev = get();
       if (prev.turnStartTime === turnStartTime) return;
       
-      logger.info('🎯 setTurnStartTime appelé', {
+      logger.info('🎯 setTurnStartTime appele', {
         previousTurnStartTime: prev.turnStartTime,
         newTurnStartTime: turnStartTime,
         gameStatePhase: prev.gameState?.phase,

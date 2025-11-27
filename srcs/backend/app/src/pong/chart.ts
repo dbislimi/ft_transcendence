@@ -57,8 +57,8 @@ export default async function plotRewards(
 		buffer
 	);
 	console.log(
-		`✅ Graphique généré : ${name}${
+		`✅ Graphique genere : ${name}${
 			episode ? "_" + episode : ""
-		}.png (épisodes: ${tab.length}, affichés: ${data.length})`
+		}.png (episodes: ${tab.length}, affiches: ${data.length})`
 	);
 }

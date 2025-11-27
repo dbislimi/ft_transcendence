@@ -43,9 +43,9 @@
       "invalidDisplayName": "El nombre de usuario solo debe contener letras, números o guiones.",
       "invalidPassword": "La contraseña debe contener al menos 6 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
       "noChanges": "No se detectaron cambios.",
-      "updateSuccess": "Perfil actualizado con éxito",
+      "updateSuccess": "Perfil actualizado con exito",
       "updateError": "Error al actualizar el perfil",
-      "networkErrorRetry": "Error de red. Por favor, inténtalo de nuevo.",
+      "networkErrorRetry": "Error de red. Por favor, intentalo de nuevo.",
       "sendError": "Error al enviar",
       "networkError": "Error de red",
       "confirmBlock": "¿Bloquear a este usuario?",
@@ -164,7 +164,7 @@
       "noLobbiesDesc": "¡Crea una nueva sala para empezar a jugar!",
       "refresh": "Actualizar",
       "joinPrivate": "Unirse a una sala privada",
-      "privatePasswordDesc": "Esta sala está protegida con contraseña. Por favor, ingrésala para unirte.",
+      "privatePasswordDesc": "Esta sala está protegida con contraseña. Por favor, ingresala para unirte.",
       "enterPassword": "Ingresa la contraseña",
       "cancel": "Cancelar",
       "inProgress": "En curso",
@@ -220,7 +220,7 @@
     },
     "rules": {
       "title": "Reglas del Juego",
-      "languageNotice": "Este juego se juega solo en francés. Solo se aceptan palabras válidas en francés.",
+      "languageNotice": "Este juego se juega solo en frances. Solo se aceptan palabras válidas en frances.",
       "rule1": "Escribe una palabra válida que contenga el trigrama mostrado.",
       "rule2": "Cada turno está cronometrado. Si se acaba el tiempo, pierdes una vida.",
       "rule3": "No se permiten palabras duplicadas.",
@@ -329,7 +329,7 @@
         "title": "Estadísticas por trigrama",
         "trigram": "Trigrama",
         "attempts": "Intentos",
-        "successRate": "Tasa de éxito",
+        "successRate": "Tasa de exito",
         "averageTime": "Tiempo promedio"
       },
       "ranking": {
@@ -397,7 +397,7 @@
       },
       "dark-souls": {
         "name": "Dark Souls",
-        "description": "Atmósfera épica y misteriosa"
+        "description": "Atmósfera epica y misteriosa"
       },
       "the-last-of-us": {
         "name": "The Last of Us",
@@ -421,7 +421,7 @@
       },
       "interstellar": {
         "name": "Interstellar",
-        "description": "Viaje a través de las estrellas"
+        "description": "Viaje a traves de las estrellas"
       },
       "pexels-padrinan-19670": {
         "name": "Paisaje Natural",
@@ -494,7 +494,7 @@
     },
     "advanced": {
       "title": "Avanzado",
-      "description": "Opciones técnicas"
+      "description": "Opciones tecnicas"
     },
     "home": {
       "description": "Volver al inicio",

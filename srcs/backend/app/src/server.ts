@@ -64,14 +64,14 @@ async function main() {
 	// 3. Database (db est une instance directe, pas un plugin Fastify ici)
 	fastify.decorate('db', dbPlugin as any);
 
-	// 4. Nettoyage des statuts en ligne au démarrage
+	// 4. Nettoyage des statuts en ligne au demarrage
 	await new Promise<void>((resolve, reject) => {
 		fastify.db.run("UPDATE users SET online = 0", (err: any) => {
 			if (err) {
 				fastify.log.error("Erreur lors du nettoyage des statuts en ligne:", err);
 				reject(err);
 			} else {
-				fastify.log.info("Statuts des utilisateurs remis à zéro au démarrage");
+				fastify.log.info("Statuts des utilisateurs remis à zero au demarrage");
 				resolve();
 			}
 		});
@@ -110,7 +110,7 @@ async function main() {
 	try {
 		// Port 3001 avec HTTPS
 		const address = await fastify.listen({ port: 3001, host: '0.0.0.0' });
-		fastify.log.info(`Serveur HTTPS lancé sur ${address}`);
+		fastify.log.info(`Serveur HTTPS lance sur ${address}`);
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);

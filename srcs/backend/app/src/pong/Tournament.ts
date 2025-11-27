@@ -243,7 +243,7 @@ export default class Tournament {
 					.incrementTournamentsWon(player.id)
 					.catch((error: any) => {
 						console.error(
-							"Erreur lors de l'incrémentation des tournois gagnés:",
+							"Erreur lors de l'incrementation des tournois gagnes:",
 							error
 						);
 					});

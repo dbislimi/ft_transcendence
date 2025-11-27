@@ -26,7 +26,7 @@ export function useWebsocketChat(
 		wsRef.current = ws;
 
 		ws.onopen = () => console.log(`ws ouvert`);
-		ws.onclose = () => console.log(`ws fermé`);
+		ws.onclose = () => console.log(`ws ferme`);
 		ws.onmessage = onMessage;
 
 		return () => {
@@ -75,7 +75,7 @@ export default function Chat() {
 				{messages.map((m, i) => (
 					<div key={i} className="mb-1">
 						<strong>{m.fromName}</strong>{" "}
-						{m.type === "private" && "(privé)"} : {m.text}
+						{m.type === "private" && "(prive)"} : {m.text}
 						<span className="text-xs text-gray-500">
 							{" "}
 							({new Date(m.date).toLocaleTimeString()})
@@ -90,7 +90,7 @@ export default function Chat() {
 					onChange={(e) => setInput(e.target.value)}
 					className="border flex-grow p-2 rounded-l"
 					placeholder={
-						toUser ? `Message privé à ${toUser}` : "Message global"
+						toUser ? `Message prive à ${toUser}` : "Message global"
 					}
 				/>
 				<button className="bg-blue-600 text-white px-4 rounded-r">
@@ -121,7 +121,7 @@ export default function Chat() {
 					onClick={() => unblockUser(2)}
 					className="bg-green-500 text-white px-2 py-1 rounded"
 				>
-					Débloquer User 2
+					Debloquer User 2
 				</button>
 			</div>
 		</div>

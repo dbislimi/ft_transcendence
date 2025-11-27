@@ -41,20 +41,20 @@ function calculateLevel(totalXp: number): { level: number; currentXp: number; xp
 
 const BADGE_DEFINITIONS: Record<BadgeType, { name: string; description: string; icon: string; rarity: string }> = {
   first_win: {
-    name: 'Première Victoire',
-    description: 'Gagnez votre première partie',
+    name: 'Premiere Victoire',
+    description: 'Gagnez votre premiere partie',
     icon: '🏆',
     rarity: 'common'
   },
   streak_10: {
-    name: 'Série de 10',
-    description: 'Gagnez 10 parties consécutives',
+    name: 'Serie de 10',
+    description: 'Gagnez 10 parties consecutives',
     icon: '🔥',
     rarity: 'uncommon'
   },
   streak_20: {
-    name: 'Série de 20',
-    description: 'Gagnez 20 parties consécutives',
+    name: 'Serie de 20',
+    description: 'Gagnez 20 parties consecutives',
     icon: '💥',
     rarity: 'rare'
   },
@@ -65,8 +65,8 @@ const BADGE_DEFINITIONS: Record<BadgeType, { name: string; description: string; 
     rarity: 'rare'
   },
   speed_demon: {
-    name: 'Démon de la Vitesse',
-    description: 'Temps de réponse moyen inférieur à 2 secondes',
+    name: 'Demon de la Vitesse',
+    description: 'Temps de reponse moyen inferieur à 2 secondes',
     icon: '⚡',
     rarity: 'uncommon'
   },
@@ -96,7 +96,7 @@ const BADGE_DEFINITIONS: Record<BadgeType, { name: string; description: string; 
   },
   trigram_expert: {
     name: 'Expert en Trigrammes',
-    description: 'Taux de réussite supérieur à 90%',
+    description: 'Taux de reussite superieur à 90%',
     icon: '🎯',
     rarity: 'rare'
   }
@@ -109,7 +109,7 @@ export class BombPartyStatsService {
     this.db = database;
   }
 
-  // Calculer le XP gagné après une partie
+  // Calculer le XP gagne apres une partie
   calculateXpGain(matchData: {
     isWin: boolean;
     wordsSubmitted: number;
@@ -257,7 +257,7 @@ export class BombPartyStatsService {
           newStreak = 0;
         }
 
-        // Vérifier les nouveaux badges
+        // Verifier les nouveaux badges
         const currentBadges = currentProgress.badges;
         const newBadges: Badge[] = [];
         const badgeTypes = Object.keys(BADGE_DEFINITIONS) as BadgeType[];

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
-import { useUser } from "../contexts/UserContext";
+import { useUser } from "../context/UserContext";
 import GoogleAuthButton from "../Components/GoogleAuthButton";
 
 export default function Connection() {
@@ -58,6 +58,12 @@ export default function Connection() {
           id: Number(data.user?.id) || 1,
           name: data.user?.name || email.split("@")[0],
           email: email,
+          display_name: data.user?.display_name || data.user?.name || email.split("@")[0],
+          cosmetics: {
+            preferredSide: "left",
+            paddleColor: "White",
+            ballColor: "White",
+          }
         };
 
         login(userData, data.token);
@@ -89,7 +95,7 @@ export default function Connection() {
                 Connexion
               </h1>
               <p className="text-slate-400">
-                Accédez à votre compte Transcendence
+                Accedez à votre compte Transcendence
               </p>
             </div>
 

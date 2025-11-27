@@ -7,7 +7,7 @@ import * as pages from "./pages";
 import Layout from "./Components/Layout";
 import { GlobalBackgroundProvider } from "./contexts/GlobalBackgroundContext";
 import { BackgroundProvider } from "./contexts/BackgroundContext";
-import { WebSocketProvider, FriendsProvider } from "./context/WebSocketContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
 import { UserProvider } from "./context/UserContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { GameSessionProvider } from "./context/GameSessionContext";
@@ -66,7 +66,7 @@ createRoot(document.getElementById("root")!).render(
 				<BackgroundProvider>
 					<UserProvider>
 						<WebSocketProvider>
-							<FriendsProvider>
+							{/* <FriendsProvider> */}
 								<NotificationProvider>
 									<GameSessionProvider>
 										<GameSettingsProvider>
@@ -74,7 +74,7 @@ createRoot(document.getElementById("root")!).render(
 										</GameSettingsProvider>
 									</GameSessionProvider>
 								</NotificationProvider>
-							</FriendsProvider>
+							{/* </FriendsProvider> */}
 						</WebSocketProvider>
 					</UserProvider>
 				</BackgroundProvider>

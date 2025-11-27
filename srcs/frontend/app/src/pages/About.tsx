@@ -91,10 +91,10 @@ export default function About() {
           
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 mb-6">
-              {t('about.title') || 'Notre Équipe'}
+              {t('about.title') || 'Notre equipe'}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 font-light max-w-3xl mx-auto">
-              {t('about.subtitle') || 'Découvrez les talents derrière Transcendence'}
+              {t('about.subtitle') || 'Decouvrez les talents derriere Transcendence'}
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export default function About() {
                       {member.firstName} {member.name}
                     </h3>
                     <p className="text-gray-400 text-sm">
-                      {t('about.role') || 'Développeur Full-Stack'}
+                      {t('about.role') || 'Developpeur Full-Stack'}
                     </p>
                   </div>
                   
@@ -164,7 +164,7 @@ export default function About() {
                   <h2 className="text-3xl font-bold text-white mb-2">
                     {selectedMember.firstName} {selectedMember.name}
                   </h2>
-                  <p className="text-gray-300">{t('about.role') || 'Développeur Full-Stack'}</p>
+                  <p className="text-gray-300">{t('about.role') || 'Developpeur Full-Stack'}</p>
                 </div>
               </div>
               

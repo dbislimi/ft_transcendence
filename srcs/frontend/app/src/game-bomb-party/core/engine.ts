@@ -170,7 +170,7 @@ export class BombPartyEngine {
 
     const currentPlayer = this.state.players[this.state.currentPlayerIndex];
     if (!currentPlayer) {
-      console.error('Erreur: Joueur actuel non trouvé');
+      console.error('Erreur: Joueur actuel non trouve');
       return;
     }
 
@@ -183,11 +183,11 @@ export class BombPartyEngine {
         playerName: currentPlayer.name,
         livesBefore,
         livesAfter: currentPlayer.lives,
-        reason: timeExpired ? 'Timer expiré' : 'Mot invalide'
+        reason: timeExpired ? 'Timer expire' : 'Mot invalide'
       });
       if (currentPlayer.lives === 0) {
         currentPlayer.isEliminated = true;
-        console.log('[BombPartyEngine] Joueur éliminé:', currentPlayer.name);
+        console.log('[BombPartyEngine] Joueur elimine:', currentPlayer.name);
       }
     }
 
@@ -216,7 +216,7 @@ export class BombPartyEngine {
       }
     } while (this.state.players[this.state.currentPlayerIndex]?.isEliminated);
     if (!this.state.players[this.state.currentPlayerIndex]) {
-      console.error('Erreur: Aucun joueur valide trouvé');
+      console.error('Erreur: Aucun joueur valide trouve');
       this.state.phase = 'GAME_OVER';
     }
   }
