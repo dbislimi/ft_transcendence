@@ -8,6 +8,14 @@ export interface Message {
   date: string;
   type: "global" | "private" | "info";
   to?: number | null;
+  fromName?: string;
+  message?: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  blocked?: boolean;
 }
 
 interface WebSocketContextType {
@@ -15,6 +23,7 @@ interface WebSocketContextType {
   friendsWsRef: React.MutableRefObject<WebSocket | null>;
   chatWsRef: React.MutableRefObject<WebSocket | null>;
   messages: Message[];
+  users: User[];
   sendMessage: (msg: {
     type: string;
     text: string;
@@ -28,6 +37,7 @@ const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const chatWsRef = useRef<WebSocket | null>(null);
   const pongWsRef = useRef<WebSocket | null>(null);
   const friendsWsRef = useRef<WebSocket | null>(null);
@@ -151,6 +161,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         friendsWsRef,
         chatWsRef,
         messages,
+        users,
         sendMessage,
         addPongRoute,
         removePongRoute,

@@ -4,7 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
-import { request } from 'https';
+import { request } from 'http';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
@@ -34,7 +34,7 @@ export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
 
   fastify.decorate('send2faEmail', async (email: string, otp: string) => {
     const message = {
-      from: '"2FA Service" <Transcendance06000@gmail.com>',
+      from: '"code d\'authentification" <Transcendance06000@gmail.com>',
       to: email,
       subject: 'Votre code de verification',
       text: `Votre code est : ${otp}`,

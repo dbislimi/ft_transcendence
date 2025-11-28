@@ -9,8 +9,11 @@ import util from "util";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET must be defined in environment variables');
+}
 
-export default fp(async function authPlugin(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function authPlugin(fastify: FastifyInstance) {
   const db = fastify.db;
 
   fastify.post("/check-user", async (request, reply) => {
@@ -122,10 +125,9 @@ export default fp(async function authPlugin(fastify: FastifyInstance<any, any, a
           }
         );
       });
-      console.log("lastID:", userId);
 
       const token = jwt.sign(
-        { id: userId, name, email },
+        { id: userId, name, email, display_name: displayName },
         JWT_SECRET,
         { expiresIn: "2h" }
       );

@@ -1,46 +1,46 @@
-import { useState } from 'react';
-import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config/api";
 
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../contexts/AuthContext";
+import { API_BASE_URL } from "../config/api";
 
 export default function EnterCode() {
   const [code, setCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const userId = localStorage.getItem("for2FaUserId");
-      if (!userId) {
-        setCode("utilisateur non trouver");
-        return;
-      }
-
+      const userId = localStorage.getItem('for2FaUserId');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const response = await fetch(`${API_BASE_URL}/check2fa`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, code }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, userId }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        localStorage.setItem('token', data.token);
-        navigate('/Dashboard');
+      if (response.ok) {
+        login(userData, data.token);
+        //localStorage.setItem('token', data.token);
+        navigate('/');
+      } else {
+        setError(data.error || 'Code invalide');
       }
-      else {
-        setError(data.error || 'code incorrect');
-      }
-    } catch (error) {
-      setError('erreur reseau, veuillez reessayer.');
+    } catch (err) {
+      setError('Erreur réseau');
     }
-  }
+  };
 
   return (
     <div style={{ padding: '20px', maxWidth: '300px', margin: 'auto' }}>
-      <h2>Entrez le code reçu par mail :</h2>
+      <h2>Entrez le code reçu par mail:</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -55,14 +55,26 @@ export default function EnterCode() {
             boxSizing: 'border-box',
             borderRadius: '4px',
             border: '1px solid #ccc',
-            marginBottom: '10px',
           }}
         />
-        <button type="submit" style={{ width: '100%', height: '40px' }}>
-          Valider
+        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+        <button
+          type="submit"
+          style={{
+            marginTop: '10px',
+            width: '100%',
+            padding: '10px',
+            backgroundColor: '#4f46e5',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '16px',
+            cursor: 'pointer',
+          }}
+        >
+          Vérifier le code
         </button>
       </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }
