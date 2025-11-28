@@ -3,11 +3,10 @@
 
 export const API_BASE_URL = window.location.origin;
 export const WS_BASE_URL = window.location.origin.replace('http', 'ws');
-const HOSTNAME = import.meta.env.VITE_HOSTNAME || window.location.hostname;
 
 export const getWebSocketHost = (): string => {
-    const isVitePort = window.location.port === '5173';
-    return isVitePort ? `${HOSTNAME}:8443` : window.location.host;
+    // Always use the current browser location for WebSocket connections
+    return window.location.host;
 };
 
 export const API_ENDPOINTS = {

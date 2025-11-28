@@ -83,6 +83,7 @@ export default function Pong() {
 	const activeSessionRef = useRef(false);
 	const gameRef = useRef<GameState>(initGameState());
 	const controlsReadyRef = useRef(false);
+	const wsRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 
@@ -273,6 +274,12 @@ export default function Pong() {
 
 	useEffect(() => {
 		return () => {
+			// Clear any pending retry interval
+			if (wsRetryIntervalRef.current) {
+				clearInterval(wsRetryIntervalRef.current);
+				wsRetryIntervalRef.current = null;
+			}
+			
 			pongWsRef?.current?.send(
 				JSON.stringify({
 					event: "stop",
@@ -307,13 +314,51 @@ export default function Pong() {
 		(body: Record<string, unknown>) => {
 			if (!trainingRef.current) lastStartPayloadRef.current = body;
 			activeSessionRef.current = true;
-			if (pongWsRef.current?.readyState === WebSocket.OPEN) {
-				pongWsRef.current.send(JSON.stringify({ event: "start", body }));
-			} else {
-				console.error("[Pong] WebSocket n'est pas connecté, impossible d'envoyer l'événement start");
+			
+			// Clear any existing retry interval
+			if (wsRetryIntervalRef.current) {
+				clearInterval(wsRetryIntervalRef.current);
+				wsRetryIntervalRef.current = null;
 			}
+			
+			const trySend = () => {
+				if (pongWsRef.current?.readyState === WebSocket.OPEN) {
+					pongWsRef.current.send(JSON.stringify({ event: "start", body }));
+					console.log("[Pong] Start event sent:", body.action);
+					return true;
+				}
+				return false;
+			};
+
+			// Try to send immediately
+			if (trySend()) return;
+
+			// If not ready, wait for connection with retry mechanism
+			console.log("[Pong] WebSocket not ready (state:", pongWsRef.current?.readyState, "), waiting for connection...");
+			let attempts = 0;
+			const maxAttempts = 20; // 20 attempts * 100ms = 2 seconds max
+			
+			wsRetryIntervalRef.current = setInterval(() => {
+				attempts++;
+				if (trySend()) {
+					console.log("[Pong] WebSocket connected after", attempts * 100, "ms, event sent successfully");
+					if (wsRetryIntervalRef.current) {
+						clearInterval(wsRetryIntervalRef.current);
+						wsRetryIntervalRef.current = null;
+					}
+				} else if (attempts >= maxAttempts) {
+					console.error("[Pong] WebSocket connection timeout after 2 seconds. Current state:", pongWsRef.current?.readyState);
+					if (wsRetryIntervalRef.current) {
+						clearInterval(wsRetryIntervalRef.current);
+						wsRetryIntervalRef.current = null;
+					}
+					// Try to show error to user
+					window.alert("Erreur: Impossible de se connecter au serveur de jeu. Veuillez réessayer.");
+					setView({ kind: "rules" });
+				}
+			}, 100);
 		},
-		[pongWsRef]
+		[pongWsRef, setView]
 	);
 
 	const handleBackToMenu = useCallback(() => {

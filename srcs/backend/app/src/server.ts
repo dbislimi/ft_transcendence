@@ -42,8 +42,22 @@ const fastify = Fastify({
 });
 
 async function main() {
+	// Allow CORS from any origin on the same network
 	await fastify.register(cors, {
-		origin: [`https://${HOSTNAME}:5173`, `https://${HOSTNAME}`, `https://${HOSTNAME}:8443`],
+		origin: (origin, cb) => {
+			// Allow requests with no origin (like mobile apps or curl)
+			if (!origin) {
+				cb(null, true);
+				return;
+			}
+			// Allow localhost, 127.0.0.1, and any IP in local network
+			const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr)(:\d+)?$/;
+			if (allowed.test(origin)) {
+				cb(null, true);
+			} else {
+				cb(new Error('Not allowed by CORS'), false);
+			}
+		},
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		exposedHeaders: ["Content-Length"],
