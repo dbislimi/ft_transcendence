@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import checker from 'vite-plugin-checker'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -59,24 +58,26 @@ const HOSTNAME = process.env.VITE_HOSTNAME || 'localhost';
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    react(),
-    checker({
-      typescript: {
-        tsconfigPath: 'tsconfig.app.json'
-      }
-    })
+    react()
   ],
   resolve: {
     alias: {
       '@shared': getSharedPath()
     }
   },
+  build: {
+    // Disable source maps in dev to reduce noise
+    sourcemap: false,
+  },
   server: {
     https: getHttpsOptions(),
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    // Completely disable HMR and its client
     hmr: false,
+    // Disable WebSocket server entirely  
+    ws: false,
     proxy: {
       '/bombparty/ws': {
         target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,

@@ -113,7 +113,7 @@ export default function Profile() {
 
 	const fetchFriends = async () => {
 		try {
-			const res = await fetch(`${API_BASE_URL}/friends`, {
+			const res = await fetch(`${API_BASE_URL}/api/friends`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -127,7 +127,7 @@ export default function Profile() {
 
 	const fetchRequests = async () => {
 		try {
-			const res = await fetch(`${API_BASE_URL}/friend-requests`, {
+			const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -141,7 +141,7 @@ export default function Profile() {
 
 	const fetchBlockedUsers = async () => {
 		try {
-			const res = await fetch(`${API_BASE_URL}/blocked-users`, {
+			const res = await fetch(`${API_BASE_URL}/api/blocked-users`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (res.ok) {
@@ -544,7 +544,7 @@ export default function Profile() {
 		}
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/me`, {
+			const res = await fetch(`${API_BASE_URL}/api/me`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",

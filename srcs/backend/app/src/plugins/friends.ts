@@ -7,9 +7,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
   fastify.get("/friends", async (request, reply) => {
     const decoded = verifyToken(request, reply);
-    if (!decoded) return;
+    if (!decoded) {
+      return reply.code(401).send({ error: "Token invalide ou manquant" });
+    }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       fastify.db.all(
         `SELECT u.id, u.display_name, u.avatar, u.online
          FROM friends f
@@ -24,10 +26,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
         [decoded.id, decoded.id, decoded.id],
         (err: any, rows: any[]) => {
           if (err) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
+            reply.code(500).send({ error: "Erreur serveur" });
           } else {
-            resolve(rows);
+            reply.send(rows);
           }
+          resolve();
         }
       );
     });
@@ -35,9 +38,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
   fastify.get("/friend-requests", async (request, reply) => {
     const decoded = verifyToken(request, reply);
-    if (!decoded) return;
+    if (!decoded) {
+      return reply.code(401).send({ error: "Token invalide ou manquant" });
+    }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       fastify.db.all(
         `SELECT fr.sender_id, u.display_name, u.avatar, fr.status, 'received' as type
          FROM friend_requests fr
@@ -52,7 +57,8 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
         [decoded.id, decoded.id, decoded.id],
         (err1: any, received: any[]) => {
           if (err1) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
+            reply.code(500).send({ error: "Erreur serveur" });
+            resolve();
             return;
           }
 
@@ -70,11 +76,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
             [decoded.id, decoded.id, decoded.id],
             (err2: any, sent: any[]) => {
               if (err2) {
-                reject(reply.code(500).send({ error: "Erreur serveur" }));
-                return;
+                reply.code(500).send({ error: "Erreur serveur" });
+              } else {
+                reply.send([...received, ...sent]);
               }
-
-              resolve([...received, ...sent]);
+              resolve();
             }
           );
         }
@@ -84,9 +90,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
   fastify.get("/blocked-users", async (request, reply) => {
     const decoded = verifyToken(request, reply);
-    if (!decoded) return;
+    if (!decoded) {
+      return reply.code(401).send({ error: "Token invalide ou manquant" });
+    }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       fastify.db.all(
         `SELECT u.id, u.display_name, u.avatar, b.created_at
          FROM blocked_users b
@@ -96,10 +104,11 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
         [decoded.id],
         (err: any, rows: any[]) => {
           if (err) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
+            reply.code(500).send({ error: "Erreur serveur" });
           } else {
-            resolve(rows);
+            reply.send(rows);
           }
+          resolve();
         }
       );
     });
@@ -118,7 +127,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { display_name } = request.body as any;
 
@@ -275,7 +286,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   fastify.post("/friend-requests/:id/accept", async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { id } = request.params as any;
       const senderId = parseInt(id);
@@ -397,7 +410,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   fastify.post("/friend-requests/:id/reject", async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { id } = request.params as any;
       const senderId = parseInt(id);
@@ -449,7 +464,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   fastify.delete("/friends/:id", async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { id } = request.params as any;
       const friendId = parseInt(id);
@@ -519,7 +536,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { user_id } = request.body as any;
 
@@ -599,7 +618,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
   fastify.delete("/blocked-users/:id", async (request, reply) => {
     try {
       const decoded = verifyToken(request, reply);
-      if (!decoded) return;
+      if (!decoded) {
+        return reply.code(401).send({ error: "Token invalide ou manquant" });
+      }
 
       const { id } = request.params as any;
       const blockedId = parseInt(id);

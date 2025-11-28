@@ -145,9 +145,11 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     });
   });
 
-  fastify.get("/api/match-history/:userId", async (request: any, reply: any) => {
+  fastify.get("/match-history/:userId", async (request: any, reply: any) => {
     const decoded = verifyToken(request, reply);
-    if (!decoded) return;
+    if (!decoded) {
+      return reply.code(401).send({ error: "Token invalide ou manquant" });
+    }
     const { userId } = request.params;
     const { page = 1, limit = 10 } = request.query;
     const offset = (page - 1) * limit;
@@ -205,9 +207,11 @@ export default fp(async function matchesPlugin(fastify: FastifyInstance) {
     });
   });
 
-  fastify.get("/api/user-stats/:userId", async (request: any, reply: any) => {
+  fastify.get("/user-stats/:userId", async (request: any, reply: any) => {
     const decoded = verifyToken(request, reply);
-    if (!decoded) return;
+    if (!decoded) {
+      return reply.code(401).send({ error: "Token invalide ou manquant" });
+    }
     const { userId } = request.params;
 
     return new Promise((resolve, reject) => {

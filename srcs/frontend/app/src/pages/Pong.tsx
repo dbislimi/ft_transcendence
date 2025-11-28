@@ -307,7 +307,11 @@ export default function Pong() {
 		(body: Record<string, unknown>) => {
 			if (!trainingRef.current) lastStartPayloadRef.current = body;
 			activeSessionRef.current = true;
-			pongWsRef.current?.send(JSON.stringify({ event: "start", body }));
+			if (pongWsRef.current?.readyState === WebSocket.OPEN) {
+				pongWsRef.current.send(JSON.stringify({ event: "start", body }));
+			} else {
+				console.error("[Pong] WebSocket n'est pas connecté, impossible d'envoyer l'événement start");
+			}
 		},
 		[pongWsRef]
 	);

@@ -47,73 +47,79 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const tokenParam = encodeURIComponent(token);
+    // Delay WebSocket connections to ensure page is fully loaded
+    const connectionTimeout = setTimeout(() => {
+      const tokenParam = encodeURIComponent(token);
 
-    // Always prefer Nginx proxy (port 443) over direct backend port (3001)
-    const wsHost = getWebSocketHost();
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const WS_BASE_URL = `${protocol}//${wsHost}`;
+      // Always prefer Nginx proxy (port 443) over direct backend port (3001)
+      const wsHost = getWebSocketHost();
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const WS_BASE_URL = `${protocol}//${wsHost}`;
 
-    pongWsRef.current = new WebSocket(`${WS_BASE_URL}/game?token=${tokenParam}`);
-    chatWsRef.current = new WebSocket(
-      `${WS_BASE_URL}/chat?token=${tokenParam}`
-    );
-    friendsWsRef.current = new WebSocket(
-      `${WS_BASE_URL}/ws-friends?token=${tokenParam}`
-    );
+      console.log('[WebSocket] Initializing connections to', WS_BASE_URL);
 
-    const onOpen = (name: string) => console.log(`${name} Websocket connecté`);
-    const onClose = (name: string) => console.log(`${name} Websocket fermé`);
+      pongWsRef.current = new WebSocket(`${WS_BASE_URL}/game?token=${tokenParam}`);
+      chatWsRef.current = new WebSocket(
+        `${WS_BASE_URL}/chat?token=${tokenParam}`
+      );
+      friendsWsRef.current = new WebSocket(
+        `${WS_BASE_URL}/ws-friends?token=${tokenParam}`
+      );
 
-    chatWsRef.current.onopen = () => onOpen("Chat");
-    pongWsRef.current.onopen = () => onOpen("Pong");
-    friendsWsRef.current.onopen = () => onOpen("Friends");
+      const onOpen = (name: string) => console.log(`${name} Websocket connecté`);
+      const onClose = (name: string) => console.log(`${name} Websocket fermé`);
 
-    chatWsRef.current.onclose = () => onClose("Chat");
-    pongWsRef.current.onclose = () => onClose("Pong");
-    friendsWsRef.current.onclose = () => onClose("Friends");
+      chatWsRef.current.onopen = () => onOpen("Chat");
+      pongWsRef.current.onopen = () => onOpen("Pong");
+      friendsWsRef.current.onopen = () => onOpen("Friends");
 
-    chatWsRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setMessages((prev) => [...prev, data]);
-      } catch (e) {
-        console.error("Chat WS parse error", e);
-      }
-    };
+      chatWsRef.current.onclose = () => onClose("Chat");
+      pongWsRef.current.onclose = () => onClose("Pong");
+      friendsWsRef.current.onclose = () => onClose("Friends");
 
-    friendsWsRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', {
-          detail: data
-        }));
-      } catch (err) {
-        console.error("Erreur parsing message WebSocket amis:", err);
-      }
-    };
-
-    pongWsRef.current.onmessage = (msg) => {
-      let parsed: any = null;
-      try {
-        parsed = JSON.parse(msg.data);
-      } catch (e) {
-        return;
-      }
-      const to: string | undefined = typeof parsed?.to === "string" ? parsed.to : undefined;
-      if (!to) return;
-
-      const handler = pongRoutesRef.current.get(to);
-      if (handler) {
+      chatWsRef.current.onmessage = (event) => {
         try {
-          handler(parsed);
+          const data = JSON.parse(event.data);
+          setMessages((prev) => [...prev, data]);
         } catch (e) {
-          console.error("pong route handler error:", e);
+          console.error("Chat WS parse error", e);
         }
-      }
-    };
+      };
+
+      friendsWsRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          window.dispatchEvent(new CustomEvent('friendsWebSocketMessage', {
+            detail: data
+          }));
+        } catch (err) {
+          console.error("Erreur parsing message WebSocket amis:", err);
+        }
+      };
+
+      pongWsRef.current.onmessage = (msg) => {
+        let parsed: any = null;
+        try {
+          parsed = JSON.parse(msg.data);
+        } catch (e) {
+          return;
+        }
+        const to: string | undefined = typeof parsed?.to === "string" ? parsed.to : undefined;
+        if (!to) return;
+
+        const handler = pongRoutesRef.current.get(to);
+        if (handler) {
+          try {
+            handler(parsed);
+          } catch (e) {
+            console.error("pong route handler error:", e);
+          }
+        }
+      };
+    }, 500); // Wait 500ms for page to fully load
 
     return () => {
+      clearTimeout(connectionTimeout);
       chatWsRef.current?.close();
       pongWsRef.current?.close();
       friendsWsRef.current?.close();

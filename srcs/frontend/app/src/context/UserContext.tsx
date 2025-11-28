@@ -57,7 +57,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [user, setUser] = useState<User | null>(null);
 	const [token, setTokenState] = useState<string | null>(() => {
 		try {
-			const storedToken = sessionStorage.getItem("token");
+			const storedToken = localStorage.getItem("token");
 			if (storedToken === "undefined") return null;
 			return storedToken;
 		} catch {
@@ -82,11 +82,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const setToken = async (newToken: string | null) => {
 		if (newToken && newToken !== "undefined") {
-			sessionStorage.setItem("token", newToken);
+			localStorage.setItem("token", newToken);
 			setTokenState(newToken);
 		} else {
 			const currentToken = token;
-			sessionStorage.removeItem("token");
+			localStorage.removeItem("token");
 			setTokenState(null);
 			setUser(null);
 
@@ -123,7 +123,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const login = (userData: User, userToken: string) => {
 		setUser(userData);
-		sessionStorage.setItem("token", userToken);
+		localStorage.setItem("token", userToken);
 		setTokenState(userToken);
 	};
 
