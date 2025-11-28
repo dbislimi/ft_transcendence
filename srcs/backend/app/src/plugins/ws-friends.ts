@@ -38,7 +38,7 @@ export function broadcastToUsers(message: FriendEvent, userIds: number[]) {
 const wsFriends: FastifyPluginAsync = async (fastify) => {
   fastify.get('/ws-friends', { websocket: true }, (connection, request) => {
     const token = (request.query as any).token;
-    
+
     if (!token) {
       connection.close(1008, "Token manquant");
       return;
@@ -47,7 +47,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
     try {
       const decoded = jwt.verify(token, SECRET) as any;
       const userId = decoded.id;
-      
+
       globalActiveConnections.set(userId, connection);
 
       fastify.db.run("UPDATE users SET online = 1 WHERE id = ?", [userId], (err: any) => {
@@ -77,7 +77,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
       connection.on('message', (message) => {
         try {
           const data = JSON.parse(message.toString());
-          
+
           if (data.type === 'pong') {
             return;
           }
@@ -87,7 +87,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.on('close', () => {
         globalActiveConnections.delete(userId);
-        
+
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(
@@ -110,7 +110,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.on('error', () => {
         globalActiveConnections.delete(userId);
-        
+
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(
@@ -143,7 +143,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
           connection.send(JSON.stringify({ type: "heartbeat" }));
         } catch (error) {
           globalActiveConnections.delete(userId);
-          
+
           fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
             if (!err) {
               fastify.db.all(
@@ -165,7 +165,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
         }
       } else {
         globalActiveConnections.delete(userId);
-        
+
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(

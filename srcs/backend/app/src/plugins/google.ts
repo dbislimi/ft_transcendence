@@ -8,13 +8,13 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+  throw new Error('JWT_SECRET must be defined in environment variables');
 }
 const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 
-    fastify.register(fastifyOauth2, {
+  fastify.register(fastifyOauth2, {
     name: 'transcendance',
     credentials: {
       client: {
@@ -24,15 +24,15 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
       auth: fastifyOauth2.GOOGLE_CONFIGURATION,
     },
     startRedirectPath: '/auth/google',
-    callbackUri: `https://${HOSTNAME}:3001/auth/google/callback`,
+    callbackUri: `https://localhost:8443/api/auth/google/callback`,
     scope: ['profile', 'email'],
-    });
+  });
 
-    fastify.get('/auth/google/callback', async function (req, reply) {
-      if (!req.query.code) {
-        return reply.send('Erreur : code manquant depuis Google');
-      }
-    
+  fastify.get('/auth/google/callback', async function (req, reply) {
+    if (!req.query.code) {
+      return reply.send('Erreur : code manquant depuis Google');
+    }
+
     const result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
 
     const userInfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -52,14 +52,17 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 
     if (!user) {
       const lastID = await new Promise<number>((resolve, reject) => {
+        // Generate a random dummy password for Google users since they login via OAuth
+        const dummyPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+
         db.run(
           'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-          [name, email, null],
+          [name, email, dummyPassword],
           function (err) {
             if (err)
-                reject(err);
-            else 
-                resolve(this.lastID);
+              reject(err);
+            else
+              resolve(this.lastID);
           }
         );
       });
@@ -85,14 +88,14 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
         return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
       }
 
-      return reply.redirect(`https://${HOSTNAME}:5173/google-callback?require2fa=${user.twoFAEnabled}&userId=${user.id}`);
-      }
+      return reply.redirect(`https://${HOSTNAME}:8443/google-callback?require2fa=${user.twoFAEnabled}&userId=${user.id}`);
+    }
 
     const jwtToken = jwt.sign(
       { id: user.id, name: user.name, email },
       JWT_SECRET,
       { expiresIn: '2h' }
     );
-    return reply.redirect(`https://${HOSTNAME}:5173/google-callback?token=${jwtToken}`);
-    });
+    return reply.redirect(`https://${HOSTNAME}:8443/google-callback?token=${jwtToken}`);
+  });
 });
