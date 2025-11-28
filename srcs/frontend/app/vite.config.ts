@@ -74,10 +74,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    // Completely disable HMR and its client
-    hmr: false,
-    // Disable WebSocket server entirely  
-    ws: false,
+    hmr: {
+      protocol: 'wss',
+      path: '/hmr',
+      clientPort: 8443,
+    },
     proxy: {
       '/bombparty/ws': {
         target: `wss://${fs.existsSync('/usr/shared') ? 'back' : 'localhost'}:3001`,

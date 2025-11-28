@@ -18,7 +18,8 @@ export function ReadyButton({
 }: ReadyButtonProps) {
 	const { t } = useTranslation();
 
-	const displayOpponentName = sessionLabels?.opponent || "Opponent";
+	const displayOpponentName =
+		sessionLabels?.opponent || t("pong.readyPhase.opponent");
 
 	return (
 		<div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">

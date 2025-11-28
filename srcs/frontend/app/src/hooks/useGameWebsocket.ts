@@ -37,6 +37,12 @@ export function useGameWebsocket(
 			const wsHost = getWebSocketHost();
 			const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 
+			if (!api) {
+				console.error("[useGameWebsocket] API endpoint is missing, skipping connection");
+				isConnecting = false;
+				return;
+			}
+
 			const url = authToken
 				? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(authToken)}`
 				: `${wsProtocol}//${wsHost}/${api}`;

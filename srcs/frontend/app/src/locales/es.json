@@ -3,7 +3,8 @@
     "signin": "Registro",
     "settings": "Ajustes",
     "profile": "Perfil",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "stats": "Estadísticas"
   },
   "home": {
     "connectBtn": "Conexión",
@@ -21,6 +22,132 @@
     "aboutDesc": "Descubrir el equipo",
     "readyToTranscend": "¿Listo para trascender tus límites?",
     "optimalPerformance": "Rendimiento óptimo"
+  },
+ "pong": {
+    "rules": {
+      "title": "Reglas de Pong",
+      "rule1": "El primero en llegar a 11 puntos gana.",
+      "rule2": "Usa la pala para golpear la pelota.",
+      "rule3": "No dejes que la pelota pase.",
+      "rule4": "¡Pueden aparecer bonos!",
+      "modeSelection": "Seleccionar Modo",
+      "offlineMode": "Fuera de línea",
+      "offlineModeDesc": "Jugar localmente o contra bot",
+      "onlineMode": "Multijugador",
+      "onlineModeDesc": "Jugar en línea con otros",
+      "players": "Jugadores",
+      "solo": "Solo (vs Bot)",
+      "duo": "Duo (Local)",
+      "difficulty": "Dificultad",
+      "startOffline": "Iniciar Juego",
+      "matchType": "Tipo de Partida",
+      "quickMatch": "Partida Rápida",
+      "quickMatchDesc": "Encontrar un oponente al instante",
+      "tournament": "Torneo",
+      "tournamentDesc": "Unirse o crear un torneo",
+      "enterName": "Ingresa tu Nombre",
+      "namePlaceholder": "Tu nombre"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
+    },
+    "lobby": {
+      "title": "Sala de Torneo",
+      "createTab": "Crear Torneo",
+      "joinTab": "Unirse a Torneo",
+      "name": "Nombre del Torneo",
+      "namePlaceholder": "Ingresa nombre del torneo",
+      "playersCount": "Máx. Jugadores",
+      "private": "Torneo Privado",
+      "passwordOpt": "Contraseña (Opcional)",
+      "passwordPlaceholder": "Ingresa contraseña",
+      "create": "Crear Torneo",
+      "availableTournaments": "Torneos Disponibles",
+      "refresh": "Actualizar",
+      "noTournaments": "No se encontraron torneos",
+      "noTournamentsDesc": "¡Crea uno para empezar a jugar!",
+      "full": "Lleno",
+      "waiting": "Esperando",
+      "players": "jugadores",
+      "join": "Unirse",
+      "joinPrivate": "Unirse a Torneo Privado",
+      "privatePasswordDesc": "Este torneo es privado. Por favor ingresa la contraseña.",
+      "password": "Contraseña",
+      "enterPassword": "Ingresa contraseña",
+      "cancel": "Cancelar",
+      "connected": "Conectado",
+      "disconnected": "Desconectado"
+    },
+    "gameOver": {
+      "defeat": "Derrota",
+      "congratulations": "¡Felicidades, ganaste el torneo!",
+      "wonRound": "Ganaste esta ronda.",
+      "lostRound": "Perdiste esta ronda.",
+      "opponent": "Oponente:",
+      "finalScore": "Puntuación Final:",
+      "quit": "Salir",
+      "continue": "Continuar",
+      "replay": "Repetir"
+    },
+    "gameOverlay": {
+      "mode": "Modo"
+    },
+    "readyPhase": {
+      "opponent": "Oponente"
+    },
+    "searching": {
+      "waitingOpponent": "Esperando oponente",
+      "quitTraining": "Salir del Entrenamiento",
+      "quitOrTrain": "Puedes salir o iniciar entrenamiento",
+      "selectDifficulty": "Seleccionar dificultad",
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil",
+      "quit": "Salir",
+      "backToMenu": "Volver al menú",
+      "train": "Entrenar",
+      "vsBot": "Jugar contra bot"
+    },
+    "scoreboard": {
+      "p1": "J1",
+      "p2": "J2"
+    },
+    "settings": {
+      "cosmetics": "Cosméticos",
+      "game": "Juego",
+      "preferredSide": "Lado Preferido",
+      "left": "Izquierda",
+      "right": "Derecha",
+      "paddleSkin": "Skin de Pala",
+      "ballSkin": "Skin de Pelota",
+      "bonusCount": "Número de bonos simultáneos",
+      "bonusTypes": "Tipos de Bonos",
+      "playerSpeed": "Velocidad del Jugador",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "colors": {
+        "white": "Blanco",
+        "cyan": "Cian",
+        "emerald": "Esmeralda",
+        "rose": "Rosa",
+        "blue": "Azul",
+        "amber": "Ámbar"
+      },
+      "bonuses": {
+        "bigger": "Más grande",
+        "smaller": "Más pequeño",
+        "faster": "Más rápido"
+      }
+    },
+    "victory": "Victoria",
+    "offline": "Fuera de línea",
+    "online": "En línea",
+    "final": "Final",
+    "semiFinal": "Semifinal",
+    "quarterFinal": "Cuartos de Final",
+    "round": "Ronda"
   },
   "about": {
     "title": "Nuestro Equipo",
@@ -523,6 +650,41 @@
     "back": "Atrás",
     "backAria": "Volver atrás",
     "close": "Cerrar"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Página no encontrada",
+    "goHome": "Volver al inicio"
+  },
+  "connection": {
+    "title": "Conexión",
+    "subtitle": "Accede a tu cuenta de Transcendence",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Iniciar sesión",
+    "orContinue": "O continuar con",
+    "signInGoogle": "Iniciar sesión con Google",
+    "noAccount": "¿No tienes cuenta?",
+    "signUp": "Registrarse",
+    "errors": {
+      "invalidEmail": "Correo electrónico inválido.",
+      "passwordRequired": "La contraseña es obligatoria.",
+      "invalidCredentials": "Credenciales inválidas"
+    }
+  },
+  "confirmation": {
+    "title": "Registro exitoso ✅",
+    "welcome": "¡Bienvenido a la aventura Transcendence!",
+    "instructions": "Ahora puedes iniciar sesión desde la página dedicada."
+  },
+  "gameMenu": {
+    "online": "En línea",
+    "local": "Local",
+    "selectDifficulty": "Seleccionar dificultad del bot",
+    "play": "Jugar",
+    "train": "Entrenar"
   },
   "accessibility": {
     "languageSwitcher": "Selector de idioma"

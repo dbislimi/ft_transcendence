@@ -50,6 +50,28 @@ export function SettingsCard({
 		{ id: "Faster", label: "Faster" },
 	];
 
+	const COLOR_OPTIONS = [
+		{ value: "White", color: "#ffffff" },
+		{ value: "Cyan", color: "#06b6d4" },
+		{ value: "Emerald", color: "#10b981" },
+		{ value: "Rose", color: "#f43f5e" },
+		{ value: "Blue", color: "#3b82f6" },
+		{ value: "Amber", color: "#f59e0b" },
+	];
+
+	const getColorOptions = () =>
+		COLOR_OPTIONS.map((option) => ({
+			label: t(`pong.settings.colors.${option.value.toLowerCase()}`),
+			value: option.value,
+			color: option.color,
+		}));
+
+	const getBonusOptions = () =>
+		BONUS_TYPES.map((bonus) => ({
+			label: t(`pong.settings.bonuses.${bonus.id.toLowerCase()}`),
+			value: bonus.id,
+		}));
+
 	const hasCosmeticsChanges =
 		tempCosmetics.preferredSide !== (cosmetics?.preferredSide || "left") ||
 		tempCosmetics.paddleColor !== (cosmetics?.paddleColor || "White") ||
@@ -123,15 +145,18 @@ export function SettingsCard({
 					<div className="space-y-8">
 						<ChoiceGroup
 							label={t("settings.display.title") || "Mode"}
-							options={["Cosmetique", "Jeu"]}
+							options={[
+								t("pong.settings.cosmetics"),
+								t("pong.settings.game"),
+							]}
 							value={
 								selectedMode === "cosmetics"
-									? "Cosmetique"
-									: "Jeu"
+									? t("pong.settings.cosmetics")
+									: t("pong.settings.game")
 							}
 							onChange={(value) =>
 								setSelectedMode(
-									value === "Cosmetique"
+									value === t("pong.settings.cosmetics")
 										? "cosmetics"
 										: "gameSettings"
 								)
@@ -144,18 +169,22 @@ export function SettingsCard({
 						{selectedMode === "cosmetics" ? (
 							<div className="space-y-6 animate-slideIn">
 								<ChoiceGroup
-									label="Côte prefere"
-									options={["Gauche", "Droite"]}
+									label={t("pong.settings.preferredSide")}
+									options={[
+										t("pong.settings.left"),
+										t("pong.settings.right"),
+									]}
 									value={
 										tempCosmetics.preferredSide === "left"
-											? "Gauche"
-											: "Droite"
+											? t("pong.settings.left")
+											: t("pong.settings.right")
 									}
 									onChange={(value) =>
 										setTempCosmetics((prev) => ({
 											...prev,
 											preferredSide:
-												value === "Gauche"
+												value ===
+												t("pong.settings.left")
 													? "left"
 													: "right",
 										}))
@@ -165,15 +194,8 @@ export function SettingsCard({
 									variant="md"
 								/>
 								<ChoiceGroup
-									label="Skin Paddle"
-									options={[
-										{ label: "White", color: "#ffffff" },
-										{ label: "Cyan", color: "#06b6d4" },
-										{ label: "Emerald", color: "#10b981" },
-										{ label: "Rose", color: "#f43f5e" },
-										{ label: "Blue", color: "#3b82f6" },
-										{ label: "Amber", color: "#f59e0b" },
-									]}
+									label={t("pong.settings.paddleSkin")}
+									options={getColorOptions()}
 									value={tempCosmetics.paddleColor}
 									onChange={(value) =>
 										setTempCosmetics((prev) => ({
@@ -186,15 +208,8 @@ export function SettingsCard({
 									variant="sm"
 								/>
 								<ChoiceGroup
-									label="Skin Balle"
-									options={[
-										{ label: "White", color: "#ffffff" },
-										{ label: "Cyan", color: "#06b6d4" },
-										{ label: "Emerald", color: "#10b981" },
-										{ label: "Rose", color: "#f43f5e" },
-										{ label: "Blue", color: "#3b82f6" },
-										{ label: "Amber", color: "#f59e0b" },
-									]}
+									label={t("pong.settings.ballSkin")}
+									options={getColorOptions()}
 									value={tempCosmetics.ballColor}
 									onChange={(value) =>
 										setTempCosmetics((prev) => ({
@@ -210,7 +225,7 @@ export function SettingsCard({
 						) : (
 							<div className="space-y-6 animate-slideIn">
 								<ChoiceGroup
-									label="Nombre de bonus simultanes"
+									label={t("pong.settings.bonusCount")}
 									options={["0", "1", "2", "3", "4"]}
 									value={bonusNb.toString()}
 									onChange={(value) =>
@@ -221,23 +236,27 @@ export function SettingsCard({
 									variant="md"
 								/>
 								<ChoiceGroup
-									label="Types de bonus"
-									options={BONUS_TYPES.map(
-										(bonus) => bonus.label
-									)}
+									label={t("pong.settings.bonusTypes")}
+									options={getBonusOptions()}
 									value={selectedBonuses
 										.map((id) => {
 											const bonus = BONUS_TYPES.find(
 												(b) => b.id === id
 											);
-											return bonus ? bonus.label : "";
+											return bonus
+												? t(
+														`pong.settings.bonuses.${bonus.id.toLowerCase()}`
+												  )
+												: "";
 										})
 										.filter((label) => label !== "")}
 									onChange={(values) => {
 										const selectedIds = BONUS_TYPES.filter(
 											(bonus) =>
 												(values as string[]).includes(
-													bonus.label
+													t(
+														`pong.settings.bonuses.${bonus.id.toLowerCase()}`
+													)
 												)
 										).map((bonus) => bonus.id);
 										setSelectedBonuses(selectedIds);
@@ -249,7 +268,7 @@ export function SettingsCard({
 								/>
 								<div>
 									<label className="block text-sm font-medium text-slate-300 mb-2">
-										Vitesse du joueur
+										{t("pong.settings.playerSpeed")}
 									</label>
 									<div className="relative">
 										<input
@@ -289,7 +308,7 @@ export function SettingsCard({
 								onClick={onCancel}
 								className="px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700/50 transition-all"
 							>
-								{t("common.cancel") || "Cancel"}
+								{t("pong.settings.cancel") || "Cancel"}
 							</button>
 							<button
 								onClick={handleSave}
@@ -300,7 +319,7 @@ export function SettingsCard({
 										: "bg-slate-700 text-slate-500 cursor-not-allowed"
 								}`}
 							>
-								{t("common.save") || "Save"}
+								{t("pong.settings.save") || "Save"}
 							</button>
 						</div>
 					</div>

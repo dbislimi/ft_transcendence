@@ -1,7 +1,7 @@
 import { fortniteBackgrounds, type FortniteBackgroundItem } from './fortnite-catalog';
 
-const backgroundFiles = import.meta.glob('/img/background/*.{svg,webp,png,jpg,jpeg}', { 
-  eager: true, 
+const backgroundFiles = import.meta.glob('/img/background/*.{svg,webp,png,jpg,jpeg}', {
+  eager: true,
   query: '?url',
   import: 'default'
 });
@@ -17,7 +17,7 @@ export interface BackgroundItem {
 
 function generateNameFromFilename(filename: string): string {
   const basename = filename.split('/').pop()?.replace(/\.(svg|webp|png|jpg|jpeg)$/, '') || '';
-  
+
   const specialNames: Record<string, string> = {
     '42background': '42',
     'hallowenn_background': 'Halloween',
@@ -60,7 +60,7 @@ function generateDescription(name: string, filename: string): string {
     'Bit Cloud': 'Nuages pixelises',
     'Gta 5': 'Ambiance urbaine nocturne',
     'Kitti': 'Chaton',
-    'Interstellar': 'Voyage à travers les etoiles', 
+    'Interstellar': 'Voyage à travers les etoiles',
     'Paysage Naturel': 'Vue panoramique de la nature',
     'Ciel etoile': 'Nuit etoilee'
   };
@@ -93,10 +93,10 @@ function buildCatalog(): BackgroundItem[] {
     const filename = path.split('/').pop() || '';
     const generatedId = filename.replace(/\.(svg|webp|png|jpg|jpeg)$/, '').replace(/_/g, '-');
     const id = LEGACY_ID_MAP[generatedId] || generatedId;
-    
+
     if (id === '42' || generatedId === '42background')
       continue;
-    
+
     const name = generateNameFromFilename(path);
     const description = generateDescription(name, filename);
     const type = getFileType(filename);
@@ -123,11 +123,11 @@ function buildCatalog(): BackgroundItem[] {
       tags: ['42', 'logo', 'special', 'hidden']
     });
     if (import.meta.env.DEV) {
-      console.log('[Backgrounds] 42background ajoute au store avec ID "42":', theme42Url);
+      // console.log('[Backgrounds] 42background ajoute au store avec ID "42":', theme42Url);
     }
   } else {
     if (import.meta.env.DEV) {
-      console.warn('[Backgrounds] 42background non trouve dans backgroundFiles:', Object.keys(backgroundFiles));
+      // console.warn('[Backgrounds] 42background non trouve dans backgroundFiles:', Object.keys(backgroundFiles));
     }
   }
 
@@ -162,7 +162,7 @@ export function getBackgroundsByType(type: 'image' | 'svg' | 'default'): Backgro
 
 export function searchBackgrounds(query: string): BackgroundItem[] {
   const lowerQuery = query.toLowerCase();
-  return allBackgrounds.filter(bg => 
+  return allBackgrounds.filter(bg =>
     bg.name.toLowerCase().includes(lowerQuery) ||
     bg.description.toLowerCase().includes(lowerQuery) ||
     bg.tags?.some(tag => tag.includes(lowerQuery))
@@ -170,21 +170,21 @@ export function searchBackgrounds(query: string): BackgroundItem[] {
 }
 
 export function logCatalog(): void {
-  console.log('[Backgrounds] Catalog loaded:', {
-    total: allBackgrounds.length,
-    general: backgroundCatalog.length,
-    fortnite: fortniteBackgroundItems.length,
-    types: {
-      default: getBackgroundsByType('default').length,
-      svg: getBackgroundsByType('svg').length,
-      image: getBackgroundsByType('image').length
-    },
-    items: allBackgrounds.map(bg => ({
-      id: bg.id,
-      name: bg.name,
-      type: bg.type
-    }))
-  });
+  // console.log('[Backgrounds] Catalog loaded:', {
+  //   total: allBackgrounds.length,
+  //   general: backgroundCatalog.length,
+  //   fortnite: fortniteBackgroundItems.length,
+  //   types: {
+  //     default: getBackgroundsByType('default').length,
+  //     svg: getBackgroundsByType('svg').length,
+  //     image: getBackgroundsByType('image').length
+  //   },
+  //   items: allBackgrounds.map(bg => ({
+  //     id: bg.id,
+  //     name: bg.name,
+  //     type: bg.type
+  //   }))
+  // });
 }
 
 if (import.meta.env.DEV) {

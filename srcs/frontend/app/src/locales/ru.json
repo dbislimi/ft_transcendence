@@ -3,7 +3,8 @@
     "signin": "Регистрация",
     "settings": "Настройки",
     "profile": "Профиль",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "stats": "Статистика"
   },
   "home": {
     "connectBtn": "Подключение",
@@ -21,6 +22,132 @@
     "aboutDesc": "Узнать о команде",
     "readyToTranscend": "Готов преодолеть свои пределы?",
     "optimalPerformance": "Оптимальная производительность"
+  },
+   "pong": {
+    "rules": {
+      "title": "Правила Понга",
+      "rule1": "Первый до 11 очков побеждает.",
+      "rule2": "Используйте ракетку, чтобы ударить мяч.",
+      "rule3": "Не дайте мячу пройти мимо вас.",
+      "rule4": "Могут появиться бонусы!",
+      "modeSelection": "Выбрать Режим",
+      "offlineMode": "Оффлайн",
+      "offlineModeDesc": "Играть локально или против бота",
+      "onlineMode": "Мультиплеер",
+      "onlineModeDesc": "Играть онлайн с другими",
+      "players": "Игроки",
+      "solo": "Соло (против Бота)",
+      "duo": "Дуо (Локально)",
+      "difficulty": "Сложность",
+      "startOffline": "Начать Игру",
+      "matchType": "Тип Матча",
+      "quickMatch": "Быстрая Игра",
+      "quickMatchDesc": "Найти противника мгновенно",
+      "tournament": "Турнир",
+      "tournamentDesc": "Присоединиться или создать турнир",
+      "enterName": "Введите ваше Имя",
+      "namePlaceholder": "Ваше имя"
+    },
+    "difficulty": {
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно"
+    },
+    "lobby": {
+      "title": "Лобби Турнира",
+      "createTab": "Создать Турнир",
+      "joinTab": "Присоединиться к Турниру",
+      "name": "Название Турнира",
+      "namePlaceholder": "Введите название турнира",
+      "playersCount": "Макс. Игроков",
+      "private": "Приватный Турнир",
+      "passwordOpt": "Пароль (Опционально)",
+      "passwordPlaceholder": "Введите пароль",
+      "create": "Создать Турнир",
+      "availableTournaments": "Доступные Турниры",
+      "refresh": "Обновить",
+      "noTournaments": "Турниры не найдены",
+      "noTournamentsDesc": "Создайте один, чтобы начать играть!",
+      "full": "Полный",
+      "waiting": "Ожидание",
+      "players": "игроков",
+      "join": "Присоединиться",
+      "joinPrivate": "Присоединиться к Приватному Турниру",
+      "privatePasswordDesc": "Этот турнир приватный. Пожалуйста, введите пароль.",
+      "password": "Пароль",
+      "enterPassword": "Введите пароль",
+      "cancel": "Отмена",
+      "connected": "Подключен",
+      "disconnected": "Отключен"
+    },
+    "gameOver": {
+      "defeat": "Поражение",
+      "congratulations": "Поздравляем, вы выиграли турнир!",
+      "wonRound": "Вы выиграли этот раунд.",
+      "lostRound": "Вы проиграли этот раунд.",
+      "opponent": "Противник:",
+      "finalScore": "Финальный Счет:",
+      "quit": "Выйти",
+      "continue": "Продолжить",
+      "replay": "Переиграть"
+    },
+    "gameOverlay": {
+      "mode": "Режим"
+    },
+    "readyPhase": {
+      "opponent": "Противник"
+    },
+    "searching": {
+      "waitingOpponent": "Ожидание противника",
+      "quitTraining": "Выйти из Тренировки",
+      "quitOrTrain": "Вы можете выйти или начать тренировку",
+      "selectDifficulty": "Выбрать сложность",
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно",
+      "quit": "Выйти",
+      "backToMenu": "Вернуться в меню",
+      "train": "Тренироваться",
+      "vsBot": "Играть против бота"
+    },
+    "scoreboard": {
+      "p1": "И1",
+      "p2": "И2"
+    },
+    "settings": {
+      "cosmetics": "Косметика",
+      "game": "Игра",
+      "preferredSide": "Предпочитаемая сторона",
+      "left": "Левая",
+      "right": "Правая",
+      "paddleSkin": "Скин ракетки",
+      "ballSkin": "Скин мяча",
+      "bonusCount": "Количество одновременных бонусов",
+      "bonusTypes": "Типы бонусов",
+      "playerSpeed": "Скорость игрока",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "colors": {
+        "white": "Белый",
+        "cyan": "Голубой",
+        "emerald": "Изумрудный",
+        "rose": "Розовый",
+        "blue": "Синий",
+        "amber": "Янтарный"
+      },
+      "bonuses": {
+        "bigger": "Больше",
+        "smaller": "Меньше",
+        "faster": "Быстрее"
+      }
+    },
+    "victory": "Победа",
+    "offline": "Оффлайн",
+    "online": "Онлайн",
+    "final": "Финал",
+    "semiFinal": "Полуфинал",
+    "quarterFinal": "Четвертьфинал",
+    "round": "Раунд"
   },
   "about": {
     "title": "Наша Команда",
@@ -523,6 +650,41 @@
     "back": "Назад",
     "backAria": "Вернуться назад",
     "close": "Закрыть"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Страница не найдена",
+    "goHome": "Вернуться на главную"
+  },
+  "connection": {
+    "title": "Вход",
+    "subtitle": "Войдите в свой аккаунт Transcendence",
+    "email": "Электронная почта",
+    "emailPlaceholder": "ваш@email.com",
+    "password": "Пароль",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Войти",
+    "orContinue": "Или продолжить с",
+    "signInGoogle": "Войти через Google",
+    "noAccount": "Нет аккаунта?",
+    "signUp": "Зарегистрироваться",
+    "errors": {
+      "invalidEmail": "Неверный email.",
+      "passwordRequired": "Пароль обязателен.",
+      "invalidCredentials": "Неверные учетные данные"
+    }
+  },
+  "confirmation": {
+    "title": "Регистрация успешна ✅",
+    "welcome": "Добро пожаловать в приключение Transcendence!",
+    "instructions": "Теперь вы можете войти со специальной страницы."
+  },
+  "gameMenu": {
+    "online": "Онлайн",
+    "local": "Локально",
+    "selectDifficulty": "Выбрать сложность бота",
+    "play": "Играть",
+    "train": "Тренироваться"
   },
   "accessibility": {
     "languageSwitcher": "Выбор языка"

@@ -15,28 +15,40 @@ import { GameSettingsProvider } from "./context/GameSettingsContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { SettingsProvider } from "./contexts/SettingsContext";
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      element: <Layout />,
+      children: [
+        { path: "/", element: <pages.Home /> },
+        { path: "/Connection", element: <pages.Connection /> },
+        { path: "/Registration", element: <pages.Registration /> },
+        { path: "/pong", element: <pages.Pong /> },
+        { path: "/bomb-party", element: <pages.BombParty /> },
+        { path: "/stats", element: <pages.StatsPage /> },
+        { path: "/stats/bombparty", element: <pages.StatsPage /> },
+        { path: "/stats/pong", element: <pages.StatsPage /> },
+        { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
+        { path: "/bomb-party/profile", element: <pages.BombPartyProfilePage /> },
+        { path: "/profile", element: <pages.Profile /> },
+        { path: "/about", element: <pages.About /> },
+        { path: "/auth", element: <pages.auth /> },
+        { path: "/settings", element: <pages.Settings /> },
+        { path: "*", element: <pages.NotFoundPage /> },
+      ],
+    },
+  ],
   {
-    element: <Layout />,
-    children: [
-      { path: "/", element: <pages.Home /> },
-      { path: "/Connection", element: <pages.Connection /> },
-      { path: "/Registration", element: <pages.Registration /> },
-      { path: "/pong", element: <pages.Pong /> },
-      { path: "/bomb-party", element: <pages.BombParty /> },
-      { path: "/stats", element: <pages.StatsPage /> },
-      { path: "/stats/bombparty", element: <pages.StatsPage /> },
-      { path: "/stats/pong", element: <pages.StatsPage /> },
-      { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
-      { path: "/bomb-party/profile", element: <pages.BombPartyProfilePage /> },
-      { path: "/profile", element: <pages.Profile /> },
-      { path: "/about", element: <pages.About /> },
-      { path: "/auth", element: <pages.auth /> },
-      { path: "/settings", element: <pages.Settings /> },
-      { path: "*", element: <pages.NotFoundPage /> },
-    ],
-  },
-]);
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_normalizeFormMethod: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true,
+    },
+  }
+);
 
 // createRoot(document.getElementById("root")!).render(
 //   <StrictMode>
@@ -61,23 +73,23 @@ const router = createBrowserRouter([
 // );
 
 createRoot(document.getElementById("root")!).render(
-		<SettingsProvider>
-			<GlobalBackgroundProvider>
-				<BackgroundProvider>
-					<UserProvider>
-						<WebSocketProvider>
-							{/* <FriendsProvider> */}
-								<NotificationProvider>
-									<GameSessionProvider>
-										<GameSettingsProvider>
-											<RouterProvider router={router} />
-										</GameSettingsProvider>
-									</GameSessionProvider>
-								</NotificationProvider>
-							{/* </FriendsProvider> */}
-						</WebSocketProvider>
-					</UserProvider>
-				</BackgroundProvider>
-			</GlobalBackgroundProvider>
-		</SettingsProvider>
+  <SettingsProvider>
+    <GlobalBackgroundProvider>
+      <BackgroundProvider>
+        <UserProvider>
+          <WebSocketProvider>
+            {/* <FriendsProvider> */}
+            <NotificationProvider>
+              <GameSessionProvider>
+                <GameSettingsProvider>
+                  <RouterProvider router={router} />
+                </GameSettingsProvider>
+              </GameSessionProvider>
+            </NotificationProvider>
+            {/* </FriendsProvider> */}
+          </WebSocketProvider>
+        </UserProvider>
+      </BackgroundProvider>
+    </GlobalBackgroundProvider>
+  </SettingsProvider>
 );

@@ -14,7 +14,7 @@ import authPlugin from "./plugins/auth.ts";
 import authHook from "./plugins/authHook.ts";
 import userPlugin from "./plugins/user.ts";
 import wsFriends from "./plugins/ws-friends.ts";
-import matchesPlugin from "./plugins/matches.ts";
+import matchHistoryPlugin from "./plugins/matchHistory.ts";
 import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
@@ -51,7 +51,7 @@ async function main() {
 				return;
 			}
 			// Allow localhost, 127.0.0.1, and any IP in local network
-			const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr)(:\d+)?$/;
+			const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr|.*\.local)(:\d+)?$/;
 			if (allowed.test(origin)) {
 				cb(null, true);
 			} else {
@@ -101,7 +101,7 @@ async function main() {
 	await fastify.register(userPlugin);
 	await fastify.register(settingsPlugin);
 	await fastify.register(twoFaPlugin);
-	await fastify.register(matchesPlugin);
+	await fastify.register(matchHistoryPlugin);
 	await fastify.register(friendsPlugin);
 
 	// 7. Pong config

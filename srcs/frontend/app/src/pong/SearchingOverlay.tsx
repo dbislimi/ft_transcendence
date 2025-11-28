@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -15,6 +16,7 @@ export default function SearchingOverlay({
 	training = false,
 	onQuitTraining,
 }: Props) {
+	const { t } = useTranslation();
 	const [difficulty, setDifficulty] = useState<Difficulty>("easy");
 
 	const handleTrain = useCallback(() => {
@@ -54,7 +56,7 @@ export default function SearchingOverlay({
 							" font-semibold inline-flex items-center justify-center"
 						}
 					>
-						En attente d’un adversaire
+						{t("pong.searching.waitingOpponent")}
 						<span
 							className={
 								dotsMarginClass + " inline-flex items-center"
@@ -88,22 +90,21 @@ export default function SearchingOverlay({
 								onClick={onQuitTraining ?? onQuit}
 								className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
 							>
-								Quitter l'entraînement
+								{t("pong.searching.quitTraining")}
 							</button>
 						</div>
 					) : (
 						<>
 							<div className="mb-6">
 								<p className="mt-2 text-sm text-white/80">
-									Vous pouvez quitter ou lancer un
-									entraînement
+									{t("pong.searching.quitOrTrain")}
 								</p>
 							</div>
 
 							<div className="space-y-4">
 								<fieldset className="flex gap-4 justify-center items-center">
 									<legend className="sr-only">
-										Selectionnez la difficulte
+										{t("pong.searching.selectDifficulty")}
 									</legend>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -115,7 +116,7 @@ export default function SearchingOverlay({
 												setDifficulty("easy")
 											}
 										/>
-										<span>Facile</span>
+										<span>{t("pong.searching.easy")}</span>
 									</label>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -127,7 +128,9 @@ export default function SearchingOverlay({
 												setDifficulty("medium")
 											}
 										/>
-										<span>Moyen</span>
+										<span>
+											{t("pong.searching.medium")}
+										</span>
 									</label>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -139,7 +142,7 @@ export default function SearchingOverlay({
 												setDifficulty("hard")
 											}
 										/>
-										<span>Difficile</span>
+										<span>{t("pong.searching.hard")}</span>
 									</label>
 								</fieldset>
 
@@ -149,9 +152,9 @@ export default function SearchingOverlay({
 										onClick={onQuit}
 										className="rounded-lg border transition-all duration-200 font-medium py-2.5 px-4 border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-300"
 									>
-										Quitter
+										{t("pong.searching.quit")}
 										<div className="text-xs text-slate-500">
-											Retour au menu
+											{t("pong.searching.backToMenu")}
 										</div>
 									</button>
 
@@ -160,9 +163,9 @@ export default function SearchingOverlay({
 										onClick={handleTrain}
 										className="rounded-lg border transition-all duration-200 font-medium py-2.5 px-4 border-emerald-400 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-700/25"
 									>
-										S'entraîner
+										{t("pong.searching.train")}
 										<div className="text-xs text-emerald-300">
-											Jouer contre un bot
+											{t("pong.searching.vsBot")}
 										</div>
 									</button>
 								</div>

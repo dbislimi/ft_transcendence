@@ -38,7 +38,7 @@ export default function Header() {
                   className="nav-btn-aesthetic"
                 >
                   <span className="label-aesthetic">
-                    Statistiques
+                    {t('nav.stats')}
                   </span>
                 </Link>
               </>

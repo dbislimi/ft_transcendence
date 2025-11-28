@@ -194,7 +194,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	};
 
 	useEffect(() => {
-		console.log("refreshUser");
 		refreshUser();
 	}, [token]);
 

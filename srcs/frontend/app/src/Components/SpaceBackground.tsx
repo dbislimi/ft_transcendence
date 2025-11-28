@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useBackground } from "../contexts/BackgroundContext";
 import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
@@ -82,6 +82,7 @@ export default function SpaceBackground() {
 	const location = useLocation();
 	const { getGlobalBackgroundKey, getBackgroundFor } = useBackground();
 	const { currentBackground } = useGlobalBackground();
+	const [webGLSupported, setWebGLSupported] = useState(true);
 
 	const shouldRender = useMemo(() => {
 		return (
@@ -91,7 +92,7 @@ export default function SpaceBackground() {
 	}, [currentBackground.id]);
 
 	useEffect(() => {
-		if (!shouldRender) return;
+		if (!shouldRender || !webGLSupported) return;
 		const e = containerRef.current;
 		if (!e) return;
 
@@ -103,20 +104,47 @@ export default function SpaceBackground() {
 		const app = new Application();
 
 		const init = async () => {
-			await app.init({
-				width: window.innerWidth,
-				height: window.innerHeight,
-				antialias: false,
-				backgroundAlpha: 0,
-				resolution: 1,
-				autoStart: false,
-			});
-			if (cancelled) {
-				app.destroy(true);
+			try {
+				await app.init({
+					width: window.innerWidth,
+					height: window.innerHeight,
+					antialias: false,
+					backgroundAlpha: 0,
+					resolution: 1,
+					autoStart: false,
+					preference: 'webgl',
+				});
+				if (cancelled) {
+					app.destroy(true);
+					return;
+				}
+				appRef.current = app;
+				e.appendChild(app.canvas);
+
+				// Gérer la perte du contexte WebGL
+				const canvas = app.canvas as HTMLCanvasElement;
+				const handleContextLost = (event: Event) => {
+					event.preventDefault();
+					console.warn('[SpaceBackground] Contexte WebGL perdu, tentative de restauration...');
+				};
+
+				const handleContextRestored = () => {
+					console.log('[SpaceBackground] Contexte WebGL restauré');
+					// Recréer les textures et les étoiles
+					if (appRef.current && !cancelled) {
+						init_stars();
+					}
+				};
+
+				canvas.addEventListener('webglcontextlost', handleContextLost);
+				canvas.addEventListener('webglcontextrestored', handleContextRestored);
+
+			} catch (error) {
+				console.error('[SpaceBackground] Erreur lors de l\'initialisation WebGL:', error);
+				console.log('[SpaceBackground] Switching to fallback mode due to initialization error.');
+				setWebGLSupported(false);
 				return;
 			}
-			appRef.current = app;
-			e.appendChild(app.canvas);
 
 			const makeCoreTexture = () => {
 				const g = new Graphics();
@@ -140,8 +168,8 @@ export default function SpaceBackground() {
 				return tex;
 			};
 
-			const coreTexture = makeCoreTexture();
-			const glowTexture = makeGlowTexture();
+			let coreTexture = makeCoreTexture();
+			let glowTexture = makeGlowTexture();
 
 			const starsLayer = new Container();
 			app.stage.addChild(starsLayer);
@@ -166,6 +194,13 @@ export default function SpaceBackground() {
 					0,
 					Math.round((area / 1000000) * STAR_DENSITY_PER_MEGAPIXEL)
 				);
+				// Recréer les textures si nécessaire (après perte de contexte)
+				if (!coreTexture || coreTexture.destroyed) {
+					coreTexture = makeCoreTexture();
+				}
+				if (!glowTexture || glowTexture.destroyed) {
+					glowTexture = makeGlowTexture();
+				}
 				for (let i = 0; i < target; i++) {
 					const s = new Star(w, h, coreTexture, glowTexture);
 					attachSprites(s);
@@ -264,9 +299,20 @@ export default function SpaceBackground() {
 				appRef.current = null;
 			}
 		};
-	}, [shouldRender]);
+	}, [shouldRender, webGLSupported]);
 
 	if (!shouldRender) return null;
+
+	if (!webGLSupported) {
+		return (
+			<div className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black">
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#000000] to-black opacity-80" />
+				{/* Fallback star pattern using CSS or just a dark background */}
+				<div className="absolute inset-0 bg-black opacity-30" />
+			</div>
+		);
+	}
+
 	return (
 		<div
 			ref={containerRef}

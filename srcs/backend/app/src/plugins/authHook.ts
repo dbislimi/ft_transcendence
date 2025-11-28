@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+  throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
 export default fp(async function authHook(fastify: FastifyInstance) {
@@ -23,6 +23,7 @@ export default fp(async function authHook(fastify: FastifyInstance) {
       "/bombparty",
       "/bomb-party",     // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
       "/api/bomb-party",  // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
+      "/logout",         // Logout endpoint (handles its own token verification/cleanup)
     ];
 
     const rawUrl = (request.raw && (request.raw.url as string)) || (request.url as string) || "";

@@ -376,7 +376,7 @@ export default class GamesManager {
 		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
-			const winner = didWin ? c : c === sent ? receiv : sent;
+			const winner = didWin ? c : (c === sent ? receiv : sent);
 
 			if (!c.quit) {
 				c.socket?.send(
@@ -392,14 +392,7 @@ export default class GamesManager {
 					})
 				);
 			}
-			this.saveGameResult(
-				sent,
-				receiv,
-				winner,
-				scores,
-				undefined,
-				"quick"
-			);
+			this.saveGameResult( sent, receiv, winner, scores, undefined, "quick");
 			this.removeRoom(c);
 		};
 		this.invitManager.removeForClient(sent);

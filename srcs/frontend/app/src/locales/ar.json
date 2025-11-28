@@ -3,7 +3,8 @@
     "signin": "تسجيل",
     "settings": "الإعدادات",
     "profile": "الملف الشخصي",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "stats": "الإحصائيات"
   },
   "home": {
     "connectBtn": "اتصال",
@@ -21,6 +22,132 @@
     "aboutDesc": "اكتشف الفريق",
     "readyToTranscend": "مستعد لتجاوز حدودك؟",
     "optimalPerformance": "أداء مثالي"
+  },
+   "pong": {
+    "rules": {
+      "title": "قواعد البونغ",
+      "rule1": "الأول الذي يصل إلى 11 نقطة يفوز.",
+      "rule2": "استخدم المضرب لضرب الكرة.",
+      "rule3": "لا تدع الكرة تمر من خلفك.",
+      "rule4": "قد تظهر مكافآت!",
+      "modeSelection": "اختيار الوضع",
+      "offlineMode": "غير متصل",
+      "offlineModeDesc": "اللعب محلياً أو ضد البوت",
+      "onlineMode": "متعدد اللاعبين",
+      "onlineModeDesc": "اللعب عبر الإنترنت مع الآخرين",
+      "players": "اللاعبون",
+      "solo": "منفرد (ضد البوت)",
+      "duo": "ثنائي (محلي)",
+      "difficulty": "الصعوبة",
+      "startOffline": "بدء اللعبة",
+      "matchType": "نوع المباراة",
+      "quickMatch": "مباراة سريعة",
+      "quickMatchDesc": "العثور على خصم فوراً",
+      "tournament": "البطولة",
+      "tournamentDesc": "الانضمام أو إنشاء بطولة",
+      "enterName": "أدخل اسمك",
+      "namePlaceholder": "اسمك"
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
+    },
+    "lobby": {
+      "title": "غرفة البطولة",
+      "createTab": "إنشاء بطولة",
+      "joinTab": "الانضمام إلى بطولة",
+      "name": "اسم البطولة",
+      "namePlaceholder": "أدخل اسم البطولة",
+      "playersCount": "الحد الأقصى للاعبين",
+      "private": "بطولة خاصة",
+      "passwordOpt": "كلمة المرور (اختياري)",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "create": "إنشاء بطولة",
+      "availableTournaments": "البطولات المتاحة",
+      "refresh": "تحديث",
+      "noTournaments": "لم يتم العثور على بطولات",
+      "noTournamentsDesc": "أنشئ واحدة لبدء اللعب!",
+      "full": "ممتلئ",
+      "waiting": "في انتظار",
+      "players": "لاعبين",
+      "join": "انضمام",
+      "joinPrivate": "الانضمام إلى بطولة خاصة",
+      "privatePasswordDesc": "هذه البطولة خاصة. يرجى إدخال كلمة المرور.",
+      "password": "كلمة المرور",
+      "enterPassword": "أدخل كلمة المرور",
+      "cancel": "إلغاء",
+      "connected": "متصل",
+      "disconnected": "غير متصل"
+    },
+    "gameOver": {
+      "defeat": "هزيمة",
+      "congratulations": "تهانينا، لقد فزت بالبطولة!",
+      "wonRound": "لقد فزت بهذه الجولة.",
+      "lostRound": "لقد خسرت هذه الجولة.",
+      "opponent": "الخصم:",
+      "finalScore": "النتيجة النهائية:",
+      "quit": "خروج",
+      "continue": "متابعة",
+      "replay": "إعادة اللعب"
+    },
+    "gameOverlay": {
+      "mode": "الوضع"
+    },
+    "readyPhase": {
+      "opponent": "الخصم"
+    },
+    "searching": {
+      "waitingOpponent": "في انتظار خصم",
+      "quitTraining": "خروج من التدريب",
+      "quitOrTrain": "يمكنك الخروج أو بدء التدريب",
+      "selectDifficulty": "اختيار الصعوبة",
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب",
+      "quit": "خروج",
+      "backToMenu": "العودة إلى القائمة",
+      "train": "تدريب",
+      "vsBot": "اللعب ضد البوت"
+    },
+    "scoreboard": {
+      "p1": "ل1",
+      "p2": "ل2"
+    },
+    "settings": {
+      "cosmetics": "التجميل",
+      "game": "اللعبة",
+      "preferredSide": "الجانب المفضل",
+      "left": "يسار",
+      "right": "يمين",
+      "paddleSkin": "جلد المضرب",
+      "ballSkin": "جلد الكرة",
+      "bonusCount": "عدد المكافآت المتزامنة",
+      "bonusTypes": "أنواع المكافآت",
+      "playerSpeed": "سرعة اللاعب",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "colors": {
+        "white": "أبيض",
+        "cyan": "سماوي",
+        "emerald": "زمردي",
+        "rose": "وردي",
+        "blue": "أزرق",
+        "amber": "عنبري"
+      },
+      "bonuses": {
+        "bigger": "أكبر",
+        "smaller": "أصغر",
+        "faster": "أسرع"
+      }
+    },
+    "victory": "نصر",
+    "offline": "غير متصل",
+    "online": "متصل",
+    "final": "نهائي",
+    "semiFinal": "نصف نهائي",
+    "quarterFinal": "ربع نهائي",
+    "round": "جولة"
   },
   "about": {
     "title": "فريقنا",
@@ -454,6 +581,41 @@
     "back": "رجوع",
     "backAria": "العودة للخلف",
     "close": "إغلاق"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "الصفحة غير موجودة",
+    "goHome": "العودة إلى الصفحة الرئيسية"
+  },
+  "connection": {
+    "title": "تسجيل الدخول",
+    "subtitle": "الوصول إلى حساب Transcendence الخاص بك",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "بريدك@الإلكتروني.com",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "••••••••",
+    "submit": "تسجيل الدخول",
+    "orContinue": "أو تابع مع",
+    "signInGoogle": "تسجيل الدخول بواسطة Google",
+    "noAccount": "ليس لديك حساب؟",
+    "signUp": "إنشاء حساب",
+    "errors": {
+      "invalidEmail": "البريد الإلكتروني غير صالح.",
+      "passwordRequired": "كلمة المرور مطلوبة.",
+      "invalidCredentials": "بيانات الاعتماد غير صالحة"
+    }
+  },
+  "confirmation": {
+    "title": "التسجيل ناجح ✅",
+    "welcome": "مرحباً بك في مغامرة Transcendence!",
+    "instructions": "يمكنك الآن تسجيل الدخول من الصفحة المخصصة."
+  },
+  "gameMenu": {
+    "online": "متصل",
+    "local": "محلي",
+    "selectDifficulty": "اختيار صعوبة البوت",
+    "play": "العب",
+    "train": "تدريب"
   },
   "accessibility": {
     "languageSwitcher": "محدد اللغة"

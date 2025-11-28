@@ -10,9 +10,11 @@ class Logger {
     if (isProduction) {
       return level === 'error' || level === 'warn';
     }
+    // Disable debug logs by default to reduce noise
+    if (level === 'debug') return false;
     return true;
   }
-  
+
   private formatMessage(message: string, context?: LogContext): string {
     if (!context || Object.keys(context).length === 0) return message;
     try {
@@ -21,19 +23,19 @@ class Logger {
       return message;
     }
   }
-  
+
   debug(message: string, context?: LogContext): void {
     if (this.shouldLog('debug')) {
       console.log(`[DEBUG] ${this.formatMessage(message, context)}`);
     }
   }
-  
+
   info(message: string, context?: LogContext): void {
     if (this.shouldLog('info')) {
       console.info(`[INFO] ${this.formatMessage(message, context)}`);
     }
   }
-  
+
   warn(message: string, context?: LogContext): void {
     if (this.shouldLog('warn')) {
       console.warn(`[WARN] ${this.formatMessage(message, context)}`);

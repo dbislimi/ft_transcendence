@@ -23,7 +23,7 @@ class BombPartyStatsService {
   private trigramAttempts: TrigramAttempt[] = [];
 
   private getAuthToken(): string | null {
-    return sessionStorage.getItem('token');
+    return localStorage.getItem('token');
   }
 
   private getUserIdFromToken(): number | null {

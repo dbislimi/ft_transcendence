@@ -1,41 +1,50 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ft_transcendence</title>
-    <!-- Suppress Vite HMR WebSocket errors in Docker/nginx environment -->
-    <script>
-      (function() {
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        
-        console.error = function(...args) {
-          const msg = args.join(' ');
-          // Filter out Vite HMR related errors
-          if (msg.includes('[vite]') || 
-              msg.includes('WebSocket connection') || 
-              msg.includes('failed to connect to websocket') ||
-              msg.includes('HMR') ||
-              (msg.includes('wss://') && (msg.includes('8443') || msg.includes('5173')))) {
-            return; // Suppress HMR errors
-          }
-          originalError.apply(console, args);
-        };
-        
-        console.warn = function(...args) {
-          const msg = args.join(' ');
-          if (msg.includes('[vite]') || msg.includes('HMR')) {
-            return; // Suppress HMR warnings
-          }
-          originalWarn.apply(console, args);
-        };
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root" class="h-screen flex flex-col"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ft_transcendence</title>
+  <!-- Suppress Vite HMR WebSocket errors in Docker/nginx environment -->
+  <script>
+    (function () {
+      const originalError = console.error;
+      const originalWarn = console.warn;
+
+      console.error = function (...args) {
+        const msg = args.join(' ');
+        // Filter out Vite HMR related errors
+        if (msg.includes('[vite]') ||
+          msg.includes('WebSocket connection') ||
+          msg.includes('failed to connect to websocket') ||
+          msg.includes('HMR') ||
+          msg.includes('WebGL context was lost') ||
+          (msg.includes('wss://') && (msg.includes('8443') || msg.includes('5173')))) {
+          return; // Suppress HMR errors
+        }
+        originalError.apply(console, args);
+      };
+
+      console.warn = function (...args) {
+        const msg = args.join(' ');
+        if (msg.includes('[vite]') ||
+          msg.includes('HMR') ||
+          msg.includes('WebGL context was lost') ||
+          msg.includes('React Router Future Flag Warning') ||
+          msg.includes('texImage: Alpha-premult and y-flip are deprecated') ||
+          msg.includes('drawElementsInstanced: Tex image TEXTURE_2D')) {
+          return; // Suppress HMR warnings
+        }
+        originalWarn.apply(console, args);
+      };
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root" class="h-screen flex flex-col"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

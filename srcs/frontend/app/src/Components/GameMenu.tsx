@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
 	start: (online: boolean, diff?: difficulty) => void;
@@ -7,19 +8,20 @@ interface Props {
 export type difficulty = undefined | "easy" | "medium" | "hard";
 
 export default function GameMenu({ start }: Props) {
+	const { t } = useTranslation();
 	const [online, setOnline] = useState(false);
 	const [difficulty, setDifficulty] = useState<difficulty>("medium");
 	const difficulties = [
-		{ value: undefined, label: "Local" },
-		{ value: "easy", label: "Easy" },
-		{ value: "medium", label: "Medium" },
-		{ value: "hard", label: "Hard" },
+		{ value: undefined, label: t('gameMenu.local') },
+		{ value: "easy", label: t('pong.difficulty.easy') },
+		{ value: "medium", label: t('pong.difficulty.medium') },
+		{ value: "hard", label: t('pong.difficulty.hard') },
 	];
 	
 	return (
 		<div className="absolute flex flex-col space-y-2 items-center space-x-3 p-10 border border-white size-100 bg-black opacity-80">
 			<div className="flex items-center space-x-2">
-				<span className="text-white">Online</span>
+				<span className="text-white">{t('gameMenu.online')}</span>
 				<label className="relative inline-flex items-center">
 					<input
 						type="checkbox"
@@ -31,7 +33,7 @@ export default function GameMenu({ start }: Props) {
 				</label>
 			</div>
 			<fieldset className="flex border border-white space-x-10 p-2">
-				<legend className="text-white">Select bot difficulty</legend>
+				<legend className="text-white">{t('gameMenu.selectDifficulty')}</legend>
 				{difficulties.map(({ value, label }) => (
 					<label key={label} className={`text-white ${online && 'opacity-60'}`}>
 						<input
@@ -51,7 +53,7 @@ export default function GameMenu({ start }: Props) {
 				onClick={() => start(online, online ? undefined : difficulty)}
 				className="text-white border border-white p-2"
 				>
-				Play
+				{t('gameMenu.play')}
 			</button>
 			
 			<button
@@ -59,7 +61,7 @@ export default function GameMenu({ start }: Props) {
 				onClick={!online ? () => start(true, difficulty) : undefined}
 				className="text-white border border-white p-2 bg-red-500"
 				>
-				Train
+				{t('gameMenu.train')}
 			</button>
 		</div>
 	);
