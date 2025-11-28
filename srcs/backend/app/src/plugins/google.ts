@@ -7,6 +7,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET must be defined in environment variables');
+}
 const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export default fp(async function GoogleAuth(fastify: FastifyInstance) {

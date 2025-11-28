@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 
 export default function GoogleCallback() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { user } = useUser();
 
     useEffect(() => {
         const token = searchParams.get("token");
@@ -23,7 +23,7 @@ export default function GoogleCallback() {
                     name: payload.name,
                     email: payload.email
                 };
-                login(userData, token);
+                user(userData, token);
                 navigate("/");
             } catch (e) {
                 console.error("Failed to decode token", e);
@@ -32,7 +32,7 @@ export default function GoogleCallback() {
         } else {
             navigate("/Connection");
         }
-    }, [searchParams, navigate, login]);
+    }, [searchParams, navigate, user]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">

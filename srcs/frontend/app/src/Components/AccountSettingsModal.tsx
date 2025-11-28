@@ -38,7 +38,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
       const fetch2FAStatus = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch('http://localhost:3001/reglages', {
+          const res = await fetch(`${API_BASE_URL}/api/reglages`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -58,7 +58,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
   const toggle2FA = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/reglages', {
+      const res = await fetch(`${API_BASE_URL}/api/reglages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

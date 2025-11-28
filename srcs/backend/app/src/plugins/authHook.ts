@@ -3,8 +3,11 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET must be defined in environment variables');
+}
 
-export default fp(async function authHook(fastify: FastifyInstance<any, any, any, any, any>) {
+export default fp(async function authHook(fastify: FastifyInstance) {
   fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
     // Exclude public/auth routes and WebSocket endpoints used for BombParty and Game
     const excludedRoutes = [

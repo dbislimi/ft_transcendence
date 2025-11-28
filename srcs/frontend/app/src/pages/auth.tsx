@@ -1,14 +1,14 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
 
 export default function EnterCode() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,7 +27,7 @@ export default function EnterCode() {
       const data = await response.json();
 
       if (response.ok) {
-        login(userData, data.token);
+        user(userData, data.token);
         //localStorage.setItem('token', data.token);
         navigate('/');
       } else {

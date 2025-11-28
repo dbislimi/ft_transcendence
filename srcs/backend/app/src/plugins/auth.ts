@@ -171,7 +171,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
           else resolve(row);
         });
       });
-      console.log("le user id que j'utilise moi " + user.id);
       if (!user) {
         return reply.code(401).send({ error: "Utilisateur non trouve." });
       }

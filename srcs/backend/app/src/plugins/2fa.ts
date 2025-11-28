@@ -14,6 +14,9 @@ import fp from 'fastify-plugin';
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET must be defined in environment variables');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

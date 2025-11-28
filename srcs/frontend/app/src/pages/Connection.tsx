@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useUser } from "../context/UserContext";
 import GoogleAuthButton from "../Components/GoogleAuthButton";
+import { API_BASE_URL } from "../config/api";
 
 export default function Connection() {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export default function Connection() {
       return;
     }
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -90,13 +91,14 @@ export default function Connection() {
       <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-full max-w-md px-6">
+
           <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
                 Connexion
               </h1>
               <p className="text-slate-400">
-                Accedez à votre compte Transcendence
+                Accédez à votre compte Transcendence
               </p>
             </div>
 
@@ -143,24 +145,18 @@ export default function Connection() {
               >
                 Se connecter
               </button>
-            </form>
 
-            <div className="mt-6">
-              <div className="relative">
+              <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-600/30"></div>
+                  <div className="w-full border-t border-slate-600"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-800/80 text-slate-400">ou</span>
+                  <span className="px-2 bg-slate-800 text-slate-400">Ou continuer avec</span>
                 </div>
               </div>
 
-              </div></div><div className="mt-6">
-                <GoogleAuthButton />
-              </div>
-            </div>
-            <a
-                href="http://localhost:3001/auth/google"
+              <a
+                href={`http://${API_BASE_URL}/api/auth/google`}
                 className="w-full py-3 px-6 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
 
 export default function ChatWidget() {

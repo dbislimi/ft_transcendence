@@ -12,6 +12,10 @@ if (!JWT_SECRET) {
     throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET must be defined in environment variables');
+}
+
 interface Tournament {
 	tournamentId: string;
 	allowReconnect: boolean;

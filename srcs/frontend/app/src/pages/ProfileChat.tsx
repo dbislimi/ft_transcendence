@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useUser } from "../context/UserContext";
 import SpaceBackground from "../Components/SpaceBackground";
+import { API_BASE_URL } from "../config/api";
 
 
 interface PublicUser {
@@ -38,7 +39,7 @@ interface Match {
 export default function PublicProfile() {
   const navigate = useNavigate();
   const { name } = useParams<{ name: string }>(); 
-  const { token } = useAuth();
+  const { user } = useUser();
   
   const [activeTab, setActiveTab] = useState<"overview" | "stats" | "history">("overview");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -56,14 +57,13 @@ export default function PublicProfile() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
-  const API_URL = "http://localhost:3001";
 
   useEffect(() => {
-    if (name && token) {
+    if (name && user) {
       const decodedName = decodeURIComponent(name);
       loadProfileData(decodedName);
     }
-  }, [name, token]);
+  }, [name, user]);
 
   const loadProfileData = async (userName: string) => {
     setIsLoading(true);
@@ -92,8 +92,8 @@ export default function PublicProfile() {
   };
 
   const fetchUserByName = async (userName: string) => {
-    const res = await fetch(`${API_URL}/users/${encodeURIComponent(userName)}`, { 
-      headers: { Authorization: `Bearer ${token}` } 
+    const res = await fetch(`${API_BASE_URL}/api/users/${encodeURIComponent(userName)}`, { 
+      headers: { Authorization: `Bearer ${user}` } 
     });
     
     if (!res.ok) {
@@ -104,8 +104,8 @@ export default function PublicProfile() {
   };
 
   const fetchUserStats = async (userId: number) => {
-    const res = await fetch(`${API_URL}/api/user-stats/${userId}`, { 
-      headers: { Authorization: `Bearer ${token}` } 
+    const res = await fetch(`${API_BASE_URL}/api/user-stats/${userId}`, { 
+      headers: { Authorization: `Bearer ${user}` } 
     });
     if (res.ok) setStats(await res.json());
   };
@@ -113,8 +113,8 @@ export default function PublicProfile() {
   const fetchMatchHistory = async (userId: number, page: number) => {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/match-history/${userId}?page=${page}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE_URL}/api/match-history/${userId}?page=${page}&limit=10`, {
+        headers: { Authorization: `Bearer ${user}` }
       });
       
       if (res.ok) {
@@ -125,6 +125,7 @@ export default function PublicProfile() {
           setMatchHistory(prev => [...prev, ...matches]);
         }
         setHasMoreHistory(matches.length === 10);
+      }
     } finally {
       setHistoryLoading(false);
     }

@@ -67,7 +67,7 @@ export default function Registration() {
 			return;
 		}
 
-		const res = await fetch(`${API_BASE_URL}/check-user`, {
+		const res = await fetch(`${API_BASE_URL}/api/check-user`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ email, display_name: displayName }),
@@ -88,7 +88,7 @@ export default function Registration() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		const res = await fetch(`${API_BASE_URL}/register`, {
+		const res = await fetch(`${API_BASE_URL}/api/register`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
