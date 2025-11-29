@@ -114,7 +114,7 @@ export default function ChatWidget() {
           {view === "chat" ? (
             <div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
               {messages
-                .filter(msg => !target || msg.to === null || msg.to === user.id || msg.from === user.id)
+                .filter(msg => !target || msg.to === null || msg.to === user.id || msg.from.id === user.id)
                 .map((msg, i) => (
                   <div key={i} className="flex flex-col mb-2 items-start">
                     <div
@@ -127,7 +127,7 @@ export default function ChatWidget() {
                     >
                       {msg.type !== "info" && (
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                          {msg.fromName} {msg.type === "private" ? "(privé)" : ""}
+                          {msg.from.name} {msg.type === "private" ? "(privé)" : ""}
                         </span>
                       )}
                       <div>{msg.text ?? msg.message}</div>
