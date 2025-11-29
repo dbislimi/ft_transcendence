@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 
 export default function ChatWidget() {
+  const { t } = useTranslation();
   const { chatWsRef, pongWsRef, messages, users } = useWebSocket();
   const navigate = useNavigate();
   const { user, token } = useUser();
@@ -162,11 +164,11 @@ export default function ChatWidget() {
                         )}
                         {u.blocked ? (
                           <button onClick={() => unblockUser(u.id, u.name)} className="text-xs text-green-600 hover:underline">
-                            Débloquer
+                            {t('common.unblock')}
                           </button>
                         ) : (
                           <button onClick={() => blockUser(u.id, u.name)} className="text-xs text-red-600 hover:underline">
-                            Bloquer
+                            {t('common.block')}
                           </button>
                         )}
                       </div>

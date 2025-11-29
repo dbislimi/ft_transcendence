@@ -211,7 +211,7 @@ export default function PublicProfile() {
                 />
                 {/* Indicateur en ligne (optionnel si tu as l'info) */}
                 {targetUser.online === 1 && (
-                   <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-800 rounded-full" title="En ligne"></div>
+                   <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-800 rounded-full" title={t('common.online')}></div>
                 )}
               </div>
               

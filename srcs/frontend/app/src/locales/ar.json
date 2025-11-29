@@ -701,18 +701,22 @@
   },
   "common": {
     "back": "رجوع",
-    "backAria": "العودة للخلف",
+    "backAria": "العودة إلى الخلف",
     "close": "إغلاق",
     "save": "حفظ",
-    "saving": "حفظ...",
+    "saving": "جارٍ الحفظ...",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
     "delete": "حذف",
-    "edit": "تحرير",
+    "edit": "تعديل",
     "online": "متصل",
     "offline": "غير متصل",
     "error": "خطأ",
-    "success": "نجاح"
+    "success": "نجح",
+    "block": "حظر",
+    "unblock": "إلغاء الحظر",
+    "send": "إرسال",
+    "sending": "جارٍ الإرسال..."
   },
   "errors": {
     "network": "خطأ في الشبكة",
@@ -720,8 +724,10 @@
     "userNotFound": "لم يتم العثور على المستخدم"
   },
   "friends": {
-    "confirmDelete": "هل أنت متأكد من أنك تريد حذف هـذا الصديق؟",
-    "deleteButton": "حذف"
+    "confirmDelete": "هل أنت متأكد من حذف هذا الصديق؟",
+    "deleteButton": "حذف",
+    "confirmBlock": "هل أنت متأكد من حظر هذا المستخدم؟",
+    "confirmUnblock": "هل أنت متأكد من إلغاء حظر هذا المستخدم؟"
   },
   "chat": {
     "privateMessageTo": "رسالة خاصة إلى",
@@ -735,5 +741,9 @@
   },
   "account": {
     "confirmNewPassword": "تأكيد كلمة المرور الجديدة"
+  },
+  "auth": {
+    "invalidCode": "رمز غير صالح",
+    "yourCode": "رمزك"
   }
 }

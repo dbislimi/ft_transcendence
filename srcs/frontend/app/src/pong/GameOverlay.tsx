@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
 	play: boolean;
@@ -13,6 +14,7 @@ export default function GameOverlay({
 	tournamentDepth,
 	isTournament,
 }: Props) {
+	const { t } = useTranslation();
 	if (!play) return null;
 
 	const isTournamentMode = isTournament || tournamentDepth != null;
@@ -21,7 +23,7 @@ export default function GameOverlay({
 			? "Hors-ligne"
 			: isTournamentMode
 			? "Tournoi"
-			: "En ligne";
+			: t('common.online');
 
 	const renderRoundLabel = () => {
 		const d = tournamentDepth;

@@ -46,21 +46,21 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		const updates: string[] = [];
 		const values: any[] = [];
 
-		if (email && email.trim() !== "") {
-			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-			if (!emailRegex.test(email))
-				return reply.code(400).send({ error: "Email invalide" });
-			const existing = await dbGet(
-				"SELECT id FROM users WHERE email = ? AND id != ?",
-				[email.trim(), decoded.id]
-			);
-			if (existing)
-				return reply.code(409).send({ error: "Email dejà utilise" });
-			updates.push("email = ?");
-			values.push(email.trim());
-		}
-
-		if (password && password.trim() !== "") {
+	if (email && email.trim() !== "") {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email))
+			return reply.code(400).send({ error: "Email invalide" });
+		const existing = await dbGet(
+			"SELECT id FROM users WHERE email = ? AND id != ?",
+			[email.trim(), decoded.id]
+		);
+		if (existing)
+			return reply.code(409).send({ error: "Email dejà utilise" });
+		updates.push("email = ?");
+		values.push(email.trim());
+		// Reset 2FA OTP when email changes
+		updates.push("twoFAOtp = NULL");
+	}		if (password && password.trim() !== "") {
 			const passwordRegex =
 				/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 			if (!passwordRegex.test(password))

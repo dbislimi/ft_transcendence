@@ -90,17 +90,15 @@ export default function Chat() {
 				<input
 					value={input}
 					onChange={(e) => setInput(e.target.value)}
-					className="border flex-grow p-2 rounded-l"
-					placeholder={
-						toUser ? `Message prive à ${toUser}` : "Message global"
-					}
-				/>
-				<button className="bg-blue-600 text-white px-4 rounded-r">
-					Envoyer
-				</button>
-			</form>
-
-			<div className="flex gap-2">
+				className="border flex-grow p-2 rounded-l"
+				placeholder={
+					toUser ? `Message prive à ${toUser}` : "Message global"
+				}
+			/>
+			<button className="bg-blue-600 text-white px-4 rounded-r">
+				{t('common.send')}
+			</button>
+		</form>			<div className="flex gap-2">
 				<button
 					onClick={() => setToUser(null)}
 					className="bg-gray-300 px-2 py-1 rounded"

@@ -705,7 +705,11 @@
     "online": "Online",
     "offline": "Offline",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "block": "Block",
+    "unblock": "Unblock",
+    "send": "Send",
+    "sending": "Sending..."
   },
   "errors": {
     "network": "Network error",
@@ -714,7 +718,9 @@
   },
   "friends": {
     "confirmDelete": "Are you sure you want to delete this friend?",
-    "deleteButton": "Delete"
+    "deleteButton": "Delete",
+    "confirmBlock": "Are you sure you want to block this user?",
+    "confirmUnblock": "Are you sure you want to unblock this user?"
   },
   "chat": {
     "privateMessageTo": "Private message to",
@@ -728,5 +734,9 @@
   },
   "account": {
     "confirmNewPassword": "Confirm new password"
+  },
+  "auth": {
+    "invalidCode": "Invalid code",
+    "yourCode": "Your code"
   }
 }

@@ -694,7 +694,7 @@
     }
   },
   "common": {
-    "back": "Atrás",
+    "back": "Volver",
     "backAria": "Volver atrás",
     "close": "Cerrar",
     "save": "Guardar",
@@ -706,7 +706,11 @@
     "online": "En línea",
     "offline": "Desconectado",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "send": "Enviar",
+    "sending": "Enviando..."
   },
   "errors": {
     "network": "Error de red",
@@ -714,8 +718,10 @@
     "userNotFound": "Usuario no encontrado"
   },
   "friends": {
-    "confirmDelete": "¿Estás seguro de que quieres eliminar a este amigo?",
-    "deleteButton": "Eliminar"
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este amigo?",
+    "deleteButton": "Eliminar",
+    "confirmBlock": "¿Estás seguro de que quieres bloquear a este usuario?",
+    "confirmUnblock": "¿Estás seguro de que quieres desbloquear a este usuario?"
   },
   "chat": {
     "privateMessageTo": "Mensaje privado a",
@@ -725,9 +731,14 @@
     "confirmPassword": "Confirmar contraseña",
     "namePlaceholder": "Juan Pérez",
     "usernamePlaceholder": "Tu nombre de usuario",
-    "avatarSelected": "Avatar seleccionado"
+    "avatarSelected": "Avatar seleccionado",
+    "chooseAvatar": "Elige tu avatar"
   },
   "account": {
     "confirmNewPassword": "Confirmar nueva contraseña"
+  },
+  "auth": {
+    "invalidCode": "Código inválido",
+    "yourCode": "Tu código"
   }
 }

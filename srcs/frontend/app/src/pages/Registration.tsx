@@ -271,13 +271,11 @@ export default function Registration() {
 							</div>
 						)}
 
-						{step === 2 && (
-							<form onSubmit={handleSubmit}>
-								<h3 className="text-xl font-semibold text-center mb-6 text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-purple-300">
-									Choisissez votre avatar
-								</h3>
-
-								<div className="flex justify-center mb-8">
+					{step === 2 && (
+						<form onSubmit={handleSubmit}>
+							<h3 className="text-xl font-semibold text-center mb-6 text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-purple-300">
+								{t('registration.chooseAvatar')}
+							</h3>								<div className="flex justify-center mb-8">
 									<div className="relative">
 										<img
 											src={avatar}

@@ -348,7 +348,7 @@ export default function Profile() {
 	};
 
 	const handleBlockUser = async (userId: number) => {
-		if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?"))
+		if (!confirm(t('friends.confirmBlock')))
 			return;
 
 		try {
@@ -375,7 +375,7 @@ export default function Profile() {
 	};
 
 	const handleUnblockUser = async (userId: number) => {
-		if (!confirm("Êtes-vous sûr de vouloir debloquer cet utilisateur ?"))
+		if (!confirm(t('friends.confirmUnblock')))
 			return;
 
 		try {

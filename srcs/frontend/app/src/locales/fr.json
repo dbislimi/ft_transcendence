@@ -720,7 +720,11 @@
     "online": "En ligne",
     "offline": "Hors ligne",
     "error": "Erreur",
-    "success": "Succès"
+    "success": "Succès",
+    "block": "Bloquer",
+    "unblock": "Débloquer",
+    "send": "Envoyer",
+    "sending": "Envoi..."
   },
   "errors": {
     "network": "Erreur réseau",
@@ -729,7 +733,9 @@
   },
   "friends": {
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet ami ?",
-    "deleteButton": "Supprimer"
+    "deleteButton": "Supprimer",
+    "confirmBlock": "Êtes-vous sûr de vouloir bloquer cet utilisateur ?",
+    "confirmUnblock": "Êtes-vous sûr de vouloir débloquer cet utilisateur ?"
   },
   "chat": {
     "privateMessageTo": "Message privé à",
@@ -739,9 +745,14 @@
     "confirmPassword": "Confirmer le mot de passe",
     "namePlaceholder": "Jean Dupont",
     "usernamePlaceholder": "Votre pseudo",
-    "avatarSelected": "Avatar sélectionné"
+    "avatarSelected": "Avatar sélectionné",
+    "chooseAvatar": "Choisissez votre avatar"
   },
   "account": {
     "confirmNewPassword": "Confirmer le nouveau mot de passe"
+  },
+  "auth": {
+    "invalidCode": "Code invalide",
+    "yourCode": "Votre code"
   }
 }

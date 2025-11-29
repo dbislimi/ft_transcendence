@@ -31,10 +31,10 @@ export default function EnterCode() {
         //localStorage.setItem('token', data.token);
         navigate('/');
       } else {
-        setError(data.error || 'Code invalide');
+        setError(data.error || t('auth.invalidCode'));
       }
     } catch (err) {
-      setError('Erreur réseau');
+      setError(t('errors.network'));
     }
   };
 
@@ -46,7 +46,7 @@ export default function EnterCode() {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="Votre code"
+          placeholder={t('auth.yourCode')}
           style={{
             width: '100%',
             height: '40px',

@@ -180,7 +180,7 @@ export default function Friends() {
   };
 
   const blockUser = async (userId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?")) return;
+    if (!confirm(t('friends.confirmBlock'))) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/block-user`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ user_id: userId }) });
       if (res.ok) { fetchFriends(); fetchRequests(); fetchBlockedUsers(); } else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
@@ -188,7 +188,7 @@ export default function Friends() {
   };
 
   const unblockUser = async (userId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir debloquer cet utilisateur ?")) return;
+    if (!confirm(t('friends.confirmUnblock'))) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/blocked-users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
@@ -228,11 +228,11 @@ export default function Friends() {
                       {f.avatar && (<img src={f.avatar} alt={f.display_name} className="w-8 h-8 rounded-full object-cover" />)}
                       <div>
                         <span className="font-medium">{f.display_name}</span>
-                        <div className={`text-sm ${isOnline(f.online) ? "text-green-600" : "text-gray-500"}`}>{isOnline(f.online) ? "🟢 En ligne" : "⚫ Hors ligne"}</div>
+                        <div className={`text-sm ${isOnline(f.online) ? "text-green-600" : "text-gray-500"}`}>{isOnline(f.online) ? `🟢 ${t('common.online')}` : `⚫ ${t('common.offline')}`}</div>
                       </div>
                     </div>
                     <div className="space-x-2">
-                      <button onClick={() => blockUser(f.id)} className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 transition-colors">Bloquer</button>
+                      <button onClick={() => blockUser(f.id)} className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 transition-colors">{t('common.block')}</button>
                       <button onClick={() => removeFriend(f.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">{t('friends.deleteButton')}</button>
                     </div>
                   </div>
@@ -245,7 +245,7 @@ export default function Friends() {
             <h3 className="text-xl font-bold mb-4">Ajouter un ami</h3>
             <div className="flex gap-2">
               <input value={newFriend} onChange={e => setNewFriend(e.target.value)} onKeyPress={handleKeyPress} placeholder="Nom d'utilisateur" className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={loading} />
-              <button onClick={sendRequest} disabled={loading || !newFriend.trim()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">{loading ? "Envoi..." : "Envoyer"}</button>
+              <button onClick={sendRequest} disabled={loading || !newFriend.trim()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">{loading ? t('common.sending') : t('common.send')}</button>
             </div>
             <p className="text-sm text-gray-600 mt-2">Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.</p>
           </div>
@@ -265,7 +265,7 @@ export default function Friends() {
                     <div className="space-x-2">
                       <button onClick={() => acceptRequest(r.sender_id)} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">Accepter</button>
                       <button onClick={() => rejectRequest(r.sender_id)} className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 transition-colors">Refuser</button>
-                      <button onClick={() => blockUser(r.sender_id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">Bloquer</button>
+                      <button onClick={() => blockUser(r.sender_id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">{t('common.block')}</button>
                     </div>
                   </div>
                 ))
@@ -307,7 +307,7 @@ export default function Friends() {
                         <div className="text-sm text-gray-500">Bloque le {new Date(u.created_at).toLocaleDateString()}</div>
                       </div>
                     </div>
-                    <button onClick={() => unblockUser(u.id)} className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors">Debloquer</button>
+                    <button onClick={() => unblockUser(u.id)} className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors">{t('common.unblock')}</button>
                   </div>
                 ))
               ) : (
