@@ -28,7 +28,7 @@ export class BombPartyApiService {
      * Helper to get headers with auth token
      */
     private getHeaders(): HeadersInit {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         return {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : '',

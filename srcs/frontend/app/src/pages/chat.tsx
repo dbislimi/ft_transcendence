@@ -18,7 +18,7 @@ export function useWebsocketChat(
 	const wsRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
-		const token = localStorage.getItem("token");
+		const token = sessionStorage.getItem("token");
 		if (!token) return;
 
 		const ws = new WebSocket(

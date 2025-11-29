@@ -43,7 +43,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
       store.setPlayerId(null);
 
       const guestId = Math.floor(Math.random() * 1000);
-      const storedName = localStorage.getItem('bombparty_player_name');
+      const storedName = sessionStorage.getItem('bombparty_player_name');
       const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
 
       client.authenticate(playerName);

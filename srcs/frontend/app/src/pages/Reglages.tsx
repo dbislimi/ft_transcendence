@@ -6,7 +6,7 @@ export default function Reglages() {
   const [enable2fa, setEnable2fa] = useState(false);
   const [message, setMessage] = useState('');
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   useEffect(() => {
     const fetchSettings = async () => {

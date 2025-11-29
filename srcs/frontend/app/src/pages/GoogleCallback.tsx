@@ -13,7 +13,7 @@ export default function GoogleCallback() {
         const userId = searchParams.get("userId");
 
         if (require2fa === "1" && userId) {
-            localStorage.setItem("for2FaUserId", userId);
+            sessionStorage.setItem("for2FaUserId", userId);
             navigate("/auth");
         } else if (token) {
             try {

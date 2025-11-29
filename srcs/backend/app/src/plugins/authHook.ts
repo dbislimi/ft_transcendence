@@ -32,21 +32,62 @@ export default fp(async function authHook(fastify: FastifyInstance) {
     const authHeader = (request.raw && (request.raw.headers as any)?.authorization) as
       | string
       | undefined;
-    if (!authHeader || !authHeader.startsWith("Bearer "))
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      fastify.log.warn("Header Authorization manquant ou malformé", { 
+        url: rawUrl,
+        hasAuthHeader: !!authHeader,
+        authHeaderPrefix: authHeader?.substring(0, 10)
+      });
       return reply.code(401).send({ error: "token manquant" });
+    }
 
-    if (authHeader.startsWith("Bearer ")) {
-      const token = authHeader.split(" ")[1];
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET) as {
-          id: number;
-          name: string;
-          email: string;
-        };
-        // attach decoded user to request (fastify extended type)
-        (request as any).user = decoded;
-      } catch (err) {
-        console.warn("Token invalide :", err);
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      fastify.log.warn("Token vide dans header Authorization");
+      return reply.code(401).send({ error: "token invalide" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as {
+        id: number;
+        name: string;
+        email: string;
+        exp: number;
+      };
+      
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = decoded.exp - now;
+      
+      if (timeUntilExpiry < 300) {
+        fastify.log.warn("Token expire bientôt", { 
+          userId: decoded.id,
+          timeUntilExpiry,
+          url: rawUrl
+        });
+      }
+      
+      // attach decoded user to request (fastify extended type)
+      (request as any).user = decoded;
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        fastify.log.error("Token expiré", { 
+          url: rawUrl,
+          expiredAt: err.expiredAt
+        });
+        return reply.code(401).send({ error: "token expiré" });
+      } else if (err.name === 'JsonWebTokenError') {
+        fastify.log.error("Token malformé", { 
+          url: rawUrl,
+          message: err.message
+        });
+        return reply.code(401).send({ error: "token invalide" });
+      } else {
+        fastify.log.error("Erreur de vérification JWT", { 
+          url: rawUrl,
+          error: err.message
+        });
+        return reply.code(401).send({ error: "erreur d'authentification" });
       }
     }
   });
