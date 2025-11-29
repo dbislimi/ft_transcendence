@@ -263,7 +263,6 @@ export default function RealtimeNotifications() {
 					});
 					break;
 				}
-
 				case "invitation_expired": {
 					const invitationId: string | undefined =
 						data.body?.invitationId;
