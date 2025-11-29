@@ -247,7 +247,12 @@
       "blockedOn": "Bloqueado el",
       "unblock": "Desbloquear",
       "noBlockedUsers": "No hay usuarios bloqueados",
-      "peaceMessage": "¡Estás en paz con todos!"
+      "peaceMessage": "¡Estás en paz con todos!",
+      "manage": "Gestión de amigos",
+      "friends": "Amigos",
+      "requests": "Solicitudes",
+      "blocked": "Bloqueados",
+      "add": "Añadir amigo"
     },
     "settings": {
       "title": "Configuración del Perfil",

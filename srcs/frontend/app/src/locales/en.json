@@ -247,7 +247,12 @@
       "blockedOn": "Blocked on",
       "unblock": "Unblock",
       "noBlockedUsers": "No blocked users",
-      "peaceMessage": "You're at peace with everyone!"
+      "peaceMessage": "You're at peace with everyone!",
+      "manage": "Friend Management",
+      "friends": "Friends",
+      "requests": "Requests",
+      "blocked": "Blocked",
+      "add": "Add Friend"
     },
     "settings": {
       "title": "Profile Settings",

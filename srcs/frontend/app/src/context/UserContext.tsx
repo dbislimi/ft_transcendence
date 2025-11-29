@@ -69,6 +69,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (currentToken) {
 			try {
 				await fetch(`${API_BASE_URL}/api/logout`, {
+					method: 'POST',
 					headers: { Authorization: `Bearer ${token}` }
 				});
 			} catch (error) {

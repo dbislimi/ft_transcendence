@@ -233,7 +233,20 @@
       "blockedOn": "Bloqué le",
       "unblock": "🔓 Débloquer",
       "noBlockedUsersTitle": "Aucun utilisateur bloqué",
-      "noBlockedUsersDesc": "Vous êtes en paix avec tout le monde !"
+      "noBlockedUsersDesc": "Vous êtes en paix avec tout le monde !",
+      "manage": "Gestion des amis",
+      "friends": "Amis",
+      "requests": "Demandes",
+      "blocked": "Bloqués",
+      "add": "Ajouter un ami",
+      "addHint": "Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "invite": "Inviter à jouer",
+      "notFound": "Aucun ami pour l'instant",
+      "searchPlaceholder": "Commencez par ajouter quelqu'un !",
+      "noBlockedUsers": "Aucun utilisateur bloqué",
+      "peaceMessage": "Vous êtes en paix avec tout le monde !"
     },
     "settings": {
       "profileSettings": "⚙️ Paramètres du profil",

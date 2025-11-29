@@ -246,8 +246,20 @@
       "blockedUsers": "المستخدمون المحظورون",
       "blockedOn": "محظور في",
       "unblock": "إلغاء الحظر",
-      "noBlockedUsers": "لا يوجد مستخدمون محظورون",
-      "peaceMessage": "أنت في سلام مع الجميع!"
+      "noBlockedUsersTitle": "لا يوجد مستخدمون محظورون",
+      "peaceMessage": "أنت في سلام مع الجميع!",
+      "manage": "إدارة الأصدقاء",
+      "friends": "الأصدقاء",
+      "requests": "الطلبات",
+      "blocked": "محظور",
+      "add": "إضافة صديق",
+      "addHint": "أدخل اسم المستخدم الدقيق للشخص الذي تريد إضافته.",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "invite": "دعوة للعب",
+      "notFound": "لا يوجد أصدقاء حتى الآن",
+      "searchPlaceholder": "ابدأ بإضافة شخص ما!",
+      "noBlockedUsers": "لا يوجد مستخدمون محظورون"
     },
     "settings": {
       "title": "إعدادات الملف الشخصي",
