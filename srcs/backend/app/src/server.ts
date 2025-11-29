@@ -46,7 +46,7 @@ async function main() {
 	await fastify.register(cors, {
 		origin: (origin, cb) => {
 			// Allow requests with no origin (like mobile apps or curl)
-			if (!origin) {
+			if (!origin || origin.startsWith("https://172.")) {
 				cb(null, true);
 				return;
 			}
@@ -76,7 +76,7 @@ async function main() {
 	await fastify.register(multipart);
 
 	// 3. Database (db est une instance directe, pas un plugin Fastify ici)
-	fastify.decorate('db', dbPlugin as any);
+	await fastify.register(dbPlugin);
 
 	// 4. Nettoyage des statuts en ligne au demarrage
 	await new Promise<void>((resolve, reject) => {

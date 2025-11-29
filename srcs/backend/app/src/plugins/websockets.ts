@@ -9,11 +9,11 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+	throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+	throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
 interface Tournament {
@@ -82,39 +82,38 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					return client;
 				}
 
-			const decoded = jwt.verify(token, JWT_SECRET) as {
-				id: number;
-				name: string;
-				email: string;
-			};
-			let client = fastify.clients.get(decoded.id);
-			if (client) {
-				console.log("Changement de socket");
-				if (client.removalTimer) {
-					clearTimeout(client.removalTimer);
-					client.removalTimer = undefined;
-				}
-				client.socket = socket;
-				client.id = decoded.id;
-			} else {
-				console.log("Nouvelle connexion");
-				client = {
-					id: decoded.id,
-					name: decoded.name,
-					socket,
+				const decoded = jwt.verify(token, JWT_SECRET) as {
+					id: number;
+					name: string;
+					email: string;
 				};
-				fastify.clients.set(decoded.id, client);
-			}
-			return client;
+				let client = fastify.clients.get(decoded.id);
+				if (client) {
+					console.log("Changement de socket");
+					if (client.removalTimer) {
+						clearTimeout(client.removalTimer);
+						client.removalTimer = undefined;
+					}
+					client.socket = socket;
+					client.id = decoded.id;
+				} else {
+					console.log("Nouvelle connexion");
+					client = {
+						id: decoded.id,
+						name: decoded.name,
+						socket,
+					};
+					fastify.clients.set(decoded.id, client);
+				}
+				return client;
 			} catch (e) {
 				console.log(`JWT: ${e}`);
 				return null;
 			}
 		}
 	);
-
-	fastify.register(gameController);
 	fastify.register(chat);
+	fastify.register(gameController);
 };
 
 export default fp(wsController);

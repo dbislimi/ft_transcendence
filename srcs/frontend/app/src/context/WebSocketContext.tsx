@@ -10,11 +10,18 @@ export interface Message {
   to?: number | null;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  blocked?: boolean;
+}
+
 interface WebSocketContextType {
   pongWsRef: React.MutableRefObject<WebSocket | null>;
   friendsWsRef: React.MutableRefObject<WebSocket | null>;
   chatWsRef: React.MutableRefObject<WebSocket | null>;
   messages: Message[];
+  users: User[];
   sendMessage: (msg: {
     type: string;
     text: string;
@@ -28,6 +35,7 @@ const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const chatWsRef = useRef<WebSocket | null>(null);
   const pongWsRef = useRef<WebSocket | null>(null);
   const friendsWsRef = useRef<WebSocket | null>(null);
@@ -81,7 +89,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     chatWsRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setMessages((prev) => [...prev, data]);
+        if (data.type === "users") {
+          setUsers(data.users);
+        } else {
+          setMessages((prev) => [...prev, data]);
+        }
       } catch (e) {
         console.error("Chat WS parse error", e);
       }
@@ -150,6 +162,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         friendsWsRef,
         chatWsRef,
         messages,
+        users,
         sendMessage,
         addPongRoute,
         removePongRoute,

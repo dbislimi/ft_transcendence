@@ -10,7 +10,7 @@ import util from "util";
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+  throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
 export default fp(async function authPlugin(fastify: FastifyInstance) {
@@ -65,10 +65,14 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       displayName = body.display_name;
     }
 
-  const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const displayNameRegex = /^[a-zA-Z0-9_-]+$/;
+    const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const displayNameRegex = /^[a-zA-Z0-9_-]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
+    if (!name || name.trim() === "") {
+      return reply.code(400).send({ error: "Le nom est obligatoire." });
+    }
 
     if (!nameRegex.test(name)) {
       return reply.code(400).send({ error: "Le nom doit commencer par une majuscule suivie uniquement de lettres minuscules." });
@@ -127,7 +131,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       });
 
       const token = jwt.sign(
-        { id: userId, name, email, display_name: displayName },
+        { id: userId, email, display_name: displayName },
         JWT_SECRET,
         { expiresIn: "2h" }
       );
@@ -137,7 +141,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         token,
         user: {
           id: userId,
-          name,
           email,
           display_name: displayName,
           avatar: chosenAvatar
@@ -181,40 +184,34 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       }
 
       if (user.twoFAEnabled === 1) {
-      const otp = fastify.generateOtp();
+        const otp = fastify.generateOtp();
 
-      await new Promise<void>((resolve, reject) => {
-        db.run(
-          'UPDATE users SET twoFAOtp = ? WHERE id = ?',
-          [otp, user.id],
-          (err: any) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+        await new Promise<void>((resolve, reject) => {
+          db.run(
+            'UPDATE users SET twoFAOtp = ? WHERE id = ?',
+            [otp, user.id],
+            (err: any) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
 
-      const emailSent = await fastify.send2faEmail(user.email, otp);
-      if (!emailSent) {
-        return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
+        const emailSent = await fastify.send2faEmail(user.email, otp);
+        if (!emailSent) {
+          return reply.code(500).send({ error: "Erreur lors de l'envoi de l'e-mail" });
+        }
+
+        return reply.send({ success: true, message: "OTP envoye", require2fa: true, userId: user.id });
       }
 
-      return reply.send({ success: true, message: "OTP envoye", require2fa: true, userId: user.id });
-      }
-
-    //console.log("EREN YEAGER");
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email },
-      JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-      return reply.send({ success: true, token, name: user.name, enable2fa: user.twoFAEnabled === 1 , user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          display_name: user.display_name,
-          avatar: user.avatar
-        }});
+      //console.log("EREN YEAGER");
+      const token = jwt.sign(
+        { id: user.id, email: user.email, display_name: user.display_name },
+        JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+      return reply.send({ success: true, token, enable2fa: user.twoFAEnabled === 1 });
     } catch (err) {
       console.error(err);
       return reply.code(500).send({ error: "Erreur serveur" });

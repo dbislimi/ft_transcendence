@@ -22,14 +22,14 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			const client = fastify.getClient(req, socket);
 			if (!client) return socket.close();
 
-		if (!client.cosmetics) {
-			// Use default cosmetics for now (cosmetics columns don't exist in DB yet)
-			client.cosmetics = {
-				preferredSide: "left",
-				paddleColor: "White",
-				ballColor: "White",
-			};
-		}
+			if (!client.cosmetics) {
+				// Use default cosmetics for now (cosmetics columns don't exist in DB yet)
+				client.cosmetics = {
+					preferredSide: "left",
+					paddleColor: "White",
+					ballColor: "White",
+				};
+			}
 
 			if (client.rejoinTimer) {
 				console.log(

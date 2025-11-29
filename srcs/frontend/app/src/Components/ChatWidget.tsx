@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 export default function ChatWidget() {
   const { chatWsRef, pongWsRef, messages, users } = useWebSocket();
   const navigate = useNavigate();
+  const { user, token } = useUser();
 
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
@@ -25,15 +27,9 @@ export default function ChatWidget() {
     return () => window.removeEventListener("click", handleClick);
   }, []);
 
-  const savedUser = localStorage.getItem("user");
-  const savedToken = localStorage.getItem("token");
-
-  if (!savedUser || !savedToken) {
+  if (!user || !token) {
     return null;
   }
-
-  const parsedUser = JSON.parse(savedUser);
-  const user = { ...parsedUser, id: Number(parsedUser.id) };
 
   const sendMessage = () => {
     if (!chatWsRef.current || chatWsRef.current.readyState !== WebSocket.OPEN || !input.trim()) return;

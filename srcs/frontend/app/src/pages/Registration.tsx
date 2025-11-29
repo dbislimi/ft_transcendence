@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
@@ -11,6 +7,7 @@ export default function Registration() {
 	const navigate = useNavigate();
 	const [step, setStep] = useState(1);
 
+	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [displayName, setDisplayName] = useState("");
 	const [password, setPassword] = useState("");
@@ -33,7 +30,7 @@ export default function Registration() {
 	];
 
 	const handleNextStep = async () => {
-		if (!email || !displayName || !password || !confirmPassword) {
+		if (!name || !email || !displayName || !password || !confirmPassword) {
 			setIsError(true);
 			setMessage("Tous les champs sont obligatoires.");
 			return;
@@ -42,6 +39,15 @@ export default function Registration() {
 		if (password !== confirmPassword) {
 			setIsError(true);
 			setMessage("Les mots de passe ne correspondent pas.");
+			return;
+		}
+
+		const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
+		if (!nameRegex.test(name)) {
+			setIsError(true);
+			setMessage(
+				"Le nom doit commencer par une majuscule suivie uniquement de lettres."
+			);
 			return;
 		}
 
@@ -96,6 +102,7 @@ export default function Registration() {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				name,
 				displayName,
 				email,
 				password,
@@ -134,9 +141,8 @@ export default function Registration() {
 							<div className="flex-1 relative">
 								<div className="h-2 bg-slate-700 rounded-full overflow-hidden">
 									<div
-										className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500 ${
-											step === 1 ? "w-1/2" : "w-full"
-										}`}
+										className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500 ${step === 1 ? "w-1/2" : "w-full"
+											}`}
 									/>
 								</div>
 							</div>
@@ -147,11 +153,10 @@ export default function Registration() {
 
 						{message && (
 							<div
-								className={`mb-6 p-4 rounded-lg border ${
-									isError
-										? "bg-red-500/10 border-red-500/30 text-red-400"
-										: "bg-green-500/10 border-green-500/30 text-green-400"
-								}`}
+								className={`mb-6 p-4 rounded-lg border ${isError
+									? "bg-red-500/10 border-red-500/30 text-red-400"
+									: "bg-green-500/10 border-green-500/30 text-green-400"
+									}`}
 							>
 								<p className="text-center text-sm">{message}</p>
 							</div>
@@ -164,6 +169,21 @@ export default function Registration() {
 								</h3>
 
 								<div className="space-y-4">
+									<div>
+										<label className="block text-sm font-medium text-slate-300 mb-2">
+											Nom (Prénom Nom)
+										</label>
+										<input
+											type="text"
+											className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+											value={name}
+											onChange={(e) =>
+												setName(e.target.value)
+											}
+											placeholder="Jean Dupont"
+										/>
+									</div>
+
 									<div>
 										<label className="block text-sm font-medium text-slate-300 mb-2">
 											Email
@@ -272,11 +292,10 @@ export default function Registration() {
 											<img
 												src={a}
 												alt="Avatar"
-												className={`w-16 h-16 rounded-full object-cover border-2 cursor-pointer transition-all duration-200 group-hover:scale-110 ${
-													avatar === a
-														? "border-blue-400 shadow-lg shadow-blue-400/50"
-														: "border-slate-600 hover:border-slate-400"
-												}`}
+												className={`w-16 h-16 rounded-full object-cover border-2 cursor-pointer transition-all duration-200 group-hover:scale-110 ${avatar === a
+													? "border-blue-400 shadow-lg shadow-blue-400/50"
+													: "border-slate-600 hover:border-slate-400"
+													}`}
 												onClick={() => setAvatar(a)}
 											/>
 											{avatar === a && (
