@@ -438,6 +438,12 @@ export default function Profile() {
 					case "friend_request_accepted":
 						fetchFriends();
 						fetchRequests();
+						notify({
+							variant: "success",
+							title: "Demande acceptée",
+							message: `${data.display_name} a accepté votre demande d'ami`,
+							duration: 5000,
+						});
 						break;
 
 					case "friend_request_rejected":
