@@ -129,11 +129,18 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; display_name: string; email: string };
-      console.log("l'id dans le back : ", decoded.id);
-      console.log("le name dans le back : ", decoded.display_name);
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
+      
+      // Fetch display_name from database
+      fastify.db.get('SELECT display_name, name FROM users WHERE id = ?', [decoded.id], (err, row: any) => {
+        if (err) {
+          fastify.log.error('Error fetching user display_name:', err);
+          socket.close();
+          return;
+        }
 
-      const client: Client = { id: decoded.id, name: decoded.display_name || `User_${decoded.id}`, socket };
+        const userName = row?.display_name || row?.name || decoded.name;
+        const client: Client = { id: decoded.id, name: userName, socket };
 
         clientsLock.acquire(() => {
           clients.push(client);
