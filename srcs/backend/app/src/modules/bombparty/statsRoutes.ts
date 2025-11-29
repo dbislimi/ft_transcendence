@@ -18,7 +18,7 @@ interface HistoryQuery {
 }
 
 export default fp(async function StatsRoutes(fastify: any) {
-  const db = (await import("../../../index.js")).default;
+  const db = fastify.db;
   const statsManager = new BombPartyStatsManager(db);
   const statsService = new BombPartyStatsService(db);
   const authenticateToken = async (request: FastifyRequest, reply: FastifyReply) => {

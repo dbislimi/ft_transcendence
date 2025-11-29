@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import SpaceBackground from "../Components/SpaceBackground";
@@ -50,6 +51,7 @@ export default function PublicProfile() {
   });
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
   
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -81,7 +83,7 @@ export default function PublicProfile() {
         
         setTimeout(() => setIsLoaded(true), 100);
       } else {
-        setError("Utilisateur introuvable");
+        setError(t('errors.userNotFound'));
       }
     } catch (err) {
       console.error("Erreur chargement profil:", err);
@@ -98,7 +100,7 @@ export default function PublicProfile() {
     
     if (!res.ok) {
       if (res.status === 404) return null;
-      throw new Error("Erreur réseau");
+      throw new Error(t('errors.network'));
     }
     return await res.json();
   };

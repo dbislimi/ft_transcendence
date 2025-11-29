@@ -252,7 +252,8 @@
       "chooseAvatar": "Choisir un avatar",
       "preview": "Aperçu",
       "save": "💾 Sauvegarder"
-    }
+    },
+    "editProfile": "Modifier le profil"
   },
 
   "about": {
@@ -607,10 +608,6 @@
       "lightModeBackground": "Mode Clair",
       "darkModeBackground": "Mode Sombre"
     },
-    "advanced": {
-      "title": "Avancés",
-      "description": "Options techniques"
-    },
     "home": {
       "description": "Retour à l'accueil",
       "subtitle": "Retourner à la page principale"
@@ -701,5 +698,40 @@
         "description": "Nuit étoilée"
       }
     }
+  },
+  "common": {
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "saving": "Sauvegarde...",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "errors": {
+    "network": "Erreur réseau",
+    "unknown": "Erreur inconnue",
+    "userNotFound": "Utilisateur introuvable"
+  },
+  "friends": {
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet ami ?",
+    "deleteButton": "Supprimer"
+  },
+  "chat": {
+    "privateMessageTo": "Message privé à",
+    "globalMessage": "Message global"
+  },
+  "registration": {
+    "confirmPassword": "Confirmer le mot de passe",
+    "namePlaceholder": "Jean Dupont",
+    "usernamePlaceholder": "Votre pseudo",
+    "avatarSelected": "Avatar sélectionné"
+  },
+  "account": {
+    "confirmNewPassword": "Confirmer le nouveau mot de passe"
   }
 }

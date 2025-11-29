@@ -113,7 +113,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
     });
   });
 
-  fastify.get("/api/match-history/:userId", {
+  fastify.get("/match-history/:userId", {
     preHandler: fastify.authHook
   }, async (request: any, reply: any) => {
     const { userId } = request.params;
@@ -174,10 +174,11 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
     });
   });
 
-  fastify.get("/api/user-stats/:userId", {
+  fastify.get("/user-stats/:userId", {
     preHandler: fastify.authHook
   }, async (request: any, reply: any) => {
     const { userId } = request.params;
+    fastify.log.info(`Requête user-stats pour userId: ${userId}`);
 
     return new Promise((resolve, reject) => {
       fastify.db.get(
@@ -196,6 +197,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
             reply.code(500).send({ error: "Erreur serveur" });
             reject(err);
           } else if (!row) {
+            fastify.log.warn(`Utilisateur non trouvé: userId=${userId}`);
             reply.code(404).send({ error: "Utilisateur non trouvé" });
             reject(new Error("User not found"));
           } else {
@@ -208,6 +210,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
               playerWins: row.player_wins || 0,
               tournamentsWon: row.tournaments_won || 0
             };
+            fastify.log.info(`Stats récupérées pour userId ${userId}:`, stats);
             resolve(stats);
           }
         }
@@ -215,7 +218,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
     });
   });
 
-  fastify.get("/api/debug/matches", {
+  fastify.get("/debug/matches", {
     preHandler: fastify.authHook
   }, async (request: any, reply: any) => {
     return new Promise((resolve, reject) => {

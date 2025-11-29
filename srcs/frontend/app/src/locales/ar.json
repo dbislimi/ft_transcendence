@@ -262,7 +262,8 @@
       "preview": "معاينة",
       "previewAvatar": "معاينة الصورة الرمزية",
       "save": "حفظ"
-    }
+    },
+    "editProfile": "تحرير الملف الشخصي"
   },
   "bombParty": {
     "info": {
@@ -686,14 +687,45 @@
       "lightModeBackground": "الوضع الفاتح",
       "darkModeBackground": "الوضع الداكن"
     },
-    "advanced": {
-      "title": "متقدم",
-      "description": "خيارات تقنية"
-    },
     "home": {
       "description": "العودة إلى الرئيسية",
       "subtitle": "العودة إلى الصفحة الرئيسية"
     },
     "close": "إغلاق"
+  },
+  "common": {
+    "close": "إغلاق",
+    "save": "حفظ",
+    "saving": "حفظ...",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "error": "خطأ",
+    "success": "نجاح"
+  },
+  "errors": {
+    "network": "خطأ في الشبكة",
+    "unknown": "خطأ غير معروف",
+    "userNotFound": "لم يتم العثور على المستخدم"
+  },
+  "friends": {
+    "confirmDelete": "هل أنت متأكد من أنك تريد حذف هـذا الصديق؟",
+    "deleteButton": "حذف"
+  },
+  "chat": {
+    "privateMessageTo": "رسالة خاصة إلى",
+    "globalMessage": "رسالة عامة"
+  },
+  "registration": {
+    "confirmPassword": "تأكيد كلمة المرور",
+    "namePlaceholder": "محمد أحمد",
+    "usernamePlaceholder": "اسم المستخدم",
+    "avatarSelected": "الصورة الرمزية المحددة"
+  },
+  "account": {
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة"
   }
 }

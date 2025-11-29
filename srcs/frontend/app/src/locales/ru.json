@@ -262,7 +262,8 @@
       "preview": "Предпросмотр",
       "previewAvatar": "Предпросмотр Аватара",
       "save": "Сохранить"
-    }
+    },
+    "editProfile": "Редактировать профиль"
   },
   "bombParty": {
     "info": {
@@ -619,10 +620,6 @@
       "lightModeBackground": "Светлый режим",
       "darkModeBackground": "Темный режим"
     },
-    "advanced": {
-      "title": "Дополнительно",
-      "description": "Технические опции"
-    },
     "home": {
       "description": "Вернуться на главную",
       "subtitle": "Вернуться на главную страницу"
@@ -695,5 +692,40 @@
       "active": "Активный",
       "applyAll": "Использовать для всех игр"
     }
+  },
+  "common": {
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "cancel": "Отмена",
+    "confirm": "Подтвердить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "online": "В сети",
+    "offline": "Не в сети",
+    "error": "Ошибка",
+    "success": "Успех"
+  },
+  "errors": {
+    "network": "Ошибка сети",
+    "unknown": "Неизвестная ошибка",
+    "userNotFound": "Пользователь не найден"
+  },
+  "friends": {
+    "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
+    "deleteButton": "Удалить"
+  },
+  "chat": {
+    "privateMessageTo": "Личное сообщение для",
+    "globalMessage": "Глобальное сообщение"
+  },
+  "registration": {
+    "confirmPassword": "Подтвердите пароль",
+    "namePlaceholder": "Иван Иванов",
+    "usernamePlaceholder": "Ваше имя пользователя",
+    "avatarSelected": "Выбранный аватар"
+  },
+  "account": {
+    "confirmNewPassword": "Подтвердите новый пароль"
   }
 }

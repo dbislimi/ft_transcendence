@@ -262,7 +262,8 @@
       "preview": "Vista previa",
       "previewAvatar": "Vista previa del Avatar",
       "save": "Guardar"
-    }
+    },
+    "editProfile": "Editar perfil"
   },
   "bombParty": {
     "info": {
@@ -619,10 +620,6 @@
       "lightModeBackground": "Modo Claro",
       "darkModeBackground": "Modo Oscuro"
     },
-    "advanced": {
-      "title": "Avanzado",
-      "description": "Opciones tecnicas"
-    },
     "home": {
       "description": "Volver al inicio",
       "subtitle": "Volver a la página principal"
@@ -695,5 +692,40 @@
       "active": "Activo",
       "applyAll": "Usar para todos los juegos"
     }
+  },
+  "common": {
+    "close": "Cerrar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "errors": {
+    "network": "Error de red",
+    "unknown": "Error desconocido",
+    "userNotFound": "Usuario no encontrado"
+  },
+  "friends": {
+    "confirmDelete": "¿Estás seguro de que quieres eliminar a este amigo?",
+    "deleteButton": "Eliminar"
+  },
+  "chat": {
+    "privateMessageTo": "Mensaje privado a",
+    "globalMessage": "Mensaje global"
+  },
+  "registration": {
+    "confirmPassword": "Confirmar contraseña",
+    "namePlaceholder": "Juan Pérez",
+    "usernamePlaceholder": "Tu nombre de usuario",
+    "avatarSelected": "Avatar seleccionado"
+  },
+  "account": {
+    "confirmNewPassword": "Confirmar nueva contraseña"
   }
 }

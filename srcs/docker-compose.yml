@@ -63,8 +63,8 @@ services:
       - VITE_HOSTNAME=${HOSTNAME:-localhost}
     expose:
       - "5173"
-    extra_hosts:
-      - "airthunder.local:127.0.0.1"
+    # extra_hosts:
+    #   - "airthunder.local:127.0.0.1"
     depends_on:
       - back
     restart: unless-stopped

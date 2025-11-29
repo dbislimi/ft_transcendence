@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL, WS_BASE_URL } from "../config/api";
 
 interface Message {
@@ -38,6 +39,7 @@ export function useWebsocketChat(
 }
 
 export default function Chat() {
+	const { t } = useTranslation();
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState("");
 	const [toUser, setToUser] = useState<number | null>(null);

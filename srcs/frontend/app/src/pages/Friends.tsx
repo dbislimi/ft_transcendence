@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, WS_BASE_URL } from "../config/api";
@@ -26,6 +27,7 @@ interface BlockedUser {
 }
 
 export default function Friends() {
+  const { t } = useTranslation();
   const { user } = useUser();
   const token = localStorage.getItem("token") || undefined;
   const navigate = useNavigate();
@@ -150,47 +152,47 @@ export default function Friends() {
         body: JSON.stringify({ display_name: newFriend.trim() }),
       });
       const data = await res.json();
-      if (res.ok) { setNewFriend(""); fetchRequests(); } else { setError(data.error || "Erreur lors de l'envoi de la demande"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) { setNewFriend(""); fetchRequests(); } else { setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
     finally { setLoading(false); }
   };
 
   const acceptRequest = async (senderId: number) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) { fetchFriends(); fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors de l'acceptation"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) { fetchFriends(); fetchRequests(); } else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
   };
 
   const rejectRequest = async (senderId: number) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/friend-requests/${senderId}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) { fetchRequests(); } else { const data = await res.json(); setError(data.error || "Erreur lors du rejet"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) { fetchRequests(); } else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
   };
 
   const removeFriend = async (friendId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) return;
+    if (!confirm(t('friends.confirmDelete'))) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) fetchFriends(); else { const data = await res.json(); setError(data.error || "Erreur lors de la suppression"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) fetchFriends(); else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
   };
 
   const blockUser = async (userId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir bloquer cet utilisateur ?")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/block-user`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ user_id: userId }) });
-      if (res.ok) { fetchFriends(); fetchRequests(); fetchBlockedUsers(); } else { const data = await res.json(); setError(data.error || "Erreur lors du blocage"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) { fetchFriends(); fetchRequests(); fetchBlockedUsers(); } else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
   };
 
   const unblockUser = async (userId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir debloquer cet utilisateur ?")) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/blocked-users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || "Erreur lors du deblocage"); }
-    } catch (err) { setError("Erreur reseau"); }
+      if (res.ok) fetchBlockedUsers(); else { const data = await res.json(); setError(data.error || t('errors.unknown')); }
+    } catch (err) { setError(t('errors.network')); }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === "Enter" && !loading) sendRequest(); };
@@ -231,7 +233,7 @@ export default function Friends() {
                     </div>
                     <div className="space-x-2">
                       <button onClick={() => blockUser(f.id)} className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 transition-colors">Bloquer</button>
-                      <button onClick={() => removeFriend(f.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">Supprimer</button>
+                      <button onClick={() => removeFriend(f.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">{t('friends.deleteButton')}</button>
                     </div>
                   </div>
                 ))

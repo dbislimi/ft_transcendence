@@ -27,11 +27,11 @@ export function usePongControls({
 			let payload: { dir: "up" | "down"; id: number } | null = null;
 			if (["Shift", "s"].includes(key))
 				payload = { dir: "down", id: shouldMirror ? 1 : 0 };
-			else if (["ArrowDown"].includes(key))
+			else if (["5"].includes(key))
 				payload = { dir: "down", id: shouldMirror ? 0 : 1 };
 			else if ([" ", "w"].includes(key))
 				payload = { dir: "up", id: shouldMirror ? 1 : 0 };
-			else if (["ArrowUp"].includes(key))
+			else if (["8"].includes(key))
 				payload = { dir: "up", id: shouldMirror ? 0 : 1 };
 			if (payload) {
 				send({ event: "play", body: { type, ...payload } });

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import { API_BASE_URL } from "../config/api";
 
 export default function Registration() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [step, setStep] = useState(1);
 
@@ -205,12 +207,12 @@ export default function Registration() {
 										</label>
 										<input
 											type="text"
-											className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
-											value={displayName}
-											onChange={(e) =>
-												setDisplayName(e.target.value)
-											}
-											placeholder="Votre pseudo"
+										className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+										value={displayName}
+										onChange={(e) =>
+											setDisplayName(e.target.value)
+										}
+										placeholder={t('registration.usernamePlaceholder')}
 										/>
 									</div>
 
@@ -229,10 +231,10 @@ export default function Registration() {
 										/>
 									</div>
 
-									<div>
-										<label className="block text-sm font-medium text-slate-300 mb-2">
-											Confirmer le mot de passe
-										</label>
+								<div>
+									<label className="block text-sm font-medium text-slate-300 mb-2">
+										{t('registration.confirmPassword')}
+									</label>
 										<input
 											type="password"
 											className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"

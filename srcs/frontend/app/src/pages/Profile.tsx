@@ -271,11 +271,11 @@ export default function Profile() {
 				fetchRequests();
 			} else {
 				setFriendsError(
-					data.error || "Erreur lors de l'envoi de la demande"
+					data.error || t('errors.unknown')
 				);
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		} finally {
 			setFriendsLoading(false);
 		}
@@ -296,10 +296,10 @@ export default function Profile() {
 				fetchRequests();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || "Erreur lors de l'acceptation");
+				setFriendsError(data.error || t('errors.unknown'));
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		}
 	};
 
@@ -317,15 +317,15 @@ export default function Profile() {
 				fetchRequests();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || "Erreur lors du rejet");
+				setFriendsError(data.error || t('errors.unknown'));
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		}
 	};
 
 	const handleRemoveFriend = async (friendId: number) => {
-		if (!confirm("Êtes-vous sûr de vouloir supprimer cet ami ?")) return;
+		if (!confirm(t('friends.confirmDelete'))) return;
 
 		try {
 			const res = await fetch(
@@ -340,10 +340,10 @@ export default function Profile() {
 				fetchFriends();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || "Erreur lors de la suppression");
+				setFriendsError(data.error || t('errors.unknown'));
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		}
 	};
 
@@ -367,10 +367,10 @@ export default function Profile() {
 				fetchBlockedUsers();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || "Erreur lors du blocage");
+				setFriendsError(data.error || t('errors.unknown'));
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		}
 	};
 
@@ -391,10 +391,10 @@ export default function Profile() {
 				fetchBlockedUsers();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || "Erreur lors du deblocage");
+				setFriendsError(data.error || t('errors.unknown'));
 			}
 		} catch (err) {
-			setFriendsError("Erreur reseau");
+			setFriendsError(t('errors.network'));
 		}
 	};
 
@@ -563,12 +563,12 @@ export default function Profile() {
 				setTimeout(() => setMessage(""), 3000);
 			} else {
 				setIsError(true);
-				setMessage(data.error || "Erreur lors de la mise à jour");
+				setMessage(data.error || t('errors.unknown'));
 				setTimeout(() => setMessage(""), 3000);
 			}
 		} catch {
 			setIsError(true);
-			setMessage("Erreur reseau. Veuillez reessayer.");
+			setMessage(t('errors.network'));
 			setTimeout(() => setMessage(""), 3000);
 		}
 	};

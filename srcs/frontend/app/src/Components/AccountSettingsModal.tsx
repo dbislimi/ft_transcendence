@@ -198,7 +198,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                   onClick={() => setIsEditing(true)}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors flex items-center gap-2"
                 >
-                  <span>✏️</span> Modifier le profil
+                  <span>✏️</span> {t('profile.editProfile')}
                 </button>
               </div>
             </div>
@@ -289,7 +289,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                       />
                       <input
                         type="password"
-                        placeholder="Confirmer le nouveau mot de passe"
+                        placeholder={t('account.confirmNewPassword')}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
@@ -305,14 +305,14 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 text-gray-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  Annuler
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
-                  {isLoading ? 'Sauvegarde...' : 'Enregistrer'}
+                  {isLoading ? t('common.saving') : t('common.save')}
                 </button>
               </div>
             </form>

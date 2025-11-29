@@ -619,10 +619,6 @@
       "lightModeBackground": "Light Mode",
       "darkModeBackground": "Dark Mode"
     },
-    "advanced": {
-      "title": "Advanced",
-      "description": "Technical options"
-    },
     "home": {
       "description": "Return to home",
       "subtitle": "Return to the main page"
@@ -695,5 +691,40 @@
       "active": "Active",
       "applyAll": "Use for all games"
     }
+  },
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "online": "Online",
+    "offline": "Offline",
+    "error": "Error",
+    "success": "Success"
+  },
+  "errors": {
+    "network": "Network error",
+    "unknown": "Unknown error",
+    "userNotFound": "User not found"
+  },
+  "friends": {
+    "confirmDelete": "Are you sure you want to delete this friend?",
+    "deleteButton": "Delete"
+  },
+  "chat": {
+    "privateMessageTo": "Private message to",
+    "globalMessage": "Global message"
+  },
+  "registration": {
+    "confirmPassword": "Confirm password",
+    "namePlaceholder": "John Doe",
+    "usernamePlaceholder": "Your username",
+    "avatarSelected": "Selected avatar"
+  },
+  "account": {
+    "confirmNewPassword": "Confirm new password"
   }
 }

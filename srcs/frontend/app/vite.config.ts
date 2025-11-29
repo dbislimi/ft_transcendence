@@ -74,10 +74,15 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    // Configure which URLs to print
+    open: false,
+    // Disable automatic printing of all network interfaces
+    cors: true,
     hmr: {
       protocol: 'wss',
       path: '/hmr',
       clientPort: 8443,
+      host: HOSTNAME,
     },
     proxy: {
       '/bombparty/ws': {
