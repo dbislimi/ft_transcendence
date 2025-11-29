@@ -100,8 +100,9 @@ export default function Pong() {
 			`Labels: ${view.kind}, ${view.kind === "result" && view.gameOver?.opponent
 			}`
 		);
-		const defaultSelf = user?.name
-			? `${user.name} (You)`
+		const userName = user?.display_name || user?.name;
+		const defaultSelf = userName && userName.trim()
+			? `${userName} (You)`
 			: PLAYER_LABELS.self;
 		if (view.kind === "training" && trainingLabelsRef.current)
 			return trainingLabelsRef.current;
@@ -422,10 +423,11 @@ export default function Pong() {
 			console.log("PAYLOAAAADD");
 			if (payload.action === "play_offline") {
 				const diff = payload.diff ?? null;
+				const userName = user?.display_name || user?.name;
 				const offlineLabels: PlayerLabels = diff
 					? {
-						self: user?.name
-							? `${user.name} (You)`
+						self: userName && userName.trim()
+							? `${userName} (You)`
 							: PLAYER_LABELS.self,
 						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
@@ -487,10 +489,11 @@ export default function Pong() {
 				const { gamemode, botDiff } = config;
 
 				const diff = gamemode === "solo" ? botDiff : null;
+				const userName = user?.display_name || user?.name;
 				const offlineLabels: PlayerLabels = diff
 					? {
-						self: user?.name
-							? `${user.name} (You)`
+						self: userName && userName.trim()
+							? `${userName} (You)`
 							: PLAYER_LABELS.self,
 						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
@@ -619,9 +622,10 @@ export default function Pong() {
 							diff,
 							options: gameSettings,
 						});
+						const userName = user?.display_name || user?.name;
 						trainingLabelsRef.current = {
-							self: user?.name
-								? `${user.name} (You)`
+							self: userName && userName.trim()
+								? `${userName} (You)`
 								: PLAYER_LABELS.self,
 							opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
 								})`,

@@ -201,6 +201,34 @@ class BombPartyStatsService {
     return response.json();
   }
 
+  async getGlobalStats() {
+    const response = await fetch(`${this.baseUrl}/global-stats`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getGlobalMatchHistory(limit = 20, offset = 0) {
+    const response = await fetch(`${this.baseUrl}/global-history?limit=${limit}&offset=${offset}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   async getUserProgress(userId?: string | number) {
     const actualUserId = this.getUserIdFromToken() || userId;
     if (!actualUserId) {

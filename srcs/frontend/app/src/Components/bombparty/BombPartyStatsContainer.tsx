@@ -15,13 +15,15 @@ export default function BombPartyStatsContainer() {
   const { user } = useUser();
   const navigate = useNavigate();
   const hasToken = !!localStorage.getItem('token');
-  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'ranking'>((user?.id && hasToken) ? 'overview' : 'ranking');
+  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'ranking'>('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [matchHistory, setMatchHistory] = useState<MatchHistory[]>([]);
   const [globalRanking, setGlobalRanking] = useState<RankingEntry[]>([]);
+  const [globalStats, setGlobalStats] = useState<any>(null);
+  const [globalHistory, setGlobalHistory] = useState<any[]>([]);
 
   useEffect(() => {
     logger.debug('useEffect triggered', { userId: user?.id });
@@ -35,39 +37,38 @@ export default function BombPartyStatsContainer() {
     setError(null);
 
     try {
+      // Toujours charger les données globales (accessibles à tous)
+      const [globalStatsResponse, globalHistoryResponse, rankingResponse] = await Promise.all([
+        bombPartyStatsService.getGlobalStats(),
+        bombPartyStatsService.getGlobalMatchHistory(),
+        bombPartyStatsService.getGlobalRanking()
+      ]);
+
+      setGlobalStats(globalStatsResponse.data || globalStatsResponse);
+      setGlobalHistory(globalHistoryResponse.data || globalHistoryResponse);
+      setGlobalRanking(rankingResponse.data || []);
+
+      // Si l'utilisateur est connecté, charger aussi ses stats personnelles
       if (user?.id) {
-        logger.debug('Loading complete data for user', { userId: user.id });
+        logger.debug('Loading user-specific data', { userId: user.id });
 
         try {
-          const [statsResponse, historyResponse, rankingResponse] = await Promise.all([
+          const [statsResponse, historyResponse] = await Promise.all([
             bombPartyStatsService.getUserStats(user.id),
-            bombPartyStatsService.getUserMatchHistory(user.id),
-            bombPartyStatsService.getGlobalRanking()
+            bombPartyStatsService.getUserMatchHistory(user.id)
           ]);
 
-          logger.debug('data loaded', {
+          logger.debug('User data loaded', {
             hasStats: !!statsResponse,
-            hasHistory: !!historyResponse,
-            hasRanking: !!rankingResponse
+            hasHistory: !!historyResponse
           });
 
           setUserStats(statsResponse.data || statsResponse);
           setMatchHistory(historyResponse.data || historyResponse);
-          setGlobalRanking(rankingResponse.data || []);
         } catch (authError) {
-          logger.warn('Error loading authenticated stats, loading ranking only', { error: authError });
-          const rankingResponse = await bombPartyStatsService.getGlobalRanking();
-          setGlobalRanking(rankingResponse.data || []);
-          setError(t('bombParty.stats.reconnectPrompt'));
+          logger.warn('Error loading user stats, continuing with global data', { error: authError });
+          // Ne pas définir d'erreur, juste continuer avec les données globales
         }
-      } else {
-        logger.debug('Loading global ranking only');
-
-        const rankingResponse = await bombPartyStatsService.getGlobalRanking();
-
-        logger.debug('Global ranking loaded', { count: rankingResponse.data?.length || 0 });
-
-        setGlobalRanking(rankingResponse.data || []);
       }
     } catch (err) {
       logger.error('Error loading statistics', err);
@@ -135,34 +136,24 @@ export default function BombPartyStatsContainer() {
         </button>
       </div>
 
-      {!user?.id && (
-        <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
-          <svg className="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <p className="text-blue-300 font-semibold mb-1">{t('bombParty.stats.loginPrompt')}</p>
-            <p className="text-gray-300 text-sm">
-              {t('bombParty.stats.loginPromptDesc')}
-            </p>
-          </div>
-        </div>
-      )}
-
       <BombPartyStatsFilters
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isAuthenticated={!!user?.id}
       />
 
-      {activeTab === 'overview' && userStats && (
-        <BombPartyStatsSummary userStats={userStats} />
+      {activeTab === 'overview' && globalStats && (
+        <BombPartyStatsSummary 
+          userStats={userStats} 
+          globalStats={globalStats}
+          isAuthenticated={!!user?.id}
+        />
       )}
 
       {activeTab === 'history' && (
         <BombPartyStatsTable
           type="history"
-          data={matchHistory}
+          data={globalHistory}
           user={user}
         />
       )}

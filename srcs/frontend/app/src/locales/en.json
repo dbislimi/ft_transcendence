@@ -647,11 +647,6 @@
     "networkError": "Network error",
     "error": "Error"
   },
-  "common": {
-    "back": "Back",
-    "backAria": "Go back",
-    "close": "Close"
-  },
   "notFound": {
     "title": "404",
     "message": "Page not found",
@@ -698,6 +693,8 @@
     }
   },
   "common": {
+    "back": "Back",
+    "backAria": "Go back",
     "close": "Close",
     "save": "Save",
     "saving": "Saving...",

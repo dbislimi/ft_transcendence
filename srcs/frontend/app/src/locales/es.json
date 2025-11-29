@@ -648,11 +648,6 @@
     "networkError": "Error de red",
     "error": "Error"
   },
-  "common": {
-    "back": "Atrás",
-    "backAria": "Volver atrás",
-    "close": "Cerrar"
-  },
   "notFound": {
     "title": "404",
     "message": "Página no encontrada",
@@ -699,6 +694,8 @@
     }
   },
   "common": {
+    "back": "Atrás",
+    "backAria": "Volver atrás",
     "close": "Cerrar",
     "save": "Guardar",
     "saving": "Guardando...",

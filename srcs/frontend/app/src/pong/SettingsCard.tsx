@@ -67,10 +67,9 @@ export function SettingsCard({
 		}));
 
 	const getBonusOptions = () =>
-		BONUS_TYPES.map((bonus) => ({
-			label: t(`pong.settings.bonuses.${bonus.id.toLowerCase()}`),
-			value: bonus.id,
-		}));
+		BONUS_TYPES.map((bonus) => 
+			t(`pong.settings.bonuses.${bonus.id.toLowerCase()}`)
+		);
 
 	const hasCosmeticsChanges =
 		tempCosmetics.preferredSide !== (cosmetics?.preferredSide || "left") ||
@@ -238,18 +237,16 @@ export function SettingsCard({
 								<ChoiceGroup
 									label={t("pong.settings.bonusTypes")}
 									options={getBonusOptions()}
-									value={selectedBonuses
-										.map((id) => {
-											const bonus = BONUS_TYPES.find(
-												(b) => b.id === id
-											);
-											return bonus
-												? t(
-														`pong.settings.bonuses.${bonus.id.toLowerCase()}`
-												  )
-												: "";
-										})
-										.filter((label) => label !== "")}
+									value={selectedBonuses.map((id) => {
+										const bonus = BONUS_TYPES.find(
+											(b) => b.id === id
+										);
+										return bonus
+											? t(
+													`pong.settings.bonuses.${bonus.id.toLowerCase()}`
+											  )
+											: "";
+									})}
 									onChange={(values) => {
 										const selectedIds = BONUS_TYPES.filter(
 											(bonus) =>

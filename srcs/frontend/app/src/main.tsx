@@ -29,7 +29,6 @@ const router = createBrowserRouter(
         { path: "/stats/bombparty", element: <pages.StatsPage /> },
         { path: "/stats/pong", element: <pages.StatsPage /> },
         { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
-        { path: "/bomb-party/profile", element: <pages.BombPartyProfilePage /> },
         { path: "/profile", element: <pages.Profile /> },
         { path: "/profile/:name", element: <pages.ProfileChat /> },
         { path: "/about", element: <pages.About /> },

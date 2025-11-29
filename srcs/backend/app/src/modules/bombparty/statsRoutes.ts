@@ -186,6 +186,47 @@ export default fp(async function StatsRoutes(fastify: any) {
     }
   );
 
+  // Statistiques globales (accessible à tous)
+  fastify.get(
+    "/bomb-party/global-stats",
+    async (request, reply) => {
+      try {
+        const result = await statsManager.getGlobalStats();
+        if (!result.success) {
+          return reply.code(500).send({ error: result.error });
+        }
+        return reply.send({
+          success: true,
+          data: result.data
+        });
+      } catch (error) {
+        console.error("[Stats API] Error fetching global stats:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
+  // Historique global des parties (accessible à tous)
+  fastify.get(
+    "/bomb-party/global-history",
+    async (request, reply) => {
+      try {
+        const { limit = "20", offset = "0" } = request.query;
+        const result = await statsManager.getGlobalMatchHistory(parseInt(limit), parseInt(offset));
+        if (!result.success) {
+          return reply.code(500).send({ error: result.error });
+        }
+        return reply.send({
+          success: true,
+          data: result.data
+        });
+      } catch (error) {
+        console.error("[Stats API] Error fetching global history:", error);
+        return reply.code(500).send({ error: "Server error" });
+      }
+    }
+  );
+
   fastify.post(
     "/bomb-party/stats/update",
     { preHandler: authenticateToken },

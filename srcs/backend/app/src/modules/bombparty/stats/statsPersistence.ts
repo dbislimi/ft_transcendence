@@ -211,7 +211,7 @@ export class StatsPersistence {
       this.model.getDatabase().all(
         `SELECT 
           s.user_id,
-          u.name as user_name,
+          u.display_name as user_name,
           s.total_wins,
           s.total_matches,
           s.best_streak,
@@ -221,7 +221,7 @@ export class StatsPersistence {
           END as win_rate
         FROM bp_user_stats s
         JOIN users u ON s.user_id = u.id
-          WHERE s.total_matches >= 5 -- filtre les joueurs avec trop peu de matchs
+        WHERE s.total_matches > 0
         ORDER BY s.total_wins DESC, win_rate DESC, s.best_streak DESC
         LIMIT ?`,
         [limit],
@@ -234,6 +234,85 @@ export class StatsPersistence {
 
           const ranking = rows.map((row, index) => this.model.mapRowToRankingEntry(row, index));
           resolve({ success: true, data: ranking });
+        }
+      );
+    });
+  }
+
+  async getGlobalStats(): Promise<DBResult<any>> {
+    return new Promise((resolve) => {
+      this.model.getDatabase().get(
+        `SELECT 
+          COUNT(DISTINCT user_id) as total_players,
+          COUNT(*) as total_matches,
+          SUM(words_submitted) as total_words,
+          SUM(valid_words) as total_valid_words,
+          AVG(match_duration) as avg_match_duration,
+          MAX(valid_words) as best_words_in_match
+        FROM bp_match_history`,
+        (err, row: any) => {
+          if (err) {
+            console.error(' [Stats] Error fetching global stats:', err);
+            resolve({ success: false, error: err.message });
+            return;
+          }
+
+          resolve({ 
+            success: true, 
+            data: {
+              totalPlayers: row.total_players || 0,
+              totalMatches: row.total_matches || 0,
+              totalWords: row.total_words || 0,
+              totalValidWords: row.total_valid_words || 0,
+              avgMatchDuration: Math.round(row.avg_match_duration || 0),
+              bestWordsInMatch: row.best_words_in_match || 0
+            }
+          });
+        }
+      );
+    });
+  }
+
+  async getGlobalMatchHistory(limit: number = 20, offset: number = 0): Promise<DBResult<any[]>> {
+    return new Promise((resolve) => {
+      this.model.getDatabase().all(
+        `SELECT 
+          h.id,
+          h.user_id,
+          u.display_name as user_name,
+          h.match_id,
+          h.position,
+          h.words_submitted,
+          h.valid_words,
+          h.final_lives,
+          h.match_duration,
+          h.played_at
+        FROM bp_match_history h
+        JOIN users u ON h.user_id = u.id
+        ORDER BY h.played_at DESC
+        LIMIT ? OFFSET ?`,
+        [limit, offset],
+        (err, rows: any[]) => {
+          if (err) {
+            console.error(' [Stats] Error fetching global history:', err);
+            resolve({ success: false, error: err.message });
+            return;
+          }
+
+          const history = rows.map(row => ({
+            id: row.id,
+            userId: row.user_id,
+            userName: row.user_name,
+            matchId: row.match_id,
+            position: row.position,
+            wordsSubmitted: row.words_submitted,
+            validWords: row.valid_words,
+            finalLives: row.final_lives,
+            matchDuration: row.match_duration,
+            playedAt: row.played_at
+          }));
+
+          resolve({ success: true, data: history });
         }
       );
     });

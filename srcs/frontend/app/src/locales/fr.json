@@ -511,11 +511,6 @@
     "networkError": "Erreur réseau",
     "error": "Erreur"
   },
-  "common": {
-    "back": "Retour",
-    "backAria": "Revenir en arrière",
-    "close": "Fermer"
-  },
   "notFound": {
     "title": "404",
     "message": "Page introuvable",
@@ -713,6 +708,8 @@
     }
   },
   "common": {
+    "back": "Retour",
+    "backAria": "Revenir en arrière",
     "close": "Fermer",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",

@@ -62,4 +62,12 @@ export class BombPartyStatsManager {
   async getGlobalRanking(limit: number = 50): Promise<DBResult<RankingEntry[]>> {
     return this.persistence.getGlobalRanking(limit);
   }
+
+  async getGlobalStats(): Promise<DBResult<any>> {
+    return this.persistence.getGlobalStats();
+  }
+
+  async getGlobalMatchHistory(limit: number = 20, offset: number = 0): Promise<DBResult<any[]>> {
+    return this.persistence.getGlobalMatchHistory(limit, offset);
+  }
 }

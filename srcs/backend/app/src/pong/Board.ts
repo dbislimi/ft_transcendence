@@ -257,11 +257,11 @@ export default class Board {
 					++i;
 				}
 				if (retries) {
-					const bonus =
+					const BonusClass =
 						this.bonusTypes[
 						Math.floor(Math.random() * this.bonusTypes.length)
 						]!;
-					const newBonus = new bonus(y, this.bonusRadius);
+					const newBonus = new BonusClass(y, this.bonusRadius);
 					this.bonus.push(newBonus);
 				}
 			}
