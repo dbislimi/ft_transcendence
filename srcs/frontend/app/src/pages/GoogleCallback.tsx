@@ -25,7 +25,7 @@ export default function GoogleCallback() {
                     email: payload.email
                 };
                 setToken(token);
-                localStorage.setItem("user", JSON.stringify(userData));
+                sessionStorage.setItem("user", JSON.stringify(userData));
                 navigate("/");
             } catch (e) {
                 console.error("Failed to decode token", e);

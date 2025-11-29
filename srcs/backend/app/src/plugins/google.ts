@@ -46,7 +46,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
     } catch (err) {
       console.error('[Google Callback] Token Exchange Error:', err);
       // Clear the state cookie and redirect to login or show a clear error
-      reply.clearCookie('oauth2-redirect-state', { path: '/' });
+      //reply.clearCookie('oauth2-redirect-state', { path: '/' });
       return reply.code(400).send({ error: "Session expiree ou invalide. Veuillez reessayer de vous connecter." });
     }
 

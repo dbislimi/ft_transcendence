@@ -17,7 +17,7 @@ export default function EnterCode() {
     try {
       const userId = sessionStorage.getItem('for2FaUserId');
       const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
-      const response = await fetch(`${API_BASE_URL}/check2fa`, {
+      const response = await fetch(`${API_BASE_URL}/api/check2fa`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

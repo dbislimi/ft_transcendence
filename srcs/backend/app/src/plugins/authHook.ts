@@ -15,7 +15,6 @@ export default fp(async function authHook(fastify: FastifyInstance) {
       "/register",
       "/check-user",
       "/check2fa",
-      "/check2fa",
       "/auth/google",
       "/auth/google/callback",
       "/chat",           // WebSocket chat endpoint (auth handled by getClient in websockets.ts)

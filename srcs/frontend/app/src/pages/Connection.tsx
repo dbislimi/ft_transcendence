@@ -7,7 +7,7 @@ import { API_BASE_URL } from "../config/api";
 
 export default function Connection() {
   const { t } = useTranslation();
-  const { login, setToken } = useUser();
+  const { setToken } = useUser();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 

@@ -98,7 +98,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
   async function broadcastUsers() {
     const snapshot = await clientsLock.acquire(() => [...clients]);
     const allUsers = snapshot.map(c => ({ id: c.id, name: c.name }));
-    
+
     fastify.log.info(`[Chat] Broadcasting ${allUsers.length} users to ${snapshot.length} clients`);
 
     for (const client of snapshot) {
@@ -135,12 +135,12 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
       const client: Client = { id: decoded.id, name: decoded.display_name, socket };
 
-        clientsLock.acquire(() => {
-          clients.push(client);
-        }).then(() => {
-          fastify.log.info(`${client.name} connecte (${clients.length} clients)`);
-          broadcastUsers();
-        });
+      clientsLock.acquire(() => {
+        clients.push(client);
+      }).then(() => {
+        fastify.log.info(`${client.name} connecte (${clients.length} clients)`);
+        broadcastUsers();
+      });
 
       // Reception de message
       socket.on("message", async (raw: Buffer) => {
@@ -226,7 +226,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
         broadcastUsers();
       });
 
-      }); // Close db.get callback
+
     } catch (err) {
       fastify.log.error("JWT invalide :", err);
       socket.close();
