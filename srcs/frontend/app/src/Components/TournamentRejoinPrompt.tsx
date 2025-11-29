@@ -27,7 +27,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 							label: "Rejoindre",
 							primary: true,
 							onPress: () => {
-								navigate("/pong?mode=online");
+								navigate("/pong");
 								pongWsRef.current?.send(
 									JSON.stringify({
 										event: "rejoin",
@@ -95,7 +95,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 	if (!visible) return null;
 
 	const onJoin = () => {
-		navigate("/pong?mode=online");
+		navigate("/pong");
 		pongWsRef.current?.send(
 			JSON.stringify({
 				event: "rejoin",

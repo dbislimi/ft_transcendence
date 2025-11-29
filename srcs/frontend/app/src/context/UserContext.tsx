@@ -40,14 +40,14 @@ interface UserContextType {
 const UserContext = createContext<UserContextType>({
 	isLoading: true,
 	user: null,
-	refreshUser: async () => { },
-	setToken: () => { },
+	refreshUser: async () => {},
+	setToken: () => {},
 	token: null,
-	login: () => { },
-	logout: () => { },
+	login: () => {},
+	logout: () => {},
 	isAuthenticated: false,
-	setUser: () => { },
-	setGuestName: () => { },
+	setUser: () => {},
+	setGuestName: () => {},
 });
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -69,8 +69,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (currentToken) {
 			try {
 				await fetch(`${API_BASE_URL}/api/logout`, {
-					method: 'POST',
-					headers: { Authorization: `Bearer ${token}` }
+					method: "POST",
+					headers: { Authorization: `Bearer ${token}` },
 				});
 			} catch (error) {
 				const blob = new Blob([JSON.stringify({})], {
@@ -186,7 +186,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 							: "/avatars/avatar1.png",
 				});
 			} else {
-				setToken(null);
+				setUser(null);
 			}
 		} catch {
 			setUser(null);

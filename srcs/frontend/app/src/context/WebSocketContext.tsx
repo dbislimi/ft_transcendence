@@ -58,10 +58,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 		const WS_BASE_URL = `${protocol}//${wsHost}`;
 
-		if (!isAuthenticated) {
+		if (!token) {
 			friendsWsRef.current?.close();
 			friendsWsRef.current = null;
 
+			pongWsRef.current?.close();
 			pongWsRef.current = new WebSocket(`${WS_BASE_URL}/game`);
 			pongWsRef.current.onopen = () =>
 				console.log("Pong Websocket connecté (guest)");
@@ -94,6 +95,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			"[WebSocket] Friends URL:",
 			`${WS_BASE_URL}/ws-friends?token=***`
 		);
+
+		pongWsRef.current?.close();
+		chatWsRef.current?.close();
+		friendsWsRef.current?.close();
 
 		pongWsRef.current = new WebSocket(
 			`${WS_BASE_URL}/game?token=${tokenParam}`

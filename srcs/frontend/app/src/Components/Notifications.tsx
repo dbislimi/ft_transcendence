@@ -5,7 +5,7 @@ import RealtimeNotifications from "./RealtimeNotifications";
 export default function Notifications() {
 	return (
 		<>
-			<NotificationsContainer position="bottom-right" />
+			<NotificationsContainer />
 			<RealtimeNotifications />
 		</>
 	);

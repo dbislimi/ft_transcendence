@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNotifications } from "../context/NotificationContext";
 import type {
 	NotificationItem,
@@ -6,29 +6,11 @@ import type {
 	NotificationAction,
 } from "../context/NotificationContext";
 
-type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
-
-export default function NotificationsContainer({
-	position = "bottom-right",
-}: {
-	position?: Position;
-}) {
+export default function NotificationsContainer() {
 	const { notifications, dismiss } = useNotifications();
 
-	const containerPosition = useMemo(() => {
-		const base = "fixed z-50 p-4 gap-3 flex flex-col";
-		switch (position) {
-			case "top-left":
-				return `${base} top-4 left-4`;
-			case "top-right":
-				return `${base} top-4 right-4`;
-			case "bottom-left":
-				return `${base} bottom-4 left-4`;
-			case "bottom-right":
-			default:
-				return `${base} bottom-4 right-4`;
-		}
-	}, [position]);
+	const containerPosition =
+		"fixed z-70 p-4 gap-3 flex flex-col bottom-4 right-4";
 
 	return (
 		<div

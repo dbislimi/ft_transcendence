@@ -26,7 +26,7 @@ export default function RealtimeNotifications() {
 							label: "Rejoindre",
 							primary: true,
 							onPress: () => {
-								navigate("/pong?mode=online");
+								navigate("/pong");
 								pongWsRef.current?.send(
 									JSON.stringify({
 										event: "rejoin",
@@ -59,7 +59,7 @@ export default function RealtimeNotifications() {
 			if (!data || data.event !== "game_session_ready") return;
 			const body = data.body || {};
 			setSession(body);
-			if (location.pathname !== "/pong") navigate("/pong?mode=online");
+			if (location.pathname !== "/pong") navigate("/pong");
 		};
 		addPongRoute("game_session", onSessionReady);
 		return () => removePongRoute("game_session", onSessionReady);
@@ -88,40 +88,6 @@ export default function RealtimeNotifications() {
 		const onInvitationEvent = (data: any) => {
 			if (!data) return;
 			switch (data.event) {
-				case "invite_rejoin_prompt": {
-					notify({
-						variant: "info",
-						title: "Partie interrompue",
-						message:
-							"Vous avez quitte une partie invitee. Rejoindre ou abandonner.",
-						duration: undefined,
-						actions: [
-							{
-								label: "Rejoindre",
-								primary: true,
-								onPress: () => {
-									navigate("/pong?mode=online");
-									pongWsRef.current?.send(
-										JSON.stringify({ event: "ready" })
-									);
-								},
-							},
-							{
-								label: "Abandonner",
-								type: "decline",
-								onPress: () => {
-									pongWsRef.current?.send(
-										JSON.stringify({
-											event: "rejoin",
-											body: { type: "dismiss" },
-										})
-									);
-								},
-							},
-						],
-					});
-					break;
-				}
 				case "invitation_waiting": {
 					const to = data.body?.to ?? "Un joueur";
 					const invitationId: string | undefined =
@@ -226,7 +192,7 @@ export default function RealtimeNotifications() {
 						message: `La partie commence avec ${opponent}`,
 						duration: 3000,
 					});
-					navigate("/pong?mode=online");
+					navigate("/pong");
 					break;
 				}
 

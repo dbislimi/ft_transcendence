@@ -1084,9 +1084,31 @@ export default function Profile() {
 															<div className="flex gap-2">
 																{isOnline(friend.online) && (
 																	<button
-																		onClick={() => navigate(`/pong?invite=${friend.id}`)}
-																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
-																	>
+																			onClick={() => {
+																				if (
+																					pongWsRef
+																						.current
+																						?.readyState ===
+																					WebSocket.OPEN
+																				) {
+																					pongWsRef.current.send(
+																						JSON.stringify(
+																							{
+																								event: "invitation",
+																								body: {
+																									action: "invite",
+																									friendId:
+																										friend.id,
+																									options:
+																										gameSettings,
+																								},
+																							}
+																						)
+																					);
+																				}
+																			}}
+																			className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
+																		>
 																		🎮 {t('profile.friend.invite')}
 																	</button>
 																)}
