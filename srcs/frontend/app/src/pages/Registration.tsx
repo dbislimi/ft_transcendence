@@ -34,38 +34,34 @@ export default function Registration() {
 	const handleNextStep = async () => {
 		if (!name || !email || !displayName || !password || !confirmPassword) {
 			setIsError(true);
-			setMessage("Tous les champs sont obligatoires.");
+			setMessage(t('registration.errors.allFieldsRequired'));
 			return;
 		}
 
 		if (password !== confirmPassword) {
 			setIsError(true);
-			setMessage("Les mots de passe ne correspondent pas.");
+			setMessage(t('registration.errors.passwordMismatch'));
 			return;
 		}
 
 		const nameRegex = /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ' -]+$/;
 		if (!nameRegex.test(name)) {
 			setIsError(true);
-			setMessage(
-				"Le nom doit commencer par une majuscule suivie uniquement de lettres."
-			);
+			setMessage(t('registration.errors.invalidName'));
 			return;
 		}
 
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(email)) {
 			setIsError(true);
-			setMessage("Adresse email invalide.");
+			setMessage(t('registration.errors.invalidEmail'));
 			return;
 		}
 
 		const displayNameRegex = /^[a-zA-Z0-9-]+$/;
 		if (!displayNameRegex.test(displayName)) {
 			setIsError(true);
-			setMessage(
-				"Le pseudo ne doit contenir que des lettres, chiffres ou tirets."
-			);
+			setMessage(t('registration.errors.invalidDisplayName'));
 			return;
 		}
 
@@ -73,9 +69,7 @@ export default function Registration() {
 			/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{6,}$/;
 		if (!passwordRegex.test(password)) {
 			setIsError(true);
-			setMessage(
-				"Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
-			);
+			setMessage(t('registration.errors.invalidPassword'));
 			return;
 		}
 
@@ -88,7 +82,7 @@ export default function Registration() {
 		const data = await res.json();
 		if (!res.ok || data.exists) {
 			setIsError(true);
-			setMessage(data.error || "Email ou pseudo déjà utilisé.");
+			setMessage(data.error || t('registration.errors.emailOrUsernameExists'));
 			return;
 		}
 
@@ -116,11 +110,11 @@ export default function Registration() {
 
 		if (res.ok) {
 			setIsError(false);
-			setMessage("Inscription réussie ! Redirection...");
+			setMessage(t('registration.success'));
 			setTimeout(() => navigate("/connection"), 2000);
 		} else {
 			setIsError(true);
-			setMessage(data.error || "Erreur lors de l'inscription");
+			setMessage(data.error || t('registration.errors.registrationError'));
 		}
 	};
 

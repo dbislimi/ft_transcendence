@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface CountdownProps {
 	seconds?: number;
@@ -11,6 +12,7 @@ export default function Countdown({
 	onComplete,
 	value: controlledValue,
 }: CountdownProps) {
+	const { t } = useTranslation();
 	const isControlled = typeof controlledValue === "number";
 	const [value, setValue] = useState(
 		isControlled ? controlledValue : seconds
