@@ -89,7 +89,15 @@
 			"finalScore": "Score final :",
 			"quit": "Quitter",
 			"continue": "Continuer",
-			"replay": "Rejouer"
+			"replay": "Rejouer",
+			"tournamentChampion": "Champion du tournoi !",
+			"victoryTitle": "Victoire !",
+			"defeatTitle": "Défaite"
+		},
+  		"waitingOverlay": {
+			"waitingOpponent": "En attente de l'adversaire",
+			"waitingForOpponent": "En attente de ",
+			"gamePaused": "Le jeu est en pause en attendant que votre adversaire se reconnecte"
 		},
   		"gameOverlay": {
 			"mode": "Mode"
@@ -509,7 +517,9 @@
     "registrationSuccess": "Inscription réussie",
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
-    "error": "Erreur"
+    "error": "Erreur",
+	"invalidCode": "Code invalide",
+    "yourCode": "Votre code"
   },
   "notFound": {
     "title": "404",
@@ -713,6 +723,7 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",
+    "loading": "Chargement...",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "delete": "Supprimer",
@@ -750,9 +761,5 @@
   },
   "account": {
     "confirmNewPassword": "Confirmer le nouveau mot de passe"
-  },
-  "auth": {
-    "invalidCode": "Code invalide",
-    "yourCode": "Votre code"
   }
 }

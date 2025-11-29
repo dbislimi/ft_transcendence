@@ -70,14 +70,12 @@ export default function RealtimeNotifications() {
 		const receivNotifs = new Map<string, string>();
 
 		const dismissNotificationById = (invitationId: string) => {
-			// Check sent notifications
 			const sentNotif = sentNotifs.get(invitationId);
 			if (sentNotif) {
 				dismiss(sentNotif);
 				sentNotifs.delete(invitationId);
 				return true;
 			}
-			// Check received notifications
 			const receivNotif = receivNotifs.get(invitationId);
 			if (receivNotif) {
 				dismiss(receivNotif);
@@ -210,10 +208,8 @@ export default function RealtimeNotifications() {
 				case "invitation_game_found": {
 					const invitationId = data.body?.invitationId;
 					if (invitationId) {
-						// Close specific invitation notification
 						dismissNotificationById(invitationId);
 					} else {
-						// Fallback: close all remaining invitation notifications
 						for (const notifId of sentNotifs.values()) {
 							dismiss(notifId);
 						}
@@ -360,7 +356,6 @@ export default function RealtimeNotifications() {
 							duration: 3000,
 						});
 					}
-					// Ignore other errors
 					break;
 				}
 			}

@@ -1,52 +1,106 @@
+import React from "react";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-	play: boolean;
-	sessionType?: "offline" | "online" | null;
-	tournamentDepth?: number | null;
-	isTournament?: boolean;
+	gameOver: {
+		didWin: boolean;
+		scores: number[];
+		tournamentDepth?: number | null;
+		finalTournamentWin?: boolean;
+		type?: string;
+		opponent?: string;
+	} | null;
+	onQuit: () => void;
+	onReplay: () => void;
+	onContinue?: () => void;
+	preferredSide: string;
+	side: number | null;
 }
 
-export default function GameOverlay({
-	play,
-	sessionType,
-	tournamentDepth,
-	isTournament,
+export default function GameOverOverlay({
+	gameOver,
+	onQuit,
+	onReplay,
+	onContinue,
+	preferredSide,
+	side,
 }: Props) {
 	const { t } = useTranslation();
-	if (!play) return null;
 
-	const isTournamentMode = isTournament || tournamentDepth != null;
-	const modeLabel =
-		sessionType === "offline"
-			? t("pong.offline")
-			: isTournamentMode
-			? t("pong.tournament")
-			: t("pong.online");
+	if (!gameOver) return null;
+	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
 
-	const renderRoundLabel = () => {
-		const d = tournamentDepth;
-		if (d === undefined || d === null) return null;
-		if (d === 1) return t("pong.final");
-		if (d === 2) return t("pong.semiFinal");
-		if (d === 3) return t("pong.quarterFinal");
-		return `${2 ** d}` + t("pong.round");
-	};
+	const { didWin, scores, tournamentDepth, finalTournamentWin, opponent } =
+		gameOver;
 
-	const roundLabel = renderRoundLabel();
+	const title = finalTournamentWin
+		? t("pong.gameOver.tournamentChampion")
+		: didWin
+		? t("pong.gameOver.victoryTitle")
+		: t("pong.gameOver.defeatTitle");
+	console.log("scores: ", scores);
+	const isTournament = tournamentDepth != null;
+	const isTournamentRoundWin = isTournament && didWin && !finalTournamentWin;
+	const isTournamentDefeat = isTournament && !didWin;
 
 	return (
-		<div className="absolute top-4 right-4 z-50">
-			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
-				<div className="font-semibold">
-					{t("pong.gameOverlay.mode")}
-				</div>
-				<div className="mt-1">{modeLabel}</div>
-				{isTournamentMode && roundLabel && (
-					<div className="mt-2 text-xs text-slate-200">
-						{roundLabel}
+		<div className="fixed inset-0 z-60 flex items-center justify-center">
+			<div className="absolute inset-0 bg-black/60" />
+			<div className="relative z-10 w-11/12 max-w-md bg-slate-900/95 border border-cyan-600/40 rounded-lg p-6 text-cyan-50 shadow-2xl">
+				<div className="text-2xl font-bold mb-2">{title}</div>
+				{finalTournamentWin && (
+					<div className="mb-2 text-sm text-slate-200">
+						{t("pong.gameOver.congratulations")}
 					</div>
 				)}
+				{!finalTournamentWin && (
+					<div className="mb-2 text-sm">
+						{didWin
+							? t("pong.gameOver.wonRound")
+							: t("pong.gameOver.lostRound")}
+					</div>
+				)}
+
+				{opponent && (
+					<div className="mb-3 text-sm text-slate-300">
+						{t("pong.gameOver.opponent")}{" "}
+						<span className="font-semibold">{opponent}</span>
+					</div>
+				)}
+
+				<div className="mb-4 font-mono">
+					{t("pong.gameOver.finalScore")}{" "}
+					{shouldMirror
+						? `${scores[1]} - ${scores[0]}`
+						: `${scores[0]} - ${scores[1]}`}
+				</div>
+
+				<div className="flex gap-3 justify-end mt-4">
+					<button
+						onClick={onQuit}
+						className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
+					>
+						{t("pong.gameOver.quit")}
+					</button>
+
+					{!finalTournamentWin &&
+						!isTournamentDefeat &&
+						(isTournamentRoundWin ? (
+							<button
+								onClick={onContinue}
+								className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white"
+							>
+								{t("pong.gameOver.continue")}
+							</button>
+						) : (
+							<button
+								onClick={onReplay}
+								className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white"
+							>
+								{t("pong.gameOver.replay")}
+							</button>
+						))}
+				</div>
 			</div>
 		</div>
 	);

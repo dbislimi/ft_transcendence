@@ -89,7 +89,15 @@
       "finalScore": "Final Score:",
       "quit": "Quit",
       "continue": "Continue",
-      "replay": "Replay"
+      "replay": "Replay",
+      "tournamentChampion": "Tournament Champion!",
+      "victoryTitle": "Victory!",
+      "defeatTitle": "Defeat"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Waiting for opponent",
+      "waitingForOpponent": "Waiting for ",
+      "gamePaused": "The game is paused while waiting for your opponent to reconnect"
     },
     "gameOverlay": {
       "mode": "Mode"
@@ -247,12 +255,7 @@
       "blockedOn": "Blocked on",
       "unblock": "Unblock",
       "noBlockedUsers": "No blocked users",
-      "peaceMessage": "You're at peace with everyone!",
-      "manage": "Friend Management",
-      "friends": "Friends",
-      "requests": "Requests",
-      "blocked": "Blocked",
-      "add": "Add Friend"
+      "peaceMessage": "You're at peace with everyone!"
     },
     "settings": {
       "title": "Profile Settings",
@@ -645,7 +648,9 @@
     "registrationSuccess": "Registration successful",
     "serverError": "Server error",
     "networkError": "Network error",
-    "error": "Error"
+    "error": "Error",
+	"invalidCode": "Invalid code",
+    "yourCode": "Your code"
   },
   "notFound": {
     "title": "404",
@@ -698,6 +703,7 @@
     "close": "Close",
     "save": "Save",
     "saving": "Saving...",
+    "loading": "Loading...",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
@@ -734,9 +740,5 @@
   },
   "account": {
     "confirmNewPassword": "Confirm new password"
-  },
-  "auth": {
-    "invalidCode": "Invalid code",
-    "yourCode": "Your code"
   }
 }

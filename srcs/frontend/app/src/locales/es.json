@@ -89,7 +89,15 @@
       "finalScore": "Puntuación Final:",
       "quit": "Salir",
       "continue": "Continuar",
-      "replay": "Repetir"
+      "replay": "Repetir",
+      "tournamentChampion": "¡Campeón del Torneo!",
+      "victoryTitle": "¡Victoria!",
+      "defeatTitle": "Derrota"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Esperando oponente",
+      "waitingForOpponent": "Esperando a ",
+      "gamePaused": "El juego está en pausa esperando a que tu oponente se reconecte"
     },
     "gameOverlay": {
       "mode": "Modo"
@@ -247,12 +255,7 @@
       "blockedOn": "Bloqueado el",
       "unblock": "Desbloquear",
       "noBlockedUsers": "No hay usuarios bloqueados",
-      "peaceMessage": "¡Estás en paz con todos!",
-      "manage": "Gestión de amigos",
-      "friends": "Amigos",
-      "requests": "Solicitudes",
-      "blocked": "Bloqueados",
-      "add": "Añadir amigo"
+      "peaceMessage": "¡Estás en paz con todos!"
     },
     "settings": {
       "title": "Configuración del Perfil",
@@ -699,6 +702,7 @@
     "close": "Cerrar",
     "save": "Guardar",
     "saving": "Guardando...",
+    "loading": "Cargando...",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "delete": "Eliminar",
