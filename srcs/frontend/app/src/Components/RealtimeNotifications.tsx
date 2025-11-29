@@ -195,29 +195,6 @@ export default function RealtimeNotifications() {
 					navigate("/pong");
 					break;
 				}
-
-				case "invitation_accepted": {
-					const invitationId: string | undefined =
-						data.body?.invitationId;
-					if (invitationId) {
-						const nSent = sentNotifs.get(invitationId);
-						if (nSent) dismiss(nSent);
-						sentNotifs.delete(invitationId);
-						const nReceiv = receivNotifs.get(invitationId);
-						if (nReceiv) dismiss(nReceiv);
-						receivNotifs.delete(invitationId);
-					}
-					const by =
-						data.body?.by ?? data.body?.inviter ?? "Un joueur";
-					notify({
-						variant: "success",
-						title: "Invitation acceptee",
-						message: `${by} a accepte votre invitation`,
-						duration: 3000,
-					});
-					break;
-				}
-
 				case "invitation_declined": {
 					const invitationId: string | undefined =
 						data.body?.invitationId;
