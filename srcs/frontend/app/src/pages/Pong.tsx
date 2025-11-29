@@ -537,7 +537,7 @@ export default function Pong() {
 				isTraining ||
 				(view.kind === "play" &&
 					session?.sessionType === "offline")) && (
-				<div className="absolute top-4 left-4 z-50">
+				<div className="absolute top-4 left-4 z-80">
 					<BackToMenuButton onClick={handleBackToMenu} />
 				</div>
 			)}
