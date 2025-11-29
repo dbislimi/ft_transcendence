@@ -30,6 +30,7 @@ const router = createBrowserRouter(
         { path: "/stats/pong", element: <pages.StatsPage /> },
         { path: "/bomb-party/stats", element: <pages.BombPartyStatsPage /> },
         { path: "/profile", element: <pages.Profile /> },
+        { path: "/user/:userId", element: <pages.UserProfile /> },
         { path: "/profile/:name", element: <pages.ProfileChat /> },
         { path: "/about", element: <pages.About /> },
         { path: "/auth", element: <pages.auth /> },

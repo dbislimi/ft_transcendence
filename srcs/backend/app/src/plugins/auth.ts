@@ -239,4 +239,26 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
       return reply.code(500).send({ error: "Erreur serveur" });
     }
   });
+
+  fastify.get("/users/:name", async (request, reply) => {
+    const { name } = request.params as { name: string };
+
+    try {
+      const user = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE display_name = ? OR name = ?", [name, name], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (!user) {
+        return reply.code(404).send({ error: "Utilisateur non trouve." });
+      }
+
+      const { password, twoFAOtp, ...userInfo } = user;
+      return reply.send({ user: userInfo });
+    } catch {
+      return reply.code(500).send({ error: "Erreur serveur" });
+    }
+  });
 });

@@ -98,6 +98,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
   async function broadcastUsers() {
     const snapshot = await clientsLock.acquire(() => [...clients]);
     const allUsers = snapshot.map(c => ({ id: c.id, name: c.name }));
+    
+    fastify.log.info(`[Chat] Broadcasting ${allUsers.length} users to ${snapshot.length} clients`);
 
     for (const client of snapshot) {
       if (client.socket.readyState !== 1) continue;
@@ -110,6 +112,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           blocked: blockedIds.includes(user.id),
         }));
 
+        fastify.log.info(`[Chat] Envoi à ${client.name}: ${JSON.stringify(usersForThisClient)}`);
         sendToClient(client, { type: "users", users: usersForThisClient });
 
       } catch (err) {
@@ -132,12 +135,12 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
       const client: Client = { id: decoded.id, name: decoded.display_name || `User_${decoded.id}`, socket };
 
-      clientsLock.acquire(() => {
-        clients.push(client);
-      }).then(() => {
-        fastify.log.info(`${client.name} connecte (${clients.length} clients)`);
-        broadcastUsers();
-      });
+        clientsLock.acquire(() => {
+          clients.push(client);
+        }).then(() => {
+          fastify.log.info(`${client.name} connecte (${clients.length} clients)`);
+          broadcastUsers();
+        });
 
       // Reception de message
       socket.on("message", async (raw: Buffer) => {
@@ -146,8 +149,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
           if (data.type === "message") {
             const msg = {
-              from: client.id,
-              fromName: client.name,
+              from: { id: client.id, name: client.name },
               to: data.to || null,
               text: data.text,
               date: new Date().toISOString(),
@@ -155,7 +157,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
-              [msg.from, msg.to, msg.text, msg.date]
+              [msg.from.id, msg.to, msg.text, msg.date]
             );
 
             const snapshot = await clientsLock.acquire(() => [...clients]);
@@ -223,6 +225,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
         });
         broadcastUsers();
       });
+
+      }); // Close db.get callback
     } catch (err) {
       fastify.log.error("JWT invalide :", err);
       socket.close();

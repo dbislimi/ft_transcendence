@@ -72,13 +72,13 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
         setIs2FAEnabled(data.twoFAEnabled);
         notify({
           variant: 'success',
-          message: `Double authentification ${data.twoFAEnabled ? 'activée' : 'désactivée'}`
+          message: data.twoFAEnabled ? t('settings.account.twoFAActivated') : t('settings.account.twoFADeactivated')
         });
       } else {
-        notify({ variant: 'error', message: 'Erreur lors de la modification de la 2FA' });
+        notify({ variant: 'error', message: t('settings.account.twoFAError') });
       }
     } catch (error) {
-      notify({ variant: 'error', message: 'Erreur de connexion' });
+      notify({ variant: 'error', message: t('settings.account.connectionError') });
     }
   };
 
@@ -90,7 +90,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
 
     try {
       if (newPassword && newPassword !== confirmPassword) {
-        notify({ variant: 'error', message: 'Les nouveaux mots de passe ne correspondent pas' });
+        notify({ variant: 'error', message: t('settings.account.passwordMismatch') });
         setIsLoading(false);
         return;
       }
@@ -119,7 +119,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
       const data = await res.json();
 
       if (res.ok) {
-        notify({ variant: 'success', message: 'Profil mis à jour avec succes' });
+        notify({ variant: 'success', message: t('settings.account.profileUpdated') });
         await refreshUser();
         setIsEditing(false);
         // Reset password fields
@@ -127,10 +127,10 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        notify({ variant: 'error', message: data.error || 'Erreur lors de la mise à jour' });
+        notify({ variant: 'error', message: data.error || t('settings.account.updateError') });
       }
     } catch (error) {
-      notify({ variant: 'error', message: 'Erreur de connexion' });
+      notify({ variant: 'error', message: t('settings.account.connectionError') });
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
           <div className="flex items-center space-x-3">
             <span className="text-3xl">👤</span>
             <h2 className="text-2xl font-bold text-white">
-              {t('settings.account.title') || 'Reglages de compte'}
+              {t('settings.account.title')}
             </h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
@@ -174,18 +174,18 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
               </div>
 
               <div className="bg-slate-700/30 rounded-xl p-6 space-y-4">
-                <h4 className="text-lg font-semibold text-blue-300">Informations</h4>
+                <h4 className="text-lg font-semibold text-blue-300">{t('settings.account.information')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-400">Pseudo</label>
+                    <label className="text-sm text-gray-400">{t('settings.account.pseudo')}</label>
                     <p className="text-white font-medium">{user?.display_name}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">Email</label>
+                    <label className="text-sm text-gray-400">{t('settings.account.email')}</label>
                     <p className="text-white font-medium">{user?.email}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">Membre depuis</label>
+                    <label className="text-sm text-gray-400">{t('settings.account.memberSince')}</label>
                     <p className="text-white font-medium">
                       {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
                     </p>
@@ -207,7 +207,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-300">Avatar</label>
+                  <label className="block text-sm font-medium text-gray-300">{t('settings.account.avatar')}</label>
                   <div className="flex justify-center mb-4">
                     <img
                       src={selectedAvatar}
@@ -232,7 +232,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Pseudo</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">{t('settings.account.pseudo')}</label>
                     <input
                       type="text"
                       value={displayName}
@@ -242,7 +242,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">{t('settings.account.email')}</label>
                     <input
                       type="email"
                       value={email}
@@ -252,10 +252,10 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Double Authentification (2FA)</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">{t('settings.account.twoFALabel')}</label>
                     <div className="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-600 rounded-lg">
                       <span className="text-sm text-gray-400">
-                        {is2FAEnabled ? 'Activée' : 'Désactivée'}
+                        {is2FAEnabled ? t('settings.account.twoFAEnabled') : t('settings.account.twoFADisabled')}
                       </span>
                       <button
                         type="button"
@@ -265,31 +265,31 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                           : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                           }`}
                       >
-                        {is2FAEnabled ? 'Désactiver' : 'Activer'}
+                        {is2FAEnabled ? t('settings.account.disableTwoFA') : t('settings.account.enableTwoFA')}
                       </button>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t border-gray-700/50">
-                    <h4 className="text-sm font-semibold text-blue-300 mb-3">Changer le mot de passe</h4>
+                    <h4 className="text-sm font-semibold text-blue-300 mb-3">{t('settings.account.changePassword')}</h4>
                     <div className="space-y-3">
                       <input
                         type="password"
-                        placeholder="Mot de passe actuel (si changement)"
+                        placeholder={t('settings.account.currentPasswordPlaceholder')}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
                       />
                       <input
                         type="password"
-                        placeholder="Nouveau mot de passe"
+                        placeholder={t('settings.account.newPasswordPlaceholder')}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"
                       />
                       <input
                         type="password"
-                        placeholder={t('account.confirmNewPassword')}
+                        placeholder={t('settings.account.confirmPasswordPlaceholder')}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none text-sm"

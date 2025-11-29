@@ -1,7 +1,8 @@
 import React from "react";
-
+import { useTranslation } from "react-i18next";
 import { useSettings } from "../contexts/SettingsContext";
 export default function ThemeToggle() {
+  const { t } = useTranslation();
   const { settings, updateDisplaySettings } = useSettings();
   const isDark = settings.display.theme === 'dark';
 

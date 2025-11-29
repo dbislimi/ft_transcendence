@@ -14,15 +14,7 @@ interface PlayersCountDropdownProps {
   label?: string;
 }
 
-const defaultOptions: PlayersCountOption[] = [
-  { value: 2, label: '2 joueurs', icon: '' },
-  { value: 3, label: '3 joueurs', icon: '' },
-  { value: 4, label: '4 joueurs', icon: '' },
-  { value: 6, label: '6 joueurs', icon: '' },
-  { value: 8, label: '8 joueurs', icon: '' },
-  { value: 10, label: '10 joueurs', icon: '' },
-  { value: 12, label: '12 joueurs', icon: '' },
-];
+const playerCounts = [2, 3, 4, 6, 8, 10, 12];
 
 export default function PlayersCountDropdown({
   value,
@@ -31,6 +23,12 @@ export default function PlayersCountDropdown({
   label
 }: PlayersCountDropdownProps) {
   const { t } = useTranslation();
+  
+  const defaultOptions: PlayersCountOption[] = playerCounts.map(count => ({
+    value: count,
+    label: `${count} ${t('common.players')}`,
+    icon: ''
+  }));
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const availableOptions = options 

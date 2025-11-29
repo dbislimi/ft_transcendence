@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 
+import { useTranslation } from 'react-i18next';
+
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,10 +19,13 @@ export default function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirmer',
-  cancelText = 'Annuler',
+  confirmText,
+  cancelText,
   type = 'warning'
 }: ConfirmModalProps) {
+  const { t } = useTranslation();
+  const finalConfirmText = confirmText || t('confirm.confirm');
+  const finalCancelText = cancelText || t('confirm.cancel');
   
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -101,7 +106,7 @@ export default function ConfirmModal({
             onClick={onClose}
             className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-gray-300 hover:text-white rounded-lg border border-slate-600/30 hover:border-slate-500/50 transition-all duration-200 font-medium"
           >
-            {cancelText}
+            {finalCancelText}
           </button>
           <button
             onClick={() => {
@@ -110,7 +115,7 @@ export default function ConfirmModal({
             }}
             className={`flex-1 px-4 py-3 bg-gradient-to-r ${styles.confirmBtn} text-white rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold`}
           >
-            {confirmText}
+            {finalConfirmText}
           </button>
         </div>
       </div>

@@ -15,7 +15,7 @@ export default function ChatWidget() {
   const [view, setView] = useState<"chat" | "users">("chat");
   const [target, setTarget] = useState<number | null>(null);
 
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userName: string } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userId: number; userName: string } | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,17 +66,18 @@ export default function ChatWidget() {
     }
   };
 
-  const handleContextMenu = (e: React.MouseEvent, userName: string) => {
+  const handleContextMenu = (e: React.MouseEvent, userId: number, userName: string) => {
     e.preventDefault();
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
+      userId: userId,
       userName: userName
     });
   };
 
-  const goToProfile = (userName: string) => {
-    navigate(`/profile/${encodeURIComponent(userName)}`);
+  const goToProfile = (userId: number) => {
+    navigate(`/user/${userId}`);
     setOpen(false);
     setContextMenu(null);
   };
@@ -122,7 +123,7 @@ export default function ChatWidget() {
                         : msg.type === "private"
                           ? "bg-purple-200 dark:bg-purple-700"
                           : "bg-gray-200 dark:bg-gray-700"
-                        } px-3 py-2 rounded-xl`}
+                        } px-3 py-2 rounded-xl text-black dark:text-white`}
                     >
                       {msg.type !== "info" && (
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
@@ -143,7 +144,7 @@ export default function ChatWidget() {
                   <div
                     key={u.id}
                     className="flex flex-col mb-2 border-b pb-2 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition"
-                    onContextMenu={(e) => handleContextMenu(e, u.name)}
+                    onContextMenu={(e) => handleContextMenu(e, u.id, u.name)}
                   >
                     <div className="flex justify-between items-center">
                       <button
@@ -203,7 +204,7 @@ export default function ChatWidget() {
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <button
-            onClick={() => goToProfile(contextMenu.userName)}
+            onClick={() => goToProfile(contextMenu.userId)}
             className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
           >
             👤 Voir profil

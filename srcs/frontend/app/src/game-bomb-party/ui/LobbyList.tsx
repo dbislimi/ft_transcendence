@@ -164,7 +164,7 @@ export default function LobbyList({ onJoinLobby, isAuthenticated, client }: Lobb
                   </div>
                   <div className="flex items-center gap-4 text-sm text-slate-400">
                     <span>
-                      {lobby.players}/{lobby.maxPlayers} joueurs
+                      {lobby.players}/{lobby.maxPlayers} {t('common.players')}
                     </span>
                     <span>•</span>
                     <span>{formatTimeAgo(lobby.createdAt)}</span>

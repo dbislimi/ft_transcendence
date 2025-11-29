@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 type TournamentRound = { depth?: number; initialDepth?: number } | null;
 
@@ -21,15 +22,16 @@ export default function GameOverOverlay({
 	onReplay,
 	onContinue,
 }: Props) {
+	const { t } = useTranslation();
 	if (!gameOver) return null;
 
 	const { didWin, scores, tournamentRound, finalTournamentWin } = gameOver;
 
 	const title = finalTournamentWin
-		? "Champion du tournoi !"
+		? t("gameOver.tournamentChampion")
 		: didWin
-		? "Victoire !"
-		: "Defaite";
+		? t("gameOver.victory")
+		: t("gameOver.defeat");
 
 	const scoreLabel =
 		Array.isArray(scores) && scores.length >= 2
@@ -48,19 +50,19 @@ export default function GameOverOverlay({
 				<div className="text-2xl font-bold mb-2">{title}</div>
 				{finalTournamentWin && (
 					<div className="mb-4 text-sm text-slate-200">
-						Felicitations, vous avez remporte le tournoi !
+						{t("gameOver.congratulations")}
 					</div>
 				)}
 				{!finalTournamentWin && (
 					<>
 						<div className="mb-2 text-sm">
 							{didWin
-								? "Vous avez gagne cette manche."
-								: "Vous avez perdu cette manche."}
+								? t("gameOver.wonRound")
+								: t("gameOver.lostRound")}
 						</div>
 						{scoreLabel && (
 							<div className="mb-4 font-mono">
-								Score final: {scoreLabel}
+								{t("gameOver.finalScore")}: {scoreLabel}
 							</div>
 						)}
 					</>
@@ -71,7 +73,7 @@ export default function GameOverOverlay({
 						onClick={onQuit}
 						className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
 					>
-						Quitter
+						{t("gameOver.quit")}
 					</button>
 
 					{!finalTournamentWin &&
@@ -81,14 +83,14 @@ export default function GameOverOverlay({
 								onClick={onContinue}
 								className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white"
 							>
-								Continuer
+								{t("gameOver.continue")}
 							</button>
 						) : (
 							<button
 								onClick={onReplay}
 								className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white"
 							>
-								Rejouer
+								{t("gameOver.replay")}
 							</button>
 						))}
 				</div>

@@ -20,18 +20,18 @@ export default function GameOverlay({
 	const isTournament = !!tournamentRound;
 	const modeLabel =
 		sessionType === "offline"
-			? "Hors-ligne"
+			? t("gameOverlay.offline")
 			: isTournament
-			? "Tournoi"
+			? t("gameOverlay.tournament")
 			: t('common.online');
 
 	const renderRoundLabel = () => {
 		const d = tournamentRound?.depth;
 		if (d === undefined || d === null) return null;
-		if (d === 1) return "Finale";
-		if (d === 2) return "Demi-finale";
-		if (d === 3) return "Quart de finale";
-		if (typeof d === "number") return `${2 ** d}eme de finale`;
+		if (d === 1) return t("gameOverlay.final");
+		if (d === 2) return t("gameOverlay.semiFinal");
+		if (d === 3) return t("gameOverlay.quarterFinal");
+		if (typeof d === "number") return t("gameOverlay.roundOf", { count: 2 ** d });
 		return null;
 	};
 
@@ -40,7 +40,7 @@ export default function GameOverlay({
 	return (
 		<div className="absolute top-4 right-4 z-50">
 			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
-				<div className="font-semibold">Mode</div>
+				<div className="font-semibold">{t("gameOverlay.mode")}</div>
 				<div className="mt-1">{modeLabel}</div>
 				{isTournament && roundLabel && (
 					<div className="mt-2 text-xs text-slate-200">

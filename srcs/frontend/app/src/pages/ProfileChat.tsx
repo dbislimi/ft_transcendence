@@ -155,7 +155,7 @@ export default function PublicProfile() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-300 font-medium text-lg">Recherche des données de vol...</p>
+            <p className="text-gray-300 dark:text-gray-300 font-medium text-lg">{t('profileView.loading')}</p>
           </div>
         </div>
       </>
@@ -169,15 +169,16 @@ export default function PublicProfile() {
       <>
         <SpaceBackground />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center bg-slate-800/90 p-10 rounded-3xl border border-red-500/30 backdrop-blur-xl shadow-2xl max-w-md mx-4">
+          <div className="text-center bg-slate-800/90 dark:bg-slate-800/90 p-10 rounded-3xl border border-red-500/30 backdrop-blur-xl shadow-2xl max-w-md mx-4">
             <div className="text-6xl mb-6">🛰️</div>
-            <h2 className="text-3xl font-bold text-red-400 mb-4">Signal Perdu</h2>
-            <p className="text-gray-400 mb-8 text-lg">Le joueur <span className="text-white font-bold">{decodeURIComponent(name || "")}</span> est introuvable dans ce secteur de la galaxie.</p>
+            <h2 className="text-3xl font-bold text-red-400 dark:text-red-400 mb-4">{t('profileView.signalLost')}</h2>
+            <p className="text-gray-400 dark:text-gray-400 mb-8 text-lg">{t('profileView.userNotFound', { name: decodeURIComponent(name || "") })}</p>
             <button 
               onClick={() => navigate(-1)}
-              className="px-8 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-semibold transition-all transform hover:scale-105 shadow-lg"
+              className="px-8 py-3 bg-slate-700 hover:bg-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-white font-semibold transition-all transform hover:scale-105 shadow-lg"
+              aria-label={t('common.back')}
             >
-              Retour à la base
+              {t('profileView.backToBase')}
             </button>
           </div>
         </div>
@@ -223,19 +224,19 @@ export default function PublicProfile() {
                 
                 {/* Badges / Petites stats header */}
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
-                  <div className="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 flex items-center gap-2">
-                    <span className="text-2xl">🏆</span>
+                  <div className="bg-slate-700/50 dark:bg-slate-700/50 border border-slate-600 dark:border-slate-600 rounded-lg px-4 py-2 flex items-center gap-2">
+                    <span className="text-2xl" aria-hidden="true">🏆</span>
                     <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Tournois</div>
-                        <div className="text-white font-bold">{stats.tournamentsWon}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-400 uppercase font-bold">{t('profileView.tournaments')}</div>
+                        <div className="text-white dark:text-white font-bold">{stats.tournamentsWon}</div>
                     </div>
                   </div>
                   
-                  <div className="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 flex items-center gap-2">
-                    <span className="text-2xl">⚔️</span>
+                  <div className="bg-slate-700/50 dark:bg-slate-700/50 border border-slate-600 dark:border-slate-600 rounded-lg px-4 py-2 flex items-center gap-2">
+                    <span className="text-2xl" aria-hidden="true">⚔️</span>
                     <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Matchs</div>
-                        <div className="text-white font-bold">{stats.totalGames}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-400 uppercase font-bold">{t('profileView.matches')}</div>
+                        <div className="text-white dark:text-white font-bold">{stats.totalGames}</div>
                     </div>
                   </div>
                 </div>
@@ -244,12 +245,13 @@ export default function PublicProfile() {
               {/* Bouton Retour */}
               <button
                 onClick={() => navigate(-1)}
-                className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                className="px-6 py-3 bg-white/5 hover:bg-white/10 dark:bg-white/5 dark:hover:bg-white/10 border border-white/10 dark:border-white/10 rounded-xl text-white dark:text-white transition-all duration-200 flex items-center gap-2 hover:scale-105"
+                aria-label={t('common.backAria')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                 </svg>
-                Retour
+                {t('profileView.back')}
               </button>
             </div>
           </div>
@@ -263,13 +265,12 @@ export default function PublicProfile() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     activeTab === tab
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white dark:text-white shadow-lg"
+                      : "text-gray-400 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-white/5 dark:hover:bg-white/5"
                   }`}
+                  aria-current={activeTab === tab ? 'page' : undefined}
                 >
-                  {tab === "overview" && "Vue d'ensemble"}
-                  {tab === "stats" && "Statistiques"}
-                  {tab === "history" && "Historique"}
+                  {t(`profileView.tabs.${tab}`)}
                 </button>
               ))}
             </div>
@@ -281,52 +282,52 @@ export default function PublicProfile() {
             {/* --- VUE D'ENSEMBLE --- */}
             {activeTab === 'overview' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fadeIn">
-                <div className="bg-gradient-to-br from-blue-900/40 to-slate-900/40 border border-blue-500/20 rounded-2xl p-6 text-center shadow-xl">
-                  <div className="text-blue-400 mb-2 font-medium uppercase tracking-wider text-sm">Parties Totales</div>
-                  <div className="text-5xl font-black text-white">{stats.totalGames}</div>
+                <div className="bg-gradient-to-br from-blue-900/40 to-slate-900/40 dark:from-blue-900/40 dark:to-slate-900/40 border border-blue-500/20 dark:border-blue-500/20 rounded-2xl p-6 text-center shadow-xl">
+                  <div className="text-blue-400 dark:text-blue-400 mb-2 font-medium uppercase tracking-wider text-sm">{t('profileView.overview.totalGames')}</div>
+                  <div className="text-5xl font-black text-white dark:text-white">{stats.totalGames}</div>
                 </div>
-                <div className="bg-gradient-to-br from-green-900/40 to-slate-900/40 border border-green-500/20 rounded-2xl p-6 text-center shadow-xl">
-                  <div className="text-green-400 mb-2 font-medium uppercase tracking-wider text-sm">Victoires</div>
-                  <div className="text-5xl font-black text-white">{stats.wins}</div>
+                <div className="bg-gradient-to-br from-green-900/40 to-slate-900/40 dark:from-green-900/40 dark:to-slate-900/40 border border-green-500/20 dark:border-green-500/20 rounded-2xl p-6 text-center shadow-xl">
+                  <div className="text-green-400 dark:text-green-400 mb-2 font-medium uppercase tracking-wider text-sm">{t('profileView.overview.wins')}</div>
+                  <div className="text-5xl font-black text-white dark:text-white">{stats.wins}</div>
                 </div>
-                <div className="bg-gradient-to-br from-red-900/40 to-slate-900/40 border border-red-500/20 rounded-2xl p-6 text-center shadow-xl">
-                  <div className="text-red-400 mb-2 font-medium uppercase tracking-wider text-sm">Défaites</div>
-                  <div className="text-5xl font-black text-white">{stats.losses}</div>
+                <div className="bg-gradient-to-br from-red-900/40 to-slate-900/40 dark:from-red-900/40 dark:to-slate-900/40 border border-red-500/20 dark:border-red-500/20 rounded-2xl p-6 text-center shadow-xl">
+                  <div className="text-red-400 dark:text-red-400 mb-2 font-medium uppercase tracking-wider text-sm">{t('profileView.overview.losses')}</div>
+                  <div className="text-5xl font-black text-white dark:text-white">{stats.losses}</div>
                 </div>
-                <div className="bg-gradient-to-br from-yellow-900/40 to-slate-900/40 border border-yellow-500/20 rounded-2xl p-6 text-center shadow-xl">
-                  <div className="text-yellow-400 mb-2 font-medium uppercase tracking-wider text-sm">Taux de Victoire</div>
-                  <div className="text-5xl font-black text-white">{stats.winRate}%</div>
+                <div className="bg-gradient-to-br from-yellow-900/40 to-slate-900/40 dark:from-yellow-900/40 dark:to-slate-900/40 border border-yellow-500/20 dark:border-yellow-500/20 rounded-2xl p-6 text-center shadow-xl">
+                  <div className="text-yellow-400 dark:text-yellow-400 mb-2 font-medium uppercase tracking-wider text-sm">{t('profileView.overview.winRate')}</div>
+                  <div className="text-5xl font-black text-white dark:text-white">{stats.winRate}%</div>
                 </div>
               </div>
             )}
 
             {/* --- STATISTIQUES DÉTAILLÉES --- */}
             {activeTab === 'stats' && (
-              <div className="bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 p-8 shadow-xl animate-fadeIn">
-                <h3 className="text-2xl font-bold text-white mb-8 border-b border-slate-700 pb-4">
-                  Détails de Performance
+              <div className="bg-slate-800/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 dark:border-slate-700/50 p-8 shadow-xl animate-fadeIn">
+                <h3 className="text-2xl font-bold text-white dark:text-white mb-8 border-b border-slate-700 dark:border-slate-700 pb-4">
+                  {t('profileView.stats.title')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {/* VS BOTS */}
-                  <div className="bg-slate-700/30 rounded-2xl p-6 border border-slate-600 text-center hover:bg-slate-700/50 transition">
-                    <div className="text-4xl mb-4">🤖</div>
-                    <div className="text-gray-400 text-sm uppercase font-bold mb-1">Contre Robots</div>
-                    <div className="text-3xl font-bold text-white">{stats.botWins} <span className="text-sm text-gray-500 font-normal">victoires</span></div>
+                  <div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
+                    <div className="text-4xl mb-4" aria-hidden="true">🤖</div>
+                    <div className="text-gray-400 dark:text-gray-400 text-sm uppercase font-bold mb-1">{t('profileView.stats.vsBots')}</div>
+                    <div className="text-3xl font-bold text-white dark:text-white">{stats.botWins} <span className="text-sm text-gray-500 dark:text-gray-500 font-normal">{t('profileView.stats.victories')}</span></div>
                   </div>
 
                   {/* VS HUMAINS */}
-                  <div className="bg-slate-700/30 rounded-2xl p-6 border border-slate-600 text-center hover:bg-slate-700/50 transition">
-                    <div className="text-4xl mb-4">👤</div>
-                    <div className="text-gray-400 text-sm uppercase font-bold mb-1">Contre Joueurs</div>
-                    <div className="text-3xl font-bold text-white">{stats.playerWins} <span className="text-sm text-gray-500 font-normal">victoires</span></div>
+                  <div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
+                    <div className="text-4xl mb-4" aria-hidden="true">👤</div>
+                    <div className="text-gray-400 dark:text-gray-400 text-sm uppercase font-bold mb-1">{t('profileView.stats.vsPlayers')}</div>
+                    <div className="text-3xl font-bold text-white dark:text-white">{stats.playerWins} <span className="text-sm text-gray-500 dark:text-gray-500 font-normal">{t('profileView.stats.victories')}</span></div>
                   </div>
 
                   {/* TOURNOIS */}
-                  <div className="bg-slate-700/30 rounded-2xl p-6 border border-slate-600 text-center hover:bg-slate-700/50 transition">
-                    <div className="text-4xl mb-4">🏆</div>
-                    <div className="text-gray-400 text-sm uppercase font-bold mb-1">Tournois</div>
-                    <div className="text-3xl font-bold text-white">{stats.tournamentsWon} <span className="text-sm text-gray-500 font-normal">remportés</span></div>
+                  <div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
+                    <div className="text-4xl mb-4" aria-hidden="true">🏆</div>
+                    <div className="text-gray-400 dark:text-gray-400 text-sm uppercase font-bold mb-1">{t('profileView.stats.tournaments')}</div>
+                    <div className="text-3xl font-bold text-white dark:text-white">{stats.tournamentsWon} <span className="text-sm text-gray-500 dark:text-gray-500 font-normal">{t('profileView.stats.won')}</span></div>
                   </div>
                 </div>
               </div>
@@ -334,9 +335,9 @@ export default function PublicProfile() {
 
             {/* --- HISTORIQUE --- */}
             {activeTab === 'history' && (
-              <div className="bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 p-6 md:p-8 shadow-xl animate-fadeIn">
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  Historique des Matchs
+              <div className="bg-slate-800/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 dark:border-slate-700/50 p-6 md:p-8 shadow-xl animate-fadeIn">
+                <h3 className="text-2xl font-bold text-white dark:text-white mb-6">
+                  {t('profileView.history.title')}
                 </h3>
 
                 <div className="space-y-4">
@@ -345,8 +346,8 @@ export default function PublicProfile() {
                       {matchHistory.map((match) => (
                         <div key={match.id} className={`group relative p-4 rounded-2xl border transition-all duration-300 hover:scale-[1.01] overflow-hidden ${
                           match.isWinner 
-                            ? "bg-green-900/10 border-green-500/20 hover:bg-green-900/20"
-                            : "bg-red-900/10 border-red-500/20 hover:bg-red-900/20"
+                            ? "bg-green-900/10 dark:bg-green-900/10 border-green-500/20 dark:border-green-500/20 hover:bg-green-900/20 dark:hover:bg-green-900/20"
+                            : "bg-red-900/10 dark:bg-red-900/10 border-red-500/20 dark:border-red-500/20 hover:bg-red-900/20 dark:hover:bg-red-900/20"
                         }`}>
                           <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
                             
@@ -354,30 +355,30 @@ export default function PublicProfile() {
                             <div className="flex items-center gap-4">
                               <div className="relative">
                                 {match.opponent.isBot ? (
-                                  <div className="w-12 h-12 rounded-full bg-slate-700 border border-slate-500 flex items-center justify-center text-xl">
+                                  <div className="w-12 h-12 rounded-full bg-slate-700 dark:bg-slate-700 border border-slate-500 dark:border-slate-500 flex items-center justify-center text-xl" aria-label="Bot">
                                     🤖
                                   </div>
                                 ) : (
                                   <img 
                                     src={match.opponent.avatar || "/avatars/avatar1.png"} 
                                     alt={match.opponent.name}
-                                    className="w-12 h-12 rounded-full border border-slate-500 object-cover"
+                                    className="w-12 h-12 rounded-full border border-slate-500 dark:border-slate-500 object-cover"
                                   />
                                 )}
                               </div>
                               
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <span className={`font-black text-lg ${match.isWinner ? "text-green-400" : "text-red-400"}`}>
-                                    {match.isWinner ? "WIN" : "LOSS"}
+                                  <span className={`font-black text-lg ${match.isWinner ? "text-green-400 dark:text-green-400" : "text-red-400 dark:text-red-400"}`}>
+                                    {match.isWinner ? t('profileView.history.win') : t('profileView.history.loss')}
                                   </span>
-                                  <span className="text-gray-400 text-sm">vs</span>
-                                  <span className="text-white font-bold text-lg">{match.opponent.name}</span>
+                                  <span className="text-gray-400 dark:text-gray-400 text-sm">{t('profileView.history.vs')}</span>
+                                  <span className="text-white dark:text-white font-bold text-lg">{match.opponent.name}</span>
                                 </div>
-                                <div className="text-gray-500 text-sm flex items-center gap-2">
+                                <div className="text-gray-500 dark:text-gray-500 text-sm flex items-center gap-2">
                                   <span>{formatDate(match.date)}</span>
                                   <span>•</span>
-                                  <span className="capitalize">{match.matchType || "Standard"}</span>
+                                  <span className="capitalize">{match.matchType || t('profileView.history.standard')}</span>
                                 </div>
                               </div>
                             </div>
@@ -400,25 +401,26 @@ export default function PublicProfile() {
                           <button
                             onClick={loadMoreHistory}
                             disabled={historyLoading}
-                            className="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-8 py-3 bg-slate-700 hover:bg-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 text-white dark:text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            aria-label={historyLoading ? t('profileView.history.loading') : t('profileView.history.loadMore')}
                           >
                             {historyLoading ? (
                               <>
-                                <div className="animate-spin w-4 h-4 border-2 border-white/50 border-t-white rounded-full"></div>
-                                Chargement...
+                                <div className="animate-spin w-4 h-4 border-2 border-white/50 border-t-white rounded-full" aria-hidden="true"></div>
+                                {t('profileView.history.loading')}
                               </>
                             ) : (
-                              "Voir plus de matchs"
+                              t('profileView.history.loadMore')
                             )}
                           </button>
                         </div>
                       )}
                     </>
                   ) : (
-                    <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-dashed border-slate-700">
-                      <div className="text-5xl mb-4 grayscale opacity-50">📜</div>
-                      <h4 className="text-xl font-bold text-gray-400 mb-2">Historique Vierge</h4>
-                      <p className="text-gray-500">Aucun match enregistré pour ce pilote.</p>
+                    <div className="text-center py-20 bg-slate-900/30 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-700 dark:border-slate-700">
+                      <div className="text-5xl mb-4 grayscale opacity-50" aria-hidden="true">📜</div>
+                      <h4 className="text-xl font-bold text-gray-400 dark:text-gray-400 mb-2">{t('profileView.history.empty')}</h4>
+                      <p className="text-gray-500 dark:text-gray-500">{t('profileView.history.noMatches')}</p>
                     </div>
                   )}
                 </div>
