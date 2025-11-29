@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useWebSocket } from "../context/WebSocketContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 interface PongLobbyListProps {}
 

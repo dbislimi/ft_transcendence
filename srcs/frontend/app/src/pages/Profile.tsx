@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { useWebSocket } from "../context/WebSocketContext";
-import { useGameSettings } from "../context/GameSettingsContext";
-import { useNotifications } from "../context/NotificationContext";
+import { useUser } from "../contexts/UserContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
+import { useNotifications } from "../contexts/NotificationContext";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../config/api";
@@ -92,7 +92,6 @@ export default function Profile() {
 	const [friendsError, setFriendsError] = useState<string | null>(null);
 	const [wsStatus, setWsStatus] = useState<string>("Deconnecte");
 
-	const [loading, setLoading] = useState(true);
 	const wsRef = useRef<WebSocket | null>(null);
 
 	const [matchHistory, setMatchHistory] = useState<Match[]>([]);
@@ -215,7 +214,6 @@ export default function Profile() {
 	const fetchData = async () => {
 		if (!token || !user) return;
 
-		setLoading(true);
 		try {
 			await Promise.all([
 				fetchFriends(),
@@ -224,10 +222,9 @@ export default function Profile() {
 				fetchUserStats(),
 				fetchMatchHistory(),
 			]);
+			setIsLoaded(true);
 		} catch (error) {
 			console.error("Erreur lors de la recuperation des donnees:", error);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -257,7 +254,7 @@ export default function Profile() {
 		setFriendsError(null);
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/friend-requests`, {
+			const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -284,7 +281,7 @@ export default function Profile() {
 	const handleAcceptRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`${API_BASE_URL}/friend-requests/${senderId}/accept`,
+				`${API_BASE_URL}/api/friend-requests/${senderId}/accept`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -306,7 +303,7 @@ export default function Profile() {
 	const handleRejectRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`${API_BASE_URL}/friend-requests/${senderId}/reject`,
+				`${API_BASE_URL}/api/friend-requests/${senderId}/reject`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -328,7 +325,7 @@ export default function Profile() {
 		if (!confirm(t("friends.confirmDelete"))) return;
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/friends/${friendId}`, {
+			const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, {
 				method: "DELETE",
 				headers: { Authorization: `Bearer ${token}` },
 			});
@@ -348,7 +345,7 @@ export default function Profile() {
 		if (!confirm(t("friends.confirmBlock"))) return;
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/block-user`, {
+			const res = await fetch(`${API_BASE_URL}/api/block-user`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -374,10 +371,13 @@ export default function Profile() {
 		if (!confirm(t("friends.confirmUnblock"))) return;
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/blocked-users/${userId}`, {
-				method: "DELETE",
-				headers: { Authorization: `Bearer ${token}` },
-			});
+			const res = await fetch(
+				`${API_BASE_URL}/api/blocked-users/${userId}`,
+				{
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
 
 			if (res.ok) {
 				fetchBlockedUsers();
@@ -399,107 +399,72 @@ export default function Profile() {
 	const isOnline = (v?: number | boolean) => v === true || v === 1;
 
 	useEffect(() => {
-		if (!token || !user?.id || !friendsWsRef.current) return;
+		fetchData();
+	}, [user, token]);
 
-		const ws = friendsWsRef.current;
+	useEffect(() => {
+		const handleFriendsMessage = (event: CustomEvent) => {
+			const data = event.detail;
 
-		const handleMessage = (event: MessageEvent) => {
-			try {
-				const data = JSON.parse(event.data);
+			switch (data.type) {
+				case "friend_request_received":
+					fetchRequests();
+					break;
 
-				switch (data.type) {
-					case "connected":
-						setWsStatus("Connecte");
-						break;
+				case "friend_request_accepted":
+					fetchFriends();
+					fetchRequests();
+					break;
 
-					case "friend_request_received":
-						fetchRequests();
-						notify({
-							variant: "info",
-							title: "Nouvelle demande d'ami",
-							message: `${data.display_name} vous a envoyé une demande d'ami`,
-							duration: 10000,
-							actions: [
-								{
-									label: "Accepter",
-									primary: true,
-									onPress: () =>
-										handleAcceptRequest(data.from),
-								},
-								{
-									label: "Refuser",
-									onPress: () =>
-										handleRejectRequest(data.from),
-								},
-							],
-						});
-						break;
+				case "friend_request_rejected":
+					fetchRequests();
+					break;
 
-					case "friend_request_accepted":
-						fetchFriends();
-						fetchRequests();
-						notify({
-							variant: "success",
-							title: "Demande acceptée",
-							message: `${data.display_name} a accepté votre demande d'ami`,
-							duration: 5000,
-						});
-						break;
+				case "friend_removed":
+					fetchFriends();
+					break;
 
-					case "friend_request_rejected":
-						fetchRequests();
-						break;
+				case "user_blocked":
+					fetchFriends();
+					fetchRequests();
+					break;
 
-					case "friend_removed":
-						fetchFriends();
-						break;
-
-					case "user_blocked":
-						fetchFriends();
-						fetchRequests();
-						break;
-
-					case "status_update":
-						setFriends((prev) =>
-							prev.map((friend) =>
-								friend.id === data.userId
-									? { ...friend, online: data.online }
-									: friend
-							)
-						);
-						break;
-
-					case "heartbeat":
-						if (ws.readyState === WebSocket.OPEN) {
-							ws.send(JSON.stringify({ type: "pong" }));
-						}
-						break;
-				}
-			} catch (err) {
-				console.error("Erreur parsing message WebSocket:", err);
+				case "status_update":
+					setFriends((prev) =>
+						prev.map((friend) =>
+							friend.id === data.userId
+								? { ...friend, online: data.online }
+								: friend
+						)
+					);
+					break;
 			}
 		};
 
-		if (ws.readyState === WebSocket.OPEN) {
-			setWsStatus("Connecte");
-		}
+		const handleRefreshFriendRequests = () => {
+			fetchRequests();
+		};
 
-		ws.addEventListener("message", handleMessage);
+		window.addEventListener(
+			"friendsWebSocketMessage",
+			handleFriendsMessage as EventListener
+		);
+		window.addEventListener(
+			"refreshFriendRequests",
+			handleRefreshFriendRequests
+		);
 
 		return () => {
-			ws.removeEventListener("message", handleMessage);
+			window.removeEventListener(
+				"friendsWebSocketMessage",
+				handleFriendsMessage as EventListener
+			);
+			window.removeEventListener(
+				"refreshFriendRequests",
+				handleRefreshFriendRequests
+			);
 		};
-	}, [token, user?.id, friendsWsRef]);
-
-	useEffect(() => {
-		if (user) {
-			setEmail(user.email || "");
-			setDisplayName(user.display_name || "");
-			setAvatar(user.avatar || "/avatars/avatar1.png");
-			fetchData();
-		}
-		setIsLoaded(true);
-	}, [user, token]);
+	}, []);
 
 	const validateEmail = (email: string) =>
 		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

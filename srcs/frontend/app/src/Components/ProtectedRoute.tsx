@@ -1,4 +1,4 @@
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 import { Navigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";

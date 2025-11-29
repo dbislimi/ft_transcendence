@@ -50,6 +50,13 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const pongRoutesRef = useRef(new Map<string, (data: any) => void>());
 
+	const closeWebSocket = (
+		wsRef: React.MutableRefObject<WebSocket | null>
+	) => {
+		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)
+			wsRef.current.close();
+	};
+
 	const { isAuthenticated, token } = useUser();
 
 	useEffect(() => {
@@ -59,10 +66,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		const WS_BASE_URL = `${protocol}//${wsHost}`;
 
 		if (!token) {
-			friendsWsRef.current?.close();
+			closeWebSocket(friendsWsRef);
 			friendsWsRef.current = null;
 
-			pongWsRef.current?.close();
+			closeWebSocket(pongWsRef);
 			pongWsRef.current = new WebSocket(`${WS_BASE_URL}/game`);
 			pongWsRef.current.onopen = () =>
 				console.log("Pong Websocket connecté (guest)");
@@ -96,9 +103,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			`${WS_BASE_URL}/ws-friends?token=***`
 		);
 
-		pongWsRef.current?.close();
-		chatWsRef.current?.close();
-		friendsWsRef.current?.close();
+		closeWebSocket(pongWsRef);
+		closeWebSocket(chatWsRef);
+		closeWebSocket(friendsWsRef);
 
 		pongWsRef.current = new WebSocket(
 			`${WS_BASE_URL}/game?token=${tokenParam}`
@@ -171,9 +178,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 		};
 
 		return () => {
-			chatWsRef.current?.close();
-			pongWsRef.current?.close();
-			friendsWsRef.current?.close();
+			closeWebSocket(chatWsRef);
+			closeWebSocket(pongWsRef);
+			closeWebSocket(friendsWsRef);
 			chatWsRef.current = null;
 			pongWsRef.current = null;
 			friendsWsRef.current = null;

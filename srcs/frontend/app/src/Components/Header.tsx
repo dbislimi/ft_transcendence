@@ -3,7 +3,7 @@ import Logo from "../assets/logo.png";
 import LanguageDropdown from "./LanguageDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 export default function Header() {
 	const { t } = useTranslation();

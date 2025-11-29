@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { getWebSocketHost } from "../config/api";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 export function useGameWebsocket(
 	api: string,
@@ -35,21 +35,28 @@ export function useGameWebsocket(
 			// If on port 5173 (Vite), target localhost (Nginx).
 			// If on port 443 (Nginx), target window.location.host (relative).
 			const wsHost = getWebSocketHost();
-			const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+			const wsProtocol =
+				window.location.protocol === "https:" ? "wss:" : "ws:";
 
 			if (!api) {
-				console.error("[useGameWebsocket] API endpoint is missing, skipping connection");
+				console.error(
+					"[useGameWebsocket] API endpoint is missing, skipping connection"
+				);
 				isConnecting = false;
 				return;
 			}
 
 			const url = authToken
-				? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(authToken)}`
+				? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(
+						authToken
+				  )}`
 				: `${wsProtocol}//${wsHost}/${api}`;
-			console.log(`[ws:${api}] Attempting to connect to: ${url.replace(/token=[^&]+/, 'token=***')}`);
-
-
-
+			console.log(
+				`[ws:${api}] Attempting to connect to: ${url.replace(
+					/token=[^&]+/,
+					"token=***"
+				)}`
+			);
 
 			// const wsHost =
 			// 	window.location.hostname === "localhost"
@@ -99,21 +106,36 @@ export function useGameWebsocket(
 			}
 		}
 
-		console.log(`[ws:${api}] Auth check: authenticated=${isAuthenticated}, token=${token ? 'PRESENT' : 'MISSING'}`);
+		console.log(
+			`[ws:${api}] Auth check: authenticated=${isAuthenticated}, token=${
+				token ? "PRESENT" : "MISSING"
+			}`
+		);
 
 		if (token) {
 			console.log(`[ws:${api}] Connecting with authentication`);
 			doConnect(token);
 		} else {
-			console.log(`[ws:${api}] Attempting connection without token (may be rejected by server)`);
+			console.log(
+				`[ws:${api}] Attempting connection without token (may be rejected by server)`
+			);
 			doConnect(null);
 
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;
-				const currentToken = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-				if (currentToken && (!ws || ws.readyState === WebSocket.CLOSED) && !stopped) {
-					console.log(`[ws:${api}] Token found after ${attempts} attempts, reconnecting with auth`);
+				const currentToken =
+					typeof localStorage !== "undefined"
+						? localStorage.getItem("token")
+						: null;
+				if (
+					currentToken &&
+					(!ws || ws.readyState === WebSocket.CLOSED) &&
+					!stopped
+				) {
+					console.log(
+						`[ws:${api}] Token found after ${attempts} attempts, reconnecting with auth`
+					);
 					if (ws && ws.readyState !== WebSocket.CLOSED) {
 						ws.close();
 					}
@@ -140,7 +162,10 @@ export function useGameWebsocket(
 			}
 			if (ws) {
 				const readyState = ws.readyState;
-				if (readyState === WebSocket.OPEN || readyState === WebSocket.CONNECTING) {
+				if (
+					readyState === WebSocket.OPEN ||
+					readyState === WebSocket.CONNECTING
+				) {
 					ws.close();
 				}
 				ws = null;

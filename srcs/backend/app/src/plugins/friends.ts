@@ -167,22 +167,18 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
 								if (!friend) {
 									fastify.db.run("ROLLBACK");
-									reply
-										.code(404)
-										.send({
-											error: "Utilisateur introuvable",
-										});
+									reply.code(404).send({
+										error: "Utilisateur introuvable",
+									});
 									resolve();
 									return;
 								}
 
 								if (friend.id === decoded.id) {
 									fastify.db.run("ROLLBACK");
-									reply
-										.code(400)
-										.send({
-											error: "Impossible de s'ajouter soi-même",
-										});
+									reply.code(400).send({
+										error: "Impossible de s'ajouter soi-même",
+									});
 									resolve();
 									return;
 								}
@@ -206,11 +202,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
 										if (isBlocked) {
 											fastify.db.run("ROLLBACK");
-											reply
-												.code(403)
-												.send({
-													error: "Impossible d'envoyer une demande à cet utilisateur",
-												});
+											reply.code(403).send({
+												error: "Impossible d'envoyer une demande à cet utilisateur",
+											});
 											resolve();
 											return;
 										}
@@ -227,11 +221,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
 												if (areFriends) {
 													fastify.db.run("ROLLBACK");
-													reply
-														.code(400)
-														.send({
-															error: "Vous êtes dejà amis",
-														});
+													reply.code(400).send({
+														error: "Vous êtes dejà amis",
+													});
 													resolve();
 													return;
 												}
@@ -428,11 +420,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
 							if (isBlocked) {
 								fastify.db.run("ROLLBACK");
-								reply
-									.code(403)
-									.send({
-										error: "Impossible d'accepter cette demande",
-									});
+								reply.code(403).send({
+									error: "Impossible d'accepter cette demande",
+								});
 								resolve();
 								return;
 							}
@@ -449,11 +439,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 
 									if (!req) {
 										fastify.db.run("ROLLBACK");
-										reply
-											.code(404)
-											.send({
-												error: "Demande introuvable",
-											});
+										reply.code(404).send({
+											error: "Demande introuvable",
+										});
 										resolve();
 										return;
 									}

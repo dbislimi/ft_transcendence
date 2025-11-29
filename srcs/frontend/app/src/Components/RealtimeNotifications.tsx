@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useNotifications } from "../context/NotificationContext";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useNotifications } from "../contexts/NotificationContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useGameSession } from "../context/GameSessionContext";
+import { useGameSession } from "../contexts/GameSessionContext";
 
 export default function RealtimeNotifications() {
 	const { notify, dismiss } = useNotifications();

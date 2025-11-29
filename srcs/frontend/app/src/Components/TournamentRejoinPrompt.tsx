@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useNotifications } from "../context/NotificationContext";
+import { useNotifications } from "../contexts/NotificationContext";
 
 export default function TournamentRejoinPrompt(): JSX.Element | null {
 	const { addPongRoute, removePongRoute, pongWsRef } = useWebSocket();

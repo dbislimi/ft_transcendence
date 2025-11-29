@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 interface PongRulesScreenProps {
 	onContinue: (mode: "offline" | "online", config?: any) => void;

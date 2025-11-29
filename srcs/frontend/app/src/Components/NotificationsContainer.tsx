@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useNotifications } from "../context/NotificationContext";
+import { useNotifications } from "../contexts/NotificationContext";
 import type {
 	NotificationItem,
 	NotificationVariant,
 	NotificationAction,
-} from "../context/NotificationContext";
+} from "../contexts/NotificationContext";
 
 export default function NotificationsContainer() {
 	const { notifications, dismiss } = useNotifications();

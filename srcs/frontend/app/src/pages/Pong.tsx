@@ -8,16 +8,16 @@ import WaitingOverlay from "../pong/WaitingOverlay";
 import { ReadyButton } from "../pong/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
 import BackToMenuButton from "../Components/BackToMenuButton";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import PongRulesScreen from "../pong/PongRulesScreen";
 import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
 import { SettingsCard } from "../pong/SettingsCard";
 import type { GameState } from "../types/GameState";
 
-import { useUser } from "../context/UserContext";
-import { useGameSession } from "../context/GameSessionContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useUser } from "../contexts/UserContext";
+import { useGameSession } from "../contexts/GameSessionContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 type PlayerLabels = {
 	self: string;
