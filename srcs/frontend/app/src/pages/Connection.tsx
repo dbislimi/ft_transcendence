@@ -45,8 +45,8 @@ export default function Connection() {
       console.log("Response /login:", { status: response.status, data });
       if (response.ok) {
         if (data.require2fa){
-          localStorage.setItem("for2FaUserId", data.userId.toString());
-          localStorage.setItem("userData", JSON.stringify(data));
+          sessionStorage.setItem("for2FaUserId", data.userId.toString());
+          sessionStorage.setItem("userData", JSON.stringify(data));
           navigate("/auth");
         }
         else{

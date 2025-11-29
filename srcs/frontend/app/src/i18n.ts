@@ -7,7 +7,7 @@ import ru from './locales/ru.json'
 import ar from './locales/ar.json'
 
 const supported = ['en', 'fr', 'es', 'ru', 'ar'] as const;
-const saved = localStorage.getItem('lang') || '';
+const saved = sessionStorage.getItem('lang') || '';
 const browser = navigator.language.slice(0, 2);
 const initial = supported.includes(saved as any) ? saved : supported.includes(browser as any) ? browser : 'fr';
 
@@ -22,7 +22,7 @@ i18n.use(initReactI18next).init({
     });
 
 i18n.on('languageChanged', (lng) => {
-    localStorage.setItem('lang', lng);
+    sessionStorage.setItem('lang', lng);
     document.documentElement.lang = lng;
 });
 

@@ -46,7 +46,7 @@ export default function Home() {
                 <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
                   <span className="text-2xl">👋</span>
                   <p className="text-aesthetic-accent text-lg font-medium">
-                    {t('home.welcome', { name: user.name })}
+                    {t('home.welcome', { name: user.display_name || user.name })}
                   </p>
                 </div>
               </div>

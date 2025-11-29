@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -15,6 +16,7 @@ export default function WaitingOverlay({
 	training = false,
 	onQuitTraining,
 }: Props) {
+	const { t } = useTranslation();
 	const [difficulty, setDifficulty] = useState<Difficulty>("easy");
 
 	const handleTrain = useCallback(() => {
@@ -54,7 +56,7 @@ export default function WaitingOverlay({
 							" font-semibold inline-flex items-center justify-center"
 						}
 					>
-						En attente d'un adversaire
+						{t("overlay.waiting.title")}
 						<span
 							className={
 								dotsMarginClass + " inline-flex items-center"
@@ -88,22 +90,21 @@ export default function WaitingOverlay({
 								onClick={onQuitTraining ?? onQuit}
 								className="px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
 							>
-								Quitter l'entraînement
+								{t("overlay.waiting.quitTrainingButton")}
 							</button>
 						</div>
 					) : (
 						<>
 							<div className="mb-6">
 								<p className="mt-2 text-sm text-white/80">
-									Vous pouvez quitter ou lancer un
-									entraînement
+									{t("overlay.waiting.subtitle")}
 								</p>
 							</div>
 
 							<div className="space-y-4">
 								<fieldset className="flex gap-4 justify-center items-center">
 									<legend className="sr-only">
-										Selectionnez la difficulte
+										{t("overlay.waiting.selectDifficulty")}
 									</legend>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -115,7 +116,7 @@ export default function WaitingOverlay({
 												setDifficulty("easy")
 											}
 										/>
-										<span>Facile</span>
+										<span>{t("overlay.waiting.easy")}</span>
 									</label>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -127,7 +128,7 @@ export default function WaitingOverlay({
 												setDifficulty("medium")
 											}
 										/>
-										<span>Moyen</span>
+										<span>{t("overlay.waiting.medium")}</span>
 									</label>
 									<label className="inline-flex items-center space-x-2">
 										<input
@@ -139,7 +140,7 @@ export default function WaitingOverlay({
 												setDifficulty("hard")
 											}
 										/>
-										<span>Difficile</span>
+										<span>{t("overlay.waiting.hard")}</span>
 									</label>
 								</fieldset>
 
@@ -149,9 +150,9 @@ export default function WaitingOverlay({
 										onClick={onQuit}
 										className="rounded-lg border transition-all duration-200 font-medium py-2.5 px-4 border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-300"
 									>
-										Quitter
+										{t("overlay.waiting.quitButton")}
 										<div className="text-xs text-slate-500">
-											Retour au menu
+											{t("overlay.waiting.quitSubtitle")}
 										</div>
 									</button>
 
@@ -160,9 +161,9 @@ export default function WaitingOverlay({
 										onClick={handleTrain}
 										className="rounded-lg border transition-all duration-200 font-medium py-2.5 px-4 border-emerald-400 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-700/25"
 									>
-										S'entraîner
+										{t("overlay.waiting.trainButton")}
 										<div className="text-xs text-emerald-300">
-											Jouer contre un bot
+											{t("overlay.waiting.trainSubtitle")}
 										</div>
 									</button>
 								</div>

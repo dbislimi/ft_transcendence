@@ -105,7 +105,7 @@ export class BombPartyClient {
   }
 
   private isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) return false;
 
     try {
@@ -118,7 +118,7 @@ export class BombPartyClient {
   }
 
   private getWebSocketUrl(): string {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
 
     // Always prefer Nginx proxy (port 443) over direct backend port (3001)
     // If on port 5173 (Vite), target localhost (Nginx).

@@ -33,8 +33,15 @@ export default fp(async function authHook(fastify: FastifyInstance) {
     const authHeader = (request.raw && (request.raw.headers as any)?.authorization) as
       | string
       | undefined;
-    if (!authHeader || !authHeader.startsWith("Bearer "))
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      fastify.log.warn("Header Authorization manquant ou malformé", { 
+        url: rawUrl,
+        hasAuthHeader: !!authHeader,
+        authHeaderPrefix: authHeader?.substring(0, 10)
+      });
       return reply.code(401).send({ error: "token manquant" });
+    }
 
     if (authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];

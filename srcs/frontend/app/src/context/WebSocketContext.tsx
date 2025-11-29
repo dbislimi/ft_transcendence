@@ -89,9 +89,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     chatWsRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("[WebSocketContext] Chat message reçu:", data);
         if (data.type === "users") {
+          console.log("[WebSocketContext] Mise à jour users:", data.users);
           setUsers(data.users);
         } else {
+          console.log("[WebSocketContext] Ajout message:", data);
           setMessages((prev) => [...prev, data]);
         }
       } catch (e) {

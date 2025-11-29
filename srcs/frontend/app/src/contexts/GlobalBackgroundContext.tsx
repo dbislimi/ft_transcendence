@@ -34,8 +34,8 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
 
   useEffect(() => {
     try {
-      const savedLightId = localStorage.getItem(STORAGE_KEY_LIGHT);
-      const savedDarkId = localStorage.getItem(STORAGE_KEY_DARK);
+      const savedLightId = sessionStorage.getItem(STORAGE_KEY_LIGHT);
+      const savedDarkId = sessionStorage.getItem(STORAGE_KEY_DARK);
       
       if (savedLightId && getBackgroundById(savedLightId)) {
         setLightBackgroundId(savedLightId);
@@ -107,9 +107,9 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
 
     try {
       if (currentTheme === 'light') {
-        localStorage.setItem(STORAGE_KEY_LIGHT, currentBackgroundId);
+        sessionStorage.setItem(STORAGE_KEY_LIGHT, currentBackgroundId);
       } else {
-        localStorage.setItem(STORAGE_KEY_DARK, currentBackgroundId);
+        sessionStorage.setItem(STORAGE_KEY_DARK, currentBackgroundId);
       }
     } catch (error) {
       console.error('Error saving background:', error);
@@ -140,10 +140,10 @@ export function GlobalBackgroundProvider({ children }: { children: ReactNode }) 
       
       if (theme === 'light') {
         setLightBackgroundId(id);
-        localStorage.setItem(STORAGE_KEY_LIGHT, id);
+        sessionStorage.setItem(STORAGE_KEY_LIGHT, id);
       } else {
         setDarkBackgroundId(id);
-        localStorage.setItem(STORAGE_KEY_DARK, id);
+        sessionStorage.setItem(STORAGE_KEY_DARK, id);
       }
       
       if (settings.display.autoChangeBackground) {

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../context/WebSocketContext";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 export default function TournamentRejoinPrompt(): JSX.Element | null {
 	const { addPongRoute, removePongRoute, pongWsRef } = useWebSocket();
@@ -10,6 +11,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 	const timerRef = useRef<number | null>(null);
 	const { notify } = useNotifications();
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const listener = (data: any) => {
@@ -18,13 +20,12 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 				const timeoutSec = Number(data.body?.timeout ?? 10);
 				notify({
 					variant: "info",
-					title: "Tournoi en cours",
-					message:
-						"Vous avez quitte une manche. Rejoindre avant expiration.",
+					title: t("notifications.tournament.rejoinTitle"),
+					message: t("notifications.tournament.rejoinMessage"),
 					duration: timeoutSec * 1000,
 					actions: [
 						{
-							label: "Rejoindre",
+							label: t("notifications.tournament.rejoinButton"),
 							primary: true,
 							onPress: () => {
 								navigate("/pong?mode=online");
@@ -37,7 +38,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 							},
 						},
 						{
-							label: "Ignorer",
+							label: t("notifications.tournament.ignoreButton"),
 							onPress: () => {
 								pongWsRef.current?.send(
 									JSON.stringify({
@@ -61,7 +62,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 				timerRef.current = null;
 			}
 		};
-	}, [addPongRoute, removePongRoute, navigate, pongWsRef]);
+	}, [addPongRoute, removePongRoute, navigate, pongWsRef, t, notify]);
 
 	useEffect(() => {
 		if (!visible) return;

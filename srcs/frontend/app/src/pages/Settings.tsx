@@ -5,6 +5,7 @@ import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
 import GameSettingsModal from "../Components/GameSettingsModal";
 import AccountSettingsModal from "../Components/AccountSettingsModal";
+import { useUser } from "../context/UserContext";
 
 
 const PlaceholderModal = ({ 
@@ -39,6 +40,7 @@ const PlaceholderModal = ({
 
 export default function Settings() {
   const { t } = useTranslation();
+  const { isAuthenticated } = useUser();
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const openModal = (modalName: string) => setActiveModal(modalName);
@@ -97,8 +99,10 @@ export default function Settings() {
             
             {/* reglages de compte */}
             <button
-              onClick={() => openModal('account')}
-              className="action-btn-aesthetic"
+              onClick={() => isAuthenticated && openModal('account')}
+              className={`action-btn-aesthetic ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!isAuthenticated}
+              title={!isAuthenticated ? t('settings.account.authRequired') || 'Connexion requise' : ''}
             >
               <div className="flex flex-col items-center gap-3">
                 <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,6 +114,11 @@ export default function Settings() {
                 <p className="text-sm description-aesthetic">
                   {t('settings.account.description') || 'Profil et securite'}
                 </p>
+                {!isAuthenticated && (
+                  <p className="text-xs text-red-400 mt-1">
+                    🔒 {t('settings.account.authRequired') || 'Connexion requise'}
+                  </p>
+                )}
               </div>
             </button>
             

@@ -119,7 +119,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedSettings = localStorage.getItem('app-settings');
+      const savedSettings = sessionStorage.getItem('app-settings');
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         const loadedSettings = { ...DEFAULT_SETTINGS, ...parsed };
@@ -136,7 +136,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('app-settings', JSON.stringify(settings));
+      sessionStorage.setItem('app-settings', JSON.stringify(settings));
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des reglages:', error);
     }
@@ -186,7 +186,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const resetSettings = () => {
     setSettings(DEFAULT_SETTINGS);
-    localStorage.removeItem('app-settings');
+    sessionStorage.removeItem('app-settings');
   };
 
   const exportSettings = () => {

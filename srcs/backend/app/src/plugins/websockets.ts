@@ -84,7 +84,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
-					name: string;
+					display_name: string;
 					email: string;
 				};
 				let client = fastify.clients.get(decoded.id);
@@ -100,7 +100,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					console.log("Nouvelle connexion");
 					client = {
 						id: decoded.id,
-						name: decoded.name,
+						name: decoded.display_name || `User_${decoded.id}`,
 						socket,
 					};
 					fastify.clients.set(decoded.id, client);

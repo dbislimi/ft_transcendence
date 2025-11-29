@@ -27,12 +27,17 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   };
   const [activeSection, setActiveSection] = useState<string>('theme');
   const [backgroundTab, setBackgroundTab] = useState<'light' | 'dark'>(settings.display.theme);
+  const [localContrast, setLocalContrast] = useState<number>(settings.display.contrast);
   
   useEffect(() => {
     if (activeSection === 'background') {
       setBackgroundTab(settings.display.theme);
     }
   }, [activeSection, settings.display.theme]);
+
+  useEffect(() => {
+    setLocalContrast(settings.display.contrast);
+  }, [settings.display.contrast]);
 
   if (!isOpen) return null;
 
@@ -57,6 +62,8 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
   };
 
   const handleContrastChange = (contrast: ContrastLevel) => {
+    console.log('[DisplaySettings] Changing contrast to:', contrast);
+    setLocalContrast(contrast);
     updateDisplaySettings({ contrast });
   };
 
@@ -228,24 +235,31 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-lg font-medium text-white">{t('settings.display.contrast') || 'Contraste'}</h4>
-                      <span className="text-sm text-blue-400 font-medium">
-                        {getContrastLabel(settings.display.contrast)}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-blue-400 font-medium">
+                          {getContrastLabel(localContrast)}
+                        </span>
+                        <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
+                          {localContrast.toFixed(1)}
+                        </span>
+                      </div>
                     </div>
                     <p className="text-gray-400 text-sm mb-6">
                       {t('settings.display.contrastDesc') || 'Ajuste le contraste et la luminosite du texte'}
                     </p>
                     
                     <div className="space-y-4">
-                      <input
-                        type="range"
-                        min="0.2"
-                        max="3.0"
-                        step="0.1"
-                        value={settings.display.contrast}
-                        onChange={(e) => handleContrastChange(parseFloat(e.target.value))}
-                        className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-contrast"
-                      />
+                      <div className="relative">
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="2.0"
+                          step="0.1"
+                          value={localContrast}
+                          onChange={(e) => handleContrastChange(parseFloat(e.target.value))}
+                          className="w-full slider-contrast"
+                        />
+                      </div>
                       
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{t('settings.display.contrastLow') || 'Faible'}</span>
@@ -253,9 +267,12 @@ export default function DisplaySettingsModal({ isOpen, onClose }: DisplaySetting
                         <span>{t('settings.display.contrastHigh') || 'eleve'}</span>
                       </div>
                       
-                      <div className="mt-4 p-3 rounded-lg bg-gray-700/50 border border-gray-600">
-                        <p className="text-sm" style={{ filter: `contrast(${settings.display.contrast}) brightness(${Math.min(1.0, 0.5 + (settings.display.contrast - 0.5) * 0.5)})` }}>
+                      <div className="mt-4 p-4 rounded-lg bg-gray-700/50 border border-gray-600">
+                        <p className="text-sm mb-2 text-gray-300">
                           {t('settings.display.contrastPreview') || 'Aperçu du texte avec ce niveau de contraste'}
+                        </p>
+                        <p className="text-base" style={{ filter: `contrast(${localContrast}) brightness(${Math.min(1.0, 0.5 + (localContrast - 0.5) * 0.5)})` }}>
+                          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                         </p>
                       </div>
                     </div>

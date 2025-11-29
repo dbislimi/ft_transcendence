@@ -29,7 +29,7 @@ interface BlockedUser {
 export default function Friends() {
   const { t } = useTranslation();
   const { user } = useUser();
-  const token = localStorage.getItem("token") || undefined;
+  const token = sessionStorage.getItem("token") || undefined;
   const navigate = useNavigate();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);

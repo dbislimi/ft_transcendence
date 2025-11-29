@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface CountdownProps {
 	seconds?: number;
@@ -11,6 +12,7 @@ export default function Countdown({
 	onComplete,
 	value: controlledValue,
 }: CountdownProps) {
+	const { t } = useTranslation();
 	const isControlled = typeof controlledValue === "number";
 	const [value, setValue] = useState(
 		isControlled ? controlledValue : seconds
@@ -51,7 +53,7 @@ export default function Countdown({
 		>
 			<div className="text-center select-none">
 				<div className="text-2xl text-slate-300 mb-4 tracking-wide">
-					Demarrage dans
+					{t('countdown.startingIn')}
 				</div>
 				<div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse">
 					{value}

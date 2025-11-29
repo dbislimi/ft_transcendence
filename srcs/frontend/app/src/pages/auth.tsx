@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from "../context/UserContext";
@@ -16,9 +15,9 @@ export default function EnterCode() {
     e.preventDefault();
 
     try {
-      const userId = localStorage.getItem('for2FaUserId');
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const response = await fetch(`${API_BASE_URL}/api/check2fa`, {
+      const userId = sessionStorage.getItem('for2FaUserId');
+      const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+      const response = await fetch(`${API_BASE_URL}/check2fa`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

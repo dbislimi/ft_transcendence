@@ -152,7 +152,7 @@ export function useBombPartyGame(user: any) {
       console.log('[useBombPartyGame] Sauvegarde stats:', {
         userId: user?.id,
         userObject: user,
-        hasToken: !!localStorage.getItem('token'),
+        hasToken: !!sessionStorage.getItem('token'),
         stats: stats
       });
       bombPartyStatsService.saveGameStats({

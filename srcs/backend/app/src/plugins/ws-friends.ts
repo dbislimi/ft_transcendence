@@ -1,9 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 interface FriendEvent {
   type: string;
@@ -15,10 +11,7 @@ interface FriendEvent {
   online?: boolean;
 }
 
-const SECRET = process.env.JWT_SECRET;
-if (!SECRET) {
-  throw new Error('JWT_SECRET must be defined in environment variables');
-}
+const SECRET = process.env.JWT_SECRET || "changeme";
 
 let globalActiveConnections = new Map<number, any>();
 
@@ -38,7 +31,7 @@ export function broadcastToUsers(message: FriendEvent, userIds: number[]) {
 const wsFriends: FastifyPluginAsync = async (fastify) => {
   fastify.get('/ws-friends', { websocket: true }, (connection, request) => {
     const token = (request.query as any).token;
-
+    
     if (!token) {
       connection.close(1008, "Token manquant");
       return;
@@ -47,7 +40,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
     try {
       const decoded = jwt.verify(token, SECRET) as any;
       const userId = decoded.id;
-
+      
       globalActiveConnections.set(userId, connection);
 
       fastify.db.run("UPDATE users SET online = 1 WHERE id = ?", [userId], (err: any) => {
@@ -71,13 +64,13 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.send(JSON.stringify({
         type: "connected",
-        message: "Connecte au systeme d'amis"
+        message: "Connecté au système d'amis"
       }));
 
       connection.on('message', (message) => {
         try {
           const data = JSON.parse(message.toString());
-
+          
           if (data.type === 'pong') {
             return;
           }
@@ -87,7 +80,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.on('close', () => {
         globalActiveConnections.delete(userId);
-
+        
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(
@@ -110,7 +103,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
 
       connection.on('error', () => {
         globalActiveConnections.delete(userId);
-
+        
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(
@@ -143,7 +136,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
           connection.send(JSON.stringify({ type: "heartbeat" }));
         } catch (error) {
           globalActiveConnections.delete(userId);
-
+          
           fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
             if (!err) {
               fastify.db.all(
@@ -165,7 +158,7 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
         }
       } else {
         globalActiveConnections.delete(userId);
-
+        
         fastify.db.run("UPDATE users SET online = 0 WHERE id = ?", [userId], (err: any) => {
           if (!err) {
             fastify.db.all(
@@ -189,4 +182,4 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
   }, 15000);
 };
 
-export default fp(wsFriends);
+export default wsFriends;

@@ -9,6 +9,7 @@ export { default as BombPartyStatsPage } from "./BombPartyStatsPage";
 export { default as StatsPage } from "./StatsPage";
 export { default as PongStatsPage } from "./PongStatsPage";
 export { default as Profile } from "./Profile";
+export { default as UserProfile } from "./UserProfile";
 export { default as ProfileChat } from "./ProfileChat";
 export { default as auth } from "./auth";
 export { default as Confirmation } from "./Confirmation";

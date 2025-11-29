@@ -57,13 +57,51 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [user, setUser] = useState<User | null>(null);
 	const [token, setTokenState] = useState<string | null>(() => {
 		try {
-			const storedToken = localStorage.getItem("token");
+			const storedToken = sessionStorage.getItem("token");
 			if (storedToken === "undefined") return null;
+			
+			if (storedToken) {
+				try {
+					const payload = JSON.parse(atob(storedToken.split('.')[1]));
+					const isExpired = payload.exp * 1000 < Date.now();
+					if (isExpired) {
+						sessionStorage.removeItem("token");
+						return null;
+					}
+				} catch (e) {
+					sessionStorage.removeItem("token");
+					return null;
+				}
+			}
+			
 			return storedToken;
 		} catch {
 			return null;
 		}
 	});
+
+	useEffect(() => {
+		if (!token) return;
+
+		const checkTokenExpiration = () => {
+			try {
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				const isExpired = payload.exp * 1000 < Date.now();
+				if (isExpired) {
+					console.log("Token expiré, déconnexion automatique");
+					setToken(null);
+				}
+			} catch (e) {
+				console.error("Erreur lors de la vérification du token:", e);
+				setToken(null);
+			}
+		};
+
+		const interval = setInterval(checkTokenExpiration, 30000);
+		checkTokenExpiration();
+
+		return () => clearInterval(interval);
+	}, [token]);
 
 	const logoutUser = async (currentToken?: string | null) => {
 		if (currentToken) {
@@ -83,11 +121,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const setToken = async (newToken: string | null) => {
 		if (newToken && newToken !== "undefined") {
-			localStorage.setItem("token", newToken);
+			sessionStorage.setItem("token", newToken);
 			setTokenState(newToken);
 		} else {
 			const currentToken = token;
-			localStorage.removeItem("token");
+			sessionStorage.removeItem("token");
 			setTokenState(null);
 			setUser(null);
 
@@ -124,7 +162,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const login = (userData: User, userToken: string) => {
 		setUser(userData);
-		localStorage.setItem("token", userToken);
+		sessionStorage.setItem("token", userToken);
 		setTokenState(userToken);
 	};
 
@@ -185,11 +223,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 							? data.avatar
 							: "/avatars/avatar1.png",
 				});
-			} else {
+			} else if (res.status === 401) {
+				console.log("Token invalide, déconnexion");
 				setToken(null);
+			} else {
+				throw new Error(`HTTP ${res.status}`);
 			}
-		} catch {
-			setUser(null);
+		} catch (error) {
+			console.error("Erreur lors du refresh user:", error);
 		}
 		setIsLoading(false);
 	};

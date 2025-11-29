@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
@@ -72,6 +73,14 @@ async function main() {
 	await fastify.register(wsController);
 
 	// 2. Plugins de base
+	await fastify.register(cookie, {
+		secret: process.env.JWT_SECRET,
+		parseOptions: {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax'
+		}
+	});
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 

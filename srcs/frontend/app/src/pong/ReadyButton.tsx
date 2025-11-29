@@ -29,7 +29,7 @@ export function ReadyButton({
 						{remaining}
 					</div>
 					<div className="text-gray-400 text-sm uppercase tracking-wider">
-						{t("readyPhase.timeRemaining", "Time Remaining")}
+						{t("pong.readyPhase.timeRemaining", "Time Remaining")}
 					</div>
 				</div>
 
@@ -45,7 +45,7 @@ export function ReadyButton({
 							/>
 							<span className="text-white font-medium">
 								{sessionLabels?.self ||
-									t("readyPhase.you", "You")}
+									t("pong.readyPhase.you", "You")}
 							</span>
 						</div>
 						<span
@@ -54,8 +54,8 @@ export function ReadyButton({
 							}`}
 						>
 							{selfReady
-								? t("readyPhase.ready", "READY")
-								: t("readyPhase.notReady", "NOT READY")}
+								? t("pong.readyPhase.ready", "READY")
+								: t("pong.readyPhase.notReady", "NOT READY")}
 						</span>
 					</div>
 
@@ -80,8 +80,8 @@ export function ReadyButton({
 							}`}
 						>
 							{opponentReady
-								? t("readyPhase.ready", "READY")
-								: t("readyPhase.notReady", "NOT READY")}
+								? t("pong.readyPhase.ready", "READY")
+								: t("pong.readyPhase.notReady", "NOT READY")}
 						</span>
 					</div>
 				</div>
@@ -91,7 +91,7 @@ export function ReadyButton({
 						onClick={onReady}
 						className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-cyan-500/50"
 					>
-						{t("readyPhase.imReady", "I'M READY!")}
+						{t("pong.readyPhase.imReady", "I'M READY!")}
 					</button>
 				)}
 
@@ -99,11 +99,11 @@ export function ReadyButton({
 					<div className="text-center py-4 text-gray-400">
 						{opponentReady
 							? t(
-									"readyPhase.bothReady",
+									"pong.readyPhase.bothReady",
 									"Both players ready! Starting soon..."
 							  )
 							: t(
-									"readyPhase.waitingOpponent",
+									"pong.readyPhase.waitingOpponent",
 									"Waiting for opponent..."
 							  )}
 					</div>
@@ -111,7 +111,7 @@ export function ReadyButton({
 
 				<div className="mt-4 text-xs text-gray-500 text-center">
 					{t(
-						"readyPhase.info",
+						"pong.readyPhase.info",
 						"The game will start automatically when both players are ready or when the timer expires."
 					)}
 				</div>

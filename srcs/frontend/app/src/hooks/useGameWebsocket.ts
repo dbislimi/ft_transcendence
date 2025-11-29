@@ -48,28 +48,6 @@ export function useGameWebsocket(
 				: `${wsProtocol}//${wsHost}/${api}`;
 			console.log(`[ws:${api}] Attempting to connect to: ${url.replace(/token=[^&]+/, 'token=***')}`);
 
-
-
-
-			// const wsHost =
-			// 	window.location.hostname === "localhost"
-			// 		? "localhost:3001"
-			// 		: `${window.location.hostname}:3001`;
-
-			// const wsProtocol =
-			// 	window.location.protocol === "https:" ? "wss:" : "ws:";
-			// const url = authToken
-			// 	? `${wsProtocol}//${wsHost}/${api}?token=${encodeURIComponent(
-			// 			authToken
-			// 	  )}`
-			// 	: `${wsProtocol}//${wsHost}/${api}`;
-			// console.log(
-			// 	`[ws:${api}] Attempting to connect to: ${url.replace(
-			// 		/token=[^&]+/,
-			// 		"token=***"
-			// 	)}`
-			// );
-
 			try {
 				ws = new WebSocket(url);
 				wsRef.current = ws;
@@ -111,7 +89,7 @@ export function useGameWebsocket(
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;
-				const currentToken = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+				const currentToken = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('token') : null;
 				if (currentToken && (!ws || ws.readyState === WebSocket.CLOSED) && !stopped) {
 					console.log(`[ws:${api}] Token found after ${attempts} attempts, reconnecting with auth`);
 					if (ws && ws.readyState !== WebSocket.CLOSED) {
