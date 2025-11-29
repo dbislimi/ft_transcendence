@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from "../context/UserContext";
 import { API_BASE_URL } from "../config/api";
+import { useTranslation } from "react-i18next";
 
 export default function EnterCode() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { setToken } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -16,7 +18,7 @@ export default function EnterCode() {
     try {
       const userId = localStorage.getItem('for2FaUserId');
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const response = await fetch(`${API_BASE_URL}/check2fa`, {
+      const response = await fetch(`${API_BASE_URL}/api/check2fa`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,8 +29,7 @@ export default function EnterCode() {
       const data = await response.json();
 
       if (response.ok) {
-        user(userData, data.token);
-        //localStorage.setItem('token', data.token);
+        setToken(data.token);
         navigate('/');
       } else {
         setError(data.error || t('auth.invalidCode'));

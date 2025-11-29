@@ -126,11 +126,11 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; display_name: string; email: string };
       console.log("l'id dans le back : ", decoded.id);
-      console.log("le name dans le back : ", decoded.name);
+      console.log("le name dans le back : ", decoded.display_name);
 
-      const client: Client = { id: decoded.id, name: decoded.name, socket };
+      const client: Client = { id: decoded.id, name: decoded.display_name, socket };
 
       clientsLock.acquire(() => {
         clients.push(client);

@@ -15,15 +15,15 @@ import fp from 'fastify-plugin';
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET must be defined in environment variables');
+  throw new Error('JWT_SECRET must be defined in environment variables');
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-export function GenerateOtp(){
-    return crypto.randomInt(100000, 999999).toString();
+export function GenerateOtp() {
+  return crypto.randomInt(100000, 999999).toString();
 }
 
 export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
@@ -54,34 +54,35 @@ export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
 
   fastify.post('/check2fa', async (request, reply) => {
     const { userId, code } = request.body as { userId: number; code: string };
-  
-  try {
-    const dbGet = util.promisify(fastify.db.get.bind(fastify.db));
-    const dbRun = util.promisify(fastify.db.run.bind(fastify.db));
-    const user = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
+    console.log(`[2FA] Check request for userId: ${userId}, code: ${code}`);
 
-    if (!user) {
-      return reply.code(401).send({ error: 'Utilisateur non trouve' });
+    try {
+      const dbGet = util.promisify(fastify.db.get.bind(fastify.db));
+      const dbRun = util.promisify(fastify.db.run.bind(fastify.db));
+      const user = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
+
+      if (!user) {
+        return reply.code(401).send({ error: 'Utilisateur non trouve' });
+      }
+
+      if (user.twoFAOtp !== code) {
+        return reply.code(401).send({ error: 'Code incorrect' });
+      }
+
+      const token = jwt.sign(
+        { id: user.id, display_name: user.display_name, email: user.email },
+        JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+
+      await dbRun('UPDATE users SET twoFAOtp = NULL WHERE id = ?', [user.id]);
+
+      return reply.send({ success: true, token });
+    } catch (err) {
+      fastify.log.error(err);
+      return reply.code(500).send({ error: 'Erreur serveur' });
     }
-
-    if (user.twoFAOtp !== code) {
-      return reply.code(401).send({ error: 'Code incorrect' });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email },
-      JWT_SECRET,
-      { expiresIn: "2h" }
-    );
-
-    await dbRun('UPDATE users SET twoFAOtp = NULL WHERE id = ?', [user.id]);
-
-    return reply.send({ success: true, token });
-  } catch (err) {
-    fastify.log.error(err);
-    return reply.code(500).send({ error: 'Erreur serveur' });
-  }
-});
+  });
 
   fastify.decorate('generateOtp', GenerateOtp);
 });

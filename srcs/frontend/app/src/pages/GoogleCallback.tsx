@@ -6,6 +6,7 @@ export default function GoogleCallback() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { user } = useUser();
+    const { setToken } = useUser();
 
     useEffect(() => {
         const token = searchParams.get("token");
@@ -23,7 +24,8 @@ export default function GoogleCallback() {
                     name: payload.name,
                     email: payload.email
                 };
-                user(userData, token);
+                setToken(token);
+                localStorage.setItem("user", JSON.stringify(userData));
                 navigate("/");
             } catch (e) {
                 console.error("Failed to decode token", e);

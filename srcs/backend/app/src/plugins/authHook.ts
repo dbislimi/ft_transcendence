@@ -15,6 +15,7 @@ export default fp(async function authHook(fastify: FastifyInstance) {
       "/register",
       "/check-user",
       "/check2fa",
+      "/check2fa",
       "/auth/google",
       "/auth/google/callback",
       "/chat",           // WebSocket chat endpoint (auth handled by getClient in websockets.ts)
@@ -40,7 +41,7 @@ export default fp(async function authHook(fastify: FastifyInstance) {
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as {
           id: number;
-          name: string;
+          display_name: string;
           email: string;
         };
         // attach decoded user to request (fastify extended type)

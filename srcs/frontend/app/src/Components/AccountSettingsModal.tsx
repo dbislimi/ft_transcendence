@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
-import { useUser } from '../context/UserContext'; 
+import { useUser } from '../context/UserContext';
 import { useNotifications } from '../context/NotificationContext';
 import { API_BASE_URL } from '../config/api';
 
@@ -32,6 +32,14 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
 
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || "/avatars/avatar1.png");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || '');
+      setDisplayName(user.display_name || '');
+      setSelectedAvatar(user.avatar || "/avatars/avatar1.png");
+    }
+  }, [user, isEditing]);
 
   useEffect(() => {
     if (isOpen) {
