@@ -117,6 +117,11 @@ export default function ChatWidget() {
                 .filter(msg => !target || msg.to === null || msg.to === user.id || msg.from.id === user.id)
                 .map((msg, i) => (
                   <div key={i} className="flex flex-col mb-2 items-start">
+                    {msg.type !== "info" && (
+                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 ml-1 mb-1">
+                        {msg.from.name} {msg.type === "private" ? t('chat.private') : ""}
+                      </span>
+                    )}
                     <div
                       className={`${msg.type === "info"
                         ? "bg-yellow-100 dark:bg-yellow-800 italic"
@@ -125,11 +130,6 @@ export default function ChatWidget() {
                           : "bg-gray-200 dark:bg-gray-700"
                         } px-3 py-2 rounded-xl text-black dark:text-white`}
                     >
-                      {msg.type !== "info" && (
-                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                          {msg.from.name} {msg.type === "private" ? t('chat.private') : ""}
-                        </span>
-                      )}
                       <div>{msg.text ?? msg.message}</div>
                     </div>
                   </div>
