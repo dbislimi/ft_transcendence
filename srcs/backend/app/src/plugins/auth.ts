@@ -205,7 +205,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         return reply.send({ success: true, message: "OTP envoye", require2fa: true, userId: user.id });
       }
 
-      //console.log("EREN YEAGER");
       const token = jwt.sign(
         { id: user.id, email: user.email, display_name: user.display_name },
         JWT_SECRET,

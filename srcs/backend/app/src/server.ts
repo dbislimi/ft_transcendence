@@ -47,7 +47,7 @@ async function main() {
 	await fastify.register(cors, {
 		origin: (origin, cb) => {
 			// Allow requests with no origin (like mobile apps or curl)
-			if (!origin || origin.startsWith("https://172.")) {   //le origine.startwith on peut l'enlever c'etait pour chez moi 
+			if (!origin){
 				cb(null, true);
 				return;
 			}

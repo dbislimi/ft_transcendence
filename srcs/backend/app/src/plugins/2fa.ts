@@ -54,7 +54,6 @@ export default fp(async function Send2faPlugin(fastify: FastifyInstance) {
 
   fastify.post('/check2fa', async (request, reply) => {
     const { userId, code } = request.body as { userId: number; code: string };
-    console.log(`[2FA] Check request for userId: ${userId}, code: ${code}`);
 
     try {
       const dbGet = util.promisify(fastify.db.get.bind(fastify.db));
