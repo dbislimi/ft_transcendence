@@ -23,8 +23,6 @@ export async function sendTournamentMessage(
   playerIds: (number | undefined)[],
   message: string
 ) {
-  /*if (playerIds == undefined) fait un ptit bail pour ne pas afficher le undefined
-      return;*/
   const ids = playerIds.filter(Boolean) as number[];
 
   const payload = {
@@ -130,9 +128,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { id: number; display_name: string; email: string };
-      console.log("l'id dans le back : ", decoded.id);
-      console.log("le name dans le back : ", decoded.display_name);
-
       const client: Client = { id: decoded.id, name: decoded.display_name, socket };
 
       clientsLock.acquire(() => {
@@ -172,7 +167,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               }
               sendToClient(client, { type: "private", ...msg });
             } else {
-              // Message global
               // Optimisation: Recuperer tous ceux qui m'ont bloque en une seule requête
               const blockers = await getBlockers(client.id);
 
@@ -200,7 +194,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             fastify.db.run(
               "DELETE FROM blocks WHERE blockerId = ? AND blockedId = ?",
               [client.id, data.userId],
-              (err) => { // Ajout du callback
+              (err) => {
                 if (err) return fastify.log.error("Erreur DB unblock:", err);
                 sendToClient(client, { type: "info", message: ` ${data.name} debloque` });
                 // Rediffuser la liste des utilisateurs

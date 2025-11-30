@@ -31,14 +31,10 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
   });
 
   fastify.get('/auth/google/callback', async function (req, reply) {
-    console.log('[Google Callback] Query:', req.query);
-    console.log('[Google Callback] Headers:', req.headers);
-    console.log('[Google Callback] Cookies:', req.headers.cookie);
 
     if (!req.query.code) {
       return reply.send('Erreur : code manquant depuis Google');
     }
-    console.log("SAH EST CE QUE CA FONCTIONNE");
 
     let result;
     try {
@@ -56,7 +52,6 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
       },
     }).then(res => res.json());
     const { email, name } = userInfo;
-    console.log("SAH EST CE QUE CA FONCTIONNE", userInfo);
 
     const db = fastify.db;
     let user = await new Promise<any>((resolve, reject) => {
@@ -68,7 +63,6 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 
     if (!user) {
       const lastID = await new Promise<number>((resolve, reject) => {
-        // Generate a random dummy password for Google users since they login via OAuth
         const dummyPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
 
         db.run(
