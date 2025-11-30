@@ -847,6 +847,16 @@
     "confirmUnblock": "Вы уверены, что хотите разблокировать этого пользователя?"
   },
   "chat": {
+    "globalChat": "Глобальный чат",
+    "privateChat": "Личный чат",
+    "private": "(личное)",
+    "blocked": "(заблокирован)",
+    "inviteToPlay": "Пригласить играть",
+    "invite": "Пригласить",
+    "writePlaceholder": "Написать...",
+    "messageTo": "Сообщение для {{name}}",
+    "viewProfile": "Посмотреть профиль",
+    "closeNotification": "Закрыть уведомление",
     "privateMessageTo": "Личное сообщение для",
     "globalMessage": "Глобальное сообщение",
     "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",

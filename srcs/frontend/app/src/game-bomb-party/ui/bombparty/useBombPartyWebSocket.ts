@@ -16,7 +16,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
   const timerRef = useRef(timer);
   const countdownIntervalRef = useRef<number | null>(null);
   const cleanupDoneRef = useRef<boolean>(false);
-  
+
   useEffect(() => {
     timerRef.current = timer;
   }, [timer]);
@@ -44,7 +44,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
 
       const guestId = Math.floor(Math.random() * 1000);
       const storedName = sessionStorage.getItem('bombparty_player_name');
-      const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
+      const playerName = (storedName && storedName.trim()) || user?.display_name || user?.name || `Guest_${guestId}`;
 
       client.authenticate(playerName);
     };
@@ -142,11 +142,11 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
       const currentState = useBombPartyStore.getState();
       const isStillAuthenticating = currentState.connection.isAuthenticating && !currentState.connection.playerId;
       const isInGame = currentState.gamePhase === 'GAME' && currentState.gameState?.phase === 'TURN_ACTIVE';
-      
+
       if (!isStillAuthenticating) {
         return;
       }
-      
+
       if (isInGame) {
         timerService.setTimeout(() => {
           const latestState = useBombPartyStore.getState();
@@ -156,7 +156,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
         }, 2000);
         return;
       }
-      
+
       store.setPlayerId(null);
       store.setIsAuthenticating(false);
       client.authenticate(user?.name || `Guest_${Math.floor(Math.random() * 1000)}`);
@@ -228,9 +228,9 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
       }
 
       const oldState = store.gameState;
-      
+
       const turnStarted = payload.turnStarted;
-      
+
       const gameState = payload.gameState || (payload.delta?.full ? payload.delta.gameState : null);
       if (!gameState) {
         return;
@@ -261,7 +261,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
         store.setCountdown(0);
         store.setWordJustSubmitted(false);
         store.setTurnInProgress(false);
-        
+
         const turnDuration = turnStartInfo.turnDurationMs || gameState.turnDurationMs || (gameState.baseTurnSeconds * 1000);
         const serverTurnStart = turnStartInfo.turnStartedAt || gameState.turnStartedAt;
         const clientNow = Date.now();
@@ -270,16 +270,16 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
         if (serverTurnStart && turnDuration > 0) {
           const isNewTurn = currentTurnStartTime !== serverTurnStart;
           const isTimerActive = timerRef.current.isTimerActive();
-          
-          const needsResync = isNewTurn || 
-                             !isTimerActive || 
-                             Math.abs(currentTurnStartTime - serverTurnStart) > 500;
-          
+
+          const needsResync = isNewTurn ||
+            !isTimerActive ||
+            Math.abs(currentTurnStartTime - serverTurnStart) > 500;
+
           if (needsResync) {
             timerRef.current.startTurn(serverTurnStart, turnDuration, clientNow);
             store.setTurnStartTime(serverTurnStart);
             store.setTimerGracePeriod(true);
-            
+
             timerService.setTimeout(() => store.setTimerGracePeriod(false), 500);
           }
         } else {
@@ -317,7 +317,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
       }
 
       cleanupDoneRef.current = true;
-      
+
       timerService.clearTimeout(authTimeoutId);
       timerService.clearTimeout(connectionTimerId);
 

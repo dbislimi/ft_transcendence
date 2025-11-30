@@ -834,6 +834,16 @@
     "confirmUnblock": "¿Estás seguro de que quieres desbloquear a este usuario?"
   },
   "chat": {
+    "globalChat": "Chat Global",
+    "privateChat": "Chat Privado",
+    "private": "(privado)",
+    "blocked": "(bloqueado)",
+    "inviteToPlay": "Invitar a jugar",
+    "invite": "Invitar",
+    "writePlaceholder": "Escribir...",
+    "messageTo": "Mensaje a {{name}}",
+    "viewProfile": "Ver perfil",
+    "closeNotification": "Cerrar notificación",
     "privateMessageTo": "Mensaje privado a",
     "globalMessage": "Mensaje global",
     "noUsersOnline": "Ningún usuario conectado (WebSocket pendiente...)",

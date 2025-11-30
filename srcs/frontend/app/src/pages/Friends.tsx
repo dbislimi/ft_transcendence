@@ -253,7 +253,7 @@ export default function Friends() {
 
         {activeTab === "requests" && (
           <div>
-            <h3 className="text-xl font-bold mb-4">Demandes reçues ({requests.filter(r => r.type === "received").length})</h3>
+            <h3 className="text-xl font-bold mb-4">{t('friends.receivedRequests')} ({requests.filter(r => r.type === "received").length})</h3>
             <div className="space-y-2 mb-6">
               {requests.filter(r => r.type === "received").length > 0 ? (
                 requests.filter(r => r.type === "received").map(r => (
@@ -263,18 +263,18 @@ export default function Friends() {
                       <span className="font-medium">{r.display_name}</span>
                     </div>
                     <div className="space-x-2">
-                      <button onClick={() => acceptRequest(r.sender_id)} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">Accepter</button>
-                      <button onClick={() => rejectRequest(r.sender_id)} className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 transition-colors">Refuser</button>
+                      <button onClick={() => acceptRequest(r.sender_id)} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">{t('friends.accept')}</button>
+                      <button onClick={() => rejectRequest(r.sender_id)} className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700 transition-colors">{t('friends.reject')}</button>
                       <button onClick={() => blockUser(r.sender_id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">{t('common.block')}</button>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 italic">Aucune demande reçue</p>
+                <p className="text-gray-500 italic">{t('friends.noReceivedRequests')}</p>
               )}
             </div>
 
-            <h3 className="text-xl font-bold mb-4">Demandes envoyees ({requests.filter(r => r.type === "sent").length})</h3>
+            <h3 className="text-xl font-bold mb-4">{t('friends.sentRequests')} ({requests.filter(r => r.type === "sent").length})</h3>
             <div className="space-y-2">
               {requests.filter(r => r.type === "sent").length > 0 ? (
                 requests.filter(r => r.type === "sent").map(r => (

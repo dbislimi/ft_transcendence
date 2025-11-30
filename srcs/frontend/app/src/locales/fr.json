@@ -851,6 +851,16 @@
     "confirmUnblock": "Êtes-vous sûr de vouloir débloquer cet utilisateur ?"
   },
   "chat": {
+    "globalChat": "Chat Global",
+    "privateChat": "Chat Privé",
+    "private": "(privé)",
+    "blocked": "(bloqué)",
+    "inviteToPlay": "Inviter à jouer",
+    "invite": "Inviter",
+    "writePlaceholder": "Écrire...",
+    "messageTo": "Message à {{name}}",
+    "viewProfile": "Voir profil",
+    "closeNotification": "Fermer la notification",
     "privateMessageTo": "Message privé à",
     "globalMessage": "Message global",
     "noUsersOnline": "Aucun utilisateur connecté (WebSocket en attente...)",
