@@ -304,7 +304,6 @@ export default class Tournament {
 							})
 						);
 					}
-					// AJOUT: Sauvegarde du match de tournoi
 					try {
 						await this.saveTournamentMatch(
 							waitingPlayer,

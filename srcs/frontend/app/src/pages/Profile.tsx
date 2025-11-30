@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { useWebSocket } from "../context/WebSocketContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useUser } from "../contexts/UserContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
+import { useNotifications } from "../contexts/NotificationContext";
 import SpaceBackground from "../Components/SpaceBackground";
 import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../config/api";
@@ -58,6 +59,7 @@ export default function Profile() {
 	const { user, refreshUser, token } = useUser();
 	const { pongWsRef, friendsWsRef } = useWebSocket();
 	const { settings: gameSettings } = useGameSettings();
+	const { notify } = useNotifications();
 	const [activeTab, setActiveTab] = useState("overview");
 	const [friendsSubTab, setFriendsSubTab] = useState<
 		"list" | "requests" | "blocked"
@@ -90,7 +92,6 @@ export default function Profile() {
 	const [friendsError, setFriendsError] = useState<string | null>(null);
 	const [wsStatus, setWsStatus] = useState<string>("Deconnecte");
 
-	const [loading, setLoading] = useState(true);
 	const wsRef = useRef<WebSocket | null>(null);
 
 	const [matchHistory, setMatchHistory] = useState<Match[]>([]);
@@ -213,7 +214,6 @@ export default function Profile() {
 	const fetchData = async () => {
 		if (!token || !user) return;
 
-		setLoading(true);
 		try {
 			await Promise.all([
 				fetchFriends(),
@@ -222,10 +222,9 @@ export default function Profile() {
 				fetchUserStats(),
 				fetchMatchHistory(),
 			]);
+			setIsLoaded(true);
 		} catch (error) {
 			console.error("Erreur lors de la recuperation des donnees:", error);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -255,7 +254,7 @@ export default function Profile() {
 		setFriendsError(null);
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/friend-requests`, {
+			const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -270,12 +269,10 @@ export default function Profile() {
 				setNewFriendName("");
 				fetchRequests();
 			} else {
-				setFriendsError(
-					data.error || t('errors.unknown')
-				);
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		} finally {
 			setFriendsLoading(false);
 		}
@@ -284,7 +281,7 @@ export default function Profile() {
 	const handleAcceptRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`${API_BASE_URL}/friend-requests/${senderId}/accept`,
+				`${API_BASE_URL}/api/friend-requests/${senderId}/accept`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -296,17 +293,17 @@ export default function Profile() {
 				fetchRequests();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || t('errors.unknown'));
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		}
 	};
 
 	const handleRejectRequest = async (senderId: number) => {
 		try {
 			const res = await fetch(
-				`${API_BASE_URL}/friend-requests/${senderId}/reject`,
+				`${API_BASE_URL}/api/friend-requests/${senderId}/reject`,
 				{
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
@@ -317,42 +314,38 @@ export default function Profile() {
 				fetchRequests();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || t('errors.unknown'));
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		}
 	};
 
 	const handleRemoveFriend = async (friendId: number) => {
-		if (!confirm(t('friends.confirmDelete'))) return;
+		if (!confirm(t("friends.confirmDelete"))) return;
 
 		try {
-			const res = await fetch(
-				`${API_BASE_URL}/friends/${friendId}`,
-				{
-					method: "DELETE",
-					headers: { Authorization: `Bearer ${token}` },
-				}
-			);
+			const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, {
+				method: "DELETE",
+				headers: { Authorization: `Bearer ${token}` },
+			});
 
 			if (res.ok) {
 				fetchFriends();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || t('errors.unknown'));
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		}
 	};
 
 	const handleBlockUser = async (userId: number) => {
-		if (!confirm(t('friends.confirmBlock')))
-			return;
+		if (!confirm(t("friends.confirmBlock"))) return;
 
 		try {
-			const res = await fetch(`${API_BASE_URL}/block-user`, {
+			const res = await fetch(`${API_BASE_URL}/api/block-user`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -367,20 +360,19 @@ export default function Profile() {
 				fetchBlockedUsers();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || t('errors.unknown'));
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		}
 	};
 
 	const handleUnblockUser = async (userId: number) => {
-		if (!confirm(t('friends.confirmUnblock')))
-			return;
+		if (!confirm(t("friends.confirmUnblock"))) return;
 
 		try {
 			const res = await fetch(
-				`${API_BASE_URL}/blocked-users/${userId}`,
+				`${API_BASE_URL}/api/blocked-users/${userId}`,
 				{
 					method: "DELETE",
 					headers: { Authorization: `Bearer ${token}` },
@@ -391,10 +383,10 @@ export default function Profile() {
 				fetchBlockedUsers();
 			} else {
 				const data = await res.json();
-				setFriendsError(data.error || t('errors.unknown'));
+				setFriendsError(data.error || t("errors.unknown"));
 			}
 		} catch (err) {
-			setFriendsError(t('errors.network'));
+			setFriendsError(t("errors.network"));
 		}
 	};
 
@@ -407,82 +399,72 @@ export default function Profile() {
 	const isOnline = (v?: number | boolean) => v === true || v === 1;
 
 	useEffect(() => {
-		if (!token || !user?.id || !friendsWsRef.current) return;
+		fetchData();
+	}, [user, token]);
 
-		const ws = friendsWsRef.current;
+	useEffect(() => {
+		const handleFriendsMessage = (event: CustomEvent) => {
+			const data = event.detail;
 
-		const handleMessage = (event: MessageEvent) => {
-			try {
-				const data = JSON.parse(event.data);
+			switch (data.type) {
+				case "friend_request_received":
+					fetchRequests();
+					break;
 
-				switch (data.type) {
-					case "connected":
-						setWsStatus("Connecte");
-						break;
+				case "friend_request_accepted":
+					fetchFriends();
+					fetchRequests();
+					break;
 
-					case "friend_request_received":
-						fetchRequests();
-						break;
+				case "friend_request_rejected":
+					fetchRequests();
+					break;
 
-					case "friend_request_accepted":
-						fetchFriends();
-						fetchRequests();
-						break;
+				case "friend_removed":
+					fetchFriends();
+					break;
 
-					case "friend_request_rejected":
-						fetchRequests();
-						break;
+				case "user_blocked":
+					fetchFriends();
+					fetchRequests();
+					break;
 
-					case "friend_removed":
-						fetchFriends();
-						break;
-
-					case "user_blocked":
-						fetchFriends();
-						fetchRequests();
-						break;
-
-					case "status_update":
-						setFriends((prev) =>
-							prev.map((friend) =>
-								friend.id === data.userId
-									? { ...friend, online: data.online }
-									: friend
-							)
-						);
-						break;
-
-					case "heartbeat":
-						if (ws.readyState === WebSocket.OPEN) {
-							ws.send(JSON.stringify({ type: "pong" }));
-						}
-						break;
-				}
-			} catch (err) {
-				console.error("Erreur parsing message WebSocket:", err);
+				case "status_update":
+					setFriends((prev) =>
+						prev.map((friend) =>
+							friend.id === data.userId
+								? { ...friend, online: data.online }
+								: friend
+						)
+					);
+					break;
 			}
 		};
 
-		if (ws.readyState === WebSocket.OPEN) {
-			setWsStatus("Connecte");
-		}
+		const handleRefreshFriendRequests = () => {
+			fetchRequests();
+		};
 
-		ws.addEventListener("message", handleMessage);
+		window.addEventListener(
+			"friendsWebSocketMessage",
+			handleFriendsMessage as EventListener
+		);
+		window.addEventListener(
+			"refreshFriendRequests",
+			handleRefreshFriendRequests
+		);
 
 		return () => {
-			ws.removeEventListener("message", handleMessage);
+			window.removeEventListener(
+				"friendsWebSocketMessage",
+				handleFriendsMessage as EventListener
+			);
+			window.removeEventListener(
+				"refreshFriendRequests",
+				handleRefreshFriendRequests
+			);
 		};
-	}, [token, user?.id, friendsWsRef]);
-
-	useEffect(() => {
-		if (user) {
-			setEmail(user.email || "");
-			setDisplayName(user.display_name || "");
-			setAvatar(user.avatar || "/avatars/avatar1.png");
-			fetchData();
-		}
-		setIsLoaded(true);
-	}, [user, token]);
+	}, []);
 
 	const validateEmail = (email: string) =>
 		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -563,12 +545,12 @@ export default function Profile() {
 				setTimeout(() => setMessage(""), 3000);
 			} else {
 				setIsError(true);
-				setMessage(data.error || t('errors.unknown'));
+				setMessage(data.error || t("errors.unknown"));
 				setTimeout(() => setMessage(""), 3000);
 			}
 		} catch {
 			setIsError(true);
-			setMessage(t('errors.network'));
+			setMessage(t("errors.network"));
 			setTimeout(() => setMessage(""), 3000);
 		}
 	};
@@ -580,7 +562,9 @@ export default function Profile() {
 				<div className="flex items-center justify-center min-h-screen">
 					<div className="text-center">
 						<div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-						<p className="text-gray-400">{t('profile.error_msg.loading')}</p>
+						<p className="text-gray-400">
+							{t("profile.error_msg.loading")}
+						</p>
 					</div>
 				</div>
 			</>
@@ -590,9 +574,12 @@ export default function Profile() {
 	return (
 		<>
 			<SpaceBackground />
-			<div className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
+			<div
+				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${
+					isLoaded ? "opacity-100" : "opacity-0"
+				}`}
+			>
 				<div className="max-w-7xl mx-auto px-6 py-8">
-
 					{/* Header Profil */}
 					<div className="bg-gradient-to-r from-slate-800/80 via-purple-900/80 to-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/20 p-8 mb-8 shadow-2xl">
 						<div className="flex flex-col md:flex-row items-center gap-8">
@@ -612,10 +599,14 @@ export default function Profile() {
 								<h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 mb-2">
 									{user.display_name}
 								</h1>
-								<p className="text-xl text-gray-400 mb-4">{user.email}</p>
+								<p className="text-xl text-gray-400 mb-4">
+									{user.email}
+								</p>
 								<div className="flex flex-wrap gap-4 justify-center md:justify-start">
 									<div className="bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 border border-emerald-500/30 rounded-lg px-4 py-2">
-										<span className="text-emerald-300 font-semibold">{stats.winRate}% WR</span>
+										<span className="text-emerald-300 font-semibold">
+											{stats.winRate}% WR
+										</span>
 									</div>
 								</div>
 							</div>
@@ -626,10 +617,20 @@ export default function Profile() {
 							>
 								<div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-cyan-600/0 group-hover:from-blue-600/20 group-hover:to-cyan-600/20 transition-all duration-300"></div>
 								<span className="relative text-blue-300 group-hover:text-blue-200 font-semibold transition-colors duration-300 flex items-center gap-2">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+										/>
 									</svg>
-									{t('profile.navigate.back')}
+									{t("profile.navigate.back")}
 								</span>
 							</button>
 						</div>
@@ -640,141 +641,275 @@ export default function Profile() {
 						<div className="flex flex-wrap">
 							<button
 								onClick={() => setActiveTab("overview")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "overview"
-									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-									}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+									activeTab === "overview"
+										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+								}`}
 							>
 								<span className="mr-2 inline-flex">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+										/>
 									</svg>
 								</span>
-								{t('profile.navigate.overview')}
+								{t("profile.navigate.overview")}
 							</button>
 
 							<button
 								onClick={() => setActiveTab("stats")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "stats"
-									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-									}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+									activeTab === "stats"
+										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+								}`}
 							>
 								<span className="mr-2 inline-flex">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+										/>
 									</svg>
 								</span>
-								{t('profile.navigate.stats')}
+								{t("profile.navigate.stats")}
 							</button>
 
 							<button
 								onClick={() => setActiveTab("history")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "history"
-									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-									}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+									activeTab === "history"
+										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+								}`}
 							>
 								<span className="mr-2 inline-flex">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
 									</svg>
 								</span>
-								{t('profile.navigate.history')}
+								{t("profile.navigate.history")}
 							</button>
 
 							<button
 								onClick={() => setActiveTab("friends")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "friends"
-									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-									}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+									activeTab === "friends"
+										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+								}`}
 							>
 								<span className="mr-2 inline-flex">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+										/>
 									</svg>
 								</span>
-								{t('profile.navigate.friends')}
+								{t("profile.navigate.friends")}
 							</button>
 
 							<button
 								onClick={() => setActiveTab("settings")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "settings"
-									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-									}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
+									activeTab === "settings"
+										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+								}`}
 							>
 								<span className="mr-2 inline-flex">
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+										/>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+										/>
 									</svg>
 								</span>
-								{t('profile.navigate.settings')}
+								{t("profile.navigate.settings")}
 							</button>
 						</div>
 					</div>
 
 					{/* Contenu Onglets */}
 					<div className="space-y-8">
-
 						{/* VUE D'ENSEMBLE */}
-						{activeTab === 'overview' && (
+						{activeTab === "overview" && (
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 									<h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-6 flex items-center gap-2">
-										<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+										<svg
+											className="w-6 h-6"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+											/>
 										</svg>
-										{t('profile.view.quickStats')}
+										{t("profile.view.quickStats")}
 									</h3>
 									<div className="grid grid-cols-2 gap-4">
 										<div className="text-center p-4 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-lg border border-blue-500/30">
-											<div className="text-3xl font-bold text-blue-300">{stats.totalGames}</div>
-											<div className="text-gray-400">{t('profile.view.gamesPlayed')}</div>
+											<div className="text-3xl font-bold text-blue-300">
+												{stats.totalGames}
+											</div>
+											<div className="text-gray-400">
+												{t("profile.view.gamesPlayed")}
+											</div>
 										</div>
 										<div className="text-center p-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg border border-green-500/30">
-											<div className="text-3xl font-bold text-green-300">{stats.wins}</div>
-											<div className="text-gray-400">{t('profile.view.wins')}</div>
+											<div className="text-3xl font-bold text-green-300">
+												{stats.wins}
+											</div>
+											<div className="text-gray-400">
+												{t("profile.view.wins")}
+											</div>
 										</div>
 										<div className="text-center p-4 bg-gradient-to-r from-red-600/20 to-pink-600/20 rounded-lg border border-red-500/30">
-											<div className="text-3xl font-bold text-red-300">{stats.losses}</div>
-											<div className="text-gray-400">{t('profile.view.losses')}</div>
+											<div className="text-3xl font-bold text-red-300">
+												{stats.losses}
+											</div>
+											<div className="text-gray-400">
+												{t("profile.view.losses")}
+											</div>
 										</div>
 										<div className="text-center p-4 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 rounded-lg border border-yellow-500/30">
-											<div className="text-3xl font-bold text-yellow-300">{stats.winRate}%</div>
-											<div className="text-gray-400">{t('profile.view.winRate')}</div>
+											<div className="text-3xl font-bold text-yellow-300">
+												{stats.winRate}%
+											</div>
+											<div className="text-gray-400">
+												{t("profile.view.winRate")}
+											</div>
 										</div>
 									</div>
 								</div>
 
 								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 									<h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6 flex items-center gap-2">
-										<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+										<svg
+											className="w-6 h-6"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+											/>
 										</svg>
-										{t('profile.view.onlineFriends')}
+										{t("profile.view.onlineFriends")}
 									</h3>
 									<div className="space-y-3">
-										{friends.filter(f => isOnline(f.online)).slice(0, 4).map((friend) => (
-											<div key={friend.id} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
-												<div className="relative">
-													<img src={friend.avatar || "/avatars/avatar1.png"} alt={friend.display_name} className="w-10 h-10 rounded-full" />
-													<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+										{friends
+											.filter((f) => isOnline(f.online))
+											.slice(0, 4)
+											.map((friend) => (
+												<div
+													key={friend.id}
+													className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30"
+												>
+													<div className="relative">
+														<img
+															src={
+																friend.avatar ||
+																"/avatars/avatar1.png"
+															}
+															alt={
+																friend.display_name
+															}
+															className="w-10 h-10 rounded-full"
+														/>
+														<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+													</div>
+													<div className="flex-1">
+														<div className="text-white font-medium">
+															{
+																friend.display_name
+															}
+														</div>
+														<div className="text-green-400 text-sm">
+															{t(
+																"profile.view.online"
+															)}
+														</div>
+													</div>
 												</div>
-												<div className="flex-1">
-													<div className="text-white font-medium">{friend.display_name}</div>
-													<div className="text-green-400 text-sm">{t('profile.view.online')}</div>
-												</div>
-											</div>
-										))}
-										{friends.filter(f => isOnline(f.online)).length === 0 && (
+											))}
+										{friends.filter((f) =>
+											isOnline(f.online)
+										).length === 0 && (
 											<div className="text-center py-8 text-gray-400">
-												<svg className="w-16 h-16 mx-auto mb-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+												<svg
+													className="w-16 h-16 mx-auto mb-2 text-gray-500"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+													/>
 												</svg>
-												<p>{t('profile.view.noOnlineFriends')}</p>
+												<p>
+													{t(
+														"profile.view.noOnlineFriends"
+													)}
+												</p>
 											</div>
 										)}
 									</div>
@@ -783,86 +918,202 @@ export default function Profile() {
 						)}
 
 						{/* STATISTIQUES DeTAILLeES */}
-						{activeTab === 'stats' && (
+						{activeTab === "stats" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-8 flex items-center gap-2">
-									<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+									<svg
+										className="w-8 h-8"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+										/>
 									</svg>
-									{t('profile.stats.detailedStats')}
+									{t("profile.stats.detailedStats")}
 								</h3>
 
 								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
 									<div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-										<svg className="w-10 h-10 mx-auto mb-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+										<svg
+											className="w-10 h-10 mx-auto mb-2 text-blue-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
 										</svg>
-										<div className="text-3xl font-bold text-white mb-1">{stats.totalGames}</div>
-										<div className="text-gray-400 text-sm">{t('profile.stats.totalGames')}</div>
+										<div className="text-3xl font-bold text-white mb-1">
+											{stats.totalGames}
+										</div>
+										<div className="text-gray-400 text-sm">
+											{t("profile.stats.totalGames")}
+										</div>
 									</div>
 									<div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-										<svg className="w-10 h-10 mx-auto mb-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+										<svg
+											className="w-10 h-10 mx-auto mb-2 text-green-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+											/>
 										</svg>
-										<div className="text-3xl font-bold text-white mb-1">{stats.winRate}%</div>
-										<div className="text-gray-400 text-sm">{t('profile.stats.winRate')}</div>
+										<div className="text-3xl font-bold text-white mb-1">
+											{stats.winRate}%
+										</div>
+										<div className="text-gray-400 text-sm">
+											{t("profile.stats.winRate")}
+										</div>
 									</div>
 									<div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-										<svg className="w-10 h-10 mx-auto mb-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+										<svg
+											className="w-10 h-10 mx-auto mb-2 text-purple-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+											/>
 										</svg>
-										<div className="text-3xl font-bold text-white mb-1">{stats.botWins}</div>
-										<div className="text-gray-400 text-sm">{t('profile.stats.botWins')}</div>
+										<div className="text-3xl font-bold text-white mb-1">
+											{stats.botWins}
+										</div>
+										<div className="text-gray-400 text-sm">
+											{t("profile.stats.botWins")}
+										</div>
 									</div>
 									<div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-										<svg className="w-10 h-10 mx-auto mb-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+										<svg
+											className="w-10 h-10 mx-auto mb-2 text-yellow-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+											/>
 										</svg>
-										<div className="text-3xl font-bold text-white mb-1">{stats.playerWins}</div>
-										<div className="text-gray-400 text-sm">{t('profile.stats.playerWins')}</div>
+										<div className="text-3xl font-bold text-white mb-1">
+											{stats.playerWins}
+										</div>
+										<div className="text-gray-400 text-sm">
+											{t("profile.stats.playerWins")}
+										</div>
 									</div>
 									<div className="text-center p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-xl border border-slate-500/30">
-										<svg className="w-10 h-10 mx-auto mb-2 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+										<svg
+											className="w-10 h-10 mx-auto mb-2 text-orange-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+											/>
 										</svg>
-										<div className="text-3xl font-bold text-white mb-1">{stats.tournamentsWon}</div>
-										<div className="text-gray-400 text-sm">{t('profile.stats.tournamentsWon')}</div>
+										<div className="text-3xl font-bold text-white mb-1">
+											{stats.tournamentsWon}
+										</div>
+										<div className="text-gray-400 text-sm">
+											{t("profile.stats.tournamentsWon")}
+										</div>
 									</div>
 								</div>
 							</div>
 						)}
 
 						{/* HISTORIQUE */}
-						{activeTab === 'history' && (
+						{activeTab === "history" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-8 flex items-center gap-2">
-									<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+									<svg
+										className="w-8 h-8"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
 									</svg>
-									{t('profile.history.matchHistory')}
+									{t("profile.history.matchHistory")}
 								</h3>
 
 								<div className="space-y-4">
 									{matchHistory.length > 0 ? (
 										<>
 											{matchHistory.map((match) => (
-												<div key={match.id} className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${match.isWinner
-													? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
-													: "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
-													}`}>
+												<div
+													key={match.id}
+													className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
+														match.isWinner
+															? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
+															: "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
+													}`}
+												>
 													<div className="flex items-center justify-between">
 														<div className="flex items-center gap-4">
 															<div className="relative">
-																{match.opponent.isBot ? (
+																{match.opponent
+																	.isBot ? (
 																	<div className="w-16 h-16 rounded-full border-2 border-slate-600 bg-gradient-to-br from-orange-600/20 to-red-600/20 flex items-center justify-center">
-																		<svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+																		<svg
+																			className="w-8 h-8 text-orange-400"
+																			fill="none"
+																			stroke="currentColor"
+																			viewBox="0 0 24 24"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				strokeWidth={
+																					2
+																				}
+																				d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+																			/>
 																		</svg>
 																	</div>
 																) : (
 																	<img
-																		src={match.opponent.avatar || "/avatars/avatar1.png"}
-																		alt={match.opponent.name}
+																		src={
+																			match
+																				.opponent
+																				.avatar ||
+																			"/avatars/avatar1.png"
+																		}
+																		alt={
+																			match
+																				.opponent
+																				.name
+																		}
 																		className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
 																	/>
 																)}
@@ -871,66 +1122,187 @@ export default function Profile() {
 															<div className="flex-1">
 																<div className="flex items-center gap-2 mb-1">
 																	{match.isWinner ? (
-																		<svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+																		<svg
+																			className="w-6 h-6 text-green-400"
+																			fill="none"
+																			stroke="currentColor"
+																			viewBox="0 0 24 24"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				strokeWidth={
+																					2
+																				}
+																				d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+																			/>
 																		</svg>
 																	) : (
-																		<svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+																		<svg
+																			className="w-6 h-6 text-red-400"
+																			fill="none"
+																			stroke="currentColor"
+																			viewBox="0 0 24 24"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				strokeWidth={
+																					2
+																				}
+																				d="M6 18L18 6M6 6l12 12"
+																			/>
 																		</svg>
 																	)}
-																	<span className={`font-bold text-lg ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
-																		{match.isWinner ? t('profile.history.victory') : t('profile.history.defeat')}
+																	<span
+																		className={`font-bold text-lg ${
+																			match.isWinner
+																				? "text-green-300"
+																				: "text-red-300"
+																		}`}
+																	>
+																		{match.isWinner
+																			? t(
+																					"profile.history.victory"
+																			  )
+																			: t(
+																					"profile.history.defeat"
+																			  )}
 																	</span>
 																</div>
 
 																<div className="flex items-center gap-2 text-gray-300">
-																	<span className="text-white font-medium">{t('profile.history.vs')} {match.opponent.name}</span>
-																	{match.opponent.isBot && (
+																	<span className="text-white font-medium">
+																		{t(
+																			"profile.history.vs"
+																		)}{" "}
+																		{
+																			match
+																				.opponent
+																				.name
+																		}
+																	</span>
+																	{match
+																		.opponent
+																		.isBot && (
 																		<span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
-																			{t('profile.history.bot')}
+																			{t(
+																				"profile.history.bot"
+																			)}
 																		</span>
 																	)}
-																	{match.matchType === 'tournament' && (
+																	{match.matchType ===
+																		"tournament" && (
 																		<span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-md text-xs border border-purple-500/30 flex items-center gap-1">
-																			<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+																			<svg
+																				className="w-3 h-3"
+																				fill="none"
+																				stroke="currentColor"
+																				viewBox="0 0 24 24"
+																			>
+																				<path
+																					strokeLinecap="round"
+																					strokeLinejoin="round"
+																					strokeWidth={
+																						2
+																					}
+																					d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+																				/>
 																			</svg>
-																			{t('profile.history.tournament')}
+																			{t(
+																				"profile.history.tournament"
+																			)}
 																		</span>
 																	)}
-																	{match.matchType === 'quick' && !match.opponent.isBot && (
-																		<span className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded-md text-xs border border-blue-500/30 flex items-center gap-1">
-																			<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-																			</svg>
-																			{t('profile.history.quick')}
-																		</span>
-																	)}
-																	{match.matchType === 'offline' && match.opponent.isBot && (
-																		<span className="px-2 py-1 bg-green-600/20 text-green-300 rounded-md text-xs border border-green-500/30 flex items-center gap-1">
-																			<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-																			</svg>
-																			{t('profile.history.training')}
-																		</span>
-																	)}
+																	{match.matchType ===
+																		"quick" &&
+																		!match
+																			.opponent
+																			.isBot && (
+																			<span className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded-md text-xs border border-blue-500/30 flex items-center gap-1">
+																				<svg
+																					className="w-3 h-3"
+																					fill="none"
+																					stroke="currentColor"
+																					viewBox="0 0 24 24"
+																				>
+																					<path
+																						strokeLinecap="round"
+																						strokeLinejoin="round"
+																						strokeWidth={
+																							2
+																						}
+																						d="M13 10V3L4 14h7v7l9-11h-7z"
+																					/>
+																				</svg>
+																				{t(
+																					"profile.history.quick"
+																				)}
+																			</span>
+																		)}
+																	{match.matchType ===
+																		"offline" &&
+																		match
+																			.opponent
+																			.isBot && (
+																			<span className="px-2 py-1 bg-green-600/20 text-green-300 rounded-md text-xs border border-green-500/30 flex items-center gap-1">
+																				<svg
+																					className="w-3 h-3"
+																					fill="none"
+																					stroke="currentColor"
+																					viewBox="0 0 24 24"
+																				>
+																					<path
+																						strokeLinecap="round"
+																						strokeLinejoin="round"
+																						strokeWidth={
+																							2
+																						}
+																						d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+																					/>
+																				</svg>
+																				{t(
+																					"profile.history.training"
+																				)}
+																			</span>
+																		)}
 																</div>
 
 																<div className="text-sm text-gray-400 mt-1">
-																	{formatDate(match.date)}
+																	{formatDate(
+																		match.date
+																	)}
 																</div>
 															</div>
 														</div>
 
 														<div className="text-right">
 															{match.scores && (
-																<div className={`text-2xl font-bold mb-2 ${match.isWinner ? "text-green-300" : "text-red-300"}`}>
-																	{match.scores[0]} - {match.scores[1]}
+																<div
+																	className={`text-2xl font-bold mb-2 ${
+																		match.isWinner
+																			? "text-green-300"
+																			: "text-red-300"
+																	}`}
+																>
+																	{
+																		match
+																			.scores[0]
+																	}{" "}
+																	-{" "}
+																	{
+																		match
+																			.scores[1]
+																	}
 																</div>
 															)}
 															<div className="flex items-center gap-2">
-																<span className="text-gray-400 text-sm">{t('profile.history.matchNumber')} {match.id}</span>
+																<span className="text-gray-400 text-sm">
+																	{t(
+																		"profile.history.matchNumber"
+																	)}{" "}
+																	{match.id}
+																</span>
 															</div>
 														</div>
 													</div>
@@ -940,21 +1312,41 @@ export default function Profile() {
 											{hasMoreHistory && (
 												<div className="flex justify-center mt-8">
 													<button
-														onClick={loadMoreHistory}
-														disabled={historyLoading}
+														onClick={
+															loadMoreHistory
+														}
+														disabled={
+															historyLoading
+														}
 														className="px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
 													>
 														{historyLoading ? (
 															<span className="flex items-center gap-2">
 																<div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
-																{t('profile.history.loading')}
+																{t(
+																	"profile.history.loading"
+																)}
 															</span>
 														) : (
 															<span className="flex items-center gap-2">
-																<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																	<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+																<svg
+																	className="w-5 h-5"
+																	fill="none"
+																	stroke="currentColor"
+																	viewBox="0 0 24 24"
+																>
+																	<path
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																		strokeWidth={
+																			2
+																		}
+																		d="M19 9l-7 7-7-7"
+																	/>
 																</svg>
-																{t('profile.history.loadMore')}
+																{t(
+																	"profile.history.loadMore"
+																)}
 															</span>
 														)}
 													</button>
@@ -963,20 +1355,57 @@ export default function Profile() {
 										</>
 									) : (
 										<div className="text-center py-16 text-gray-400">
-											<svg className="w-32 h-32 mx-auto mb-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+											<svg
+												className="w-32 h-32 mx-auto mb-6 text-gray-500"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+												/>
 											</svg>
-											<h4 className="text-2xl font-bold text-gray-300 mb-2">{t('profile.history.noGamesPlayed')}</h4>
-											<p className="text-lg mb-4">{t('profile.history.historyPlaceholder')}</p>
+											<h4 className="text-2xl font-bold text-gray-300 mb-2">
+												{t(
+													"profile.history.noGamesPlayed"
+												)}
+											</h4>
+											<p className="text-lg mb-4">
+												{t(
+													"profile.history.historyPlaceholder"
+												)}
+											</p>
 											<button
-												onClick={() => navigate("/pong")}
+												onClick={() =>
+													navigate("/pong")
+												}
 												className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto"
 											>
-												<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+												<svg
+													className="w-5 h-5"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+													/>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+													/>
 												</svg>
-												{t('profile.history.playFirstGame')}
+												{t(
+													"profile.history.playFirstGame"
+												)}
 											</button>
 										</div>
 									)}
@@ -985,13 +1414,23 @@ export default function Profile() {
 						)}
 
 						{/* AMIS */}
-						{activeTab === 'friends' && (
+						{activeTab === "friends" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-8 flex items-center gap-2">
-									<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+									<svg
+										className="w-8 h-8"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+										/>
 									</svg>
-									{t('profile.friend.manage')}
+									{t("profile.friend.manage")}
 								</h3>
 
 								{friendsError && (
@@ -999,11 +1438,23 @@ export default function Profile() {
 										<div className="flex justify-between items-center">
 											<span>{friendsError}</span>
 											<button
-												onClick={() => setFriendsError(null)}
+												onClick={() =>
+													setFriendsError(null)
+												}
 												className="text-red-300 hover:text-red-200"
 											>
-												<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+												<svg
+													className="w-5 h-5"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														strokeWidth={2}
+														d="M6 18L18 6M6 6l12 12"
+													/>
 												</svg>
 											</button>
 										</div>
@@ -1013,19 +1464,42 @@ export default function Profile() {
 								{/* Navigation des sous-onglets */}
 								<div className="flex flex-wrap gap-2 mb-8">
 									{[
-										{ id: "list", label: `${t('profile.friend.friends')} (${friends.length})`, icon: "👥" },
-										{ id: "requests", label: `${t('profile.friend.requests')} (${requests.length})`, icon: "📩" },
-										{ id: "blocked", label: `${t('profile.friend.blocked')} (${blockedUsers.length})`, icon: "🚫" }
+										{
+											id: "list",
+											label: `${t(
+												"profile.friend.friends"
+											)} (${friends.length})`,
+											icon: "👥",
+										},
+										{
+											id: "requests",
+											label: `${t(
+												"profile.friend.requests"
+											)} (${requests.length})`,
+											icon: "📩",
+										},
+										{
+											id: "blocked",
+											label: `${t(
+												"profile.friend.blocked"
+											)} (${blockedUsers.length})`,
+											icon: "🚫",
+										},
 									].map((tab) => (
 										<button
 											key={tab.id}
-											onClick={() => setFriendsSubTab(tab.id as any)}
-											className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${friendsSubTab === tab.id
-												? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
-												: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-												}`}
+											onClick={() =>
+												setFriendsSubTab(tab.id as any)
+											}
+											className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+												friendsSubTab === tab.id
+													? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
+													: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+											}`}
 										>
-											<span className="mr-2">{tab.icon}</span>
+											<span className="mr-2">
+												{tab.icon}
+											</span>
 											{tab.label}
 										</button>
 									))}
@@ -1037,27 +1511,38 @@ export default function Profile() {
 										{/* Ajouter un ami */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-												➕ {t('profile.friend.add')}
+												➕ {t("profile.friend.add")}
 											</h4>
 											<div className="flex gap-3">
 												<input
 													value={newFriendName}
-													onChange={e => setNewFriendName(e.target.value)}
+													onChange={(e) =>
+														setNewFriendName(
+															e.target.value
+														)
+													}
 													onKeyPress={handleKeyPress}
-													placeholder={t('profile.friend.usernamePlaceholder')}
+													placeholder={t(
+														"profile.friend.usernamePlaceholder"
+													)}
 													className="flex-1 px-4 py-3 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
 													disabled={friendsLoading}
 												/>
 												<button
 													onClick={handleAddFriend}
-													disabled={friendsLoading || !newFriendName.trim()}
+													disabled={
+														friendsLoading ||
+														!newFriendName.trim()
+													}
 													className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 												>
-													{friendsLoading ? "⏳" : "📤"}
+													{friendsLoading
+														? "⏳"
+														: "📤"}
 												</button>
 											</div>
 											<p className="text-sm text-gray-400 mt-2">
-												{t('profile.friend.addHint')}
+												{t("profile.friend.addHint")}
 											</p>
 										</div>
 
@@ -1065,39 +1550,107 @@ export default function Profile() {
 										<div className="space-y-4">
 											{friends.length > 0 ? (
 												friends.map((friend) => (
-													<div key={friend.id} className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all duration-300">
+													<div
+														key={friend.id}
+														className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all duration-300"
+													>
 														<div className="flex items-center gap-4">
 															<div className="relative">
 																<img
-																	src={friend.avatar || "/avatars/avatar1.png"}
-																	alt={friend.display_name}
+																	src={
+																		friend.avatar ||
+																		"/avatars/avatar1.png"
+																	}
+																	alt={
+																		friend.display_name
+																	}
 																	className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
 																/>
-																<div className={`absolute -bottom-1 -right-1 w-5 h-5 ${isOnline(friend.online) ? 'bg-green-500' : 'bg-gray-500'} rounded-full border-2 border-slate-800`}></div>
+																<div
+																	className={`absolute -bottom-1 -right-1 w-5 h-5 ${
+																		isOnline(
+																			friend.online
+																		)
+																			? "bg-green-500"
+																			: "bg-gray-500"
+																	} rounded-full border-2 border-slate-800`}
+																></div>
 															</div>
 															<div className="flex-1">
-																<h4 className="text-lg font-bold text-white">{friend.display_name}</h4>
-																<p className={`text-sm ${isOnline(friend.online) ? 'text-green-400' : 'text-gray-500'}`}>
-																	{isOnline(friend.online) ? `🟢 ${t('profile.friend.online')}` : `⚫ ${t('profile.friend.offline')}`}
+																<h4 className="text-lg font-bold text-white">
+																	{
+																		friend.display_name
+																	}
+																</h4>
+																<p
+																	className={`text-sm ${
+																		isOnline(
+																			friend.online
+																		)
+																			? "text-green-400"
+																			: "text-gray-500"
+																	}`}
+																>
+																	{isOnline(
+																		friend.online
+																	)
+																		? `🟢 ${t(
+																				"profile.friend.online"
+																		  )}`
+																		: `⚫ ${t(
+																				"profile.friend.offline"
+																		  )}`}
 																</p>
 															</div>
 															<div className="flex gap-2">
-																{isOnline(friend.online) && (
+																{isOnline(
+																	friend.online
+																) && (
 																	<button
-																		onClick={() => navigate(`/pong?invite=${friend.id}`)}
+																		onClick={() => {
+																			if (
+																				pongWsRef
+																					.current
+																					?.readyState ===
+																				WebSocket.OPEN
+																			) {
+																				pongWsRef.current.send(
+																					JSON.stringify(
+																						{
+																							event: "invitation",
+																							body: {
+																								action: "invite",
+																								friendId:
+																									friend.id,
+																								options:
+																									gameSettings,
+																							},
+																						}
+																					)
+																				);
+																			}
+																		}}
 																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
 																	>
 																		{t('profile.friend.invite')}
 																	</button>
 																)}
 																<button
-																	onClick={() => handleBlockUser(friend.id)}
+																	onClick={() =>
+																		handleBlockUser(
+																			friend.id
+																		)
+																	}
 																	className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
 																>
 																	{t('profile.friend.block')}
 																</button>
 																<button
-																	onClick={() => handleRemoveFriend(friend.id)}
+																	onClick={() =>
+																		handleRemoveFriend(
+																			friend.id
+																		)
+																	}
 																	className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
 																>
 																	{t('profile.friend.remove')}
@@ -1108,9 +1661,19 @@ export default function Profile() {
 												))
 											) : (
 												<div className="text-center py-12 text-gray-400">
-													<div className="text-6xl mb-4">👻</div>
-													<p className="text-lg">{t('profile.friend.notFound')}</p>
-													<p className="text-sm">{t('profile.friend.searchPlaceholder')}</p>
+													<div className="text-6xl mb-4">
+														👻
+													</div>
+													<p className="text-lg">
+														{t(
+															"profile.friend.notFound"
+														)}
+													</p>
+													<p className="text-sm">
+														{t(
+															"profile.friend.searchPlaceholder"
+														)}
+													</p>
 												</div>
 											)}
 										</div>
@@ -1123,7 +1686,19 @@ export default function Profile() {
 										{/* Demandes reçues */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
-												📥 {t('profile.friend.receivedRequests')} ({requests.filter(r => r.type === "received").length})
+												📥{" "}
+												{t(
+													"profile.friend.receivedRequests"
+												)}{" "}
+												(
+												{
+													requests.filter(
+														(r) =>
+															r.type ===
+															"received"
+													).length
+												}
+												)
 											</h4>
 											<div className="space-y-3">
 												{requests.filter(r => r.type === "received").length > 0 ? (
@@ -1161,8 +1736,14 @@ export default function Profile() {
 													))
 												) : (
 													<div className="text-center py-8 text-gray-400">
-														<div className="text-4xl mb-2">📪</div>
-														<p>{t('profile.friend.noReceivedRequests')}</p>
+														<div className="text-4xl mb-2">
+															📪
+														</div>
+														<p>
+															{t(
+																"profile.friend.noReceivedRequests"
+															)}
+														</p>
 													</div>
 												)}
 											</div>
@@ -1171,30 +1752,70 @@ export default function Profile() {
 										{/* Demandes envoyees */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
-												📤 {t('profile.friend.sentRequests')} ({requests.filter(r => r.type === "sent").length})
+												📤{" "}
+												{t(
+													"profile.friend.sentRequests"
+												)}{" "}
+												(
+												{
+													requests.filter(
+														(r) => r.type === "sent"
+													).length
+												}
+												)
 											</h4>
 											<div className="space-y-3">
-												{requests.filter(r => r.type === "sent").length > 0 ? (
-													requests.filter(r => r.type === "sent").map(r => (
-														<div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-															<div className="flex items-center gap-3">
-																<img
-																	src={r.avatar || "/avatars/avatar1.png"}
-																	alt={r.display_name}
-																	className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-																/>
-																<span className="font-medium text-white">{r.display_name}</span>
+												{requests.filter(
+													(r) => r.type === "sent"
+												).length > 0 ? (
+													requests
+														.filter(
+															(r) =>
+																r.type ===
+																"sent"
+														)
+														.map((r) => (
+															<div
+																key={
+																	r.sender_id
+																}
+																className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+															>
+																<div className="flex items-center gap-3">
+																	<img
+																		src={
+																			r.avatar ||
+																			"/avatars/avatar1.png"
+																		}
+																		alt={
+																			r.display_name
+																		}
+																		className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																	/>
+																	<span className="font-medium text-white">
+																		{
+																			r.display_name
+																		}
+																	</span>
+																</div>
+																<span className="text-yellow-400 font-medium flex items-center gap-2">
+																	<div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full"></div>
+																	{t(
+																		"profile.friend.pending"
+																	)}
+																</span>
 															</div>
-															<span className="text-yellow-400 font-medium flex items-center gap-2">
-																<div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full"></div>
-																{t('profile.friend.pending')}
-															</span>
-														</div>
-													))
+														))
 												) : (
 													<div className="text-center py-8 text-gray-400">
-														<div className="text-4xl mb-2">📭</div>
-														<p>{t('profile.friend.noSentRequests')}</p>
+														<div className="text-4xl mb-2">
+															📭
+														</div>
+														<p>
+															{t(
+																"profile.friend.noSentRequests"
+															)}
+														</p>
 													</div>
 												)}
 											</div>
@@ -1206,27 +1827,50 @@ export default function Profile() {
 								{friendsSubTab === "blocked" && (
 									<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 										<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400 mb-4">
-											🚫 {t('profile.friend.blockedUsers')} ({blockedUsers.length})
+											🚫{" "}
+											{t("profile.friend.blockedUsers")} (
+											{blockedUsers.length})
 										</h4>
 										<div className="space-y-3">
 											{blockedUsers.length > 0 ? (
-												blockedUsers.map(u => (
-													<div key={u.id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
+												blockedUsers.map((u) => (
+													<div
+														key={u.id}
+														className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+													>
 														<div className="flex items-center gap-3">
 															<img
-																src={u.avatar || "/avatars/avatar1.png"}
-																alt={u.display_name}
+																src={
+																	u.avatar ||
+																	"/avatars/avatar1.png"
+																}
+																alt={
+																	u.display_name
+																}
 																className="w-12 h-12 rounded-full object-cover border-2 border-slate-500 opacity-50"
 															/>
 															<div>
-																<span className="font-medium text-white">{u.display_name}</span>
+																<span className="font-medium text-white">
+																	{
+																		u.display_name
+																	}
+																</span>
 																<div className="text-sm text-gray-400">
-																	{t('profile.friend.blockedOn')} {new Date(u.created_at).toLocaleDateString()}
+																	{t(
+																		"profile.friend.blockedOn"
+																	)}{" "}
+																	{new Date(
+																		u.created_at
+																	).toLocaleDateString()}
 																</div>
 															</div>
 														</div>
 														<button
-															onClick={() => handleUnblockUser(u.id)}
+															onClick={() =>
+																handleUnblockUser(
+																	u.id
+																)
+															}
 															className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
 														>
 															{t('profile.friend.unblock')}
@@ -1235,9 +1879,19 @@ export default function Profile() {
 												))
 											) : (
 												<div className="text-center py-8 text-gray-400">
-													<div className="text-4xl mb-2">🕊️</div>
-													<p>{t('profile.friend.noBlockedUsers')}</p>
-													<p className="text-sm">{t('profile.friend.peaceMessage')}</p>
+													<div className="text-4xl mb-2">
+														🕊️
+													</div>
+													<p>
+														{t(
+															"profile.friend.noBlockedUsers"
+														)}
+													</p>
+													<p className="text-sm">
+														{t(
+															"profile.friend.peaceMessage"
+														)}
+													</p>
 												</div>
 											)}
 										</div>
@@ -1251,24 +1905,34 @@ export default function Profile() {
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<div className="flex justify-between items-center mb-8">
 									<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">
-										⚙️ {t('profile.settings.title')}
+										⚙️ {t("profile.settings.title")}
 									</h3>
 									<button
 										onClick={() => setEditMode(!editMode)}
-										className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${editMode
-											? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
-											: "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
-											}`}
+										className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+											editMode
+												? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
+												: "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
+										}`}
 									>
-										{editMode ? `❌ ${t('profile.settings.cancel')}` : `✏️ ${t('profile.settings.edit')}`}
+										{editMode
+											? `❌ ${t(
+													"profile.settings.cancel"
+											  )}`
+											: `✏️ ${t(
+													"profile.settings.edit"
+											  )}`}
 									</button>
 								</div>
 
 								{message && (
-									<div className={`mb-6 p-4 rounded-lg border ${isError
-										? "bg-red-600/20 border-red-500/30 text-red-300"
-										: "bg-green-600/20 border-green-500/30 text-green-300"
-										}`}>
+									<div
+										className={`mb-6 p-4 rounded-lg border ${
+											isError
+												? "bg-red-600/20 border-red-500/30 text-red-300"
+												: "bg-green-600/20 border-green-500/30 text-green-300"
+										}`}
+									>
 										{message}
 									</div>
 								)}
@@ -1277,63 +1941,119 @@ export default function Profile() {
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 										<div className="space-y-6">
 											<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-												<h4 className="text-lg font-bold text-gray-200 mb-4">{t('profile.settings.personalInfo')}</h4>
+												<h4 className="text-lg font-bold text-gray-200 mb-4">
+													{t(
+														"profile.settings.personalInfo"
+													)}
+												</h4>
 												<div className="space-y-3">
 													<div>
-														<span className="text-gray-400">{t('profile.settings.email')} :</span>
-														<span className="text-white ml-2 font-medium">{user.email}</span>
+														<span className="text-gray-400">
+															{t(
+																"profile.settings.email"
+															)}{" "}
+															:
+														</span>
+														<span className="text-white ml-2 font-medium">
+															{user.email}
+														</span>
 													</div>
 													<div>
-														<span className="text-gray-400">{t('profile.settings.username')} :</span>
-														<span className="text-white ml-2 font-medium">{user.display_name}</span>
+														<span className="text-gray-400">
+															{t(
+																"profile.settings.username"
+															)}{" "}
+															:
+														</span>
+														<span className="text-white ml-2 font-medium">
+															{user.display_name}
+														</span>
 													</div>
 												</div>
 											</div>
 										</div>
 
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
-											<h4 className="text-lg font-bold text-gray-200 mb-4">{t('profile.settings.currentAvatar')}</h4>
+											<h4 className="text-lg font-bold text-gray-200 mb-4">
+												{t(
+													"profile.settings.currentAvatar"
+												)}
+											</h4>
 											<div className="flex justify-center">
 												<img
-													src={user.avatar || "/avatars/avatar1.png"}
-													alt={t('profile.settings.currentAvatar')}
+													src={
+														user.avatar ||
+														"/avatars/avatar1.png"
+													}
+													alt={t(
+														"profile.settings.currentAvatar"
+													)}
 													className="w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover"
 												/>
 											</div>
 										</div>
 									</div>
 								) : (
-									<form onSubmit={handleSubmit} className="space-y-8">
+									<form
+										onSubmit={handleSubmit}
+										className="space-y-8"
+									>
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 											<div className="space-y-6">
 												<div>
-													<label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.email')}</label>
+													<label className="block text-sm font-medium text-gray-300 mb-2">
+														{t(
+															"profile.settings.email"
+														)}
+													</label>
 													<input
 														type="email"
 														value={email}
-														onChange={(e) => setEmail(e.target.value)}
+														onChange={(e) =>
+															setEmail(
+																e.target.value
+															)
+														}
 														className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
 														placeholder="votre@email.com"
 													/>
 												</div>
 
 												<div>
-													<label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.username')}</label>
+													<label className="block text-sm font-medium text-gray-300 mb-2">
+														{t(
+															"profile.settings.username"
+														)}
+													</label>
 													<input
 														type="text"
 														value={displayName}
-														onChange={(e) => setDisplayName(e.target.value)}
+														onChange={(e) =>
+															setDisplayName(
+																e.target.value
+															)
+														}
 														className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
-														placeholder={t('profile.settings.username')}
+														placeholder={t(
+															"profile.settings.username"
+														)}
 													/>
 												</div>
 
 												<div>
-													<label className="block text-sm font-medium text-gray-300 mb-2">{t('profile.settings.newPassword')}</label>
+													<label className="block text-sm font-medium text-gray-300 mb-2">
+														{t(
+															"profile.settings.newPassword"
+														)}
+													</label>
 													<input
 														type="password"
 														value={password}
-														onChange={(e) => setPassword(e.target.value)}
+														onChange={(e) =>
+															setPassword(
+																e.target.value
+															)
+														}
 														className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
 														placeholder="••••••••"
 													/>
@@ -1341,33 +2061,53 @@ export default function Profile() {
 											</div>
 
 											<div>
-												<label className="block text-sm font-medium text-gray-300 mb-4">{t('profile.settings.chooseAvatar')}</label>
+												<label className="block text-sm font-medium text-gray-300 mb-4">
+													{t(
+														"profile.settings.chooseAvatar"
+													)}
+												</label>
 												<div className="grid grid-cols-5 gap-3">
-													{avatars.map((avatarUrl) => (
-														<button
-															key={avatarUrl}
-															type="button"
-															onClick={() => setAvatar(avatarUrl)}
-															className={`relative rounded-full overflow-hidden transition-all duration-300 ${avatar === avatarUrl
-																? "ring-4 ring-purple-500 scale-110"
-																: "hover:scale-105 opacity-70 hover:opacity-100"
+													{avatars.map(
+														(avatarUrl) => (
+															<button
+																key={avatarUrl}
+																type="button"
+																onClick={() =>
+																	setAvatar(
+																		avatarUrl
+																	)
+																}
+																className={`relative rounded-full overflow-hidden transition-all duration-300 ${
+																	avatar ===
+																	avatarUrl
+																		? "ring-4 ring-purple-500 scale-110"
+																		: "hover:scale-105 opacity-70 hover:opacity-100"
 																}`}
-														>
-															<img
-																src={avatarUrl}
-																alt="Avatar"
-																className="w-16 h-16 object-cover"
-															/>
-														</button>
-													))}
+															>
+																<img
+																	src={
+																		avatarUrl
+																	}
+																	alt="Avatar"
+																	className="w-16 h-16 object-cover"
+																/>
+															</button>
+														)
+													)}
 												</div>
 
 												<div className="mt-6 flex justify-center">
 													<div className="text-center">
-														<p className="text-gray-400 text-sm mb-2">{t('profile.settings.preview')}</p>
+														<p className="text-gray-400 text-sm mb-2">
+															{t(
+																"profile.settings.preview"
+															)}
+														</p>
 														<img
 															src={avatar}
-															alt={t('profile.settings.previewAvatar')}
+															alt={t(
+																"profile.settings.previewAvatar"
+															)}
 															className="w-24 h-24 rounded-full border-4 border-purple-500/50 object-cover mx-auto"
 														/>
 													</div>
@@ -1380,21 +2120,23 @@ export default function Profile() {
 												type="submit"
 												className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
 											>
-												💾 {t('profile.settings.save')}
+												💾 {t("profile.settings.save")}
 											</button>
 											<button
 												type="button"
-												onClick={() => setEditMode(false)}
+												onClick={() =>
+													setEditMode(false)
+												}
 												className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
 											>
-												❌ {t('profile.settings.cancel')}
+												❌{" "}
+												{t("profile.settings.cancel")}
 											</button>
 										</div>
 									</form>
 								)}
 							</div>
 						)}
-
 					</div>
 				</div>
 			</div>

@@ -560,7 +560,9 @@
     "registrationSuccess": "Inscription réussie",
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
-    "error": "Erreur"
+    "error": "Erreur",
+	"invalidCode": "Code invalide",
+    "yourCode": "Votre code"
   },
   "notFound": {
     "title": "404",
@@ -825,6 +827,7 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",
+    "loading": "Chargement...",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "delete": "Supprimer",

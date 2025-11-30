@@ -2,6 +2,7 @@ import React from "react";
 
 interface ColorOption {
 	label: string;
+	value: T;
 	color: string;
 }
 
@@ -96,12 +97,13 @@ export default function ChoiceGroup<T extends string | number>(
 						typeof opt === "object" &&
 						opt !== null &&
 						"label" in opt &&
+						"value" in opt &&
 						"color" in opt;
 					const displayValue = isColorOption
 						? (opt as ColorOption).label
 						: String(opt);
 					const compareValue = isColorOption
-						? (opt as ColorOption).label
+						? (opt as ColorOption).value
 						: opt;
 					const customColor = isColorOption
 						? (opt as ColorOption).color

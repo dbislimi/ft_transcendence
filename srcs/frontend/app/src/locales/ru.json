@@ -89,7 +89,15 @@
       "finalScore": "Финальный Счет:",
       "quit": "Выйти",
       "continue": "Продолжить",
-      "replay": "Переиграть"
+      "replay": "Переиграть",
+      "tournamentChampion": "Чемпион Турнира!",
+      "victoryTitle": "Победа!",
+      "defeatTitle": "Поражение"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Ожидание противника",
+      "waitingForOpponent": "Ожидание ",
+      "gamePaused": "Игра на паузе в ожидании переподключения вашего противника"
     },
     "gameOverlay": {
       "mode": "Режим"
@@ -264,17 +272,6 @@
       "unblock": "Разблокировать",
       "noBlockedUsersTitle": "Нет заблокированных пользователей",
       "peaceMessage": "Вы в мире со всеми!",
-      "manage": "Управление друзьями",
-      "friends": "Друзья",
-      "requests": "Запросы",
-      "blocked": "Заблокированные",
-      "add": "Добавить друга",
-      "addHint": "Введите точное имя пользователя, которого хотите добавить.",
-      "online": "В сети",
-      "offline": "Не в сети",
-      "invite": "Пригласить играть",
-      "notFound": "Пока нет друзей",
-      "searchPlaceholder": "Начните с добавления кого-нибудь!",
       "noBlockedUsers": "Нет заблокированных пользователей"
     },
     "settings": {
@@ -723,7 +720,9 @@
     "registrationSuccess": "Регистрация успешна",
     "serverError": "Ошибка сервера",
     "networkError": "Ошибка сети",
-    "error": "Ошибка"
+    "error": "Ошибка",
+	"invalidCode": "Неверный код",
+    "yourCode": "Ваш код"
   },
   "notFound": {
     "title": "404",
@@ -815,6 +814,7 @@
     "close": "Закрыть",
     "save": "Сохранить",
     "saving": "Сохранение...",
+    "loading": "Загрузка...",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
     "delete": "Удалить",

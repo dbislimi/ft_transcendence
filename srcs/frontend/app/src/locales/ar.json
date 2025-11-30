@@ -89,7 +89,15 @@
       "finalScore": "النتيجة النهائية:",
       "quit": "خروج",
       "continue": "متابعة",
-      "replay": "إعادة اللعب"
+      "replay": "إعادة اللعب",
+      "tournamentChampion": "بطل البطولة!",
+      "victoryTitle": "انتصار!",
+      "defeatTitle": "هزيمة"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "في انتظار الخصم",
+      "waitingForOpponent": "في انتظار ",
+      "gamePaused": "اللعبة متوقفة مؤقتاً في انتظار إعادة اتصال خصمك"
     },
     "gameOverlay": {
       "mode": "الوضع"
@@ -264,17 +272,6 @@
       "unblock": "إلغاء الحظر",
       "noBlockedUsersTitle": "لا يوجد مستخدمون محظورون",
       "peaceMessage": "أنت في سلام مع الجميع!",
-      "manage": "إدارة الأصدقاء",
-      "friends": "الأصدقاء",
-      "requests": "الطلبات",
-      "blocked": "محظور",
-      "add": "إضافة صديق",
-      "addHint": "أدخل اسم المستخدم الدقيق للشخص الذي تريد إضافته.",
-      "online": "متصل",
-      "offline": "غير متصل",
-      "invite": "دعوة للعب",
-      "notFound": "لا يوجد أصدقاء حتى الآن",
-      "searchPlaceholder": "ابدأ بإضافة شخص ما!",
       "noBlockedUsers": "لا يوجد مستخدمون محظورون"
     },
     "settings": {
@@ -815,6 +812,7 @@
     "close": "إغلاق",
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
+    "loading": "جارٍ التحميل...",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
     "delete": "حذف",

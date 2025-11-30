@@ -5,7 +5,7 @@ import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
 import GameSettingsModal from "../Components/GameSettingsModal";
 import AccountSettingsModal from "../Components/AccountSettingsModal";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 
 const PlaceholderModal = ({ 

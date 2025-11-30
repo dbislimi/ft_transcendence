@@ -4,9 +4,9 @@ import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
 import PongLobbyList from "./PongLobbyList";
 import PlayersCountDropdown from "../game-bomb-party/ui/PlayersCountDropdown";
-import { useWebSocket } from "../context/WebSocketContext";
-import { useUser } from "../context/UserContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+import { useUser } from "../contexts/UserContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 interface PongTournamentLobbyProps {
 	onBack?: () => void;

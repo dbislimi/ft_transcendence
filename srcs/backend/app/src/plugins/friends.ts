@@ -4,14 +4,17 @@ import { verifyToken } from "../utils/auth.ts";
 import { broadcastToUsers } from "./ws-friends.ts";
 
 export default fp(async function friendsPlugin(fastify: FastifyInstance) {
-  
-  fastify.get("/friends", async (request, reply) => {
-    const decoded = verifyToken(request, reply);
-    if (!decoded) return;
-    
-    return new Promise((resolve, reject) => {
-      fastify.db.all(
-        `SELECT u.id, u.display_name, u.avatar, u.online
+	fastify.get("/friends", async (request, reply) => {
+		const decoded = verifyToken(request, reply);
+		if (!decoded) {
+			return reply
+				.code(401)
+				.send({ error: "Token invalide ou manquant" });
+		}
+
+		return new Promise((resolve) => {
+			fastify.db.all(
+				`SELECT u.id, u.display_name, u.avatar, u.online
          FROM friends f
          JOIN users u ON u.id = f.friend_id
          WHERE f.user_id = ?
@@ -21,25 +24,30 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
            OR (b.blocker_id = u.id AND b.blocked_id = ?)
          )
          ORDER BY u.online DESC, u.display_name ASC`,
-        [decoded.id, decoded.id, decoded.id],
-        (err: any, rows: any[]) => {
-          if (err) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
-          } else {
-            resolve(rows);
-          }
-        }
-      );
-    });
-  });
+				[decoded.id, decoded.id, decoded.id],
+				(err: any, rows: any[]) => {
+					if (err) {
+						reply.code(500).send({ error: "Erreur serveur" });
+					} else {
+						reply.send(rows);
+					}
+					resolve();
+				}
+			);
+		});
+	});
 
-  fastify.get("/friend-requests", async (request, reply) => {
-    const decoded = verifyToken(request, reply);
-    if (!decoded) return;
-    
-    return new Promise((resolve, reject) => {
-      fastify.db.all(
-        `SELECT fr.sender_id, u.display_name, u.avatar, fr.status, 'received' as type
+	fastify.get("/friend-requests", async (request, reply) => {
+		const decoded = verifyToken(request, reply);
+		if (!decoded) {
+			return reply
+				.code(401)
+				.send({ error: "Token invalide ou manquant" });
+		}
+
+		return new Promise((resolve) => {
+			fastify.db.all(
+				`SELECT fr.sender_id, u.display_name, u.avatar, fr.status, 'received' as type
          FROM friend_requests fr
          JOIN users u ON u.id = fr.sender_id
          WHERE fr.receiver_id = ? AND fr.status = 'pending'
@@ -49,15 +57,16 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
            OR (b.blocker_id = fr.sender_id AND b.blocked_id = ?)
          )
          ORDER BY fr.created_at DESC`,
-        [decoded.id, decoded.id, decoded.id],
-        (err1: any, received: any[]) => {
-          if (err1) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
-            return;
-          }
-          
-          fastify.db.all(
-            `SELECT fr.receiver_id as sender_id, u.display_name, u.avatar, fr.status, 'sent' as type
+				[decoded.id, decoded.id, decoded.id],
+				(err1: any, received: any[]) => {
+					if (err1) {
+						reply.code(500).send({ error: "Erreur serveur" });
+						resolve();
+						return;
+					}
+
+					fastify.db.all(
+						`SELECT fr.receiver_id as sender_id, u.display_name, u.avatar, fr.status, 'sent' as type
              FROM friend_requests fr
              JOIN users u ON u.id = fr.receiver_id
              WHERE fr.sender_id = ? AND fr.status = 'pending'
@@ -67,513 +76,765 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
                OR (b.blocker_id = fr.receiver_id AND b.blocked_id = ?)
              )
              ORDER BY fr.created_at DESC`,
-            [decoded.id, decoded.id, decoded.id],
-            (err2: any, sent: any[]) => {
-              if (err2) {
-                reject(reply.code(500).send({ error: "Erreur serveur" }));
-                return;
-              }
-              
-              resolve([...received, ...sent]);
-            }
-          );
-        }
-      );
-    });
-  });
+						[decoded.id, decoded.id, decoded.id],
+						(err2: any, sent: any[]) => {
+							if (err2) {
+								reply
+									.code(500)
+									.send({ error: "Erreur serveur" });
+							} else {
+								reply.send([...received, ...sent]);
+							}
+							resolve();
+						}
+					);
+				}
+			);
+		});
+	});
 
-  fastify.get("/blocked-users", async (request, reply) => {
-    const decoded = verifyToken(request, reply);
-    if (!decoded) return;
-    
-    return new Promise((resolve, reject) => {
-      fastify.db.all(
-        `SELECT u.id, u.display_name, u.avatar, b.created_at
+	fastify.get("/blocked-users", async (request, reply) => {
+		const decoded = verifyToken(request, reply);
+		if (!decoded) {
+			return reply
+				.code(401)
+				.send({ error: "Token invalide ou manquant" });
+		}
+
+		return new Promise((resolve) => {
+			fastify.db.all(
+				`SELECT u.id, u.display_name, u.avatar, b.created_at
          FROM blocked_users b
          JOIN users u ON u.id = b.blocked_id
          WHERE b.blocker_id = ?
          ORDER BY b.created_at DESC`,
-        [decoded.id],
-        (err: any, rows: any[]) => {
-          if (err) {
-            reject(reply.code(500).send({ error: "Erreur serveur" }));
-          } else {
-            resolve(rows);
-          }
-        }
-      );
-    });
-  });
+				[decoded.id],
+				(err: any, rows: any[]) => {
+					if (err) {
+						reply.code(500).send({ error: "Erreur serveur" });
+					} else {
+						reply.send(rows);
+					}
+					resolve();
+				}
+			);
+		});
+	});
 
-  fastify.post("/friend-requests", {
-    schema: {
-      body: {
-        type: 'object',
-        required: ['display_name'],
-        properties: {
-          display_name: { type: 'string' }
-        }
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-    
-      const { display_name } = request.body as any;
-      
-      if (!display_name?.trim()) {
-        return reply.code(400).send({ error: "Nom d'utilisateur requis" });
-      }
+	fastify.post(
+		"/friend-requests",
+		{
+			schema: {
+				body: {
+					type: "object",
+					required: ["display_name"],
+					properties: {
+						display_name: { type: "string" },
+					},
+				},
+			},
+		},
+		async (request, reply) => {
+			try {
+				const decoded = verifyToken(request, reply);
+				if (!decoded) {
+					return reply
+						.code(401)
+						.send({ error: "Token invalide ou manquant" });
+				}
 
-      const friend = await new Promise<any>((resolve, reject) => {
-        fastify.db.get("SELECT id, display_name, avatar FROM users WHERE display_name = ?", 
-          [display_name.trim()], 
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-      
-      if (!friend) {
-        return reply.code(404).send({ error: "Utilisateur introuvable" });
-      }
-      
-      if (friend.id === decoded.id) {
-        return reply.code(400).send({ error: "Impossible de s'ajouter soi-même" });
-      }
+				const { display_name } = request.body as any;
 
-      const isBlocked = await new Promise<any>((resolve, reject) => {
-        fastify.db.get(
-          `SELECT 1 FROM blocked_users WHERE 
-           (blocker_id = ? AND blocked_id = ?) OR 
-           (blocker_id = ? AND blocked_id = ?)`,
-          [decoded.id, friend.id, friend.id, decoded.id],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-      
-      if (isBlocked) {
-        return reply.code(403).send({ error: "Impossible d'envoyer une demande à cet utilisateur" });
-      }
+				if (!display_name?.trim()) {
+					return reply
+						.code(400)
+						.send({ error: "Nom d'utilisateur requis" });
+				}
 
-      const areFriends = await new Promise<any>((resolve, reject) => {
-        fastify.db.get(
-          "SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?",
-          [decoded.id, friend.id],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-      
-      if (areFriends) {
-        return reply.code(400).send({ error: "Vous êtes déjà amis" });
-      }
+				return new Promise<void>((resolve, reject) => {
+					fastify.db.serialize(() => {
+						fastify.db.run("BEGIN IMMEDIATE TRANSACTION");
 
-      const pendingRequest = await new Promise<any>((resolve, reject) => {
-        fastify.db.get(
-          "SELECT * FROM friend_requests WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status = 'pending'",
-          [decoded.id, friend.id, friend.id, decoded.id],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
+						fastify.db.get(
+							"SELECT id, display_name, avatar FROM users WHERE display_name = ?",
+							[display_name.trim()],
+							(err: any, friend: any) => {
+								if (err) {
+									fastify.db.run("ROLLBACK");
+									reject(err);
+									return;
+								}
 
-      if (pendingRequest) {
-        if (pendingRequest.sender_id === decoded.id) {
-          return reply.code(400).send({ error: "Demande déjà envoyée" });
-        } else {
-          return reply.code(400).send({ error: "Cet utilisateur vous a déjà envoyé une demande" });
-        }
-      }
+								if (!friend) {
+									fastify.db.run("ROLLBACK");
+									reply.code(404).send({
+										error: "Utilisateur introuvable",
+									});
+									resolve();
+									return;
+								}
 
-      await new Promise<void>((resolve, reject) => {
-        fastify.db.run(
-          "DELETE FROM friend_requests WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status != 'pending'",
-          [decoded.id, friend.id, friend.id, decoded.id],
-          (err: any) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+								if (friend.id === decoded.id) {
+									fastify.db.run("ROLLBACK");
+									reply.code(400).send({
+										error: "Impossible de s'ajouter soi-même",
+									});
+									resolve();
+									return;
+								}
 
-      await new Promise<void>((resolve, reject) => {
-        fastify.db.run(
-          "INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES (?, ?, 'pending')",
-          [decoded.id, friend.id],
-          (err: any) => {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+								fastify.db.get(
+									`SELECT 1 FROM blocked_users WHERE 
+                 (blocker_id = ? AND blocked_id = ?) OR 
+                 (blocker_id = ? AND blocked_id = ?)`,
+									[
+										decoded.id,
+										friend.id,
+										friend.id,
+										decoded.id,
+									],
+									(err: any, isBlocked: any) => {
+										if (err) {
+											fastify.db.run("ROLLBACK");
+											reject(err);
+											return;
+										}
 
-      try {
-        const senderInfo = await new Promise<any>((resolve, reject) => {
-          fastify.db.get("SELECT display_name, avatar FROM users WHERE id = ?", [decoded.id], (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          });
-        });
-        
-        broadcastToUsers({
-          type: "friend_request_received",
-          from: decoded.id,
-          display_name: senderInfo.display_name,
-          avatar: senderInfo.avatar
-        }, [friend.id]);
-        
-      } catch (err) {
-      }
+										if (isBlocked) {
+											fastify.db.run("ROLLBACK");
+											reply.code(403).send({
+												error: "Impossible d'envoyer une demande à cet utilisateur",
+											});
+											resolve();
+											return;
+										}
 
-      return reply.send({ message: "Demande d'ami envoyée avec succès" });
+										fastify.db.get(
+											"SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?",
+											[decoded.id, friend.id],
+											(err: any, areFriends: any) => {
+												if (err) {
+													fastify.db.run("ROLLBACK");
+													reject(err);
+													return;
+												}
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+												if (areFriends) {
+													fastify.db.run("ROLLBACK");
+													reply.code(400).send({
+														error: "Vous êtes dejà amis",
+													});
+													resolve();
+													return;
+												}
 
-  fastify.post("/friend-requests/:id/accept", async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-      
-      const { id } = request.params as any;
-      const senderId = parseInt(id);
-      
-      if (isNaN(senderId)) {
-        return reply.code(400).send({ error: "ID demande invalide" });
-      }
+												fastify.db.get(
+													"SELECT * FROM friend_requests WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status = 'pending'",
+													[
+														decoded.id,
+														friend.id,
+														friend.id,
+														decoded.id,
+													],
+													(
+														err: any,
+														pendingRequest: any
+													) => {
+														if (err) {
+															fastify.db.run(
+																"ROLLBACK"
+															);
+															reject(err);
+															return;
+														}
 
-      const isBlocked = await new Promise<any>((resolve, reject) => {
-        fastify.db.get(
-          `SELECT 1 FROM blocked_users WHERE 
-           (blocker_id = ? AND blocked_id = ?) OR 
-           (blocker_id = ? AND blocked_id = ?)`,
-          [decoded.id, senderId, senderId, decoded.id],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-      
-      if (isBlocked) {
-        return reply.code(403).send({ error: "Impossible d'accepter cette demande" });
-      }
+														if (pendingRequest) {
+															fastify.db.run(
+																"ROLLBACK"
+															);
+															if (
+																pendingRequest.sender_id ===
+																decoded.id
+															) {
+																reply
+																	.code(400)
+																	.send({
+																		error: "Demande dejà envoyee",
+																	});
+															} else {
+																reply
+																	.code(400)
+																	.send({
+																		error: "Cet utilisateur vous a dejà envoye une demande",
+																	});
+															}
+															resolve();
+															return;
+														}
 
-      const req = await new Promise<any>((resolve, reject) => {
-        fastify.db.get(
-          "SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'",
-          [senderId, decoded.id],
-          (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
-      
-      if (!req) {
-        return reply.code(404).send({ error: "Demande introuvable" });
-      }
+														fastify.db.run(
+															"DELETE FROM friend_requests WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status != 'pending'",
+															[
+																decoded.id,
+																friend.id,
+																friend.id,
+																decoded.id,
+															],
+															(err: any) => {
+																if (err) {
+																	fastify.db.run(
+																		"ROLLBACK"
+																	);
+																	reject(err);
+																	return;
+																}
 
-      await new Promise<void>((resolve, reject) => {
-        fastify.db.serialize(() => {
-          fastify.db.run("BEGIN TRANSACTION");
-          
-          fastify.db.run(
-            "UPDATE friend_requests SET status = 'accepted' WHERE sender_id = ? AND receiver_id = ?",
-            [senderId, decoded.id]
-          );
-          
-          fastify.db.run(
-            "INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)",
-            [decoded.id, senderId]
-          );
-          
-          fastify.db.run(
-            "INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)",
-            [senderId, decoded.id]
-          );
-          
-          fastify.db.run("COMMIT", (err: any) => {
-            if (err) {
-              fastify.db.run("ROLLBACK");
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
-      });
+																fastify.db.run(
+																	"INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES (?, ?, 'pending')",
+																	[
+																		decoded.id,
+																		friend.id,
+																	],
+																	(
+																		err: any
+																	) => {
+																		if (
+																			err
+																		) {
+																			fastify.db.run(
+																				"ROLLBACK"
+																			);
+																			reject(
+																				err
+																			);
+																			return;
+																		}
 
-      try {
-        const accepterInfo = await new Promise<any>((resolve, reject) => {
-          fastify.db.get("SELECT display_name, avatar FROM users WHERE id = ?", [decoded.id], (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          });
-        });
-        
-        broadcastToUsers({
-          type: "friend_request_accepted",
-          from: decoded.id,
-          display_name: accepterInfo.display_name,
-          avatar: accepterInfo.avatar
-        }, [senderId]);
-        
-      } catch (err) {
-      }
+																		fastify.db.run(
+																			"COMMIT",
+																			(
+																				err: any
+																			) => {
+																				if (
+																					err
+																				) {
+																					fastify.db.run(
+																						"ROLLBACK"
+																					);
+																					reject(
+																						err
+																					);
+																					return;
+																				}
 
-      return reply.send({ message: "Demande acceptée" });
+																				// Broadcast outside transaction (best effort)
+																				fastify.db.get(
+																					"SELECT display_name, avatar FROM users WHERE id = ?",
+																					[
+																						decoded.id,
+																					],
+																					(
+																						err: any,
+																						senderInfo: any
+																					) => {
+																						if (
+																							!err &&
+																							senderInfo
+																						) {
+																							broadcastToUsers(
+																								{
+																									type: "friend_request_received",
+																									from: decoded.id,
+																									display_name:
+																										senderInfo.display_name,
+																									avatar: senderInfo.avatar,
+																								},
+																								[
+																									friend.id,
+																								]
+																							);
+																						}
+																					}
+																				);
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+																				reply.send(
+																					{
+																						message:
+																							"Demande d'ami envoyee avec succes",
+																					}
+																				);
+																				resolve();
+																			}
+																		);
+																	}
+																);
+															}
+														);
+													}
+												);
+											}
+										);
+									}
+								);
+							}
+						);
+					});
+				});
+			} catch (error) {
+				return reply.code(500).send({ error: "Erreur serveur" });
+			}
+		}
+	);
 
-  fastify.post("/friend-requests/:id/reject", async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-      
-      const { id } = request.params as any;
-      const senderId = parseInt(id);
-      
-      if (isNaN(senderId)) {
-        return reply.code(400).send({ error: "ID demande invalide" });
-      }
+	fastify.post("/friend-requests/:id/accept", async (request, reply) => {
+		try {
+			const decoded = verifyToken(request, reply);
+			if (!decoded) {
+				return reply
+					.code(401)
+					.send({ error: "Token invalide ou manquant" });
+			}
 
-      const updated = await new Promise<number>((resolve, reject) => {
-        fastify.db.run(
-          "UPDATE friend_requests SET status = 'rejected' WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'",
-          [senderId, decoded.id],
-          function(err: any) {
-            if (err) reject(err);
-            else resolve(this.changes);
-          }
-        );
-      });
-      
-      if (updated === 0) {
-        return reply.code(404).send({ error: "Demande introuvable" });
-      }
+			const { id } = request.params as any;
+			const senderId = parseInt(id);
 
-      try {
-        const rejecterInfo = await new Promise<any>((resolve, reject) => {
-          fastify.db.get("SELECT display_name, avatar FROM users WHERE id = ?", [decoded.id], (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          });
-        });
-        
-        broadcastToUsers({
-          type: "friend_request_rejected",
-          from: decoded.id,
-          display_name: rejecterInfo.display_name,
-          avatar: rejecterInfo.avatar
-        }, [senderId]);
-        
-      } catch (err) {
-      }
+			if (isNaN(senderId)) {
+				return reply.code(400).send({ error: "ID demande invalide" });
+			}
 
-      return reply.send({ message: "Demande rejetée" });
+			return new Promise<void>((resolve, reject) => {
+				fastify.db.serialize(() => {
+					fastify.db.run("BEGIN IMMEDIATE TRANSACTION");
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+					fastify.db.get(
+						`SELECT 1 FROM blocked_users WHERE
+             (blocker_id = ? AND blocked_id = ?) OR
+             (blocker_id = ? AND blocked_id = ?)`,
+						[decoded.id, senderId, senderId, decoded.id],
+						(err: any, isBlocked: any) => {
+							if (err) {
+								fastify.db.run("ROLLBACK");
+								reject(err);
+								return;
+							}
 
-  fastify.delete("/friends/:id", async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-      
-      const { id } = request.params as any;
-      const friendId = parseInt(id);
-      
-      if (isNaN(friendId)) {
-        return reply.code(400).send({ error: "ID ami invalide" });
-      }
+							if (isBlocked) {
+								fastify.db.run("ROLLBACK");
+								reply.code(403).send({
+									error: "Impossible d'accepter cette demande",
+								});
+								resolve();
+								return;
+							}
 
-      await new Promise<void>((resolve, reject) => {
-        fastify.db.serialize(() => {
-          fastify.db.run("BEGIN TRANSACTION");
-          
-          fastify.db.run("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", 
-            [decoded.id, friendId]
-          );
-          
-          fastify.db.run("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", 
-            [friendId, decoded.id]
-          );
-          
-          fastify.db.run("COMMIT", (err: any) => {
-            if (err) {
-              fastify.db.run("ROLLBACK");
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
-      });
+							fastify.db.get(
+								"SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'",
+								[senderId, decoded.id],
+								(err: any, req: any) => {
+									if (err) {
+										fastify.db.run("ROLLBACK");
+										reject(err);
+										return;
+									}
 
-      try {
-        const removerInfo = await new Promise<any>((resolve, reject) => {
-          fastify.db.get("SELECT display_name, avatar FROM users WHERE id = ?", [decoded.id], (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          });
-        });
-        
-        broadcastToUsers({
-          type: "friend_removed",
-          from: decoded.id,
-          display_name: removerInfo.display_name,
-          avatar: removerInfo.avatar
-        }, [friendId]);
-        
-      } catch (err) {
-      }
+									if (!req) {
+										fastify.db.run("ROLLBACK");
+										reply.code(404).send({
+											error: "Demande introuvable",
+										});
+										resolve();
+										return;
+									}
 
-      return reply.send({ message: "Ami supprimé" });
+									fastify.db.run(
+										"UPDATE friend_requests SET status = 'accepted' WHERE sender_id = ? AND receiver_id = ?",
+										[senderId, decoded.id],
+										(err: any) => {
+											if (err) {
+												fastify.db.run("ROLLBACK");
+												reject(err);
+												return;
+											}
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+											fastify.db.run(
+												"INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)",
+												[decoded.id, senderId],
+												(err: any) => {
+													if (err) {
+														fastify.db.run(
+															"ROLLBACK"
+														);
+														reject(err);
+														return;
+													}
 
-  fastify.post("/block-user", {
-    schema: {
-      body: {
-        type: 'object',
-        required: ['user_id'],
-        properties: {
-          user_id: { type: 'number' }
-        }
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-      
-      const { user_id } = request.body as any;
-      
-      if (!user_id || user_id === decoded.id) {
-        return reply.code(400).send({ error: "ID utilisateur invalide" });
-      }
+													fastify.db.run(
+														"INSERT OR IGNORE INTO friends (user_id, friend_id) VALUES (?, ?)",
+														[senderId, decoded.id],
+														(err: any) => {
+															if (err) {
+																fastify.db.run(
+																	"ROLLBACK"
+																);
+																reject(err);
+																return;
+															}
 
-      const userExists = await new Promise<any>((resolve, reject) => {
-        fastify.db.get("SELECT 1 FROM users WHERE id = ?", [user_id], (err: any, row: any) => {
-          if (err) reject(err);
-          else resolve(row);
-        });
-      });
-      
-      if (!userExists) {
-        return reply.code(404).send({ error: "Utilisateur introuvable" });
-      }
+															fastify.db.run(
+																"COMMIT",
+																(err: any) => {
+																	if (err) {
+																		fastify.db.run(
+																			"ROLLBACK"
+																		);
+																		reject(
+																			err
+																		);
+																		return;
+																	}
 
-      await new Promise<void>((resolve, reject) => {
-        fastify.db.serialize(() => {
-          fastify.db.run("BEGIN TRANSACTION");
-          
-          fastify.db.run(
-            "INSERT OR IGNORE INTO blocked_users (blocker_id, blocked_id) VALUES (?, ?)",
-            [decoded.id, user_id]
-          );
-          
-          fastify.db.run("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", 
-            [decoded.id, user_id]
-          );
-          
-          fastify.db.run("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", 
-            [user_id, decoded.id]
-          );
-          
-          fastify.db.run(
-            "DELETE FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
-            [decoded.id, user_id, user_id, decoded.id]
-          );
-          
-          fastify.db.run("COMMIT", (err: any) => {
-            if (err) {
-              fastify.db.run("ROLLBACK");
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
-      });
+																	// Broadcast outside transaction
+																	fastify.db.get(
+																		"SELECT display_name, avatar FROM users WHERE id = ?",
+																		[
+																			decoded.id,
+																		],
+																		(
+																			err: any,
+																			accepterInfo: any
+																		) => {
+																			if (
+																				!err &&
+																				accepterInfo
+																			) {
+																				broadcastToUsers(
+																					{
+																						type: "friend_request_accepted",
+																						from: decoded.id,
+																						display_name:
+																							accepterInfo.display_name,
+																						avatar: accepterInfo.avatar,
+																					},
+																					[
+																						senderId,
+																					]
+																				);
+																			}
+																		}
+																	);
 
-      try {
-        const blockerInfo = await new Promise<any>((resolve, reject) => {
-          fastify.db.get("SELECT display_name, avatar FROM users WHERE id = ?", [decoded.id], (err: any, row: any) => {
-            if (err) reject(err);
-            else resolve(row);
-          });
-        });
-        
-        broadcastToUsers({
-          type: "user_blocked",
-          from: decoded.id,
-          display_name: blockerInfo.display_name,
-          avatar: blockerInfo.avatar
-        }, [user_id]);
-        
-      } catch (err) {
-      }
+																	reply.send({
+																		message:
+																			"Demande acceptee",
+																	});
+																	resolve();
+																}
+															);
+														}
+													);
+												}
+											);
+										}
+									);
+								}
+							);
+						}
+					);
+				});
+			});
+		} catch (error) {
+			return reply.code(500).send({ error: "Erreur serveur" });
+		}
+	});
 
-      return reply.send({ message: "Utilisateur bloqué avec succès" });
+	fastify.post("/friend-requests/:id/reject", async (request, reply) => {
+		try {
+			const decoded = verifyToken(request, reply);
+			if (!decoded) {
+				return reply
+					.code(401)
+					.send({ error: "Token invalide ou manquant" });
+			}
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+			const { id } = request.params as any;
+			const senderId = parseInt(id);
 
-  fastify.delete("/blocked-users/:id", async (request, reply) => {
-    try {
-      const decoded = verifyToken(request, reply);
-      if (!decoded) return;
-      
-      const { id } = request.params as any;
-      const blockedId = parseInt(id);
-      
-      if (isNaN(blockedId)) {
-        return reply.code(400).send({ error: "ID utilisateur invalide" });
-      }
+			if (isNaN(senderId)) {
+				return reply.code(400).send({ error: "ID demande invalide" });
+			}
 
-      const deleted = await new Promise<number>((resolve, reject) => {
-        fastify.db.run(
-          "DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?",
-          [decoded.id, blockedId],
-          function(err: any) {
-            if (err) reject(err);
-            else resolve(this.changes);
-          }
-        );
-      });
-      
-      if (deleted === 0) {
-        return reply.code(404).send({ error: "Utilisateur non bloqué" });
-      }
+			const updated = await new Promise<number>((resolve, reject) => {
+				fastify.db.run(
+					"UPDATE friend_requests SET status = 'rejected' WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'",
+					[senderId, decoded.id],
+					function (err: any) {
+						if (err) reject(err);
+						else resolve(this.changes);
+					}
+				);
+			});
 
-      return reply.send({ message: "Utilisateur débloqué avec succès" });
+			if (updated === 0) {
+				return reply.code(404).send({ error: "Demande introuvable" });
+			}
 
-    } catch (error) {
-      return reply.code(500).send({ error: "Erreur serveur" });
-    }
-  });
+			try {
+				const rejecterInfo = await new Promise<any>(
+					(resolve, reject) => {
+						fastify.db.get(
+							"SELECT display_name, avatar FROM users WHERE id = ?",
+							[decoded.id],
+							(err: any, row: any) => {
+								if (err) reject(err);
+								else resolve(row);
+							}
+						);
+					}
+				);
+
+				broadcastToUsers(
+					{
+						type: "friend_request_rejected",
+						from: decoded.id,
+						display_name: rejecterInfo.display_name,
+						avatar: rejecterInfo.avatar,
+					},
+					[senderId]
+				);
+			} catch (err) {}
+
+			return reply.send({ message: "Demande rejetee" });
+		} catch (error) {
+			return reply.code(500).send({ error: "Erreur serveur" });
+		}
+	});
+
+	fastify.delete("/friends/:id", async (request, reply) => {
+		try {
+			const decoded = verifyToken(request, reply);
+			if (!decoded) {
+				return reply
+					.code(401)
+					.send({ error: "Token invalide ou manquant" });
+			}
+
+			const { id } = request.params as any;
+			const friendId = parseInt(id);
+
+			if (isNaN(friendId)) {
+				return reply.code(400).send({ error: "ID ami invalide" });
+			}
+
+			await new Promise<void>((resolve, reject) => {
+				fastify.db.serialize(() => {
+					fastify.db.run("BEGIN IMMEDIATE TRANSACTION");
+
+					fastify.db.run(
+						"DELETE FROM friends WHERE user_id = ? AND friend_id = ?",
+						[decoded.id, friendId]
+					);
+
+					fastify.db.run(
+						"DELETE FROM friends WHERE user_id = ? AND friend_id = ?",
+						[friendId, decoded.id]
+					);
+
+					fastify.db.run("COMMIT", (err: any) => {
+						if (err) {
+							fastify.db.run("ROLLBACK");
+							reject(err);
+						} else {
+							resolve();
+						}
+					});
+				});
+			});
+
+			try {
+				const removerInfo = await new Promise<any>(
+					(resolve, reject) => {
+						fastify.db.get(
+							"SELECT display_name, avatar FROM users WHERE id = ?",
+							[decoded.id],
+							(err: any, row: any) => {
+								if (err) reject(err);
+								else resolve(row);
+							}
+						);
+					}
+				);
+
+				broadcastToUsers(
+					{
+						type: "friend_removed",
+						from: decoded.id,
+						display_name: removerInfo.display_name,
+						avatar: removerInfo.avatar,
+					},
+					[friendId]
+				);
+			} catch (err) {}
+
+			return reply.send({ message: "Ami supprime" });
+		} catch (error) {
+			return reply.code(500).send({ error: "Erreur serveur" });
+		}
+	});
+
+	fastify.post(
+		"/block-user",
+		{
+			schema: {
+				body: {
+					type: "object",
+					required: ["user_id"],
+					properties: {
+						user_id: { type: "number" },
+					},
+				},
+			},
+		},
+		async (request, reply) => {
+			try {
+				const decoded = verifyToken(request, reply);
+				if (!decoded) {
+					return reply
+						.code(401)
+						.send({ error: "Token invalide ou manquant" });
+				}
+
+				const { user_id } = request.body as any;
+
+				if (!user_id || user_id === decoded.id) {
+					return reply
+						.code(400)
+						.send({ error: "ID utilisateur invalide" });
+				}
+
+				const userExists = await new Promise<any>((resolve, reject) => {
+					fastify.db.get(
+						"SELECT 1 FROM users WHERE id = ?",
+						[user_id],
+						(err: any, row: any) => {
+							if (err) reject(err);
+							else resolve(row);
+						}
+					);
+				});
+
+				if (!userExists) {
+					return reply
+						.code(404)
+						.send({ error: "Utilisateur introuvable" });
+				}
+
+				await new Promise<void>((resolve, reject) => {
+					fastify.db.serialize(() => {
+						fastify.db.run("BEGIN IMMEDIATE TRANSACTION");
+
+						fastify.db.run(
+							"INSERT OR IGNORE INTO blocked_users (blocker_id, blocked_id) VALUES (?, ?)",
+							[decoded.id, user_id]
+						);
+
+						fastify.db.run(
+							"DELETE FROM friends WHERE user_id = ? AND friend_id = ?",
+							[decoded.id, user_id]
+						);
+
+						fastify.db.run(
+							"DELETE FROM friends WHERE user_id = ? AND friend_id = ?",
+							[user_id, decoded.id]
+						);
+
+						fastify.db.run(
+							"DELETE FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
+							[decoded.id, user_id, user_id, decoded.id]
+						);
+
+						fastify.db.run("COMMIT", (err: any) => {
+							if (err) {
+								fastify.db.run("ROLLBACK");
+								reject(err);
+							} else {
+								resolve();
+							}
+						});
+					});
+				});
+
+				try {
+					const blockerInfo = await new Promise<any>(
+						(resolve, reject) => {
+							fastify.db.get(
+								"SELECT display_name, avatar FROM users WHERE id = ?",
+								[decoded.id],
+								(err: any, row: any) => {
+									if (err) reject(err);
+									else resolve(row);
+								}
+							);
+						}
+					);
+
+					broadcastToUsers(
+						{
+							type: "user_blocked",
+							from: decoded.id,
+							display_name: blockerInfo.display_name,
+							avatar: blockerInfo.avatar,
+						},
+						[user_id]
+					);
+				} catch (err) {}
+
+				return reply.send({
+					message: "Utilisateur bloque avec succes",
+				});
+			} catch (error) {
+				return reply.code(500).send({ error: "Erreur serveur" });
+			}
+		}
+	);
+
+	fastify.delete("/blocked-users/:id", async (request, reply) => {
+		try {
+			const decoded = verifyToken(request, reply);
+			if (!decoded) {
+				return reply
+					.code(401)
+					.send({ error: "Token invalide ou manquant" });
+			}
+
+			const { id } = request.params as any;
+			const blockedId = parseInt(id);
+
+			if (isNaN(blockedId)) {
+				return reply
+					.code(400)
+					.send({ error: "ID utilisateur invalide" });
+			}
+
+			const deleted = await new Promise<number>((resolve, reject) => {
+				fastify.db.run(
+					"DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?",
+					[decoded.id, blockedId],
+					function (err: any) {
+						if (err) reject(err);
+						else resolve(this.changes);
+					}
+				);
+			});
+
+			if (deleted === 0) {
+				return reply
+					.code(404)
+					.send({ error: "Utilisateur non bloque" });
+			}
+
+			return reply.send({ message: "Utilisateur debloque avec succes" });
+		} catch (error) {
+			return reply.code(500).send({ error: "Erreur serveur" });
+		}
+	});
 });

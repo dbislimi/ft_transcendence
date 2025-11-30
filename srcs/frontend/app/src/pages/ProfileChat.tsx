@@ -1,152 +1,168 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 import SpaceBackground from "../Components/SpaceBackground";
 import { API_BASE_URL } from "../config/api";
 
-
 interface PublicUser {
-  id: number;
-  display_name: string;
-  avatar?: string;
-  online?: number | boolean;
-  created_at?: string;
+	id: number;
+	display_name: string;
+	avatar?: string;
+	online?: number | boolean;
+	created_at?: string;
 }
 
 interface Stats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  botWins: number;
-  playerWins: number;
-  tournamentsWon: number;
+	totalGames: number;
+	wins: number;
+	losses: number;
+	winRate: number;
+	botWins: number;
+	playerWins: number;
+	tournamentsWon: number;
 }
 
 interface Match {
-  id: number;
-  opponent: {
-    name: string;
-    avatar: string;
-    isBot: boolean;
-  };
-  isWinner: boolean;
-  scores: number[] | null;
-  date: string;
-  matchType?: string;
+	id: number;
+	opponent: {
+		name: string;
+		avatar: string;
+		isBot: boolean;
+	};
+	isWinner: boolean;
+	scores: number[] | null;
+	date: string;
+	matchType?: string;
 }
 
 export default function PublicProfile() {
-  const navigate = useNavigate();
-  const { name } = useParams<{ name: string }>(); 
-  const { user } = useUser();
-  
-  const [activeTab, setActiveTab] = useState<"overview" | "stats" | "history">("overview");
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  const [targetUser, setTargetUser] = useState<PublicUser | null>(null);
-  const [stats, setStats] = useState<Stats>({
-    totalGames: 0, wins: 0, losses: 0, winRate: 0, botWins: 0, playerWins: 0, tournamentsWon: 0
-  });
-  const [matchHistory, setMatchHistory] = useState<Match[]>([]);
-  
-  const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+	const navigate = useNavigate();
+	const { name } = useParams<{ name: string }>();
+	const { user } = useUser();
 
+	const [activeTab, setActiveTab] = useState<
+		"overview" | "stats" | "history"
+	>("overview");
+	const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (name && user) {
-      const decodedName = decodeURIComponent(name);
-      loadProfileData(decodedName);
-    }
-  }, [name, user]);
+	const [targetUser, setTargetUser] = useState<PublicUser | null>(null);
+	const [stats, setStats] = useState<Stats>({
+		totalGames: 0,
+		wins: 0,
+		losses: 0,
+		winRate: 0,
+		botWins: 0,
+		playerWins: 0,
+		tournamentsWon: 0,
+	});
+	const [matchHistory, setMatchHistory] = useState<Match[]>([]);
 
-  const loadProfileData = async (userName: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const user = await fetchUserByName(userName);
-      
-      if (user && user.id) {
-        setTargetUser(user);
-        
-        await Promise.all([
-          fetchUserStats(user.id),
-          fetchMatchHistory(user.id, 1)
-        ]);
-        
-        setTimeout(() => setIsLoaded(true), 100);
-      } else {
-        setError(t('errors.userNotFound'));
-      }
-    } catch (err) {
-      console.error("Erreur chargement profil:", err);
-      setError("Erreur lors du chargement du profil.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	const { t } = useTranslation();
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-  const fetchUserByName = async (userName: string) => {
-    const res = await fetch(`${API_BASE_URL}/api/users/${encodeURIComponent(userName)}`, { 
-      headers: { Authorization: `Bearer ${user}` } 
-    });
-    
-    if (!res.ok) {
-      if (res.status === 404) return null;
-      throw new Error(t('errors.network'));
-    }
-    return await res.json();
-  };
+	const [historyPage, setHistoryPage] = useState(1);
+	const [historyLoading, setHistoryLoading] = useState(false);
+	const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
-  const fetchUserStats = async (userId: number) => {
-    const res = await fetch(`${API_BASE_URL}/api/user-stats/${userId}`, { 
-      headers: { Authorization: `Bearer ${user}` } 
-    });
-    if (res.ok) setStats(await res.json());
-  };
+	useEffect(() => {
+		if (name && user) {
+			const decodedName = decodeURIComponent(name);
+			loadProfileData(decodedName);
+		}
+	}, [name, user]);
 
-  const fetchMatchHistory = async (userId: number, page: number) => {
-    setHistoryLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/match-history/${userId}?page=${page}&limit=10`, {
-        headers: { Authorization: `Bearer ${user}` }
-      });
-      
-      if (res.ok) {
-        const matches = await res.json();
-        if (page === 1) {
-          setMatchHistory(matches);
-        } else {
-          setMatchHistory(prev => [...prev, ...matches]);
-        }
-        setHasMoreHistory(matches.length === 10);
-      }
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
+	const loadProfileData = async (userName: string) => {
+		setIsLoading(true);
+		setError(null);
+		try {
+			const user = await fetchUserByName(userName);
 
-  const loadMoreHistory = () => {
-    if (!historyLoading && hasMoreHistory && targetUser) {
-      const nextPage = historyPage + 1;
-      setHistoryPage(nextPage);
-      fetchMatchHistory(targetUser.id, nextPage);
-    }
-  };
+			if (user && user.id) {
+				setTargetUser(user);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-  };
+				await Promise.all([
+					fetchUserStats(user.id),
+					fetchMatchHistory(user.id, 1),
+				]);
+
+				setTimeout(() => setIsLoaded(true), 100);
+			} else {
+				setError(t("errors.userNotFound"));
+			}
+		} catch (err) {
+			console.error("Erreur chargement profil:", err);
+			setError("Erreur lors du chargement du profil.");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const fetchUserByName = async (userName: string) => {
+		const res = await fetch(
+			`${API_BASE_URL}/api/users/${encodeURIComponent(userName)}`,
+			{
+				headers: { Authorization: `Bearer ${user}` },
+			}
+		);
+
+		if (!res.ok) {
+			if (res.status === 404) return null;
+			throw new Error(t("errors.network"));
+		}
+		return await res.json();
+	};
+
+	const fetchUserStats = async (userId: number) => {
+		const res = await fetch(`${API_BASE_URL}/api/user-stats/${userId}`, {
+			headers: { Authorization: `Bearer ${user}` },
+		});
+		if (res.ok) setStats(await res.json());
+	};
+
+	const fetchMatchHistory = async (userId: number, page: number) => {
+		setHistoryLoading(true);
+		try {
+			const res = await fetch(
+				`${API_BASE_URL}/api/match-history/${userId}?page=${page}&limit=10`,
+				{
+					headers: { Authorization: `Bearer ${user}` },
+				}
+			);
+
+			if (res.ok) {
+				const matches = await res.json();
+				if (page === 1) {
+					setMatchHistory(matches);
+				} else {
+					setMatchHistory((prev) => [...prev, ...matches]);
+				}
+				setHasMoreHistory(matches.length === 10);
+			}
+		} finally {
+			setHistoryLoading(false);
+		}
+	};
+
+	const loadMoreHistory = () => {
+		if (!historyLoading && hasMoreHistory && targetUser) {
+			const nextPage = historyPage + 1;
+			setHistoryPage(nextPage);
+			fetchMatchHistory(targetUser.id, nextPage);
+		}
+	};
+
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleDateString("fr-FR", {
+			day: "numeric",
+			month: "short",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	};
 
   if (isLoading) {
     return (
@@ -162,7 +178,7 @@ export default function PublicProfile() {
     );
   }
 
-  // --- Render : Error (User Not Found) ---
+	// --- Render : Error (User Not Found) ---
 
   if (error || !targetUser) {
     return (
@@ -186,19 +202,22 @@ export default function PublicProfile() {
     );
   }
 
-  // --- Render : Main Profile ---
+	// --- Render : Main Profile ---
 
-  return (
-    <>
-      <SpaceBackground />
-      <div className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* HEADER PROFIL */}
-          <div className="bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 mb-8 shadow-2xl relative overflow-hidden">
-            {/* Effet de fond décoratif */}
-            <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+	return (
+		<>
+			<SpaceBackground />
+			<div
+				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${
+					isLoaded ? "opacity-100" : "opacity-0"
+				}`}
+			>
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+					{/* HEADER PROFIL */}
+					<div className="bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 mb-8 shadow-2xl relative overflow-hidden">
+						{/* Effet de fond décoratif */}
+						<div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+						<div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
             <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
               

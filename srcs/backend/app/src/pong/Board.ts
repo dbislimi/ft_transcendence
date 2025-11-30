@@ -4,11 +4,6 @@ import BotController, { EasyBot, MediumBot, HardBot } from "./Bot.ts";
 import { BonusBase as Bonus } from "./Bonus.ts";
 import { Bigger, Smaller, Faster } from "./Bonus.ts";
 import plotRewards from "./chart.ts";
-import {
-	DEFAULT_MAX_SCORE,
-	DEFAULT_BONUS_TIME,
-	DEFAULT_BONUS_RADIUS,
-} from "./config.ts";
 interface PlayerData {
 	size: number;
 	y: number;
@@ -279,28 +274,16 @@ export default class Board {
 		}
 	}
 	updateBot(dt: number) {
-		// debug: verifier l'etat du tableau une fois par seconde
-		if (this.elapsedTime >= 1) {
-			console.log(`[updateBot] botController.length=${this.botController.length}`);
-			console.log(`[updateBot] bot[0]=${this.botController[0] ? 'EXISTS' : 'undefined'}, bot[1]=${this.botController[1] ? 'EXISTS' : 'undefined'}`);
-		}
-
-		// methode manuelle pour eviter les problemes avec forEach sur sparse arrays
-		for (let index = 0; index < this.botController.length; index++) {
-			const bot = this.botController[index];
+		for (let i = 0; i < this.botController.length; i++) {
+			const bot = this.botController[i];
 			if (!bot) continue;
 
 			bot.aiLag += dt;
 			if (this.training || bot.aiLag >= 1) {
-				bot.takeDecision(this, this.players[index]!);
+				bot.takeDecision(this, this.players[i]!);
 				bot.aiLag -= 1;
 			}
-			if (bot.reachedDecisionLimit()) {
-				console.log("Decision limit reached");
-				this.onWin(0);
-				return false;
-			}
-			bot.update(this.players[index]!, this, dt);
+			bot.update(this.players[i]!, this, dt);
 		}
 		return true;
 	}

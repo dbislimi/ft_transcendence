@@ -37,7 +37,7 @@ export default function GameOverlay({
 	const roundLabel = renderRoundLabel();
 
 	return (
-		<div className="absolute top-4 right-4 z-50">
+		<div className="absolute top-4 right-4 z-80">
 			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
 				<div className="font-semibold">Mode</div>
 				<div className="mt-1">{modeLabel}</div>

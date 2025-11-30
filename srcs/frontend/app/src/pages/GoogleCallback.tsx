@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 export default function GoogleCallback() {
     const [searchParams] = useSearchParams();
@@ -8,10 +8,10 @@ export default function GoogleCallback() {
     const { user } = useUser();
     const { setToken } = useUser();
 
-    useEffect(() => {
-        const token = searchParams.get("token");
-        const require2fa = searchParams.get("require2fa");
-        const userId = searchParams.get("userId");
+	useEffect(() => {
+		const token = searchParams.get("token");
+		const require2fa = searchParams.get("require2fa");
+		const userId = searchParams.get("userId");
 
         if (require2fa === "1" && userId) {
             sessionStorage.setItem("for2FaUserId", userId);
@@ -36,9 +36,9 @@ export default function GoogleCallback() {
         }
     }, [searchParams, navigate, user]);
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-    );
+	return (
+		<div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+			<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+		</div>
+	);
 }

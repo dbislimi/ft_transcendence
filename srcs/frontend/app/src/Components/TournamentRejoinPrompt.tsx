@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useNotifications } from "../context/NotificationContext";
+import { useNotifications } from "../contexts/NotificationContext";
 import { useTranslation } from "react-i18next";
 
 export default function TournamentRejoinPrompt(): JSX.Element | null {
@@ -28,7 +28,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 							label: t("notifications.tournament.rejoinButton"),
 							primary: true,
 							onPress: () => {
-								navigate("/pong?mode=online");
+								navigate("/pong");
 								pongWsRef.current?.send(
 									JSON.stringify({
 										event: "rejoin",
@@ -96,7 +96,7 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 	if (!visible) return null;
 
 	const onJoin = () => {
-		navigate("/pong?mode=online");
+		navigate("/pong");
 		pongWsRef.current?.send(
 			JSON.stringify({
 				event: "rejoin",

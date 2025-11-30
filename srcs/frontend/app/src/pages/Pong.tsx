@@ -4,21 +4,20 @@ import GameOverlay from "../pong/GameOverlay";
 import GameOverOverlay from "../pong/GameOverOverlay";
 import Countdown from "../Components/Countdown";
 import SearchingOverlay from "../pong/SearchingOverlay";
-import WaitingOverlay from "../Components/WaitingOverlay";
+import WaitingOverlay from "../pong/WaitingOverlay";
 import { ReadyButton } from "../pong/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
 import BackToMenuButton from "../Components/BackToMenuButton";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import PongRulesScreen from "../pong/PongRulesScreen";
 import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
-import ActionButton from "../Components/ActionButton";
 import { SettingsCard } from "../pong/SettingsCard";
 import type { GameState } from "../types/GameState";
 
-import { useUser } from "../context/UserContext";
-import { useGameSession } from "../context/GameSessionContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useUser } from "../contexts/UserContext";
+import { useGameSession } from "../contexts/GameSessionContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 type PlayerLabels = {
 	self: string;
@@ -37,20 +36,19 @@ type GameOverData = {
 };
 
 type Ui =
+	| { kind: "search" }
 	| { kind: "rules" }
 	| { kind: "lobby" }
-	| { kind: "menu" } // Keeping menu for fallback or transition, but rules is the main entry
-	| { kind: "search" }
 	| { kind: "training" }
 	| { kind: "play" }
 	| { kind: "wait"; opponentName: string }
 	| {
-		kind: "ready";
-		remaining: number;
-		selfReady: boolean;
-		opponentReady: boolean;
-		opponentName: string;
-	}
+			kind: "ready";
+			remaining: number;
+			selfReady: boolean;
+			opponentReady: boolean;
+			opponentName: string;
+	  }
 	| { kind: "countdown"; value: number }
 	| { kind: "result"; gameOver: GameOverData }
 	| { kind: "settings" };
@@ -83,7 +81,6 @@ export default function Pong() {
 	const activeSessionRef = useRef(false);
 	const gameRef = useRef<GameState>(initGameState());
 	const controlsReadyRef = useRef(false);
-	const wsRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 
@@ -97,12 +94,12 @@ export default function Pong() {
 
 	const labels = useMemo((): PlayerLabels => {
 		console.log(
-			`Labels: ${view.kind}, ${view.kind === "result" && view.gameOver?.opponent
+			`Labels: ${view.kind}, ${
+				view.kind === "result" && view.gameOver?.opponent
 			}`
 		);
-		const userName = user?.display_name || user?.name;
-		const defaultSelf = userName && userName.trim()
-			? `${userName} (You)`
+		const defaultSelf = user?.name
+			? `${user.name} (You)`
 			: PLAYER_LABELS.self;
 		if (view.kind === "training" && trainingLabelsRef.current)
 			return trainingLabelsRef.current;
@@ -148,6 +145,7 @@ export default function Pong() {
 		(data: any) => {
 			if (!data) return;
 			let remaining;
+			console.log(data);
 			switch (data.event) {
 				case "searching":
 					applyTournamentRound(data.body);
@@ -213,7 +211,7 @@ export default function Pong() {
 						break;
 					}
 					activeSessionRef.current = false;
-					const td = session?.tournamentDepth;
+					const td = data.body.tournamentDepth;
 					const isTournamentFinalWin =
 						type === "tournament" &&
 						didWin === true &&
@@ -235,11 +233,11 @@ export default function Pong() {
 				case "error":
 					if (data.msg === "tournamentId")
 						window.alert(
-							"Le nom de tournoi est deja utilise. Choisissez-en un autre"
+							"Le nom de tournoi est deja utilisé. Choisissez-en un autre"
 						);
 					else if (data.msg === "rejoin_active") {
 						window.alert(
-							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du delai."
+							"Vous avez une partie de tournoi en attente de reconnexion. Reprenez-la ou attendez la fin du délai."
 						);
 						setView({ kind: "rules" });
 					}
@@ -275,12 +273,6 @@ export default function Pong() {
 
 	useEffect(() => {
 		return () => {
-			// Clear any pending retry interval
-			if (wsRetryIntervalRef.current) {
-				clearInterval(wsRetryIntervalRef.current);
-				wsRetryIntervalRef.current = null;
-			}
-			
 			pongWsRef?.current?.send(
 				JSON.stringify({
 					event: "stop",
@@ -297,7 +289,7 @@ export default function Pong() {
 		(forceOnline: boolean = false) => {
 			const stopType =
 				forceOnline ||
-					(!trainingRef.current && session?.sessionType !== "offline")
+				(!trainingRef.current && session?.sessionType !== "offline")
 					? "online"
 					: "offline";
 			pongWsRef?.current?.send(
@@ -315,51 +307,9 @@ export default function Pong() {
 		(body: Record<string, unknown>) => {
 			if (!trainingRef.current) lastStartPayloadRef.current = body;
 			activeSessionRef.current = true;
-			
-			// Clear any existing retry interval
-			if (wsRetryIntervalRef.current) {
-				clearInterval(wsRetryIntervalRef.current);
-				wsRetryIntervalRef.current = null;
-			}
-			
-			const trySend = () => {
-				if (pongWsRef.current?.readyState === WebSocket.OPEN) {
-					pongWsRef.current.send(JSON.stringify({ event: "start", body }));
-					console.log("[Pong] Start event sent:", body.action);
-					return true;
-				}
-				return false;
-			};
-
-			// Try to send immediately
-			if (trySend()) return;
-
-			// If not ready, wait for connection with retry mechanism
-			console.log("[Pong] WebSocket not ready (state:", pongWsRef.current?.readyState, "), waiting for connection...");
-			let attempts = 0;
-			const maxAttempts = 20; // 20 attempts * 100ms = 2 seconds max
-			
-			wsRetryIntervalRef.current = setInterval(() => {
-				attempts++;
-				if (trySend()) {
-					console.log("[Pong] WebSocket connected after", attempts * 100, "ms, event sent successfully");
-					if (wsRetryIntervalRef.current) {
-						clearInterval(wsRetryIntervalRef.current);
-						wsRetryIntervalRef.current = null;
-					}
-				} else if (attempts >= maxAttempts) {
-					console.error("[Pong] WebSocket connection timeout after 2 seconds. Current state:", pongWsRef.current?.readyState);
-					if (wsRetryIntervalRef.current) {
-						clearInterval(wsRetryIntervalRef.current);
-						wsRetryIntervalRef.current = null;
-					}
-					// Try to show error to user
-					window.alert("Erreur: Impossible de se connecter au serveur de jeu. Veuillez réessayer.");
-					setView({ kind: "rules" });
-				}
-			}, 100);
+			pongWsRef.current?.send(JSON.stringify({ event: "start", body }));
 		},
-		[pongWsRef, setView]
+		[pongWsRef]
 	);
 
 	const handleBackToMenu = useCallback(() => {
@@ -423,15 +373,15 @@ export default function Pong() {
 			console.log("PAYLOAAAADD");
 			if (payload.action === "play_offline") {
 				const diff = payload.diff ?? null;
-				const userName = user?.display_name || user?.name;
 				const offlineLabels: PlayerLabels = diff
 					? {
-						self: userName && userName.trim()
-							? `${userName} (You)`
-							: PLAYER_LABELS.self,
-						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
+							self: user?.name
+								? `${user.name} (You)`
+								: PLAYER_LABELS.self,
+							opponent: `Bot (${
+								diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
-					}
+					  }
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
@@ -489,15 +439,15 @@ export default function Pong() {
 				const { gamemode, botDiff } = config;
 
 				const diff = gamemode === "solo" ? botDiff : null;
-				const userName = user?.display_name || user?.name;
 				const offlineLabels: PlayerLabels = diff
 					? {
-						self: userName && userName.trim()
-							? `${userName} (You)`
-							: PLAYER_LABELS.self,
-						opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
+							self: user?.name
+								? `${user.name} (You)`
+								: PLAYER_LABELS.self,
+							opponent: `Bot (${
+								diff.charAt(0).toUpperCase() + diff.slice(1)
 							})`,
-					}
+					  }
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
@@ -582,19 +532,16 @@ export default function Pong() {
 				side={session?.side ?? 0}
 			/>
 			{waitingView && showGameField && (
-				<WaitingOverlay
-					onQuit={handleBackToMenu}
-					onTrain={(d) => console.log("Training not implemented yet", d)}
-				/>
+				<WaitingOverlay opponentName={waitingView.opponentName} />
 			)}
 			{(isSearching ||
 				isTraining ||
 				(view.kind === "play" &&
 					session?.sessionType === "offline")) && (
-					<div className="absolute top-4 left-4 z-50">
-						<BackToMenuButton onClick={handleBackToMenu} />
-					</div>
-				)}
+				<div className="absolute top-4 left-4 z-80">
+					<BackToMenuButton onClick={handleBackToMenu} />
+				</div>
+			)}
 			{view.kind === "rules" && (
 				<PongRulesScreen
 					onContinue={handleRulesContinue}
@@ -622,13 +569,13 @@ export default function Pong() {
 							diff,
 							options: gameSettings,
 						});
-						const userName = user?.display_name || user?.name;
 						trainingLabelsRef.current = {
-							self: userName && userName.trim()
-								? `${userName} (You)`
+							self: user?.name
+								? `${user.name} (You)`
 								: PLAYER_LABELS.self,
-							opponent: `Bot (${diff.charAt(0).toUpperCase() + diff.slice(1)
-								})`,
+							opponent: `Bot (${
+								diff.charAt(0).toUpperCase() + diff.slice(1)
+							})`,
 						};
 					}}
 				/>
@@ -657,7 +604,7 @@ export default function Pong() {
 				<SettingsCard
 					onCancel={() => setView({ kind: "rules" })}
 					cosmetics={cosmetics}
-					onUpdateCosmetics={() => { }}
+					onUpdateCosmetics={() => {}}
 					onUpdateGameSettings={updateSettings}
 				/>
 			)}

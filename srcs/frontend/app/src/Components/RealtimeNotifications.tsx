@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useNotifications } from "../context/NotificationContext";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useNotifications } from "../contexts/NotificationContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useGameSession } from "../context/GameSessionContext";
+import { useGameSession } from "../contexts/GameSessionContext";
 import { useTranslation } from "react-i18next";
 
 export default function RealtimeNotifications() {
@@ -27,6 +27,7 @@ export default function RealtimeNotifications() {
 							label: t("notifications.tournament.rejoinButton"),
 							primary: true,
 							onPress: () => {
+								navigate("/pong");
 								navigate("/pong");
 								pongWsRef.current?.send(
 									JSON.stringify({
@@ -61,6 +62,7 @@ export default function RealtimeNotifications() {
 			const body = data.body || {};
 			setSession(body);
 			if (location.pathname !== "/pong") navigate("/pong");
+			if (location.pathname !== "/pong") navigate("/pong");
 		};
 		addPongRoute("game_session", onSessionReady);
 		return () => removePongRoute("game_session", onSessionReady);
@@ -90,7 +92,11 @@ export default function RealtimeNotifications() {
 			if (!data) return;
 			switch (data.event) {
 				case "invitation_waiting": {
-					const to = data.body?.to ?? t("notifications.invitation.sentMessage", { to: "Un joueur" });
+					const to =
+						data.body?.to ??
+						t("notifications.invitation.sentMessage", {
+							to: "Un joueur",
+						});
 					const invitationId: string | undefined =
 						data.body?.invitationId;
 					if (!invitationId) break;
@@ -99,11 +105,15 @@ export default function RealtimeNotifications() {
 					const notifId = notify({
 						variant: "info",
 						title: t("notifications.invitation.sentTitle"),
-						message: t("notifications.invitation.sentMessage", { to }),
+						message: t("notifications.invitation.sentMessage", {
+							to,
+						}),
 						duration: undefined,
 						actions: [
 							{
-								label: t("notifications.invitation.cancelButton"),
+								label: t(
+									"notifications.invitation.cancelButton"
+								),
 								type: "decline",
 								onPress: () => {
 									pongWsRef.current?.send(
@@ -133,11 +143,16 @@ export default function RealtimeNotifications() {
 					const notifId = notify({
 						variant: "info",
 						title: t("notifications.invitation.receivedTitle"),
-						message: t("notifications.invitation.receivedMessage", { from, expiresIn }),
+						message: t("notifications.invitation.receivedMessage", {
+							from,
+							expiresIn,
+						}),
 						duration: expiresIn * 1000,
 						actions: [
 							{
-								label: t("notifications.invitation.acceptButton"),
+								label: t(
+									"notifications.invitation.acceptButton"
+								),
 								primary: true,
 								onPress: () => {
 									pongWsRef.current?.send(
@@ -152,7 +167,9 @@ export default function RealtimeNotifications() {
 								},
 							},
 							{
-								label: t("notifications.invitation.declineButton"),
+								label: t(
+									"notifications.invitation.declineButton"
+								),
 								type: "decline",
 								onPress: () => {
 									pongWsRef.current?.send(
@@ -190,9 +207,13 @@ export default function RealtimeNotifications() {
 					notify({
 						variant: "info",
 						title: t("notifications.invitation.gameFoundTitle"),
-						message: t("notifications.invitation.gameFoundMessage", { opponent }),
+						message: t(
+							"notifications.invitation.gameFoundMessage",
+							{ opponent }
+						),
 						duration: 3000,
 					});
+					navigate("/pong");
 					navigate("/pong");
 					break;
 				}
@@ -208,7 +229,9 @@ export default function RealtimeNotifications() {
 					notify({
 						variant: "info",
 						title: t("notifications.invitation.declinedTitle"),
-						message: t("notifications.invitation.declinedMessage", { by }),
+						message: t("notifications.invitation.declinedMessage", {
+							by,
+						}),
 						duration: 3000,
 					});
 					break;
@@ -224,7 +247,9 @@ export default function RealtimeNotifications() {
 					notify({
 						variant: "warning",
 						title: t("notifications.invitation.declinedSelfTitle"),
-						message: t("notifications.invitation.declinedSelfMessage"),
+						message: t(
+							"notifications.invitation.declinedSelfMessage"
+						),
 						duration: 3000,
 					});
 					break;
@@ -242,8 +267,12 @@ export default function RealtimeNotifications() {
 						variant: "warning",
 						title: t("notifications.invitation.cancelledTitle"),
 						message: data.body?.by
-							? t("notifications.invitation.cancelledMessage", { by: data.body.by })
-							: t("notifications.invitation.cancelledMessageDefault"),
+							? t("notifications.invitation.cancelledMessage", {
+									by: data.body.by,
+							  })
+							: t(
+									"notifications.invitation.cancelledMessageDefault"
+							  ),
 						duration: 3000,
 					});
 					break;
@@ -259,7 +288,9 @@ export default function RealtimeNotifications() {
 					notify({
 						variant: "warning",
 						title: t("notifications.invitation.cancelledSelfTitle"),
-						message: t("notifications.invitation.cancelledSelfMessage"),
+						message: t(
+							"notifications.invitation.cancelledSelfMessage"
+						),
 						duration: 3000,
 					});
 					break;
@@ -275,8 +306,12 @@ export default function RealtimeNotifications() {
 						variant: "info",
 						title: t("notifications.invitation.expiredTitle"),
 						message: to
-							? t("notifications.invitation.expiredMessage", { to })
-							: t("notifications.invitation.expiredMessageDefault"),
+							? t("notifications.invitation.expiredMessage", {
+									to,
+							  })
+							: t(
+									"notifications.invitation.expiredMessageDefault"
+							  ),
 						duration: 3000,
 					});
 					break;
@@ -288,14 +323,18 @@ export default function RealtimeNotifications() {
 						notify({
 							variant: "warning",
 							title: t("notifications.invitation.errorTitle"),
-							message: t("notifications.invitation.errorFriendNotFound"),
+							message: t(
+								"notifications.invitation.errorFriendNotFound"
+							),
 							duration: 3000,
 						});
 					} else if (reason === "in_game" || reason === "searching") {
 						notify({
 							variant: "warning",
 							title: t("notifications.invitation.errorTitle"),
-							message: t("notifications.invitation.errorPlayerBusy"),
+							message: t(
+								"notifications.invitation.errorPlayerBusy"
+							),
 							duration: 3000,
 						});
 					}

@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
 import ChoiceGroup from "../Components/ChoiceGroup";
-import { useWebSocket } from "../context/WebSocketContext";
-import { useUser } from "../context/UserContext";
-import { useGameSettings } from "../context/GameSettingsContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
+import { useUser } from "../contexts/UserContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 interface SettingsCardProps {
 	onCancel: () => void;
@@ -67,7 +67,7 @@ export function SettingsCard({
 		}));
 
 	const getBonusOptions = () =>
-		BONUS_TYPES.map((bonus) => 
+		BONUS_TYPES.map((bonus) =>
 			t(`pong.settings.bonuses.${bonus.id.toLowerCase()}`)
 		);
 

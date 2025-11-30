@@ -69,8 +69,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 			try {
 				const token = req.query?.token;
 				if (!token) {
-					// Create guest client
-					const guestId = --fastify.guestIdCounter; // Negative IDs for guests
+					const guestId = --fastify.guestIdCounter;
 					const guestName = `Guest${Math.abs(guestId)}`;
 					console.log("Nouvelle connexion guest");
 					const client: Client = {
@@ -84,6 +83,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
+					display_name: string;
 					display_name: string;
 					email: string;
 				};
@@ -100,7 +100,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					console.log("Nouvelle connexion");
 					client = {
 						id: decoded.id,
-						name: decoded.display_name || `User_${decoded.id}`,
+						name: decoded.display_name,
 						socket,
 					};
 					fastify.clients.set(decoded.id, client);

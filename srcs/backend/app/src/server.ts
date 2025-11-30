@@ -20,7 +20,6 @@ import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
 import twoFaPlugin from "./plugins/2fa.ts";
-import pongConfig from "./plugins/pongConfig.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
 
@@ -112,9 +111,6 @@ async function main() {
 	await fastify.register(twoFaPlugin);
 	await fastify.register(matchHistoryPlugin);
 	await fastify.register(friendsPlugin);
-
-	// 7. Pong config
-	await fastify.register(pongConfig);
 
 	await fastify.register(bombPartyWSHandlers);
 

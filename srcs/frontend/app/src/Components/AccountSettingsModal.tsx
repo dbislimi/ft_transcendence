@@ -1,34 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
-import { useUser } from '../context/UserContext';
-import { useNotifications } from '../context/NotificationContext';
+import { useUser } from '../contexts/UserContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { API_BASE_URL } from '../config/api';
 
 interface AccountSettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+	isOpen: boolean;
+	onClose: () => void;
 }
 
-export default function AccountSettingsModal({ isOpen, onClose }: AccountSettingsModalProps) {
-  const { t } = useTranslation();
-  const { user, refreshUser } = useUser();
-  const { notify } = useNotifications();
+export default function AccountSettingsModal({
+	isOpen,
+	onClose,
+}: AccountSettingsModalProps) {
+	const { t } = useTranslation();
+	const { user, refreshUser } = useUser();
+	const { notify } = useNotifications();
 
-  const [email, setEmail] = useState(user?.email || '');
-  const [displayName, setDisplayName] = useState(user?.display_name || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+	const [email, setEmail] = useState(user?.email || "");
+	const [displayName, setDisplayName] = useState(user?.display_name || "");
+	const [currentPassword, setCurrentPassword] = useState("");
+	const [newPassword, setNewPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [isEditing, setIsEditing] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
-  const avatars = [
-    "/avatars/avatar1.png", "/avatars/avatar2.png", "/avatars/avatar3.png",
-    "/avatars/avatar4.png", "/avatars/avatar5.png", "/avatars/avatar6.png",
-    "/avatars/avatar7.png", "/avatars/avatar8.png", "/avatars/avatar9.png",
-    "/avatars/avatar10.png"
-  ];
+	const avatars = [
+		"/avatars/avatar1.png",
+		"/avatars/avatar2.png",
+		"/avatars/avatar3.png",
+		"/avatars/avatar4.png",
+		"/avatars/avatar5.png",
+		"/avatars/avatar6.png",
+		"/avatars/avatar7.png",
+		"/avatars/avatar8.png",
+		"/avatars/avatar9.png",
+		"/avatars/avatar10.png",
+	];
 
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || "/avatars/avatar1.png");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
@@ -90,11 +99,11 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
     }
   };
 
-  if (!isOpen) return null;
+	if (!isOpen) return null;
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+	const handleSave = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
 
     try {
       if (newPassword && newPassword !== confirmPassword) {
@@ -103,16 +112,16 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
         return;
       }
 
-      const body: any = {
-        email,
-        display_name: displayName,
-        avatar: selectedAvatar
-      };
+			const body: any = {
+				email,
+				display_name: displayName,
+				avatar: selectedAvatar,
+			};
 
-      if (newPassword) {
-        body.password = newPassword;
-        body.currentPassword = currentPassword;
-      }
+			if (newPassword) {
+				body.password = newPassword;
+				body.currentPassword = currentPassword;
+			}
 
       const token = sessionStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/me`, {
@@ -124,7 +133,7 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
         body: JSON.stringify(body)
       });
 
-      const data = await res.json();
+			const data = await res.json();
 
       if (res.ok) {
         notify({ variant: 'success', message: t('settings.account.profileUpdated') });
@@ -167,19 +176,21 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
-          {!isEditing ? (
-            // Mode Lecture
-            <div className="space-y-8">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <img
-                  src={user?.avatar || "/avatars/avatar1.png"}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full border-4 border-blue-500/50 object-cover"
-                />
-                <h3 className="text-2xl font-bold text-white">{user?.display_name}</h3>
-                <p className="text-gray-400">{user?.email}</p>
-              </div>
+				<div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+					{!isEditing ? (
+						// Mode Lecture
+						<div className="space-y-8">
+							<div className="flex flex-col items-center justify-center space-y-4">
+								<img
+									src={user?.avatar || "/avatars/avatar1.png"}
+									alt="Profile"
+									className="w-32 h-32 rounded-full border-4 border-blue-500/50 object-cover"
+								/>
+								<h3 className="text-2xl font-bold text-white">
+									{user?.display_name}
+								</h3>
+								<p className="text-gray-400">{user?.email}</p>
+							</div>
 
               <div className="bg-slate-700/30 rounded-xl p-6 space-y-4">
                 <h4 className="text-lg font-semibold text-blue-300">{t('settings.account.information')}</h4>
@@ -307,26 +318,28 @@ export default function AccountSettingsModal({ isOpen, onClose }: AccountSetting
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-700/50">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 text-gray-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isLoading ? t('common.saving') : t('common.save')}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+							<div className="flex justify-end gap-4 pt-6 border-t border-gray-700/50">
+								<button
+									type="button"
+									onClick={() => setIsEditing(false)}
+									className="px-4 py-2 text-gray-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+								>
+									{t("common.cancel")}
+								</button>
+								<button
+									type="submit"
+									disabled={isLoading}
+									className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 flex items-center gap-2"
+								>
+									{isLoading
+										? t("common.saving")
+										: t("common.save")}
+								</button>
+							</div>
+						</form>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }

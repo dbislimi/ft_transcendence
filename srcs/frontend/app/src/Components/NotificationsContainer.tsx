@@ -1,35 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useNotifications } from "../context/NotificationContext";
+import { useEffect, useRef, useState } from "react";
+import { useNotifications } from "../contexts/NotificationContext";
 import type {
 	NotificationItem,
 	NotificationVariant,
 	NotificationAction,
-} from "../context/NotificationContext";
+} from "../contexts/NotificationContext";
 
-type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
-
-export default function NotificationsContainer({
-	position = "bottom-right",
-}: {
-	position?: Position;
-}) {
+export default function NotificationsContainer() {
 	const { notifications, dismiss } = useNotifications();
 
-	const containerPosition = useMemo(() => {
-		const base = "fixed z-50 p-4 gap-3 flex flex-col";
-		switch (position) {
-			case "top-left":
-				return `${base} top-4 left-4`;
-			case "top-right":
-				return `${base} top-4 right-4`;
-			case "bottom-left":
-				return `${base} bottom-4 left-4`;
-			case "bottom-right":
-			default:
-				return `${base} bottom-4 right-4`;
-		}
-	}, [position]);
+	const containerPosition =
+		"fixed z-70 p-4 gap-3 flex flex-col bottom-4 right-4";
 
 	return (
 		<div
@@ -51,8 +32,6 @@ function Toast({
 	item: NotificationItem;
 	onClose: () => void;
 }) {
-	const { t } = useTranslation();
-	const [hovered, setHovered] = useState(false);
 	const [remaining, setRemaining] = useState(item.duration ?? 0);
 	const startRef = useRef<number | null>(null);
 	const rafRef = useRef<number | null>(null);
@@ -73,17 +52,14 @@ function Toast({
 			rafRef.current = requestAnimationFrame(tick);
 		};
 
-		if (!hovered) {
-			startRef.current = performance.now();
-			rafRef.current = requestAnimationFrame(tick);
-		}
+		startRef.current = performance.now();
+		rafRef.current = requestAnimationFrame(tick);
 
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 			rafRef.current = null;
-			if (!hovered) setRemaining((r: number) => r);
 		};
-	}, [hovered, item.duration]);
+	}, [item.duration]);
 
 	const variantClasses = getVariantClasses(item.variant);
 
@@ -94,8 +70,6 @@ function Toast({
 	return (
 		<div
 			className={`w-80 max-w-[90vw] rounded-lg border shadow-lg overflow-hidden ${variantClasses.container}`}
-			onMouseEnter={() => setHovered(true)}
-			onMouseLeave={() => setHovered(false)}
 			role="status"
 		>
 			<div className={`px-4 py-3 ${variantClasses.header}`}>
@@ -115,7 +89,7 @@ function Toast({
 					</div>
 					<button
 						className="ml-2 shrink-0 rounded-md p-1 hover:bg-white/10 text-white/80 hover:text-white"
-						aria-label={t('chat.closeNotification')}
+						aria-label="Fermer la notification"
 						onClick={() => {
 							const action = item.actions?.find(
 								(a: NotificationAction) => a.type === "decline"

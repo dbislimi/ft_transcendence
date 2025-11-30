@@ -23,7 +23,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			if (!client) return socket.close();
 
 			if (!client.cosmetics) {
-				// Use default cosmetics for now (cosmetics columns don't exist in DB yet)
 				client.cosmetics = {
 					preferredSide: "left",
 					paddleColor: "White",

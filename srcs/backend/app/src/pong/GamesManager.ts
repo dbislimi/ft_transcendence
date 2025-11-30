@@ -684,9 +684,9 @@ export default class GamesManager {
 		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
+			console.log(`tournament: ${client.tournament.tournamentId}`);
 			if (!tournament) return;
 			tournament.disconnect(client);
-			this.removeRoom(client);
 		} else {
 			this.removeFromQueue(client);
 			const room = this.getRoom(client);
@@ -718,9 +718,11 @@ export default class GamesManager {
 	}
 
 	handleRejoin(client: Client) {
+		console.log("handle rejoin");
 		if (!client.tournament) return;
 		const t = this.tournaments[client.tournament.tournamentId];
 		if (!t) return;
+		console.log("HANDLE REJOIN CALLED");
 		client.quit = false;
 		t.reconnect(client);
 	}
