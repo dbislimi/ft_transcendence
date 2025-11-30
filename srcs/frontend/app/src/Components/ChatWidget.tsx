@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useWebSocket } from "../context/WebSocketContext";
+import { useWebSocket } from "../contexts/WebSocketContext";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 export default function ChatWidget() {
   const { t } = useTranslation();
