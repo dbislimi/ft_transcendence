@@ -462,6 +462,15 @@ export class BombPartyService {
         store.setPlayerId(message.payload.playerId);
         store.setIsAuthenticating(false);
         store.setConnectionState('connected');
+
+        // Sauvegarder le nom du joueur corrigé par le backend (display_name)
+        if (message.payload.playerName) {
+          sessionStorage.setItem('bombparty_player_name', message.payload.playerName);
+          logger.info('Nom du joueur sauvegardé depuis le backend', {
+            playerName: message.payload.playerName
+          });
+        }
+
         this.requestLobbyList();
         break;
 
@@ -1547,7 +1556,7 @@ export class BombPartyService {
 
   authenticateWithName(playerName: string): void {
     const safeName = (playerName || '').trim() || `Guest_${Date.now()}`;
-    
+
     sessionStorage.setItem('bombparty_player_name', safeName);
     sessionStorage.setItem('bombparty_fallback_name', safeName);
 

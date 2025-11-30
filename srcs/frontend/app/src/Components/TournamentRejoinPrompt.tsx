@@ -129,10 +129,10 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 			<div className="absolute inset-0 bg-black/70" />
 			<div className="relative z-10 w-11/12 max-w-md bg-slate-900/95 border border-cyan-600/40 rounded-lg p-6 text-cyan-50 shadow-2xl">
 				<div className="text-xl font-bold mb-2">
-					Rejoindre le tournoi
+					{t('notifications.tournament.rejoinTitle')}
 				</div>
 				<div className="text-sm mb-4">
-					Vous avez quitte une manche. Voulez-vous rejoindre ?
+					{t('notifications.tournament.rejoinMessage')}
 				</div>
 				<div className="flex items-center gap-3">
 					<button
@@ -140,14 +140,14 @@ export default function TournamentRejoinPrompt(): JSX.Element | null {
 						onClick={onJoin}
 						className="px-4 py-2 rounded-md bg-cyan-500 hover:bg-cyan-400 text-black font-medium"
 					>
-						Rejoindre
+						{t('notifications.tournament.rejoinButton')}
 					</button>
 					<button
 						type="button"
 						onClick={onDismiss}
 						className="px-4 py-2 rounded-md bg-transparent border border-white/20 text-white hover:border-white/40"
 					>
-						Ignorer
+						{t('notifications.tournament.ignoreButton')}
 					</button>
 					<div className="ml-auto text-sm opacity-90">
 						{remaining ?? ""}s

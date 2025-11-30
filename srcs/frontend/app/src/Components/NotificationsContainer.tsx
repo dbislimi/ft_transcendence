@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNotifications } from "../context/NotificationContext";
 import type {
 	NotificationItem,
@@ -50,6 +51,7 @@ function Toast({
 	item: NotificationItem;
 	onClose: () => void;
 }) {
+	const { t } = useTranslation();
 	const [hovered, setHovered] = useState(false);
 	const [remaining, setRemaining] = useState(item.duration ?? 0);
 	const startRef = useRef<number | null>(null);
@@ -113,7 +115,7 @@ function Toast({
 					</div>
 					<button
 						className="ml-2 shrink-0 rounded-md p-1 hover:bg-white/10 text-white/80 hover:text-white"
-						aria-label="Fermer la notification"
+						aria-label={t('chat.closeNotification')}
 						onClick={() => {
 							const action = item.actions?.find(
 								(a: NotificationAction) => a.type === "decline"

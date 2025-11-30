@@ -828,6 +828,16 @@
     "confirmUnblock": "Are you sure you want to unblock this user?"
   },
   "chat": {
+    "globalChat": "Global Chat",
+    "privateChat": "Private Chat",
+    "private": "(private)",
+    "blocked": "(blocked)",
+    "inviteToPlay": "Invite to play",
+    "invite": "Invite",
+    "writePlaceholder": "Write...",
+    "messageTo": "Message to {{name}}",
+    "viewProfile": "View profile",
+    "closeNotification": "Close notification",
     "privateMessageTo": "Private message to",
     "globalMessage": "Global message",
     "noUsersOnline": "No users connected (WebSocket pending...)",

@@ -89,6 +89,39 @@ async function dbPlugin(fastify, opts) {
 		);
 	`);
 
+    // Table pour les statistiques utilisateur Bomb Party
+    db.run(`
+		CREATE TABLE IF NOT EXISTS bp_user_stats (
+			user_id INTEGER PRIMARY KEY,
+			total_matches INTEGER DEFAULT 0,
+			total_wins INTEGER DEFAULT 0,
+			total_words_submitted INTEGER DEFAULT 0,
+			total_valid_words INTEGER DEFAULT 0,
+			best_streak INTEGER DEFAULT 0,
+			average_response_time REAL DEFAULT 0,
+			total_play_time INTEGER DEFAULT 0,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users (id)
+		);
+	`);
+
+    // Table pour l'historique des parties Bomb Party
+    db.run(`
+		CREATE TABLE IF NOT EXISTS bp_match_history (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL,
+			match_id INTEGER NOT NULL,
+			position INTEGER NOT NULL,
+			words_submitted INTEGER DEFAULT 0,
+			valid_words INTEGER DEFAULT 0,
+			final_lives INTEGER DEFAULT 0,
+			match_duration INTEGER DEFAULT 0,
+			played_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users (id)
+		);
+	`);
+
     db.run(`CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fromId INTEGER,
@@ -118,6 +151,9 @@ async function dbPlugin(fastify, opts) {
     db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_room_id ON bp_matches (room_id);`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_user_stats_user_id ON bp_user_stats (user_id);`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_user_id ON bp_match_history (user_id);`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_played_at ON bp_match_history (played_at);`);
 
     console.log("✅ Tables Bomb Party initialisees");
   });

@@ -841,6 +841,16 @@
     "confirmUnblock": "هل أنت متأكد من إلغاء حظر هذا المستخدم؟"
   },
   "chat": {
+    "globalChat": "الدردشة العامة",
+    "privateChat": "الدردشة الخاصة",
+    "private": "(خاص)",
+    "blocked": "(محظور)",
+    "inviteToPlay": "دعوة للعب",
+    "invite": "دعوة",
+    "writePlaceholder": "اكتب...",
+    "messageTo": "رسالة إلى {{name}}",
+    "viewProfile": "عرض الملف الشخصي",
+    "closeNotification": "إغلاق الإشعار",
     "privateMessageTo": "رسالة خاصة إلى",
     "globalMessage": "رسالة عامة",
     "noUsersOnline": "لا يوجد مستخدمون متصلون (في انتظار WebSocket...)",

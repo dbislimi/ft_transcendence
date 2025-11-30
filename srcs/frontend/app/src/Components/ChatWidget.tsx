@@ -99,13 +99,13 @@ export default function ChatWidget() {
                 onClick={() => { setView("chat"); setTarget(null); }}
                 className={`px-2 py-1 rounded ${view === "chat" ? "bg-blue-800" : "hover:bg-blue-700"}`}
               >
-                Chat Global
+                {t('chat.globalChat')}
               </button>
               <button
                 onClick={() => setView("users")}
                 className={`px-2 py-1 rounded ${view === "users" ? "bg-blue-800" : "hover:bg-blue-700"}`}
               >
-                Chat Privé
+                {t('chat.privateChat')}
               </button>
             </div>
             <button onClick={() => setOpen(false)}>✖</button>
@@ -127,7 +127,7 @@ export default function ChatWidget() {
                     >
                       {msg.type !== "info" && (
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-                          {msg.from.name} {msg.type === "private" ? "(privé)" : ""}
+                          {msg.from.name} {msg.type === "private" ? t('chat.private') : ""}
                         </span>
                       )}
                       <div>{msg.text ?? msg.message}</div>
@@ -151,16 +151,16 @@ export default function ChatWidget() {
                         onClick={() => setTarget(u.id)}
                         className="text-left text-sm text-blue-700 hover:underline font-medium"
                       >
-                        {u.name} {u.blocked ? "(bloqué)" : ""}
+                        {u.name} {u.blocked ? t('chat.blocked') : ""}
                       </button>
                       <div className="flex gap-2">
                         {!u.blocked && (
                           <button
                             onClick={() => handleInvite(u.id)}
                             className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
-                            title="Inviter à jouer"
+                            title={t('chat.inviteToPlay')}
                           >
-                            Inviter
+                            {t('chat.invite')}
                           </button>
                         )}
                         {u.blocked ? (
@@ -185,8 +185,8 @@ export default function ChatWidget() {
               value={input}
               placeholder={
                 target
-                  ? `Message à ${users.find(u => u.id === target)?.name}`
-                  : "Écrire..."
+                  ? t('chat.messageTo', { name: users.find(u => u.id === target)?.name })
+                  : t('chat.writePlaceholder')
               }
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && sendMessage()}
@@ -207,7 +207,7 @@ export default function ChatWidget() {
             onClick={() => goToProfile(contextMenu.userId)}
             className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
           >
-            👤 Voir profil
+            👤 {t('chat.viewProfile')}
           </button>
         </div>
       )}
