@@ -1,43 +1,42 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from "../contexts/UserContext";
 import { API_BASE_URL } from "../config/api";
+import { useTranslation } from "react-i18next";
 
 export default function EnterCode() {
-	const [code, setCode] = useState("");
-	const [error, setError] = useState("");
-	const navigate = useNavigate();
-	const { user } = useUser();
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { setToken } = useUser();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		try {
-			const userId = localStorage.getItem("for2FaUserId");
-			const userData = JSON.parse(
-				localStorage.getItem("userData") || "{}"
-			);
-			const response = await fetch(`${API_BASE_URL}/check2fa`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ code, userId }),
-			});
+    try {
+      const userId = sessionStorage.getItem('for2FaUserId');
+      const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+      const response = await fetch(`${API_BASE_URL}/api/check2fa`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, userId }),
+      });
 
 			const data = await response.json();
 
-			if (response.ok) {
-				user(userData, data.token);
-				//localStorage.setItem('token', data.token);
-				navigate("/");
-			} else {
-				setError(data.error || t("auth.invalidCode"));
-			}
-		} catch (err) {
-			setError(t("errors.network"));
-		}
-	};
+      if (response.ok) {
+        setToken(data.token);
+        navigate('/');
+      } else {
+        setError(data.error || t('auth.invalidCode'));
+      }
+    } catch (err) {
+      setError(t('errors.network'));
+    }
+  };
 
 	return (
 		<div style={{ padding: "20px", maxWidth: "300px", margin: "auto" }}>

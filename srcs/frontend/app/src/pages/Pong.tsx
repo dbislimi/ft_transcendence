@@ -145,6 +145,7 @@ export default function Pong() {
 		(data: any) => {
 			if (!data) return;
 			let remaining;
+			console.log(data);
 			switch (data.event) {
 				case "searching":
 					applyTournamentRound(data.body);
@@ -210,7 +211,7 @@ export default function Pong() {
 						break;
 					}
 					activeSessionRef.current = false;
-					const td = session?.tournamentDepth;
+					const td = data.body.tournamentDepth;
 					const isTournamentFinalWin =
 						type === "tournament" &&
 						didWin === true &&

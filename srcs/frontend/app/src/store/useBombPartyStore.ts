@@ -53,7 +53,7 @@ const defaultPreferences: UserPreferences = {
 
 function loadPreferencesFromStorage(): UserPreferences {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = sessionStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       return { ...defaultPreferences, ...parsed };
@@ -66,7 +66,7 @@ function loadPreferencesFromStorage(): UserPreferences {
 
 function savePreferencesToStorage(preferences: UserPreferences): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   } catch (error) {
     logger.warn('Erreur lors de la sauvegarde des preferences', { error: error instanceof Error ? error.message : String(error) });
   }

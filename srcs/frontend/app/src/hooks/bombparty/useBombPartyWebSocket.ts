@@ -123,7 +123,7 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
       setPlayerId(null);
 
       const guestId = Math.floor(Math.random() * 1000);
-      const storedName = localStorage.getItem('bombparty_player_name');
+      const storedName = sessionStorage.getItem('bombparty_player_name');
       const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
 
       logger.debug('Authentification avec le nom', { playerName });

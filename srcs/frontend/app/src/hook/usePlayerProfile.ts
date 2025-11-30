@@ -15,7 +15,7 @@ export function usePlayerProfile(userId: string | null) {
             setLoading(true);
             setError(null);
             try {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 if (!token) {
                     throw new Error("No authentication token");
                 }

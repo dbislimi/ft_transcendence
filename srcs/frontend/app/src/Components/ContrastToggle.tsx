@@ -10,7 +10,7 @@ export default function ContrastToggle() {
   };
 
   useEffect(() => {
-    const savedContrast = localStorage.getItem("contrast");
+    const savedContrast = sessionStorage.getItem("contrast");
     if (savedContrast) {
       setContrast(savedContrast);
     }
@@ -24,7 +24,7 @@ export default function ContrastToggle() {
     if (contrast !== "normal") {
       root.classList.add(contrastLevels[contrast as keyof typeof contrastLevels]);
     }
-    localStorage.setItem("contrast", contrast);
+    sessionStorage.setItem("contrast", contrast);
   }, [contrast]);
 
   return (

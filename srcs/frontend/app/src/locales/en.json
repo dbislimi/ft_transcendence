@@ -10,7 +10,7 @@
     "connectBtn": "Connect",
     "registrationBtn": "Registration",
     "aboutBtn": "About Us",
-    "welcome": "Welcome",
+    "welcome": "Welcome {{name}}",
     "subtitle": "Challenge your limits",
     "connectDesc": "Access your account",
     "registrationDesc": "Join the adventure",
@@ -23,7 +23,7 @@
     "readyToTranscend": "Ready to transcend your limits?",
     "optimalPerformance": "Optimal performance"
   },
-    "pong": {
+  "pong": {
     "rules": {
       "title": "Pong Rules",
       "rule1": "First to 11 points wins.",
@@ -103,7 +103,15 @@
       "mode": "Mode"
     },
     "readyPhase": {
-      "opponent": "Opponent"
+      "opponent": "Opponent",
+      "timeRemaining": "Time Remaining",
+      "you": "You",
+      "ready": "READY",
+      "notReady": "NOT READY",
+      "imReady": "I'M READY!",
+      "bothReady": "Both players ready! Starting soon...",
+      "waitingOpponent": "Waiting for opponent...",
+      "info": "The game will start automatically when both players are ready or when the timer expires."
     },
     "searching": {
       "waitingOpponent": "Waiting for opponent",
@@ -196,15 +204,23 @@
       "settings": "Settings"
     },
     "view": {
-      "quickStats": "Quick Stats",
-      "gamesPlayed": "Games Played",
+      "quickStats": "Quick stats",
+      "gamesPlayed": "Games played",
       "wins": "Wins",
       "losses": "Losses",
-      "winRate": "Win Rate",
-      "onlineFriends": "Online Friends",
+      "winRate": "Win rate",
+      "onlineFriends": "Online friends",
       "online": "Online",
       "noOnlineFriends": "No friends online"
     },
+    "wins": "Wins",
+    "losses": "Losses",
+    "tournaments": "Tournaments",
+    "statistics": "Statistics",
+    "totalGames": "Total games",
+    "winRate": "Win rate",
+    "vsPlayers": "Vs Players",
+    "vsBots": "Vs Bots",
     "stats": {
       "detailedStats": "Detailed Statistics",
       "totalGames": "Total Games",
@@ -239,21 +255,21 @@
       "addHint": "Enter the exact username of the person you want to add.",
       "online": "Online",
       "offline": "Offline",
-      "invite": "Invite to play",
-      "block": "Block",
-      "remove": "Remove",
+      "invite": "🎮 Invite to play",
+      "block": "🚫 Block",
+      "remove": "🗑️ Remove",
       "notFound": "No friends yet",
       "searchPlaceholder": "Start by adding someone!",
       "receivedRequests": "Received Requests",
-      "accept": "Accept",
-      "reject": "Reject",
+      "accept": "✅ Accept",
+      "reject": "❌ Reject",
       "noReceivedRequests": "No received requests",
       "sentRequests": "Sent Requests",
       "pending": "Pending...",
       "noSentRequests": "No sent requests",
       "blockedUsers": "Blocked Users",
       "blockedOn": "Blocked on",
-      "unblock": "Unblock",
+      "unblock": "🔓 Unblock",
       "noBlockedUsers": "No blocked users",
       "peaceMessage": "You're at peace with everyone!"
     },
@@ -408,6 +424,29 @@
       "leave": "Leave",
       "start": "Start Game"
     },
+    "spectator": {
+      "title": "Spectator Mode",
+      "description": "Watch the game live",
+      "finalResults": "Final Results",
+      "gameFinished": "The game is over",
+      "quit": "Quit",
+      "currentSyllable": "Current Syllable",
+      "phase": "Phase",
+      "turnActive": "Active Turn",
+      "resolving": "Resolving",
+      "gameOver": "Game Over",
+      "playersAlive": "Players Alive",
+      "wordsUsed": "Words Used",
+      "playerStats": "Player Statistics",
+      "you": "You",
+      "alive": "Alive",
+      "eliminated": "Eliminated",
+      "eliminatedPlayers": "Eliminated Players",
+      "lives": "Lives",
+      "streak": "Streak",
+      "words": "Words",
+      "avgTime": "Avg. Time"
+    },
     "hud": {
       "yourTurn": "Your turn",
       "waiting": "Waiting",
@@ -418,12 +457,21 @@
     "backToMenu": "Back to Menu",
     "stats": {
       "title": "Bomb Party Statistics",
-      "subtitle": "Discover your performance and compare yourself with other players",
-      "subtitleGuest": "Check the ranking of the best players",
+      "subtitle": "Discover your performance and compare yourself to other players",
+      "subtitleGuest": "View the leaderboard of top players",
       "loading": "Loading statistics...",
       "error": "Error",
       "retry": "Retry",
       "back": "Back",
+      "global": {
+        "title": "Global Statistics",
+        "totalPlayers": "Players",
+        "totalMatches": "Matches Played",
+        "totalWords": "Valid Words"
+      },
+      "personal": {
+        "title": "My Statistics"
+      },
       "loginPrompt": "Log in for more statistics",
       "loginPromptDesc": "Create an account to track your personal performance, game history and favorite trigrams.",
       "reconnectPrompt": "Reconnect to see your personal statistics",
@@ -619,13 +667,35 @@
       "close": "Close"
     },
     "account": {
-      "title": "Account",
+      "title": "Account Settings",
       "description": "Background previews",
+      "authRequired": "Login required",
       "preferences": "Preferences",
       "backgroundPreview": "Background preview",
       "backgroundPreviewDesc": "Previews of selected backgrounds for each mode",
       "lightModeBackground": "Light Mode",
-      "darkModeBackground": "Dark Mode"
+      "darkModeBackground": "Dark Mode",
+      "information": "Information",
+      "pseudo": "Username",
+      "email": "Email",
+      "memberSince": "Member since",
+      "avatar": "Avatar",
+      "twoFALabel": "Two-Factor Authentication (2FA)",
+      "twoFAEnabled": "Enabled",
+      "twoFADisabled": "Disabled",
+      "enableTwoFA": "Enable",
+      "disableTwoFA": "Disable",
+      "changePassword": "Change Password",
+      "currentPasswordPlaceholder": "Current password (if changing)",
+      "newPasswordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "profileUpdated": "Profile updated successfully",
+      "updateError": "Error during update",
+      "connectionError": "Connection error",
+      "passwordMismatch": "New passwords do not match",
+      "twoFAActivated": "Two-factor authentication enabled",
+      "twoFADeactivated": "Two-factor authentication disabled",
+      "twoFAError": "Error modifying 2FA"
     },
     "home": {
       "description": "Return to home",
@@ -697,6 +767,45 @@
       "applyAll": "Use for all games"
     }
   },
+  "profileView": {
+    "loading": "Searching flight data...",
+    "signalLost": "Signal Lost",
+    "userNotFound": "Player {{name}} is not found in this sector of the galaxy.",
+    "backToBase": "Back to base",
+    "tournaments": "Tournaments",
+    "matches": "Matches",
+    "back": "Back",
+    "tabs": {
+      "overview": "Overview",
+      "stats": "Statistics",
+      "history": "History"
+    },
+    "overview": {
+      "totalGames": "Total Games",
+      "wins": "Wins",
+      "losses": "Losses",
+      "winRate": "Win Rate"
+    },
+    "stats": {
+      "title": "Performance Details",
+      "vsBots": "Against Bots",
+      "vsPlayers": "Against Players",
+      "tournaments": "Tournaments",
+      "victories": "victories",
+      "won": "won"
+    },
+    "history": {
+      "title": "Match History",
+      "win": "WIN",
+      "loss": "LOSS",
+      "vs": "vs",
+      "standard": "Standard",
+      "loadMore": "Load more matches",
+      "loading": "Loading...",
+      "empty": "Empty History",
+      "noMatches": "No matches recorded for this pilot."
+    }
+  },
   "common": {
     "back": "Back",
     "backAria": "Go back",
@@ -715,7 +824,8 @@
     "block": "Block",
     "unblock": "Unblock",
     "send": "Send",
-    "sending": "Sending..."
+    "sending": "Sending...",
+    "players": "players"
   },
   "errors": {
     "network": "Network error",
@@ -730,7 +840,9 @@
   },
   "chat": {
     "privateMessageTo": "Private message to",
-    "globalMessage": "Global message"
+    "globalMessage": "Global message",
+    "noUsersOnline": "No users connected (WebSocket pending...)",
+    "privateMessagePlaceholder": "Private message to {{name}}"
   },
   "registration": {
     "confirmPassword": "Confirm password",
@@ -740,5 +852,90 @@
   },
   "account": {
     "confirmNewPassword": "Confirm new password"
+  },
+  "auth": {
+    "invalidCode": "Invalid code",
+    "yourCode": "Your code"
+  },
+  "notifications": {
+    "tournament": {
+      "rejoinTitle": "Tournament in progress",
+      "rejoinMessage": "You left a round. Rejoin before it expires.",
+      "rejoinButton": "Rejoin",
+      "ignoreButton": "Ignore"
+    },
+    "invitation": {
+      "sentTitle": "Invitation sent",
+      "sentMessage": "Invitation sent to {{to}}. Waiting for acceptance or decline.",
+      "cancelButton": "Cancel",
+      "receivedTitle": "Invitation to play Pong",
+      "receivedMessage": "{{from}} invites you to a match (expires in {{expiresIn}}s)",
+      "acceptButton": "Accept",
+      "declineButton": "Decline",
+      "gameFoundTitle": "Game started",
+      "gameFoundMessage": "The match begins with {{opponent}}",
+      "declinedTitle": "Invitation declined",
+      "declinedMessage": "{{by}} declined your invitation",
+      "declinedSelfTitle": "Invitation refused",
+      "declinedSelfMessage": "You refused the invitation",
+      "cancelledTitle": "Invitation cancelled",
+      "cancelledMessage": "{{by}} cancelled their invitation",
+      "cancelledMessageDefault": "Invitation cancelled",
+      "cancelledSelfTitle": "Invitation cancelled",
+      "cancelledSelfMessage": "You cancelled the invitation",
+      "expiredTitle": "Invitation expired",
+      "expiredMessage": "Your invitation to {{to}} has expired",
+      "expiredMessageDefault": "Your invitation has expired",
+      "errorTitle": "Error",
+      "errorFriendNotFound": "Friend not found",
+      "errorPlayerBusy": "The player is busy"
+    }
+  },
+  "overlay": {
+    "waiting": {
+      "title": "Waiting for an opponent",
+      "subtitle": "You can quit or start training",
+      "quitButton": "Quit",
+      "quitSubtitle": "Back to menu",
+      "trainButton": "Train",
+      "trainSubtitle": "Play against a bot",
+      "quitTrainingButton": "Quit training",
+      "selectDifficulty": "Select difficulty",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  },
+  "gameOver": {
+    "tournamentChampion": "Tournament Champion!",
+    "victory": "Victory!",
+    "defeat": "Defeat",
+    "congratulations": "Congratulations, you won the tournament!",
+    "wonRound": "You won this round.",
+    "lostRound": "You lost this round.",
+    "finalScore": "Final Score",
+    "quit": "Quit",
+    "continue": "Continue",
+    "replay": "Replay"
+  },
+  "gameOverlay": {
+    "mode": "Mode",
+    "offline": "Offline",
+    "tournament": "Tournament",
+    "final": "Final",
+    "semiFinal": "Semi-final",
+    "quarterFinal": "Quarter-final",
+    "roundOf": "Round of {{count}}"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "confirm": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "countdown": {
+    "startingIn": "Starting in"
   }
 }

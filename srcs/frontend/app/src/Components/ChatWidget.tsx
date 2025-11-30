@@ -15,11 +15,7 @@ export default function ChatWidget() {
 	const [view, setView] = useState<"chat" | "users">("chat");
 	const [target, setTarget] = useState<number | null>(null);
 
-	const [contextMenu, setContextMenu] = useState<{
-		x: number;
-		y: number;
-		userName: string;
-	} | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userId: number; userName: string } | null>(null);
 
 	const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,20 +78,21 @@ export default function ChatWidget() {
 		}
 	};
 
-	const handleContextMenu = (e: React.MouseEvent, userName: string) => {
-		e.preventDefault();
-		setContextMenu({
-			x: e.clientX,
-			y: e.clientY,
-			userName: userName,
-		});
-	};
+  const handleContextMenu = (e: React.MouseEvent, userId: number, userName: string) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      userId: userId,
+      userName: userName
+    });
+  };
 
-	const goToProfile = (userName: string) => {
-		navigate(`/profile/${encodeURIComponent(userName)}`);
-		setOpen(false);
-		setContextMenu(null);
-	};
+  const goToProfile = (userId: number) => {
+    navigate(`/user/${userId}`);
+    setOpen(false);
+    setContextMenu(null);
+  };
 
 	return (
 		<div className="fixed bottom-4 left-4 z-50">
@@ -137,107 +134,73 @@ export default function ChatWidget() {
 						<button onClick={() => setOpen(false)}>✖</button>
 					</div>
 
-					{view === "chat" ? (
-						<div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
-							{messages
-								.filter(
-									(msg) =>
-										!target ||
-										msg.to === null ||
-										msg.to === user.id ||
-										msg.from === user.id
-								)
-								.map((msg, i) => (
-									<div
-										key={i}
-										className="flex flex-col mb-2 items-start"
-									>
-										<div
-											className={`${
-												msg.type === "info"
-													? "bg-yellow-100 dark:bg-yellow-800 italic"
-													: msg.type === "private"
-													? "bg-purple-200 dark:bg-purple-700"
-													: "bg-gray-200 dark:bg-gray-700"
-											} px-3 py-2 rounded-xl`}
-										>
-											{msg.type !== "info" && (
-												<span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-													{msg.fromName}{" "}
-													{msg.type === "private"
-														? "(privé)"
-														: ""}
-												</span>
-											)}
-											<div>{msg.text ?? msg.message}</div>
-										</div>
-									</div>
-								))}
-							<div ref={bottomRef}></div>
-						</div>
-					) : (
-						<div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
-							{users
-								.filter((u) => u.id !== user.id)
-								.map((u) => (
-									<div
-										key={u.id}
-										className="flex flex-col mb-2 border-b pb-2 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition"
-										onContextMenu={(e) =>
-											handleContextMenu(e, u.name)
-										}
-									>
-										<div className="flex justify-between items-center">
-											<button
-												onClick={() => setTarget(u.id)}
-												className="text-left text-sm text-blue-700 hover:underline font-medium"
-											>
-												{u.name}{" "}
-												{u.blocked ? "(bloqué)" : ""}
-											</button>
-											<div className="flex gap-2">
-												{!u.blocked && (
-													<button
-														onClick={() =>
-															handleInvite(u.id)
-														}
-														className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
-														title="Inviter à jouer"
-													>
-														Inviter
-													</button>
-												)}
-												{u.blocked ? (
-													<button
-														onClick={() =>
-															unblockUser(
-																u.id,
-																u.name
-															)
-														}
-														className="text-xs text-green-600 hover:underline"
-													>
-														{t("common.unblock")}
-													</button>
-												) : (
-													<button
-														onClick={() =>
-															blockUser(
-																u.id,
-																u.name
-															)
-														}
-														className="text-xs text-red-600 hover:underline"
-													>
-														{t("common.block")}
-													</button>
-												)}
-											</div>
-										</div>
-									</div>
-								))}
-						</div>
-					)}
+          {view === "chat" ? (
+            <div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
+              {messages
+                .filter(msg => !target || msg.to === null || msg.to === user.id || msg.from.id === user.id)
+                .map((msg, i) => (
+                  <div key={i} className="flex flex-col mb-2 items-start">
+                    <div
+                      className={`${msg.type === "info"
+                        ? "bg-yellow-100 dark:bg-yellow-800 italic"
+                        : msg.type === "private"
+                          ? "bg-purple-200 dark:bg-purple-700"
+                          : "bg-gray-200 dark:bg-gray-700"
+                        } px-3 py-2 rounded-xl text-black dark:text-white`}
+                    >
+                      {msg.type !== "info" && (
+                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                          {msg.from.name} {msg.type === "private" ? "(privé)" : ""}
+                        </span>
+                      )}
+                      <div>{msg.text ?? msg.message}</div>
+                    </div>
+                  </div>
+                ))}
+              <div ref={bottomRef}></div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto p-3 text-sm bg-gray-50 dark:bg-gray-800">
+              {users
+                .filter(u => u.id !== user.id)
+                .map(u => (
+                  <div
+                    key={u.id}
+                    className="flex flex-col mb-2 border-b pb-2 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition"
+                    onContextMenu={(e) => handleContextMenu(e, u.id, u.name)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <button
+                        onClick={() => setTarget(u.id)}
+                        className="text-left text-sm text-blue-700 hover:underline font-medium"
+                      >
+                        {u.name} {u.blocked ? "(bloqué)" : ""}
+                      </button>
+                      <div className="flex gap-2">
+                        {!u.blocked && (
+                          <button
+                            onClick={() => handleInvite(u.id)}
+                            className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition"
+                            title="Inviter à jouer"
+                          >
+                            Inviter
+                          </button>
+                        )}
+                        {u.blocked ? (
+                          <button onClick={() => unblockUser(u.id, u.name)} className="text-xs text-green-600 hover:underline">
+                            {t('common.unblock')}
+                          </button>
+                        ) : (
+                          <button onClick={() => blockUser(u.id, u.name)} className="text-xs text-red-600 hover:underline">
+                            {t('common.block')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
 
 					<div className="p-2 border-t flex gap-2">
 						<input
@@ -266,19 +229,19 @@ export default function ChatWidget() {
 				</div>
 			)}
 
-			{contextMenu && (
-				<div
-					className="fixed bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-xl rounded-lg py-1 z-[60] min-w-[120px]"
-					style={{ top: contextMenu.y, left: contextMenu.x }}
-				>
-					<button
-						onClick={() => goToProfile(contextMenu.userName)}
-						className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-					>
-						👤 Voir profil
-					</button>
-				</div>
-			)}
-		</div>
-	);
+      {contextMenu && (
+        <div
+          className="fixed bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-xl rounded-lg py-1 z-[60] min-w-[120px]"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button
+            onClick={() => goToProfile(contextMenu.userId)}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            👤 Voir profil
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

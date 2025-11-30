@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
@@ -19,7 +20,6 @@ import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
 import twoFaPlugin from "./plugins/2fa.ts";
-import pongConfig from "./plugins/pongConfig.ts";
 import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
 import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
 
@@ -46,7 +46,7 @@ async function main() {
 	await fastify.register(cors, {
 		origin: (origin, cb) => {
 			// Allow requests with no origin (like mobile apps or curl)
-			if (!origin || origin.startsWith("https://172.")) {
+			if (!origin){
 				cb(null, true);
 				return;
 			}
@@ -72,6 +72,14 @@ async function main() {
 	await fastify.register(wsController);
 
 	// 2. Plugins de base
+	await fastify.register(cookie, {
+		secret: process.env.JWT_SECRET,
+		parseOptions: {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax'
+		}
+	});
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 
@@ -103,9 +111,6 @@ async function main() {
 	await fastify.register(twoFaPlugin);
 	await fastify.register(matchHistoryPlugin);
 	await fastify.register(friendsPlugin);
-
-	// 7. Pong config
-	await fastify.register(pongConfig);
 
 	await fastify.register(bombPartyWSHandlers);
 

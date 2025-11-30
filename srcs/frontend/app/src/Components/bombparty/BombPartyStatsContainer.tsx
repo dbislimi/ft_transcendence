@@ -15,15 +15,13 @@ import type {
 } from "./BombPartyStatsTypes";
 
 export default function BombPartyStatsContainer() {
-	const { t } = useTranslation();
-	const { user } = useUser();
-	const navigate = useNavigate();
-	const hasToken = !!localStorage.getItem("token");
-	const [activeTab, setActiveTab] = useState<
-		"overview" | "history" | "ranking"
-	>("overview");
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const hasToken = !!sessionStorage.getItem('token');
+  const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'ranking'>('overview');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
 	const [userStats, setUserStats] = useState<UserStats | null>(null);
 	const [matchHistory, setMatchHistory] = useState<MatchHistory[]>([]);

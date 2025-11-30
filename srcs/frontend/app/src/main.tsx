@@ -29,6 +29,7 @@ const router = createBrowserRouter(
 							path: "/profile/:name",
 							element: <pages.ProfileChat />,
 						},
+						{ path: "/user/:userId", element: <pages.UserProfile /> },
 						{ path: "/stats", element: <pages.StatsPage /> },
 						{
 							path: "/stats/bombparty",

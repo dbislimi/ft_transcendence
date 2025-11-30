@@ -1632,10 +1632,7 @@ export default function Profile() {
 																		}}
 																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
 																	>
-																		🎮{" "}
-																		{t(
-																			"profile.friend.invite"
-																		)}
+																		{t('profile.friend.invite')}
 																	</button>
 																)}
 																<button
@@ -1646,10 +1643,7 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
 																>
-																	🚫{" "}
-																	{t(
-																		"profile.friend.block"
-																	)}
+																	{t('profile.friend.block')}
 																</button>
 																<button
 																	onClick={() =>
@@ -1659,10 +1653,7 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
 																>
-																	🗑️{" "}
-																	{t(
-																		"profile.friend.remove"
-																	)}
+																	{t('profile.friend.remove')}
 																</button>
 															</div>
 														</div>
@@ -1710,82 +1701,39 @@ export default function Profile() {
 												)
 											</h4>
 											<div className="space-y-3">
-												{requests.filter(
-													(r) => r.type === "received"
-												).length > 0 ? (
-													requests
-														.filter(
-															(r) =>
-																r.type ===
-																"received"
-														)
-														.map((r) => (
-															<div
-																key={
-																	r.sender_id
-																}
-																className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
-															>
-																<div className="flex items-center gap-3">
-																	<img
-																		src={
-																			r.avatar ||
-																			"/avatars/avatar1.png"
-																		}
-																		alt={
-																			r.display_name
-																		}
-																		className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-																	/>
-																	<span className="font-medium text-white">
-																		{
-																			r.display_name
-																		}
-																	</span>
-																</div>
-																<div className="flex gap-2">
-																	<button
-																		onClick={() =>
-																			handleAcceptRequest(
-																				r.sender_id
-																			)
-																		}
-																		className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
-																	>
-																		✅{" "}
-																		{t(
-																			"profile.friend.accept"
-																		)}
-																	</button>
-																	<button
-																		onClick={() =>
-																			handleRejectRequest(
-																				r.sender_id
-																			)
-																		}
-																		className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
-																	>
-																		❌{" "}
-																		{t(
-																			"profile.friend.reject"
-																		)}
-																	</button>
-																	<button
-																		onClick={() =>
-																			handleBlockUser(
-																				r.sender_id
-																			)
-																		}
-																		className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
-																	>
-																		🚫{" "}
-																		{t(
-																			"profile.friend.block"
-																		)}
-																	</button>
-																</div>
+												{requests.filter(r => r.type === "received").length > 0 ? (
+													requests.filter(r => r.type === "received").map(r => (
+														<div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
+															<div className="flex items-center gap-3">
+																<img
+																	src={r.avatar || "/avatars/avatar1.png"}
+																	alt={r.display_name}
+																	className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																/>
+																<span className="font-medium text-white">{r.display_name}</span>
 															</div>
-														))
+															<div className="flex gap-2">
+																<button
+																	onClick={() => handleAcceptRequest(r.sender_id)}
+																	className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
+																>
+																	{t('profile.friend.accept')}
+																</button>
+																<button
+																	onClick={() => handleRejectRequest(r.sender_id)}
+																	className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
+																>
+																	{t('profile.friend.reject')}
+																</button>
+																<button
+																	onClick={() => handleBlockUser(r.sender_id)}
+																	className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
+																>
+																	{t('profile.friend.block')}
+																</button>
+															</div>
+														</div>
+													))
 												) : (
 													<div className="text-center py-8 text-gray-400">
 														<div className="text-4xl mb-2">
@@ -1925,10 +1873,7 @@ export default function Profile() {
 															}
 															className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
 														>
-															🔓{" "}
-															{t(
-																"profile.friend.unblock"
-															)}
+															{t('profile.friend.unblock')}
 														</button>
 													</div>
 												))

@@ -84,6 +84,7 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
 					display_name: string;
+					display_name: string;
 					email: string;
 				};
 				let client = fastify.clients.get(decoded.id);

@@ -55,9 +55,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	) => {
 		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)
 			wsRef.current.close();
+		wsRef.current = null;
 	};
 
-	const { isAuthenticated, token } = useUser();
+	const { token } = useUser();
 
 	useEffect(() => {
 		// Always prefer Nginx proxy (port 443) over direct backend port (3001)
@@ -185,7 +186,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 			pongWsRef.current = null;
 			friendsWsRef.current = null;
 		};
-	}, [isAuthenticated, token]);
+	}, [token]);
 
 	const sendMessage = (msg: {
 		type: string;

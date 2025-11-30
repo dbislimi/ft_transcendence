@@ -122,8 +122,8 @@ export class BombPartyService {
           const store = useBombPartyStore.getState();
           const hadRoomId = store.connection.roomId;
           const hadPlayerId = store.connection.playerId;
-          const storedName = localStorage.getItem('bombparty_player_name');
-          const token = localStorage.getItem('token');
+          const storedName = sessionStorage.getItem('bombparty_player_name');
+          const token = sessionStorage.getItem('token');
           const playerName = storedName || (token ? 'AuthenticatedUser' : null);
 
           setTimeout(() => {
@@ -292,8 +292,8 @@ export class BombPartyService {
       this.startHeartbeat();
       this.isWebSocketReady = true;
 
-      const token = localStorage.getItem('token');
-      const storedName = localStorage.getItem('bombparty_player_name');
+      const token = sessionStorage.getItem('token');
+      const storedName = sessionStorage.getItem('bombparty_player_name');
       const hasAuthUser = !!token;
 
       logger.debug('Auth decision', { hasAuthUser, storedName: storedName ? 'PRESENT' : 'MISSING', pending: this.pendingPlayerName ? 'PRESENT' : 'MISSING' });
@@ -1429,8 +1429,8 @@ export class BombPartyService {
       this.connect();
 
       if (!this.pendingPlayerName) {
-        const storedName = localStorage.getItem('bombparty_player_name');
-        const token = localStorage.getItem('token');
+        const storedName = sessionStorage.getItem('bombparty_player_name');
+        const token = sessionStorage.getItem('token');
         if (storedName) {
           this.pendingPlayerName = storedName;
           logger.debug('Preserved player name for reauthentication', {
@@ -1451,7 +1451,7 @@ export class BombPartyService {
             clearInterval(checkConnection);
 
             if (!this.pendingPlayerName) {
-              const storedName = (localStorage.getItem('bombparty_player_name') || '').trim();
+              const storedName = (sessionStorage.getItem('bombparty_player_name') || '').trim();
               if (storedName) {
                 this.pendingPlayerName = storedName;
               } else {
@@ -1519,7 +1519,7 @@ export class BombPartyService {
 
     let safeName = (playerName ?? '').toString().trim();
     if (!safeName) {
-      const stored = (localStorage.getItem('bombparty_player_name') || '').trim();
+      const stored = (sessionStorage.getItem('bombparty_player_name') || '').trim();
       if (stored) {
         safeName = stored;
       } else {
@@ -1536,19 +1536,25 @@ export class BombPartyService {
     }));
 
     try {
-      localStorage.setItem('bombparty_player_name', safeName);
+      sessionStorage.setItem('bombparty_player_name', safeName);
+      if (!sessionStorage.getItem('bombparty_fallback_name')) {
+        sessionStorage.setItem('bombparty_fallback_name', safeName);
+      }
     } catch { }
 
     this.pendingPlayerName = safeName;
   }
 
   authenticateWithName(playerName: string): void {
-    localStorage.setItem('bombparty_player_name', playerName);
+    const safeName = (playerName || '').trim() || `Guest_${Date.now()}`;
+    
+    sessionStorage.setItem('bombparty_player_name', safeName);
+    sessionStorage.setItem('bombparty_fallback_name', safeName);
 
     if (this.isWebSocketReady) {
-      this.authenticate(playerName);
+      this.authenticate(safeName);
     } else {
-      this.pendingPlayerName = playerName;
+      this.pendingPlayerName = safeName;
     }
   }
 

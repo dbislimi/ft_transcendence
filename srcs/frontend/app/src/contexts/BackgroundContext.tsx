@@ -37,9 +37,9 @@ const DEFAULT_STATE: BackgroundState = {
 
 function loadState(): BackgroundState {
   try {
-    const savedGlobal = localStorage.getItem(STORAGE_KEYS.global);
-    const savedBombparty = localStorage.getItem(STORAGE_KEYS.bombparty);
-    const savedPong = localStorage.getItem(STORAGE_KEYS.pong);
+    const savedGlobal = sessionStorage.getItem(STORAGE_KEYS.global);
+    const savedBombparty = sessionStorage.getItem(STORAGE_KEYS.bombparty);
+    const savedPong = sessionStorage.getItem(STORAGE_KEYS.pong);
     const global = (savedGlobal && getBackgroundById(savedGlobal)) ? savedGlobal : 'default';
     const bombparty = (savedBombparty && getBackgroundById(savedBombparty)) ? savedBombparty : 'default';
     const pong = (savedPong && getBackgroundById(savedPong)) ? savedPong : 'default';
@@ -52,9 +52,9 @@ function loadState(): BackgroundState {
 
 function persistState(partial: Partial<BackgroundState>) {
   try {
-    if (partial.global) localStorage.setItem(STORAGE_KEYS.global, partial.global);
-    if (partial.bombparty) localStorage.setItem(STORAGE_KEYS.bombparty, partial.bombparty);
-    if (partial.pong) localStorage.setItem(STORAGE_KEYS.pong, partial.pong);
+    if (partial.global) sessionStorage.setItem(STORAGE_KEYS.global, partial.global);
+    if (partial.bombparty) sessionStorage.setItem(STORAGE_KEYS.bombparty, partial.bombparty);
+    if (partial.pong) sessionStorage.setItem(STORAGE_KEYS.pong, partial.pong);
   } catch {
   }
 }

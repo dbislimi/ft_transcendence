@@ -18,8 +18,8 @@ async function dbPlugin(fastify, opts) {
     }
   });
 
-db.serialize(() => {
-	db.run(`CREATE TABLE IF NOT EXISTS users (
+  db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		email TEXT NOT NULL UNIQUE,
@@ -37,7 +37,7 @@ db.serialize(() => {
 		ball_color TEXT DEFAULT 'Rose'
 	);`);
 
-	db.run(`CREATE TABLE IF NOT EXISTS matches (
+    db.run(`CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       player1_id INTEGER NOT NULL,
       player2_id INTEGER,
@@ -60,19 +60,8 @@ db.serialize(() => {
       FOREIGN KEY (friend_id) REFERENCES users(id),
       PRIMARY KEY (user_id, friend_id)
     );`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS friend_requests (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sender_id INTEGER NOT NULL,
-      receiver_id INTEGER NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (sender_id) REFERENCES users(id),
-      FOREIGN KEY (receiver_id) REFERENCES users(id),
-      UNIQUE(sender_id, receiver_id)
-    );`);
-	// Tables Bomb Party
-	db.run(`
+    // Tables Bomb Party
+    db.run(`
 		CREATE TABLE IF NOT EXISTS bp_matches (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			room_id TEXT NOT NULL,
@@ -85,7 +74,7 @@ db.serialize(() => {
 		);
 	`);
 
-	db.run(`
+    db.run(`
 		CREATE TABLE IF NOT EXISTS bp_participants (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			match_id INTEGER NOT NULL,
@@ -125,15 +114,15 @@ db.serialize(() => {
     );`);
 
 
-	// Index pour les performances
-	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_room_id ON bp_matches (room_id);`);
-	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
-	db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
+    // Index pour les performances
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_matches_room_id ON bp_matches (room_id);`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_match_id ON bp_participants (match_id);`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_bp_participants_player_id ON bp_participants (player_id);`);
 
-	console.log("✅ Tables Bomb Party initialisees");
-});
+    console.log("✅ Tables Bomb Party initialisees");
+  });
 
-fastify.decorate('db', db);
+  fastify.decorate('db', db);
 
   fastify.get('/db-check', (request, reply) => {
     db.get("SELECT COUNT(*) as count FROM users", (err, row) => {

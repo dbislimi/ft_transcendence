@@ -205,7 +205,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
         return reply.send({ success: true, message: "OTP envoye", require2fa: true, userId: user.id });
       }
 
-      //console.log("EREN YEAGER");
       const token = jwt.sign(
         { id: user.id, email: user.email, display_name: user.display_name },
         JWT_SECRET,
@@ -224,6 +223,28 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
     try {
       const user = await new Promise<any>((resolve, reject) => {
         db.get("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (!user) {
+        return reply.code(404).send({ error: "Utilisateur non trouve." });
+      }
+
+      const { password, twoFAOtp, ...userInfo } = user;
+      return reply.send({ user: userInfo });
+    } catch {
+      return reply.code(500).send({ error: "Erreur serveur" });
+    }
+  });
+
+  fastify.get("/users/:name", async (request, reply) => {
+    const { name } = request.params as { name: string };
+
+    try {
+      const user = await new Promise<any>((resolve, reject) => {
+        db.get("SELECT * FROM users WHERE display_name = ? OR name = ?", [name, name], (err, row) => {
           if (err) reject(err);
           else resolve(row);
         });

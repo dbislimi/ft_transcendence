@@ -23,7 +23,7 @@
     "readyToTranscend": "¿Listo para trascender tus límites?",
     "optimalPerformance": "Rendimiento óptimo"
   },
- "pong": {
+  "pong": {
     "rules": {
       "title": "Reglas de Pong",
       "rule1": "El primero en llegar a 11 puntos gana.",
@@ -103,7 +103,15 @@
       "mode": "Modo"
     },
     "readyPhase": {
-      "opponent": "Oponente"
+      "opponent": "Oponente",
+      "timeRemaining": "Tiempo Restante",
+      "you": "Tú",
+      "ready": "LISTO",
+      "notReady": "NO LISTO",
+      "imReady": "¡ESTOY LISTO!",
+      "bothReady": "¡Ambos jugadores listos! Comenzando pronto...",
+      "waitingOpponent": "Esperando al oponente...",
+      "info": "El juego comenzará automáticamente cuando ambos jugadores estén listos o cuando expire el temporizador."
     },
     "searching": {
       "waitingOpponent": "Esperando oponente",
@@ -196,15 +204,23 @@
       "settings": "Configuración"
     },
     "view": {
-      "quickStats": "Estadísticas Rápidas",
-      "gamesPlayed": "Partidas Jugadas",
+      "quickStats": "Estadísticas rápidas",
+      "gamesPlayed": "Partidas jugadas",
       "wins": "Victorias",
       "losses": "Derrotas",
-      "winRate": "Tasa de Victoria",
-      "onlineFriends": "Amigos en Línea",
+      "winRate": "Tasa de victoria",
+      "onlineFriends": "Amigos en línea",
       "online": "En línea",
-      "noOnlineFriends": "No hay amigos en línea"
+      "noOnlineFriends": "Ningún amigo en línea"
     },
+    "wins": "Victorias",
+    "losses": "Derrotas",
+    "tournaments": "Torneos",
+    "statistics": "Estadísticas",
+    "totalGames": "Partidas totales",
+    "winRate": "Tasa de victoria",
+    "vsPlayers": "Contra jugadores",
+    "vsBots": "Contra bots",
     "stats": {
       "detailedStats": "Estadísticas Detalladas",
       "totalGames": "Partidas Totales",
@@ -416,15 +432,47 @@
       "leave": "Salir",
       "start": "Comenzar juego"
     },
+    "spectator": {
+      "title": "Modo Espectador",
+      "description": "Sigue el juego en vivo",
+      "finalResults": "Resultados Finales",
+      "gameFinished": "El juego ha terminado",
+      "quit": "Salir",
+      "currentSyllable": "Sílaba Actual",
+      "phase": "Fase",
+      "turnActive": "Turno Activo",
+      "resolving": "Resolviendo",
+      "gameOver": "Fin del Juego",
+      "playersAlive": "Jugadores Vivos",
+      "wordsUsed": "Palabras Usadas",
+      "playerStats": "Estadísticas de Jugadores",
+      "you": "Tú",
+      "alive": "Vivo",
+      "eliminated": "Eliminado",
+      "eliminatedPlayers": "Jugadores Eliminados",
+      "lives": "Vidas",
+      "streak": "Racha",
+      "words": "Palabras",
+      "avgTime": "Tiempo Prom."
+    },
     "backToMenu": "Volver al menú",
     "stats": {
-      "title": "Estadísticas de Bomb Party",
+      "title": "Estadísticas Bomb Party",
       "subtitle": "Descubre tu rendimiento y compárate con otros jugadores",
-      "subtitleGuest": "Consulta el ranking de los mejores jugadores",
+      "subtitleGuest": "Consulta la clasificación de los mejores jugadores",
       "loading": "Cargando estadísticas...",
       "error": "Error",
       "retry": "Reintentar",
       "back": "Volver",
+      "global": {
+        "title": "Estadísticas Globales",
+        "totalPlayers": "Jugadores",
+        "totalMatches": "Partidas Jugadas",
+        "totalWords": "Palabras Válidas"
+      },
+      "personal": {
+        "title": "Mis Estadísticas"
+      },
       "loginPrompt": "Inicia sesión para más estadísticas",
       "loginPromptDesc": "Crea una cuenta para seguir tu rendimiento personal, historial de partidas y trigramas favoritos.",
       "reconnectPrompt": "Vuelve a conectarte para ver tus estadísticas personales",
@@ -620,13 +668,35 @@
       "close": "Cerrar"
     },
     "account": {
-      "title": "Cuenta",
-      "description": "Vista previa de fondos",
+      "title": "Configuración de cuenta",
+      "description": "Vistas previas de fondos",
+      "authRequired": "Inicio de sesión requerido",
       "preferences": "Preferencias",
       "backgroundPreview": "Vista previa de fondos",
       "backgroundPreviewDesc": "Vistas previas de los fondos seleccionados para cada modo",
       "lightModeBackground": "Modo Claro",
-      "darkModeBackground": "Modo Oscuro"
+      "darkModeBackground": "Modo Oscuro",
+      "information": "Información",
+      "pseudo": "Nombre de usuario",
+      "email": "Correo electrónico",
+      "memberSince": "Miembro desde",
+      "avatar": "Avatar",
+      "twoFALabel": "Autenticación de dos factores (2FA)",
+      "twoFAEnabled": "Activada",
+      "twoFADisabled": "Desactivada",
+      "enableTwoFA": "Activar",
+      "disableTwoFA": "Desactivar",
+      "changePassword": "Cambiar contraseña",
+      "currentPasswordPlaceholder": "Contraseña actual (si se cambia)",
+      "newPasswordPlaceholder": "Nueva contraseña",
+      "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
+      "profileUpdated": "Perfil actualizado con éxito",
+      "updateError": "Error durante la actualización",
+      "connectionError": "Error de conexión",
+      "passwordMismatch": "Las nuevas contraseñas no coinciden",
+      "twoFAActivated": "Autenticación de dos factores activada",
+      "twoFADeactivated": "Autenticación de dos factores desactivada",
+      "twoFAError": "Error al modificar 2FA"
     },
     "home": {
       "description": "Volver al inicio",
@@ -696,6 +766,45 @@
       "applyAll": "Usar para todos los juegos"
     }
   },
+  "profileView": {
+    "loading": "Buscando datos de vuelo...",
+    "signalLost": "Señal Perdida",
+    "userNotFound": "El jugador {{name}} no se encuentra en este sector de la galaxia.",
+    "backToBase": "Volver a la base",
+    "tournaments": "Torneos",
+    "matches": "Partidas",
+    "back": "Atrás",
+    "tabs": {
+      "overview": "Resumen",
+      "stats": "Estadísticas",
+      "history": "Historial"
+    },
+    "overview": {
+      "totalGames": "Partidas Totales",
+      "wins": "Victorias",
+      "losses": "Derrotas",
+      "winRate": "Tasa de Victoria"
+    },
+    "stats": {
+      "title": "Detalles de Rendimiento",
+      "vsBots": "Contra Robots",
+      "vsPlayers": "Contra Jugadores",
+      "tournaments": "Torneos",
+      "victories": "victorias",
+      "won": "ganados"
+    },
+    "history": {
+      "title": "Historial de Partidas",
+      "win": "VICTORIA",
+      "loss": "DERROTA",
+      "vs": "vs",
+      "standard": "Estándar",
+      "loadMore": "Ver más partidas",
+      "loading": "Cargando...",
+      "empty": "Historial Vacío",
+      "noMatches": "No hay partidas registradas para este piloto."
+    }
+  },
   "common": {
     "back": "Volver",
     "backAria": "Volver atrás",
@@ -714,7 +823,8 @@
     "block": "Bloquear",
     "unblock": "Desbloquear",
     "send": "Enviar",
-    "sending": "Enviando..."
+    "sending": "Enviando...",
+    "players": "jugadores"
   },
   "errors": {
     "network": "Error de red",
@@ -729,14 +839,27 @@
   },
   "chat": {
     "privateMessageTo": "Mensaje privado a",
-    "globalMessage": "Mensaje global"
+    "globalMessage": "Mensaje global",
+    "noUsersOnline": "Ningún usuario conectado (WebSocket pendiente...)",
+    "privateMessagePlaceholder": "Mensaje privado a {{name}}"
   },
   "registration": {
     "confirmPassword": "Confirmar contraseña",
     "namePlaceholder": "Juan Pérez",
     "usernamePlaceholder": "Tu nombre de usuario",
     "avatarSelected": "Avatar seleccionado",
-    "chooseAvatar": "Elige tu avatar"
+    "chooseAvatar": "Elige tu avatar",
+    "errors": {
+      "allFieldsRequired": "Todos los campos son obligatorios.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "invalidName": "El nombre debe comenzar con mayúscula seguido solo de letras.",
+      "invalidEmail": "Dirección de correo inválida.",
+      "invalidDisplayName": "El nombre de usuario debe contener solo letras, números o guiones.",
+      "invalidPassword": "La contraseña debe contener al menos 6 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
+      "emailOrUsernameExists": "Correo o nombre de usuario ya en uso.",
+      "registrationError": "Error durante el registro"
+    },
+    "success": "¡Registro exitoso! Redirigiendo..."
   },
   "account": {
     "confirmNewPassword": "Confirmar nueva contraseña"
@@ -744,5 +867,86 @@
   "auth": {
     "invalidCode": "Código inválido",
     "yourCode": "Tu código"
+  },
+  "notifications": {
+    "tournament": {
+      "rejoinTitle": "Torneo en curso",
+      "rejoinMessage": "Has dejado una ronda. Reunirse antes de que expire.",
+      "rejoinButton": "Reunirse",
+      "ignoreButton": "Ignorar"
+    },
+    "invitation": {
+      "sentTitle": "Invitación enviada",
+      "sentMessage": "Invitación enviada a {{to}}. Esperando aceptación o rechazo.",
+      "cancelButton": "Cancelar",
+      "receivedTitle": "Invitación para jugar Pong",
+      "receivedMessage": "{{from}} te invita a una partida (expira en {{expiresIn}}s)",
+      "acceptButton": "Aceptar",
+      "declineButton": "Rechazar",
+      "gameFoundTitle": "Partida iniciada",
+      "gameFoundMessage": "La partida comienza con {{opponent}}",
+      "declinedTitle": "Invitación rechazada",
+      "declinedMessage": "{{by}} rechazó tu invitación",
+      "declinedSelfTitle": "Invitación rechazada",
+      "declinedSelfMessage": "Has rechazado la invitación",
+      "cancelledTitle": "Invitación cancelada",
+      "cancelledMessage": "{{by}} canceló su invitación",
+      "cancelledMessageDefault": "Invitación cancelada",
+      "cancelledSelfTitle": "Invitación cancelada",
+      "cancelledSelfMessage": "Has cancelado la invitación",
+      "expiredTitle": "Invitación expirada",
+      "expiredMessage": "Tu invitación a {{to}} ha expirado",
+      "expiredMessageDefault": "Tu invitación ha expirado",
+      "errorTitle": "Error",
+      "errorFriendNotFound": "Amigo no encontrado",
+      "errorPlayerBusy": "El jugador está ocupado"
+    }
+  },
+  "overlay": {
+    "waiting": {
+      "title": "Esperando un oponente",
+      "subtitle": "Puedes salir o comenzar un entrenamiento",
+      "quitButton": "Salir",
+      "quitSubtitle": "Volver al menú",
+      "trainButton": "Entrenar",
+      "trainSubtitle": "Jugar contra un bot",
+      "quitTrainingButton": "Salir del entrenamiento",
+      "selectDifficulty": "Selecciona la dificultad",
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
+    }
+  },
+  "gameOver": {
+    "tournamentChampion": "¡Campeón del torneo!",
+    "victory": "¡Victoria!",
+    "defeat": "Derrota",
+    "congratulations": "¡Felicidades, has ganado el torneo!",
+    "wonRound": "Has ganado esta ronda.",
+    "lostRound": "Has perdido esta ronda.",
+    "finalScore": "Puntuación final",
+    "quit": "Salir",
+    "continue": "Continuar",
+    "replay": "Volver a jugar"
+  },
+  "gameOverlay": {
+    "mode": "Modo",
+    "offline": "Fuera de línea",
+    "tournament": "Torneo",
+    "final": "Final",
+    "semiFinal": "Semifinal",
+    "quarterFinal": "Cuartos de final",
+    "roundOf": "Ronda de {{count}}"
+  },
+  "theme": {
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
+  },
+  "confirm": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
+  "countdown": {
+    "startingIn": "Empezando en"
   }
 }

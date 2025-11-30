@@ -23,7 +23,7 @@
     "readyToTranscend": "مستعد لتجاوز حدودك؟",
     "optimalPerformance": "أداء مثالي"
   },
-   "pong": {
+  "pong": {
     "rules": {
       "title": "قواعد البونغ",
       "rule1": "الأول الذي يصل إلى 11 نقطة يفوز.",
@@ -103,7 +103,15 @@
       "mode": "الوضع"
     },
     "readyPhase": {
-      "opponent": "الخصم"
+      "opponent": "الخصم",
+      "timeRemaining": "الوقت المتبقي",
+      "you": "أنت",
+      "ready": "جاهز",
+      "notReady": "غير جاهز",
+      "imReady": "أنا جاهز!",
+      "bothReady": "كلا اللاعبين جاهزان! سنبدأ قريباً...",
+      "waitingOpponent": "في انتظار الخصم...",
+      "info": "ستبدأ اللعبة تلقائياً عندما يكون كلا اللاعبين جاهزين أو عند انتهاء الموقت."
     },
     "searching": {
       "waitingOpponent": "في انتظار خصم",
@@ -197,7 +205,7 @@
     },
     "view": {
       "quickStats": "إحصائيات سريعة",
-      "gamesPlayed": "الألعاب المُلعوبة",
+      "gamesPlayed": "الألعاب الملعوبة",
       "wins": "الانتصارات",
       "losses": "الهزائم",
       "winRate": "معدل الفوز",
@@ -205,6 +213,14 @@
       "online": "متصل",
       "noOnlineFriends": "لا يوجد أصدقاء متصلون"
     },
+    "wins": "الانتصارات",
+    "losses": "الهزائم",
+    "tournaments": "البطولات",
+    "statistics": "الإحصائيات",
+    "totalGames": "إجمالي الألعاب",
+    "winRate": "معدل الفوز",
+    "vsPlayers": "ضد اللاعبين",
+    "vsBots": "ضد الروبوتات",
     "stats": {
       "detailedStats": "إحصائيات مفصلة",
       "totalGames": "إجمالي الألعاب",
@@ -314,15 +330,47 @@
       "leave": "مغادرة",
       "start": "بدء اللعبة"
     },
+    "spectator": {
+      "title": "وضع المشاهدة",
+      "description": "تابع اللعبة مباشرة",
+      "finalResults": "النتائج النهائية",
+      "gameFinished": "انتهت اللعبة",
+      "quit": "خروج",
+      "currentSyllable": "المقطع الحالي",
+      "phase": "المرحلة",
+      "turnActive": "دور نشط",
+      "resolving": "حل",
+      "gameOver": "نهاية اللعبة",
+      "playersAlive": "لاعبون على قيد الحياة",
+      "wordsUsed": "الكلمات المستخدمة",
+      "playerStats": "إحصائيات اللاعبين",
+      "you": "أنت",
+      "alive": "حي",
+      "eliminated": "مُقصى",
+      "eliminatedPlayers": "لاعبون مُقصون",
+      "lives": "الأرواح",
+      "streak": "سلسلة",
+      "words": "كلمات",
+      "avgTime": "متوسط الوقت"
+    },
     "backToMenu": "العودة إلى القائمة",
     "stats": {
       "title": "إحصائيات Bomb Party",
-      "subtitle": "اكتشف أداءك وقارن نفسك مع اللاعبين الآخرين",
+      "subtitle": "اكتشف أدائك وقارن نفسك مع اللاعبين الآخرين",
       "subtitleGuest": "تحقق من تصنيف أفضل اللاعبين",
       "loading": "جاري تحميل الإحصائيات...",
       "error": "خطأ",
       "retry": "إعادة المحاولة",
       "back": "رجوع",
+      "global": {
+        "title": "إحصائيات عالمية",
+        "totalPlayers": "اللاعبون",
+        "totalMatches": "المباريات المُلعوبة",
+        "totalWords": "الكلمات الصحيحة"
+      },
+      "personal": {
+        "title": "إحصائياتي"
+      },
       "loginPrompt": "سجل الدخول للمزيد من الإحصائيات",
       "loginPromptDesc": "أنشئ حسابًا لتتبع أدائك الشخصي وتاريخ مبارياتك والثلاثيات المفضلة لديك.",
       "reconnectPrompt": "أعد الاتصال لرؤية إحصائياتك الشخصية",
@@ -683,22 +731,84 @@
       "close": "إغلاق"
     },
     "account": {
-      "title": "الحساب",
-      "description": "معاينة الخلفيات",
+      "title": "إعدادات الحساب",
+      "description": "معاينات الخلفيات",
+      "authRequired": "تسجيل الدخول مطلوب",
       "preferences": "التفضيلات",
       "backgroundPreview": "معاينة الخلفية",
       "backgroundPreviewDesc": "معاينات الخلفيات المحددة لكل وضع",
       "lightModeBackground": "الوضع الفاتح",
-      "darkModeBackground": "الوضع الداكن"
+      "darkModeBackground": "الوضع الداكن",
+      "information": "معلومات",
+      "pseudo": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "memberSince": "عضو منذ",
+      "avatar": "الصورة الرمزية",
+      "twoFALabel": "المصادقة الثنائية (2FA)",
+      "twoFAEnabled": "مفعّل",
+      "twoFADisabled": "معطّل",
+      "enableTwoFA": "تفعيل",
+      "disableTwoFA": "تعطيل",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPasswordPlaceholder": "كلمة المرور الحالية (إذا كنت تغيرها)",
+      "newPasswordPlaceholder": "كلمة مرور جديدة",
+      "confirmPasswordPlaceholder": "تأكيد كلمة المرور الجديدة",
+      "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+      "updateError": "خطأ أثناء التحديث",
+      "connectionError": "خطأ في الاتصال",
+      "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
+      "twoFAActivated": "تم تفعيل المصادقة الثنائية",
+      "twoFADeactivated": "تم تعطيل المصادقة الثنائية",
+      "twoFAError": "خطأ في تعديل المصادقة الثنائية"
     },
     "home": {
       "description": "العودة إلى الرئيسية",
       "subtitle": "العودة إلى الصفحة الرئيسية"
+    },
+    "close": "إغلاق"
+  },
+  "profileView": {
+    "loading": "البحث عن بيانات الرحلة...",
+    "signalLost": "فقدان الإشارة",
+    "userNotFound": "اللاعب {{name}} غير موجود في هذا القطاع من المجرة.",
+    "backToBase": "العودة إلى القاعدة",
+    "tournaments": "البطولات",
+    "matches": "المباريات",
+    "back": "رجوع",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "stats": "الإحصائيات",
+      "history": "السجل"
+    },
+    "overview": {
+      "totalGames": "إجمالي الألعاب",
+      "wins": "الانتصارات",
+      "losses": "الهزائم",
+      "winRate": "معدل الفوز"
+    },
+    "stats": {
+      "title": "تفاصيل الأداء",
+      "vsBots": "ضد الروبوتات",
+      "vsPlayers": "ضد اللاعبين",
+      "tournaments": "البطولات",
+      "victories": "انتصارات",
+      "won": "فاز"
+    },
+    "history": {
+      "title": "سجل المباريات",
+      "win": "فوز",
+      "loss": "خسارة",
+      "vs": "ضد",
+      "standard": "قياسي",
+      "loadMore": "تحميل المزيد من المباريات",
+      "loading": "جاري التحميل...",
+      "empty": "سجل فارغ",
+      "noMatches": "لا توجد مباريات مسجلة لهذا الطيار."
     }
   },
   "common": {
     "back": "رجوع",
-    "backAria": "العودة إلى الخلف",
+    "backAria": "العودة للخلف",
     "close": "إغلاق",
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
@@ -714,7 +824,8 @@
     "block": "حظر",
     "unblock": "إلغاء الحظر",
     "send": "إرسال",
-    "sending": "جارٍ الإرسال..."
+    "sending": "جارٍ الإرسال...",
+    "players": "لاعبين"
   },
   "errors": {
     "network": "خطأ في الشبكة",
@@ -729,7 +840,9 @@
   },
   "chat": {
     "privateMessageTo": "رسالة خاصة إلى",
-    "globalMessage": "رسالة عامة"
+    "globalMessage": "رسالة عامة",
+    "noUsersOnline": "لا يوجد مستخدمون متصلون (في انتظار WebSocket...)",
+    "privateMessagePlaceholder": "رسالة خاصة إلى {{name}}"
   },
   "registration": {
     "confirmPassword": "تأكيد كلمة المرور",
@@ -743,5 +856,86 @@
   "auth": {
     "invalidCode": "رمز غير صالح",
     "yourCode": "رمزك"
+  },
+  "notifications": {
+    "tournament": {
+      "rejoinTitle": "البطولة قيد التقدم",
+      "rejoinMessage": "لقد غادرت جولة. أعد الانضمام قبل انتهاء الصلاحية.",
+      "rejoinButton": "إعادة الانضمام",
+      "ignoreButton": "تجاهل"
+    },
+    "invitation": {
+      "sentTitle": "تم إرسال الدعوة",
+      "sentMessage": "تم إرسال دعوة إلى {{to}}. في انتظار القبول أو الرفض.",
+      "cancelButton": "إلغاء",
+      "receivedTitle": "دعوة للعب البونغ",
+      "receivedMessage": "{{from}} يدعوك إلى مباراة (تنتهي في {{expiresIn}}ث)",
+      "acceptButton": "قبول",
+      "declineButton": "رفض",
+      "gameFoundTitle": "بدأت اللعبة",
+      "gameFoundMessage": "تبدأ المباراة مع {{opponent}}",
+      "declinedTitle": "تم رفض الدعوة",
+      "declinedMessage": "{{by}} رفض دعوتك",
+      "declinedSelfTitle": "الدعوة مرفوضة",
+      "declinedSelfMessage": "لقد رفضت الدعوة",
+      "cancelledTitle": "تم إلغاء الدعوة",
+      "cancelledMessage": "{{by}} ألغى دعوته",
+      "cancelledMessageDefault": "تم إلغاء الدعوة",
+      "cancelledSelfTitle": "تم إلغاء الدعوة",
+      "cancelledSelfMessage": "لقد ألغيت الدعوة",
+      "expiredTitle": "انتهت صلاحية الدعوة",
+      "expiredMessage": "انتهت صلاحية دعوتك إلى {{to}}",
+      "expiredMessageDefault": "انتهت صلاحية دعوتك",
+      "errorTitle": "خطأ",
+      "errorFriendNotFound": "الصديق غير موجود",
+      "errorPlayerBusy": "اللاعب مشغول"
+    }
+  },
+  "overlay": {
+    "waiting": {
+      "title": "في انتظار الخصم",
+      "subtitle": "يمكنك المغادرة أو بدء التدريب",
+      "quitButton": "مغادرة",
+      "quitSubtitle": "العودة إلى القائمة",
+      "trainButton": "التدريب",
+      "trainSubtitle": "اللعب ضد البوت",
+      "quitTrainingButton": "مغادرة التدريب",
+      "selectDifficulty": "اختر الصعوبة",
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
+    }
+  },
+  "gameOver": {
+    "tournamentChampion": "بطل البطولة!",
+    "victory": "فوز!",
+    "defeat": "هزيمة",
+    "congratulations": "تهانينا، لقد فزت بالبطولة!",
+    "wonRound": "لقد فزت بهذه الجولة.",
+    "lostRound": "لقد خسرت هذه الجولة.",
+    "finalScore": "النتيجة النهائية",
+    "quit": "مغادرة",
+    "continue": "متابعة",
+    "replay": "إعادة اللعب"
+  },
+  "gameOverlay": {
+    "mode": "الوضع",
+    "offline": "غير متصل",
+    "tournament": "البطولة",
+    "final": "النهائي",
+    "semiFinal": "نصف النهائي",
+    "quarterFinal": "ربع النهائي",
+    "roundOf": "دور الـ {{count}}"
+  },
+  "theme": {
+    "switchToLight": "التبديل إلى الوضع الفاتح",
+    "switchToDark": "التبديل إلى الوضع الداكن"
+  },
+  "confirm": {
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "countdown": {
+    "startingIn": "البداية في"
   }
 }

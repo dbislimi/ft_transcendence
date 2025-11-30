@@ -26,14 +26,25 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
     startRedirectPath: '/auth/google',
     callbackUri: `https://localhost:8443/api/auth/google/callback`,
     scope: ['profile', 'email'],
+    checkStateFunction: () => true,
+    generateStateFunction: () => 'stateless'
   });
 
   fastify.get('/auth/google/callback', async function (req, reply) {
+
     if (!req.query.code) {
       return reply.send('Erreur : code manquant depuis Google');
     }
 
-    const result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
+    let result;
+    try {
+      result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
+    } catch (err) {
+      console.error('[Google Callback] Token Exchange Error:', err);
+      // Clear the state cookie and redirect to login or show a clear error
+      //reply.clearCookie('oauth2-redirect-state', { path: '/' });
+      return reply.code(400).send({ error: "Session expiree ou invalide. Veuillez reessayer de vous connecter." });
+    }
 
     const userInfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
@@ -52,12 +63,11 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 
     if (!user) {
       const lastID = await new Promise<number>((resolve, reject) => {
-        // Generate a random dummy password for Google users since they login via OAuth
         const dummyPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
 
         db.run(
-          'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-          [name, email, dummyPassword],
+          'INSERT INTO users (name, email, password, display_name) VALUES (?, ?, ?, ?)',
+          [userInfo.name, userInfo.email, dummyPassword, userInfo.name],
           function (err) {
             if (err)
               reject(err);
@@ -92,7 +102,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
     }
 
     const jwtToken = jwt.sign(
-      { id: user.id, name: user.name, email },
+      { id: user.id, email, display_name: user.display_name },
       JWT_SECRET,
       { expiresIn: '2h' }
     );

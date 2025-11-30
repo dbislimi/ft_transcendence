@@ -6,10 +6,10 @@ import { useUser } from "../contexts/UserContext";
 import { API_BASE_URL } from "../config/api";
 
 export default function Connection() {
-	const { t } = useTranslation();
-	const { login, setToken } = useUser();
-	const [errors, setErrors] = useState<Record<string, string>>({});
-	const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { setToken } = useUser();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -45,28 +45,27 @@ export default function Connection() {
 				body: JSON.stringify({ email, password }),
 			});
 
-			const data = await response.json();
-			console.log("Response /login:", { status: response.status, data });
-			if (response.ok) {
-				if (data.require2fa) {
-					localStorage.setItem(
-						"for2FaUserId",
-						data.userId.toString()
-					);
-					localStorage.setItem("userData", JSON.stringify(data));
-					navigate("/auth");
-				} else {
-					// Utiliser setToken au lieu de localStorage directement
-					setToken(data.token);
-					navigate("/");
-				}
-			} else {
-				alert(t("connection.errors.invalidCredentials"));
-			}
-		} catch {
-			setErrors({ general: t("connection.errors.networkError") });
-		}
-	};
+      const data = await response.json();
+      console.log("Response /login:", { status: response.status, data });
+      if (response.ok) {
+        if (data.require2fa){
+          sessionStorage.setItem("for2FaUserId", data.userId.toString());
+          sessionStorage.setItem("userData", JSON.stringify(data));
+          navigate("/auth");
+        }
+        else{
+          // Utiliser setToken au lieu de localStorage directement
+          setToken(data.token);
+          navigate("/");
+        }
+      } 
+      else {
+        alert(t('connection.errors.invalidCredentials'));
+      }
+    } catch {
+      setErrors({ general: t('connection.errors.networkError') });
+    }
+  };
 
 	return (
 		<>

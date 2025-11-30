@@ -23,7 +23,7 @@
     "readyToTranscend": "Готов преодолеть свои пределы?",
     "optimalPerformance": "Оптимальная производительность"
   },
-   "pong": {
+  "pong": {
     "rules": {
       "title": "Правила Понга",
       "rule1": "Первый до 11 очков побеждает.",
@@ -103,7 +103,15 @@
       "mode": "Режим"
     },
     "readyPhase": {
-      "opponent": "Противник"
+      "opponent": "Противник",
+      "timeRemaining": "Осталось времени",
+      "you": "Вы",
+      "ready": "ГОТОВ",
+      "notReady": "НЕ ГОТОВ",
+      "imReady": "Я ГОТОВ!",
+      "bothReady": "Оба игрока готовы! Скоро начнём...",
+      "waitingOpponent": "Ожидание противника...",
+      "info": "Игра начнётся автоматически, когда оба игрока будут готовы или когда истечёт таймер."
     },
     "searching": {
       "waitingOpponent": "Ожидание противника",
@@ -196,15 +204,23 @@
       "settings": "Настройки"
     },
     "view": {
-      "quickStats": "Быстрая Статистика",
-      "gamesPlayed": "Сыгранные Игры",
+      "quickStats": "Быстрая статистика",
+      "gamesPlayed": "Сыграно игр",
       "wins": "Победы",
       "losses": "Поражения",
-      "winRate": "Процент Побед",
-      "onlineFriends": "Друзья Онлайн",
+      "winRate": "Процент побед",
+      "onlineFriends": "Друзья онлайн",
       "online": "Онлайн",
       "noOnlineFriends": "Нет друзей онлайн"
     },
+    "wins": "Победы",
+    "losses": "Поражения",
+    "tournaments": "Турниры",
+    "statistics": "Статистика",
+    "totalGames": "Всего игр",
+    "winRate": "Процент побед",
+    "vsPlayers": "Против игроков",
+    "vsBots": "Против ботов",
     "stats": {
       "detailedStats": "Подробная Статистика",
       "totalGames": "Всего Игр",
@@ -417,6 +433,29 @@
       "leave": "Покинуть",
       "start": "Начать игру"
     },
+    "spectator": {
+      "title": "Режим наблюдателя",
+      "description": "Следите за игрой в реальном времени",
+      "finalResults": "Итоговые результаты",
+      "gameFinished": "Игра завершена",
+      "quit": "Выйти",
+      "currentSyllable": "Текущий слог",
+      "phase": "Фаза",
+      "turnActive": "Активный ход",
+      "resolving": "Разрешение",
+      "gameOver": "Конец игры",
+      "playersAlive": "Живые игроки",
+      "wordsUsed": "Использованные слова",
+      "playerStats": "Статистика игроков",
+      "you": "Вы",
+      "alive": "Жив",
+      "eliminated": "Устранён",
+      "eliminatedPlayers": "Устранённые игроки",
+      "lives": "Жизни",
+      "streak": "Серия",
+      "words": "Слова",
+      "avgTime": "Ср. время"
+    },
     "backToMenu": "Вернуться в меню",
     "stats": {
       "title": "Статистика Bomb Party",
@@ -426,6 +465,15 @@
       "error": "Ошибка",
       "retry": "Повторить",
       "back": "Назад",
+      "global": {
+        "title": "Глобальная статистика",
+        "totalPlayers": "Игроки",
+        "totalMatches": "Сыгранные матчи",
+        "totalWords": "Правильные слова"
+      },
+      "personal": {
+        "title": "Моя статистика"
+      },
       "loginPrompt": "Войдите для просмотра дополнительной статистики",
       "loginPromptDesc": "Создайте аккаунт, чтобы отслеживать личные результаты, историю игр и любимые триграммы.",
       "reconnectPrompt": "Переподключитесь, чтобы увидеть личную статистику",
@@ -621,13 +669,35 @@
       "close": "Закрыть"
     },
     "account": {
-      "title": "Аккаунт",
-      "description": "Предпросмотр фонов",
+      "title": "Настройки учетной записи",
+      "description": "Просмотр фонов",
+      "authRequired": "Требуется авторизация",
       "preferences": "Предпочтения",
       "backgroundPreview": "Предварительный просмотр фона",
       "backgroundPreviewDesc": "Предварительный просмотр выбранных фонов для каждого режима",
       "lightModeBackground": "Светлый режим",
-      "darkModeBackground": "Темный режим"
+      "darkModeBackground": "Темный режим",
+      "information": "Информация",
+      "pseudo": "Имя пользователя",
+      "email": "Электронная почта",
+      "memberSince": "Участник с",
+      "avatar": "Аватар",
+      "twoFALabel": "Двухфакторная аутентификация (2FA)",
+      "twoFAEnabled": "Включено",
+      "twoFADisabled": "Отключено",
+      "enableTwoFA": "Включить",
+      "disableTwoFA": "Отключить",
+      "changePassword": "Изменить пароль",
+      "currentPasswordPlaceholder": "Текущий пароль (если меняется)",
+      "newPasswordPlaceholder": "Новый пароль",
+      "confirmPasswordPlaceholder": "Подтвердите новый пароль",
+      "profileUpdated": "Профиль успешно обновлен",
+      "updateError": "Ошибка при обновлении",
+      "connectionError": "Ошибка соединения",
+      "passwordMismatch": "Новые пароли не совпадают",
+      "twoFAActivated": "Двухфакторная аутентификация включена",
+      "twoFADeactivated": "Двухфакторная аутентификация отключена",
+      "twoFAError": "Ошибка при изменении 2FA"
     },
     "home": {
       "description": "Вернуться на главную",
@@ -699,6 +769,45 @@
       "applyAll": "Использовать для всех игр"
     }
   },
+  "profileView": {
+    "loading": "Поиск данных полета...",
+    "signalLost": "Сигнал Потерян",
+    "userNotFound": "Игрок {{name}} не найден в этом секторе галактики.",
+    "backToBase": "Вернуться на базу",
+    "tournaments": "Турниры",
+    "matches": "Матчи",
+    "back": "Назад",
+    "tabs": {
+      "overview": "Обзор",
+      "stats": "Статистика",
+      "history": "История"
+    },
+    "overview": {
+      "totalGames": "Всего Игр",
+      "wins": "Победы",
+      "losses": "Поражения",
+      "winRate": "Процент Побед"
+    },
+    "stats": {
+      "title": "Детали Производительности",
+      "vsBots": "Против Ботов",
+      "vsPlayers": "Против Игроков",
+      "tournaments": "Турниры",
+      "victories": "побед",
+      "won": "выиграно"
+    },
+    "history": {
+      "title": "История Матчей",
+      "win": "ПОБЕДА",
+      "loss": "ПОРАЖЕНИЕ",
+      "vs": "против",
+      "standard": "Стандарт",
+      "loadMore": "Загрузить больше матчей",
+      "loading": "Загрузка...",
+      "empty": "Пустая История",
+      "noMatches": "Нет записанных матчей для этого пилота."
+    }
+  },
   "common": {
     "back": "Назад",
     "backAria": "Вернуться назад",
@@ -717,12 +826,19 @@
     "block": "Заблокировать",
     "unblock": "Разблокировать",
     "send": "Отправить",
-    "sending": "Отправка..."
+    "sending": "Отправка...",
+    "players": "игроков"
   },
   "errors": {
     "network": "Ошибка сети",
     "unknown": "Неизвестная ошибка",
     "userNotFound": "Пользователь не найден"
+  },
+  "chat": {
+    "privateMessageTo": "Личное сообщение для",
+    "globalMessage": "Глобальное сообщение",
+    "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
+    "privateMessagePlaceholder": "Личное сообщение для {{name}}"
   },
   "friends": {
     "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
@@ -732,7 +848,9 @@
   },
   "chat": {
     "privateMessageTo": "Личное сообщение для",
-    "globalMessage": "Глобальное сообщение"
+    "globalMessage": "Глобальное сообщение",
+    "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
+    "privateMessagePlaceholder": "Личное сообщение для {{name}}"
   },
   "registration": {
     "confirmPassword": "Подтвердите пароль",
@@ -742,5 +860,90 @@
   },
   "account": {
     "confirmNewPassword": "Подтвердите новый пароль"
+  },
+  "auth": {
+    "invalidCode": "Неверный код",
+    "yourCode": "Ваш код"
+  },
+  "notifications": {
+    "tournament": {
+      "rejoinTitle": "Турнир в процессе",
+      "rejoinMessage": "Вы покинули раунд. Присоединитесь до истечения времени.",
+      "rejoinButton": "Присоединиться",
+      "ignoreButton": "Игнорировать"
+    },
+    "invitation": {
+      "sentTitle": "Приглашение отправлено",
+      "sentMessage": "Приглашение отправлено {{to}}. Ожидание принятия или отклонения.",
+      "cancelButton": "Отменить",
+      "receivedTitle": "Приглашение играть в Понг",
+      "receivedMessage": "{{from}} приглашает вас на матч (истекает через {{expiresIn}}с)",
+      "acceptButton": "Принять",
+      "declineButton": "Отклонить",
+      "gameFoundTitle": "Игра началась",
+      "gameFoundMessage": "Матч начинается с {{opponent}}",
+      "declinedTitle": "Приглашение отклонено",
+      "declinedMessage": "{{by}} отклонил ваше приглашение",
+      "declinedSelfTitle": "Приглашение отклонено",
+      "declinedSelfMessage": "Вы отклонили приглашение",
+      "cancelledTitle": "Приглашение отменено",
+      "cancelledMessage": "{{by}} отменил свое приглашение",
+      "cancelledMessageDefault": "Приглашение отменено",
+      "cancelledSelfTitle": "Приглашение отменено",
+      "cancelledSelfMessage": "Вы отменили приглашение",
+      "expiredTitle": "Приглашение истекло",
+      "expiredMessage": "Ваше приглашение к {{to}} истекло",
+      "expiredMessageDefault": "Ваше приглашение истекло",
+      "errorTitle": "Ошибка",
+      "errorFriendNotFound": "Друг не найден",
+      "errorPlayerBusy": "Игрок занят"
+    }
+  },
+  "overlay": {
+    "waiting": {
+      "title": "Ожидание противника",
+      "subtitle": "Вы можете выйти или начать тренировку",
+      "quitButton": "Выйти",
+      "quitSubtitle": "Вернуться в меню",
+      "trainButton": "Тренироваться",
+      "trainSubtitle": "Играть против бота",
+      "quitTrainingButton": "Завершить тренировку",
+      "selectDifficulty": "Выберите сложность",
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно"
+    }
+  },
+  "gameOver": {
+    "tournamentChampion": "Чемпион турнира!",
+    "victory": "Победа!",
+    "defeat": "Поражение",
+    "congratulations": "Поздравляем, вы выиграли турнир!",
+    "wonRound": "Вы выиграли этот раунд.",
+    "lostRound": "Вы проиграли этот раунд.",
+    "finalScore": "Итоговый счет",
+    "quit": "Выйти",
+    "continue": "Продолжить",
+    "replay": "Переиграть"
+  },
+  "gameOverlay": {
+    "mode": "Режим",
+    "offline": "Оффлайн",
+    "tournament": "Турнир",
+    "final": "Финал",
+    "semiFinal": "Полуфинал",
+    "quarterFinal": "Четвертьфинал",
+    "roundOf": "1/{{count}} финала"
+  },
+  "theme": {
+    "switchToLight": "Переключить на светлый режим",
+    "switchToDark": "Переключить на темный режим"
+  },
+  "confirm": {
+    "confirm": "Подтвердить",
+    "cancel": "Отмена"
+  },
+  "countdown": {
+    "startingIn": "Начало через"
   }
 }

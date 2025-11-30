@@ -23,8 +23,6 @@ export async function sendTournamentMessage(
   playerIds: (number | undefined)[],
   message: string
 ) {
-  /*if (playerIds == undefined) fait un ptit bail pour ne pas afficher le undefined
-      return;*/
   const ids = playerIds.filter(Boolean) as number[];
 
   const payload = {
@@ -99,6 +97,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     const snapshot = await clientsLock.acquire(() => [...clients]);
     const allUsers = snapshot.map(c => ({ id: c.id, name: c.name }));
 
+    fastify.log.info(`[Chat] Broadcasting ${allUsers.length} users to ${snapshot.length} clients`);
+
     for (const client of snapshot) {
       if (client.socket.readyState !== 1) continue;
 
@@ -110,6 +110,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
           blocked: blockedIds.includes(user.id),
         }));
 
+        fastify.log.info(`[Chat] Envoi à ${client.name}: ${JSON.stringify(usersForThisClient)}`);
         sendToClient(client, { type: "users", users: usersForThisClient });
 
       } catch (err) {
@@ -126,11 +127,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; name: string; email: string };
-      console.log("l'id dans le back : ", decoded.id);
-      console.log("le name dans le back : ", decoded.name);
-
-      const client: Client = { id: decoded.id, name: decoded.name, socket };
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; display_name: string; email: string };
+      const client: Client = { id: decoded.id, name: decoded.display_name, socket };
 
       clientsLock.acquire(() => {
         clients.push(client);
@@ -146,8 +144,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
           if (data.type === "message") {
             const msg = {
-              from: client.id,
-              fromName: client.name,
+              from: { id: client.id, name: client.name },
               to: data.to || null,
               text: data.text,
               date: new Date().toISOString(),
@@ -155,7 +152,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
             fastify.db.run(
               "INSERT INTO messages (fromId, toId, text, date) VALUES (?, ?, ?, ?)",
-              [msg.from, msg.to, msg.text, msg.date]
+              [msg.from.id, msg.to, msg.text, msg.date]
             );
 
             const snapshot = await clientsLock.acquire(() => [...clients]);
@@ -170,7 +167,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               }
               sendToClient(client, { type: "private", ...msg });
             } else {
-              // Message global
               // Optimisation: Recuperer tous ceux qui m'ont bloque en une seule requête
               const blockers = await getBlockers(client.id);
 
@@ -187,7 +183,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               [client.id, data.userId],
               (err) => {
                 if (err) return fastify.log.error("Erreur DB block:", err);
-                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} bloque` });
+                sendToClient(client, { type: "info", message: ` ${data.name} bloque` });
                 // Rediffuser la liste des utilisateurs pour que le statut "bloque" soit à jour
                 broadcastUsers();
               }
@@ -198,9 +194,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
             fastify.db.run(
               "DELETE FROM blocks WHERE blockerId = ? AND blockedId = ?",
               [client.id, data.userId],
-              (err) => { // Ajout du callback
+              (err) => {
                 if (err) return fastify.log.error("Erreur DB unblock:", err);
-                sendToClient(client, { type: "info", message: `Utilisateur ${data.name} debloque` });
+                sendToClient(client, { type: "info", message: ` ${data.name} debloque` });
                 // Rediffuser la liste des utilisateurs
                 broadcastUsers();
               }
@@ -223,6 +219,8 @@ export default fp(async function Chat(fastify: FastifyInstance) {
         });
         broadcastUsers();
       });
+
+
     } catch (err) {
       fastify.log.error("JWT invalide :", err);
       socket.close();
