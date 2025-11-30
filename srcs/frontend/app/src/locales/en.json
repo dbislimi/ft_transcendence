@@ -23,7 +23,7 @@
     "readyToTranscend": "Ready to transcend your limits?",
     "optimalPerformance": "Optimal performance"
   },
-    "pong": {
+  "pong": {
     "rules": {
       "title": "Pong Rules",
       "rule1": "First to 11 points wins.",
@@ -246,7 +246,8 @@
       "usernamePlaceholder": "Username",
       "addHint": "Enter the exact username of the person you want to add.",
       "online": "Online",
-      "offline": "Offline",      "invite": "🎮 Invite to play",
+      "offline": "Offline",
+      "invite": "🎮 Invite to play",
       "block": "🚫 Block",
       "remove": "🗑️ Remove",
       "notFound": "No friends yet",
@@ -658,14 +659,35 @@
       "close": "Close"
     },
     "account": {
-      "title": "Account",
+      "title": "Account Settings",
       "description": "Background previews",
       "authRequired": "Login required",
       "preferences": "Preferences",
       "backgroundPreview": "Background preview",
       "backgroundPreviewDesc": "Previews of selected backgrounds for each mode",
       "lightModeBackground": "Light Mode",
-      "darkModeBackground": "Dark Mode"
+      "darkModeBackground": "Dark Mode",
+      "information": "Information",
+      "pseudo": "Username",
+      "email": "Email",
+      "memberSince": "Member since",
+      "avatar": "Avatar",
+      "twoFALabel": "Two-Factor Authentication (2FA)",
+      "twoFAEnabled": "Enabled",
+      "twoFADisabled": "Disabled",
+      "enableTwoFA": "Enable",
+      "disableTwoFA": "Disable",
+      "changePassword": "Change Password",
+      "currentPasswordPlaceholder": "Current password (if changing)",
+      "newPasswordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "profileUpdated": "Profile updated successfully",
+      "updateError": "Error during update",
+      "connectionError": "Connection error",
+      "passwordMismatch": "New passwords do not match",
+      "twoFAActivated": "Two-factor authentication enabled",
+      "twoFADeactivated": "Two-factor authentication disabled",
+      "twoFAError": "Error modifying 2FA"
     },
     "home": {
       "description": "Return to home",
@@ -901,32 +923,6 @@
   "confirm": {
     "confirm": "Confirm",
     "cancel": "Cancel"
-  },
-  "settings": {
-    "account": {
-      "title": "Account Settings",
-      "information": "Information",
-      "pseudo": "Username",
-      "email": "Email",
-      "memberSince": "Member since",
-      "avatar": "Avatar",
-      "twoFALabel": "Two-Factor Authentication (2FA)",
-      "twoFAEnabled": "Enabled",
-      "twoFADisabled": "Disabled",
-      "enableTwoFA": "Enable",
-      "disableTwoFA": "Disable",
-      "changePassword": "Change Password",
-      "currentPasswordPlaceholder": "Current password (if changing)",
-      "newPasswordPlaceholder": "New password",
-      "confirmPasswordPlaceholder": "Confirm new password",
-      "profileUpdated": "Profile updated successfully",
-      "updateError": "Error during update",
-      "connectionError": "Connection error",
-      "passwordMismatch": "New passwords do not match",
-      "twoFAActivated": "Two-factor authentication enabled",
-      "twoFADeactivated": "Two-factor authentication disabled",
-      "twoFAError": "Error modifying 2FA"
-    }
   },
   "countdown": {
     "startingIn": "Starting in"

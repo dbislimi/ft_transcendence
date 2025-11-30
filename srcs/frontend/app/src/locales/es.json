@@ -23,7 +23,7 @@
     "readyToTranscend": "¿Listo para trascender tus límites?",
     "optimalPerformance": "Rendimiento óptimo"
   },
- "pong": {
+  "pong": {
     "rules": {
       "title": "Reglas de Pong",
       "rule1": "El primero en llegar a 11 puntos gana.",
@@ -665,14 +665,35 @@
       "close": "Cerrar"
     },
     "account": {
-      "title": "Cuenta",
+      "title": "Configuración de cuenta",
       "description": "Vistas previas de fondos",
       "authRequired": "Inicio de sesión requerido",
       "preferences": "Preferencias",
       "backgroundPreview": "Vista previa de fondos",
       "backgroundPreviewDesc": "Vistas previas de los fondos seleccionados para cada modo",
       "lightModeBackground": "Modo Claro",
-      "darkModeBackground": "Modo Oscuro"
+      "darkModeBackground": "Modo Oscuro",
+      "information": "Información",
+      "pseudo": "Nombre de usuario",
+      "email": "Correo electrónico",
+      "memberSince": "Miembro desde",
+      "avatar": "Avatar",
+      "twoFALabel": "Autenticación de dos factores (2FA)",
+      "twoFAEnabled": "Activada",
+      "twoFADisabled": "Desactivada",
+      "enableTwoFA": "Activar",
+      "disableTwoFA": "Desactivar",
+      "changePassword": "Cambiar contraseña",
+      "currentPasswordPlaceholder": "Contraseña actual (si se cambia)",
+      "newPasswordPlaceholder": "Nueva contraseña",
+      "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
+      "profileUpdated": "Perfil actualizado con éxito",
+      "updateError": "Error durante la actualización",
+      "connectionError": "Error de conexión",
+      "passwordMismatch": "Las nuevas contraseñas no coinciden",
+      "twoFAActivated": "Autenticación de dos factores activada",
+      "twoFADeactivated": "Autenticación de dos factores desactivada",
+      "twoFAError": "Error al modificar 2FA"
     },
     "home": {
       "description": "Volver al inicio",
@@ -920,32 +941,6 @@
   "confirm": {
     "confirm": "Confirmar",
     "cancel": "Cancelar"
-  },
-  "settings": {
-    "account": {
-      "title": "Configuración de cuenta",
-      "information": "Información",
-      "pseudo": "Nombre de usuario",
-      "email": "Correo electrónico",
-      "memberSince": "Miembro desde",
-      "avatar": "Avatar",
-      "twoFALabel": "Autenticación de dos factores (2FA)",
-      "twoFAEnabled": "Activada",
-      "twoFADisabled": "Desactivada",
-      "enableTwoFA": "Activar",
-      "disableTwoFA": "Desactivar",
-      "changePassword": "Cambiar contraseña",
-      "currentPasswordPlaceholder": "Contraseña actual (si se cambia)",
-      "newPasswordPlaceholder": "Nueva contraseña",
-      "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
-      "profileUpdated": "Perfil actualizado con éxito",
-      "updateError": "Error durante la actualización",
-      "connectionError": "Error de conexión",
-      "passwordMismatch": "Las nuevas contraseñas no coinciden",
-      "twoFAActivated": "Autenticación de dos factores activada",
-      "twoFADeactivated": "Autenticación de dos factores desactivada",
-      "twoFAError": "Error al modificar 2FA"
-    }
   },
   "countdown": {
     "startingIn": "Empezando en"

@@ -23,7 +23,7 @@
     "readyToTranscend": "مستعد لتجاوز حدودك؟",
     "optimalPerformance": "أداء مثالي"
   },
-   "pong": {
+  "pong": {
     "rules": {
       "title": "قواعد البونغ",
       "rule1": "الأول الذي يصل إلى 11 نقطة يفوز.",
@@ -734,19 +734,41 @@
       "close": "إغلاق"
     },
     "account": {
-      "title": "حساب",
+      "title": "إعدادات الحساب",
       "description": "معاينات الخلفيات",
       "authRequired": "تسجيل الدخول مطلوب",
       "preferences": "التفضيلات",
       "backgroundPreview": "معاينة الخلفية",
       "backgroundPreviewDesc": "معاينات الخلفيات المحددة لكل وضع",
       "lightModeBackground": "الوضع الفاتح",
-      "darkModeBackground": "الوضع الداكن"
+      "darkModeBackground": "الوضع الداكن",
+      "information": "معلومات",
+      "pseudo": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "memberSince": "عضو منذ",
+      "avatar": "الصورة الرمزية",
+      "twoFALabel": "المصادقة الثنائية (2FA)",
+      "twoFAEnabled": "مفعّل",
+      "twoFADisabled": "معطّل",
+      "enableTwoFA": "تفعيل",
+      "disableTwoFA": "تعطيل",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPasswordPlaceholder": "كلمة المرور الحالية (إذا كنت تغيرها)",
+      "newPasswordPlaceholder": "كلمة مرور جديدة",
+      "confirmPasswordPlaceholder": "تأكيد كلمة المرور الجديدة",
+      "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+      "updateError": "خطأ أثناء التحديث",
+      "connectionError": "خطأ في الاتصال",
+      "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
+      "twoFAActivated": "تم تفعيل المصادقة الثنائية",
+      "twoFADeactivated": "تم تعطيل المصادقة الثنائية",
+      "twoFAError": "خطأ في تعديل المصادقة الثنائية"
     },
     "home": {
       "description": "العودة إلى الرئيسية",
       "subtitle": "العودة إلى الصفحة الرئيسية"
-    }
+    },
+    "close": "إغلاق"
   },
   "profileView": {
     "loading": "البحث عن بيانات الرحلة...",
@@ -914,32 +936,6 @@
   "confirm": {
     "confirm": "تأكيد",
     "cancel": "إلغاء"
-  },
-  "settings": {
-    "account": {
-      "title": "إعدادات الحساب",
-      "information": "معلومات",
-      "pseudo": "اسم المستخدم",
-      "email": "البريد الإلكتروني",
-      "memberSince": "عضو منذ",
-      "avatar": "الصورة الرمزية",
-      "twoFALabel": "المصادقة الثنائية (2FA)",
-      "twoFAEnabled": "مفعّل",
-      "twoFADisabled": "معطّل",
-      "enableTwoFA": "تفعيل",
-      "disableTwoFA": "تعطيل",
-      "changePassword": "تغيير كلمة المرور",
-      "currentPasswordPlaceholder": "كلمة المرور الحالية (إذا كنت تغيرها)",
-      "newPasswordPlaceholder": "كلمة مرور جديدة",
-      "confirmPasswordPlaceholder": "تأكيد كلمة المرور الجديدة",
-      "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
-      "updateError": "خطأ أثناء التحديث",
-      "connectionError": "خطأ في الاتصال",
-      "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
-      "twoFAActivated": "تم تفعيل المصادقة الثنائية",
-      "twoFADeactivated": "تم تعطيل المصادقة الثنائية",
-      "twoFAError": "خطأ في تعديل المصادقة الثنائية"
-    }
   },
   "countdown": {
     "startingIn": "البداية في"

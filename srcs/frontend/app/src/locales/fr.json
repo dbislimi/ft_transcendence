@@ -23,141 +23,140 @@
     "readyToTranscend": "Prêt à transcender tes limites ?",
     "optimalPerformance": "Performance optimale"
   },
-	"pong": {
-		"rules": {
-			"title": "Règles du Pong",
-			"rule1": "Le premier à 11 points gagne.",
-			"rule2": "Utilisez la raquette pour frapper la balle.",
-			"rule3": "Ne laissez pas la balle passer derrière vous.",
-			"rule4": "Des bonus peuvent apparaître !",
-			"modeSelection": "Sélection du mode",
-			"offlineMode": "Hors ligne",
-			"offlineModeDesc": "Jouer localement ou contre un bot",
-			"onlineMode": "Multijoueur",
-			"onlineModeDesc": "Jouer en ligne avec d'autres",
-			"players": "Joueurs",
-			"solo": "Solo (vs Bot)",
-			"duo": "Duo (Local)",
-			"difficulty": "Difficulté",
-			"startOffline": "Commencer le jeu",
-			"matchType": "Type de match",
-			"quickMatch": "Partie Rapide",
-			"quickMatchDesc": "Trouver un adversaire instantanément",
-			"tournament": "Tournoi",
-			"tournamentDesc": "Rejoindre ou créer un tournoi",
-			"enterName": "Entrez votre nom",
-			"namePlaceholder": "Votre nom"
-		},
-		"difficulty": {
-			"easy": "Facile",
-			"medium": "Moyen",
-			"hard": "Difficile"
-		},
-		"lobby": {
-			"title": "Salon de Tournoi",
-			"createTab": "Créer un Tournoi",
-			"joinTab": "Rejoindre un Tournoi",
-			"name": "Nom du Tournoi",
-			"namePlaceholder": "Entrez le nom du tournoi",
-			"playersCount": "Joueurs Max",
-			"private": "Tournoi Privé",
-			"passwordOpt": "Mot de passe (Optionnel)",
-			"passwordPlaceholder": "Entrez le mot de passe",
-			"create": "Créer le Tournoi",
-			"availableTournaments": "Tournois Disponibles",
-			"refresh": "Actualiser",
-			"noTournaments": "Aucun tournoi trouvé",
-			"noTournamentsDesc": "Créez-en un pour commencer à jouer !",
-			"full": "Plein",
-			"waiting": "En attente",
-			"players": "joueurs",
-			"join": "Rejoindre",
-			"joinPrivate": "Rejoindre un Tournoi Privé",
-			"privatePasswordDesc": "Ce tournoi est privé. Veuillez entrer le mot de passe.",
-			"password": "Mot de passe",
-			"enterPassword": "Entrez le mot de passe",
-			"cancel": "Annuler",
-			"connected": "Connecté",
-			"disconnected": "Déconnecté"
-		},
-		"gameOver": {
-			"defeat": "Défaite",
-			"congratulations": "Félicitations, vous avez remporté le tournoi !",
-			"wonRound": "Vous avez gagné cette manche.",
-			"lostRound": "Vous avez perdu cette manche.",
-			"opponent": "Adversaire :",
-			"finalScore": "Score final :",
-			"quit": "Quitter",
-			"continue": "Continuer",
-			"replay": "Rejouer"
-		},
-  		"gameOverlay": {
-			"mode": "Mode"
-		},
-		"readyPhase": {
-			"opponent": "Adversaire",
-			"timeRemaining": "Temps restant",
-			"you": "Vous",
-			"ready": "PRÊT",
-			"notReady": "PAS PRÊT",
-			"imReady": "JE SUIS PRÊT !",
-			"bothReady": "Les deux joueurs sont prêts ! Démarrage imminent...",
-			"waitingOpponent": "En attente de l'adversaire...",
-			"info": "Le jeu démarrera automatiquement lorsque les deux joueurs seront prêts ou lorsque le chronomètre expirera."
-		},
-		"searching": {
-			"waitingOpponent": "En attente d'un adversaire",
-			"quitTraining": "Quitter l'entraînement",
-			"quitOrTrain": "Vous pouvez quitter ou lancer un entraînement",
-			"selectDifficulty": "Sélectionnez la difficulté",
-			"easy": "Facile",
-			"medium": "Moyen",
-			"hard": "Difficile",
-			"quit": "Quitter",
-			"backToMenu": "Retour au menu",
-			"train": "S'entraîner",
-			"vsBot": "Jouer contre un bot"
-		},
-		"scoreboard": {
-			"p1": "J1",
-			"p2": "J2"
-		},
-		"settings": {
-			"cosmetics": "Cosmétique",
-			"game": "Jeu",
-			"preferredSide": "Côté préféré",
-			"left": "Gauche",
-			"right": "Droite",
-			"paddleSkin": "Skin Paddle",
-			"ballSkin": "Skin Balle",
-			"bonusCount": "Nombre de bonus simultanés",
-			"bonusTypes": "Types de bonus",
-			"playerSpeed": "Vitesse du joueur",
-			"cancel": "Annuler",
-			"save": "Sauvegarder",
-			"colors": {
-				"white": "Blanc",
-				"cyan": "Cyan",
-				"emerald": "Émeraude",
-				"rose": "Rose",
-				"blue": "Bleu",
-				"amber": "Ambre"
-			},
-			"bonuses": {
-				"bigger": "Plus grand",
-				"smaller": "Plus petit",
-				"faster": "Plus rapide"
-			}
-		},
-		"victory": "Victoire",
-		"offline": "Hors ligne",
-		"online": "En ligne",
-		"final": "Finale",
-		"semiFinal": "Demi-finale",
-		"quarterFinal": "Quart de finale",
-		"round": "Tour"
-	},
-
+  "pong": {
+    "rules": {
+      "title": "Règles du Pong",
+      "rule1": "Le premier à 11 points gagne.",
+      "rule2": "Utilisez la raquette pour frapper la balle.",
+      "rule3": "Ne laissez pas la balle passer derrière vous.",
+      "rule4": "Des bonus peuvent apparaître !",
+      "modeSelection": "Sélection du mode",
+      "offlineMode": "Hors ligne",
+      "offlineModeDesc": "Jouer localement ou contre un bot",
+      "onlineMode": "Multijoueur",
+      "onlineModeDesc": "Jouer en ligne avec d'autres",
+      "players": "Joueurs",
+      "solo": "Solo (vs Bot)",
+      "duo": "Duo (Local)",
+      "difficulty": "Difficulté",
+      "startOffline": "Commencer le jeu",
+      "matchType": "Type de match",
+      "quickMatch": "Partie Rapide",
+      "quickMatchDesc": "Trouver un adversaire instantanément",
+      "tournament": "Tournoi",
+      "tournamentDesc": "Rejoindre ou créer un tournoi",
+      "enterName": "Entrez votre nom",
+      "namePlaceholder": "Votre nom"
+    },
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
+    },
+    "lobby": {
+      "title": "Salon de Tournoi",
+      "createTab": "Créer un Tournoi",
+      "joinTab": "Rejoindre un Tournoi",
+      "name": "Nom du Tournoi",
+      "namePlaceholder": "Entrez le nom du tournoi",
+      "playersCount": "Joueurs Max",
+      "private": "Tournoi Privé",
+      "passwordOpt": "Mot de passe (Optionnel)",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "create": "Créer le Tournoi",
+      "availableTournaments": "Tournois Disponibles",
+      "refresh": "Actualiser",
+      "noTournaments": "Aucun tournoi trouvé",
+      "noTournamentsDesc": "Créez-en un pour commencer à jouer !",
+      "full": "Plein",
+      "waiting": "En attente",
+      "players": "joueurs",
+      "join": "Rejoindre",
+      "joinPrivate": "Rejoindre un Tournoi Privé",
+      "privatePasswordDesc": "Ce tournoi est privé. Veuillez entrer le mot de passe.",
+      "password": "Mot de passe",
+      "enterPassword": "Entrez le mot de passe",
+      "cancel": "Annuler",
+      "connected": "Connecté",
+      "disconnected": "Déconnecté"
+    },
+    "gameOver": {
+      "defeat": "Défaite",
+      "congratulations": "Félicitations, vous avez remporté le tournoi !",
+      "wonRound": "Vous avez gagné cette manche.",
+      "lostRound": "Vous avez perdu cette manche.",
+      "opponent": "Adversaire :",
+      "finalScore": "Score final :",
+      "quit": "Quitter",
+      "continue": "Continuer",
+      "replay": "Rejouer"
+    },
+    "gameOverlay": {
+      "mode": "Mode"
+    },
+    "readyPhase": {
+      "opponent": "Adversaire",
+      "timeRemaining": "Temps restant",
+      "you": "Vous",
+      "ready": "PRÊT",
+      "notReady": "PAS PRÊT",
+      "imReady": "JE SUIS PRÊT !",
+      "bothReady": "Les deux joueurs sont prêts ! Démarrage imminent...",
+      "waitingOpponent": "En attente de l'adversaire...",
+      "info": "Le jeu démarrera automatiquement lorsque les deux joueurs seront prêts ou lorsque le chronomètre expirera."
+    },
+    "searching": {
+      "waitingOpponent": "En attente d'un adversaire",
+      "quitTraining": "Quitter l'entraînement",
+      "quitOrTrain": "Vous pouvez quitter ou lancer un entraînement",
+      "selectDifficulty": "Sélectionnez la difficulté",
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile",
+      "quit": "Quitter",
+      "backToMenu": "Retour au menu",
+      "train": "S'entraîner",
+      "vsBot": "Jouer contre un bot"
+    },
+    "scoreboard": {
+      "p1": "J1",
+      "p2": "J2"
+    },
+    "settings": {
+      "cosmetics": "Cosmétique",
+      "game": "Jeu",
+      "preferredSide": "Côté préféré",
+      "left": "Gauche",
+      "right": "Droite",
+      "paddleSkin": "Skin Paddle",
+      "ballSkin": "Skin Balle",
+      "bonusCount": "Nombre de bonus simultanés",
+      "bonusTypes": "Types de bonus",
+      "playerSpeed": "Vitesse du joueur",
+      "cancel": "Annuler",
+      "save": "Sauvegarder",
+      "colors": {
+        "white": "Blanc",
+        "cyan": "Cyan",
+        "emerald": "Émeraude",
+        "rose": "Rose",
+        "blue": "Bleu",
+        "amber": "Ambre"
+      },
+      "bonuses": {
+        "bigger": "Plus grand",
+        "smaller": "Plus petit",
+        "faster": "Plus rapide"
+      }
+    },
+    "victory": "Victoire",
+    "offline": "Hors ligne",
+    "online": "En ligne",
+    "final": "Finale",
+    "semiFinal": "Demi-finale",
+    "quarterFinal": "Quart de finale",
+    "round": "Tour"
+  },
   "profile": {
     "error_msg": {
       "invalidEmail": "Email invalide.",
@@ -289,7 +288,6 @@
     },
     "editProfile": "Modifier le profil"
   },
-
   "about": {
     "title": "Notre Équipe",
     "subtitle": "Découvrez les talents derrière Transcendence",
@@ -661,14 +659,35 @@
     },
     "close": "Fermer",
     "account": {
-      "title": "Compte",
+      "title": "Réglages de compte",
       "description": "Aperçus des arrière-plans",
       "authRequired": "Connexion requise",
       "preferences": "Préférences",
       "backgroundPreview": "Aperçu des arrière-plans",
       "backgroundPreviewDesc": "Aperçus des arrière-plans sélectionnés pour chaque mode",
       "lightModeBackground": "Mode Clair",
-      "darkModeBackground": "Mode Sombre"
+      "darkModeBackground": "Mode Sombre",
+      "information": "Informations",
+      "pseudo": "Pseudo",
+      "email": "Email",
+      "memberSince": "Membre depuis",
+      "avatar": "Avatar",
+      "twoFALabel": "Double Authentification (2FA)",
+      "twoFAEnabled": "Activée",
+      "twoFADisabled": "Désactivée",
+      "enableTwoFA": "Activer",
+      "disableTwoFA": "Désactiver",
+      "changePassword": "Changer le mot de passe",
+      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
+      "newPasswordPlaceholder": "Nouveau mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
+      "profileUpdated": "Profil mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour",
+      "connectionError": "Erreur de connexion",
+      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+      "twoFAActivated": "Double authentification activée",
+      "twoFADeactivated": "Double authentification désactivée",
+      "twoFAError": "Erreur lors de la modification de la 2FA"
     },
     "home": {
       "description": "Retour à l'accueil",
@@ -939,32 +958,6 @@
   "confirm": {
     "confirm": "Confirmer",
     "cancel": "Annuler"
-  },
-  "settings": {
-    "account": {
-      "title": "Réglages de compte",
-      "information": "Informations",
-      "pseudo": "Pseudo",
-      "email": "Email",
-      "memberSince": "Membre depuis",
-      "avatar": "Avatar",
-      "twoFALabel": "Double Authentification (2FA)",
-      "twoFAEnabled": "Activée",
-      "twoFADisabled": "Désactivée",
-      "enableTwoFA": "Activer",
-      "disableTwoFA": "Désactiver",
-      "changePassword": "Changer le mot de passe",
-      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
-      "newPasswordPlaceholder": "Nouveau mot de passe",
-      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
-      "profileUpdated": "Profil mis à jour avec succès",
-      "updateError": "Erreur lors de la mise à jour",
-      "connectionError": "Erreur de connexion",
-      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
-      "twoFAActivated": "Double authentification activée",
-      "twoFADeactivated": "Double authentification désactivée",
-      "twoFAError": "Erreur lors de la modification de la 2FA"
-    }
   },
   "countdown": {
     "startingIn": "Démarrage dans"

@@ -23,7 +23,7 @@
     "readyToTranscend": "Готов преодолеть свои пределы?",
     "optimalPerformance": "Оптимальная производительность"
   },
-   "pong": {
+  "pong": {
     "rules": {
       "title": "Правила Понга",
       "rule1": "Первый до 11 очков побеждает.",
@@ -672,14 +672,35 @@
       "close": "Закрыть"
     },
     "account": {
-      "title": "Аккаунт",
+      "title": "Настройки учетной записи",
       "description": "Просмотр фонов",
       "authRequired": "Требуется авторизация",
       "preferences": "Предпочтения",
       "backgroundPreview": "Предварительный просмотр фона",
       "backgroundPreviewDesc": "Предварительный просмотр выбранных фонов для каждого режима",
       "lightModeBackground": "Светлый режим",
-      "darkModeBackground": "Темный режим"
+      "darkModeBackground": "Темный режим",
+      "information": "Информация",
+      "pseudo": "Имя пользователя",
+      "email": "Электронная почта",
+      "memberSince": "Участник с",
+      "avatar": "Аватар",
+      "twoFALabel": "Двухфакторная аутентификация (2FA)",
+      "twoFAEnabled": "Включено",
+      "twoFADisabled": "Отключено",
+      "enableTwoFA": "Включить",
+      "disableTwoFA": "Отключить",
+      "changePassword": "Изменить пароль",
+      "currentPasswordPlaceholder": "Текущий пароль (если меняется)",
+      "newPasswordPlaceholder": "Новый пароль",
+      "confirmPasswordPlaceholder": "Подтвердите новый пароль",
+      "profileUpdated": "Профиль успешно обновлен",
+      "updateError": "Ошибка при обновлении",
+      "connectionError": "Ошибка соединения",
+      "passwordMismatch": "Новые пароли не совпадают",
+      "twoFAActivated": "Двухфакторная аутентификация включена",
+      "twoFADeactivated": "Двухфакторная аутентификация отключена",
+      "twoFAError": "Ошибка при изменении 2FA"
     },
     "home": {
       "description": "Вернуться на главную",
@@ -921,32 +942,6 @@
   "confirm": {
     "confirm": "Подтвердить",
     "cancel": "Отмена"
-  },
-  "settings": {
-    "account": {
-      "title": "Настройки учетной записи",
-      "information": "Информация",
-      "pseudo": "Имя пользователя",
-      "email": "Электронная почта",
-      "memberSince": "Участник с",
-      "avatar": "Аватар",
-      "twoFALabel": "Двухфакторная аутентификация (2FA)",
-      "twoFAEnabled": "Включено",
-      "twoFADisabled": "Отключено",
-      "enableTwoFA": "Включить",
-      "disableTwoFA": "Отключить",
-      "changePassword": "Изменить пароль",
-      "currentPasswordPlaceholder": "Текущий пароль (если меняется)",
-      "newPasswordPlaceholder": "Новый пароль",
-      "confirmPasswordPlaceholder": "Подтвердите новый пароль",
-      "profileUpdated": "Профиль успешно обновлен",
-      "updateError": "Ошибка при обновлении",
-      "connectionError": "Ошибка соединения",
-      "passwordMismatch": "Новые пароли не совпадают",
-      "twoFAActivated": "Двухфакторная аутентификация включена",
-      "twoFADeactivated": "Двухфакторная аутентификация отключена",
-      "twoFAError": "Ошибка при изменении 2FA"
-    }
   },
   "countdown": {
     "startingIn": "Начало через"
