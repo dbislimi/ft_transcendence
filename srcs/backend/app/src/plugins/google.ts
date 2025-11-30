@@ -75,7 +75,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
         );
       });
 
-      user = { id: lastID, name, email };
+      user = { id: lastID, name, email, display_name: userInfo.name };
     }
     if (user.twoFAEnabled === 1) {
       const otp = fastify.generateOtp();
