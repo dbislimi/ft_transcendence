@@ -60,6 +60,17 @@ async function dbPlugin(fastify, opts) {
       FOREIGN KEY (friend_id) REFERENCES users(id),
       PRIMARY KEY (user_id, friend_id)
     );`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS friend_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id INTEGER NOT NULL,
+      receiver_id INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(sender_id, receiver_id)
+    );`);
     // Tables Bomb Party
     db.run(`
 		CREATE TABLE IF NOT EXISTS bp_matches (

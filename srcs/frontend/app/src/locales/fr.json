@@ -81,18 +81,26 @@
       "disconnected": "Déconnecté"
     },
     "gameOver": {
+      "victoryTitle": "Victoire",
+      "tournamentChampion": "Champion du tournoi !",
+      "victory": "Victoire !",
       "defeat": "Défaite",
       "congratulations": "Félicitations, vous avez remporté le tournoi !",
       "wonRound": "Vous avez gagné cette manche.",
       "lostRound": "Vous avez perdu cette manche.",
-      "opponent": "Adversaire :",
-      "finalScore": "Score final :",
+      "finalScore": "Score final",
       "quit": "Quitter",
       "continue": "Continuer",
       "replay": "Rejouer"
     },
     "gameOverlay": {
-      "mode": "Mode"
+      "mode": "Mode",
+      "offline": "Hors-ligne",
+      "tournament": "Tournoi",
+      "final": "Finale",
+      "semiFinal": "Demi-finale",
+      "quarterFinal": "Quart de finale",
+      "roundOf": "{{count}}ème de finale"
     },
     "readyPhase": {
       "opponent": "Adversaire",
@@ -954,15 +962,6 @@
     "quit": "Quitter",
     "continue": "Continuer",
     "replay": "Rejouer"
-  },
-  "gameOverlay": {
-    "mode": "Mode",
-    "offline": "Hors-ligne",
-    "tournament": "Tournoi",
-    "final": "Finale",
-    "semiFinal": "Demi-finale",
-    "quarterFinal": "Quart de finale",
-    "roundOf": "{{count}}ème de finale"
   },
   "theme": {
     "switchToLight": "Passer au mode clair",
