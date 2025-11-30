@@ -376,7 +376,7 @@ export default function Registration() {
 										fill="#EA4335"
 									/>
 								</svg>
-								Sign in with Google
+								Sign up with Google
 							</a>
 						</div>
 

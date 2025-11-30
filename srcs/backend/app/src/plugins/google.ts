@@ -41,8 +41,6 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
       result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
     } catch (err) {
       console.error('[Google Callback] Token Exchange Error:', err);
-      // Clear the state cookie and redirect to login or show a clear error
-      //reply.clearCookie('oauth2-redirect-state', { path: '/' });
       return reply.code(400).send({ error: "Session expiree ou invalide. Veuillez reessayer de vous connecter." });
     }
 
@@ -66,8 +64,8 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
         const dummyPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
 
         db.run(
-          'INSERT INTO users (name, email, password, display_name) VALUES (?, ?, ?, ?)',
-          [userInfo.name, userInfo.email, dummyPassword, userInfo.name],
+          'INSERT INTO users (name, email, password, display_name, avatar) VALUES (?, ?, ?, ?, ?)',
+          [userInfo.name, userInfo.email, dummyPassword, userInfo.name, '/avatars/avatar1.png'],
           function (err) {
             if (err)
               reject(err);
