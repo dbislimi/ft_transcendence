@@ -9,23 +9,13 @@ type PongGameAreaProps = {
 		opponent: string;
 	};
 	gameRef: MutableRefObject<GameState>;
-	scale: number;
-	cosmetics: {
-		preferredSide: string;
-		paddleColor: string;
-		ballColor: string;
-	};
-	side: number | null;
-	opponentPaddleColor?: string;
+	side: 0 | 1;
 };
 
 export default function PongGameArea({
 	labels,
 	gameRef,
-	scale,
-	cosmetics,
 	side,
-	opponentPaddleColor,
 }: PongGameAreaProps) {
 	return (
 		<div className="relative">
@@ -33,14 +23,7 @@ export default function PongGameArea({
 				selfLabel={labels.self}
 				opponentLabel={labels.opponent}
 			/>
-			<PongCanvas
-				gameRef={gameRef}
-				scale={scale}
-				cosmetics={cosmetics}
-				side={side}
-				opponentPaddleColor={opponentPaddleColor}
-			/>
+			<PongCanvas gameRef={gameRef} />
 		</div>
 	);
 }
-

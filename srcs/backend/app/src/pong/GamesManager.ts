@@ -155,9 +155,7 @@ export default class GamesManager {
 		size: number,
 		passwd: string,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	): boolean {
 		if (this.tournaments[id]) {
@@ -268,9 +266,7 @@ export default class GamesManager {
 		client: Client,
 		diff: difficulty | null,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	): boolean {
 		const game = new Game({
@@ -329,9 +325,7 @@ export default class GamesManager {
 		client: Client,
 		friend: Client,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
@@ -370,9 +364,7 @@ export default class GamesManager {
 		receiv: Client,
 		invitationId?: string,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
@@ -485,8 +477,6 @@ export default class GamesManager {
 		for (const client of clients) {
 			if (!client?.socket) continue;
 			const opponent = game.getOpp(client)?.name ?? "Opponent";
-			const opponentPaddleColor =
-				game.getOpp(client)?.cosmetics?.paddleColor ?? "#ffffff";
 			client.socket.send(
 				JSON.stringify({
 					event: "game_session_ready",
@@ -496,7 +486,6 @@ export default class GamesManager {
 							game.clients[1]?.id ?? ""
 						}`,
 						sessionType,
-						opponentPaddleColor,
 						side: client.inGameId ?? null,
 						labels: { self: `${client.name} (You)`, opponent },
 						...(tournamentDepth !== undefined

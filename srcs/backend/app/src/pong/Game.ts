@@ -37,19 +37,16 @@ export default class Game {
 		botDiff?: difficulty | null;
 		train?: boolean;
 		options?: {
-			maxScore?: number;
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		};
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board({
-			onWin: (id: number) => {
+		this.board = new Board(
+			 (id: number) => {
 				this.winner = id;
 			},
-			...options,
-		});
+			options?.bonus ?? false
+		);
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
 		if (p2 !== undefined) {
@@ -172,14 +169,11 @@ export default class Game {
 			to: "pong",
 			body: {
 				ball: {
-					...this.board.getBallData(),
-					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),
+					x: this.board.getBallData().x,
+					y: this.board.getBallData().y,
 				},
 				players: this.board.getPlayersData(),
-				bonuses: {
-					count: this.board.bonus.length,
-					bonuses: this.board.getBonusData(),
-				},
+				bonuses: this.board.getBonusData(),
 			},
 		};
 	}

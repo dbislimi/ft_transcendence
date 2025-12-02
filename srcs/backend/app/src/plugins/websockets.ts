@@ -21,12 +21,6 @@ interface Tournament {
 	allowReconnect: boolean;
 }
 
-interface Cosmetics {
-	preferredSide: string;
-	paddleColor: string;
-	ballColor: string;
-}
-
 export interface Client {
 	id: number;
 	name: string;
@@ -36,7 +30,6 @@ export interface Client {
 	winnerTimer?: ReturnType<typeof setTimeout>;
 	rejoinTimer?: ReturnType<typeof setTimeout>;
 	quit?: boolean;
-	cosmetics?: Cosmetics;
 	removalTimer?: ReturnType<typeof setTimeout>;
 }
 

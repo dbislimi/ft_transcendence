@@ -12,9 +12,8 @@ interface Props {
 	} | null;
 	onQuit: () => void;
 	onReplay: () => void;
-	onContinue?: () => void;
-	preferredSide: string;
-	side: number | null;
+	onContinue: () => void;
+	side: number;
 }
 
 export default function GameOverOverlay({
@@ -22,13 +21,11 @@ export default function GameOverOverlay({
 	onQuit,
 	onReplay,
 	onContinue,
-	preferredSide,
 	side,
 }: Props) {
 	const { t } = useTranslation();
 
 	if (!gameOver) return null;
-	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
 
 	const { didWin, scores, tournamentDepth, finalTournamentWin, opponent } =
 		gameOver;
@@ -69,10 +66,7 @@ export default function GameOverOverlay({
 				)}
 
 				<div className="mb-4 font-mono">
-					{t("pong.gameOver.finalScore")}{" "}
-					{shouldMirror
-						? `${scores[1]} - ${scores[0]}`
-						: `${scores[0]} - ${scores[1]}`}
+					{t("pong.gameOver.finalScore")} {`${scores[0]} - ${scores[1]}`}
 				</div>
 
 				<div className="flex gap-3 justify-end mt-4">

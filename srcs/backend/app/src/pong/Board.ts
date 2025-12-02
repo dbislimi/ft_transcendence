@@ -21,52 +21,29 @@ export default class Board {
 	bonus: Bonus[] = [];
 	private bonusTypes = [Bigger, Smaller, Faster];
 	private bonusNb: number = 1;
-	private bonusSpawnInterval: number = 1;
+	private bonusSpawnInterval: number = 5;
 	private bonusSpawnTimer: number = 0;
 	private bonusRadius: number = 8;
 	private training: boolean = false;
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
-	private maxScore: number;
+	private maxScore: number = 2;
 	private gamesNb: number = 1;
 	normHitpoint: number = 0;
 	private onWin: (id: 0 | 1) => void;
 
-	constructor(options: {
-		onWin: (id: number) => void;
-		maxScore?: number;
-		bonusNb?: number;
-		bonusTypes?: string[];
-		playerSpeed?: number;
-	}) {
-		const {
-			onWin,
-			maxScore = 2,
-			bonusNb = 1,
-			bonusTypes = ["Bigger", "Smaller", "Faster"],
-			playerSpeed,
-		} = options;
+	constructor(
+		onWin: (id: number) => void,
+		bonus: boolean = false
+	) {
 		this.onWin = onWin;
-		this.maxScore = maxScore;
 		this.height = 100;
 		this.width = 200;
-		this.bonusNb = bonusNb;
-		this.bonusTypes = bonusTypes.map((name) => {
-			switch (name) {
-				case "Bigger":
-					return Bigger;
-				case "Smaller":
-					return Smaller;
-				case "Faster":
-					return Faster;
-				default:
-					return Bigger;
-			}
-		});
+		this.bonusNb = bonus ? 1 : 0;
 		this.ball = new Ball(this);
 		this.players = [
-			new Player(this, 0, playerSpeed),
-			new Player(this, 1, playerSpeed),
+			new Player(this, 0, 100),
+			new Player(this, 1, 100),
 		];
 		this.botController = [];
 	}

@@ -21,11 +21,6 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (!user)
 			return reply.code(404).send({ error: "Utilisateur introuvable" });
 		if (!user.avatar) user.avatar = "/avatars/avatar1.webp";
-		user.cosmetics = {
-			preferredSide: "left",
-			paddleColor: "White",
-			ballColor: "White",
-		};
 		return reply.send(user);
 	});
 
@@ -39,9 +34,6 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 			password,
 			display_name,
 			avatar,
-			preferredSide,
-			paddleColor,
-			ballColor,
 		} = request.body as any;
 		const updates: string[] = [];
 		const values: any[] = [];
@@ -95,33 +87,6 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (avatar && avatar.trim() !== "") {
 			updates.push("avatar = ?");
 			values.push(avatar.trim());
-		}
-
-		if (
-			preferredSide &&
-			(preferredSide === "left" || preferredSide === "right")
-		) {
-			updates.push("preferred_side = ?");
-			values.push(preferredSide);
-		}
-
-		const validColors = [
-			"Cyan",
-			"Emerald",
-			"Rose",
-			"Blue",
-			"Amber",
-			"White",
-		];
-
-		if (paddleColor && validColors.includes(paddleColor)) {
-			updates.push("paddle_color = ?");
-			values.push(paddleColor);
-		}
-
-		if (ballColor && validColors.includes(ballColor)) {
-			updates.push("ball_color = ?");
-			values.push(ballColor);
 		}
 
 		if (updates.length === 0)

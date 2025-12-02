@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SpaceBackground from "../Components/SpaceBackground";
 import GameOverlay from "../pong/GameOverlay";
 import GameOverOverlay from "../pong/GameOverOverlay";
@@ -12,7 +13,6 @@ import { useWebSocket } from "../contexts/WebSocketContext";
 import PongRulesScreen from "../pong/PongRulesScreen";
 import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
-import { SettingsCard } from "../pong/SettingsCard";
 import type { GameState } from "../types/GameState";
 
 import { useUser } from "../contexts/UserContext";
@@ -50,29 +50,27 @@ type Ui =
 			opponentName: string;
 	  }
 	| { kind: "countdown"; value: number }
-	| { kind: "result"; gameOver: GameOverData }
-	| { kind: "settings" };
+	| { kind: "result"; gameOver: GameOverData };
 
 const PLAYER_LABELS = {
 	self: "You",
 	opponent: "Opponent",
 } as const;
 
-const SCALE = 4;
-
 const initGameState = (): GameState => ({
-	ball: { radius: 100 / 70, x: 100, y: 50 },
+	ball: { x: 100, y: 50 },
 	players: {
 		p1: { size: 25, y: 37.5, score: 0 },
 		p2: { size: 25, y: 37.5, score: 0 },
 	},
-	bonuses: { count: 0, bonuses: [] },
+	bonuses: [],
 });
 
 export default function Pong() {
 	const { user, isAuthenticated } = useUser();
 	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
 	const { session, setSession, clearSession } = useGameSession();
+	const navigate = useNavigate();
 
 	const prevAuthRef = useRef(isAuthenticated);
 	const trainingRef = useRef(false);
@@ -83,14 +81,7 @@ export default function Pong() {
 	const controlsReadyRef = useRef(false);
 
 	const [view, setView] = useState<Ui>({ kind: "rules" });
-
-	const { settings: gameSettings, updateSettings } = useGameSettings();
-
-	const cosmetics = user?.cosmetics || {
-		preferredSide: "left",
-		paddleColor: "White",
-		ballColor: "Rose",
-	};
+	const [bonusEnabled, setBonusEnabled] = useState(false);
 
 	const labels = useMemo((): PlayerLabels => {
 		console.log(
@@ -145,7 +136,7 @@ export default function Pong() {
 		(data: any) => {
 			if (!data) return;
 			let remaining;
-			console.log(data);
+			//console.log(data);
 			switch (data.event) {
 				case "searching":
 					applyTournamentRound(data.body);
@@ -385,7 +376,7 @@ export default function Pong() {
 					: { self: "Player 1", opponent: "Player 2" };
 				setSession({
 					sessionType: "offline",
-					side: null,
+					side: 0,
 					labels: offlineLabels,
 				});
 				resetGameState();
@@ -460,7 +451,7 @@ export default function Pong() {
 				sendStartEvent({
 					action: "play_offline",
 					diff,
-					options: gameSettings,
+					options: { bonus: config.bonus ?? false },
 				});
 				setView({ kind: "play" });
 			} else {
@@ -487,15 +478,13 @@ export default function Pong() {
 			sendStartEvent,
 			isAuthenticated,
 			pongWsRef,
-			gameSettings,
 		]
 	);
 
 	usePongControls({
 		isEnabled: isControlsReady,
 		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
-		preferredSide: cosmetics.preferredSide,
-		side: session?.side ?? null,
+		side: session?.side ?? 0,
 	});
 
 	console.log(`view: ${view.kind}`);
@@ -528,7 +517,6 @@ export default function Pong() {
 				onQuit={handleOnQuitGameover}
 				onReplay={handleReplayFromOverlay}
 				onContinue={handleContinueFromOverlay}
-				preferredSide={cosmetics.preferredSide}
 				side={session?.side ?? 0}
 			/>
 			{waitingView && showGameField && (
@@ -545,8 +533,9 @@ export default function Pong() {
 			{view.kind === "rules" && (
 				<PongRulesScreen
 					onContinue={handleRulesContinue}
-					onBack={() => (window.location.href = "/")}
-					onSettings={() => setView({ kind: "settings" })}
+					onBack={() => navigate("/")}
+					bonusEnabled={bonusEnabled}
+					setBonusEnabled={setBonusEnabled}
 				/>
 			)}
 			{view.kind === "lobby" && (
@@ -567,7 +556,7 @@ export default function Pong() {
 						sendStartEvent({
 							action: "play_offline",
 							diff,
-							options: gameSettings,
+							options: { bonus: bonusEnabled },
 						});
 						trainingLabelsRef.current = {
 							self: user?.name
@@ -594,18 +583,7 @@ export default function Pong() {
 				<PongGameArea
 					labels={labels}
 					gameRef={gameRef}
-					scale={SCALE}
-					cosmetics={cosmetics}
-					opponentPaddleColor={session?.opponentPaddleColor}
 					side={session?.side ?? 0}
-				/>
-			)}
-			{view.kind === "settings" && (
-				<SettingsCard
-					onCancel={() => setView({ kind: "rules" })}
-					cosmetics={cosmetics}
-					onUpdateCosmetics={() => {}}
-					onUpdateGameSettings={updateSettings}
 				/>
 			)}
 		</div>

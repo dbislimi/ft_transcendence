@@ -16,9 +16,7 @@ export interface Invitation {
 	state: InvitationState;
 	timeoutRef: ReturnType<typeof setTimeout> | null;
 	options?: {
-		bonusNb?: number;
-		bonusTypes?: string[];
-		playerSpeed?: number;
+		bonus?: boolean;
 	};
 }
 
@@ -73,9 +71,7 @@ export default class InvitManager {
 		sent: Client,
 		receiv: Client,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	): void {
 		const sentList = this.sentInvit.get(sent.id);

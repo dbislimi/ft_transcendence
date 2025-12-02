@@ -1,6 +1,6 @@
 import type { MutableRefObject } from "react";
-import PongCanvas from "./PongCanvas";
-import PongLabels from "./PongLabels";
+import PongCanvas from "../pong/PongCanvas";
+import PongLabels from "../pong/PongLabels";
 import type { GameState } from "../types/GameState";
 
 type PongGameAreaProps = {
@@ -9,22 +9,12 @@ type PongGameAreaProps = {
 		opponent: string;
 	};
 	gameRef: MutableRefObject<GameState>;
-	scale: number;
-	cosmetics: {
-		preferredSide: string;
-		paddleColor: string;
-		ballColor: string;
-	};
-	opponentPaddleColor?: string;
-	side: number | null;
+	side: 0 | 1;
 };
 
 export default function PongGameArea({
 	labels,
 	gameRef,
-	scale,
-	cosmetics,
-	opponentPaddleColor,
 	side,
 }: PongGameAreaProps) {
 	return (
@@ -32,16 +22,9 @@ export default function PongGameArea({
 			<PongLabels
 				selfLabel={labels.self}
 				opponentLabel={labels.opponent}
-				preferredSide={cosmetics.preferredSide}
 				side={side}
 			/>
-			<PongCanvas
-				gameRef={gameRef}
-				scale={scale}
-				cosmetics={cosmetics}
-				opponentPaddleColor={opponentPaddleColor}
-				side={side}
-			/>
+			<PongCanvas gameRef={gameRef} />
 		</div>
 	);
 }

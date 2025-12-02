@@ -10,7 +10,7 @@ export type GameSession = {
 	sessionId?: string;
 	sessionType: "invite" | "quick" | "tournament" | "offline";
 	opponentPaddleColor?: string;
-	side: 0 | 1 | null;
+	side: 0 | 1;
 	labels: { self: string; opponent: string };
 	tournamentDepth?: number | null;
 	countdownStart?: number;

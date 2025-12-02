@@ -9,12 +9,16 @@ interface PongRulesScreenProps {
 	onContinue: (mode: "offline" | "online", config?: any) => void;
 	onBack?: () => void;
 	onSettings?: () => void;
+	bonusEnabled: boolean;
+	setBonusEnabled: (enabled: boolean) => void;
 }
 
 export default function PongRulesScreen({
 	onContinue,
 	onBack,
 	onSettings,
+	bonusEnabled,
+	setBonusEnabled,
 }: PongRulesScreenProps) {
 	const { t } = useTranslation();
 	const { isAuthenticated, user, setGuestName } = useUser();
@@ -37,12 +41,13 @@ export default function PongRulesScreen({
 		onContinue("offline", {
 			gamemode: offlineMode,
 			botDiff: offlineMode === "solo" ? difficulty : null,
+			bonus: bonusEnabled,
 		});
 	};
 
 	const handleOnlineOption = (type: "quick" | "tournament") => {
 		const name = user?.name;
-		onContinue("online", { type, name });
+		onContinue("online", { type, name, bonus: bonusEnabled });
 	};
 
 	return (
@@ -54,7 +59,23 @@ export default function PongRulesScreen({
 						<h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
 							{t("pong.rules.title") || "Pong Rules"}
 						</h1>
-						<div className="flex gap-2">
+						<div className="flex gap-2 items-center">
+								<span className="text-xs text-slate-400">
+									{t("pong.rules.bonus") || "Bonus"}
+								</span>
+								<button
+									onClick={() => setBonusEnabled(!bonusEnabled)}
+									className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+										bonusEnabled ? "bg-purple-500" : "bg-slate-600"
+									}`}
+									aria-label="Toggle bonus"
+								>
+									<span
+										className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+											bonusEnabled ? "translate-x-5" : "translate-x-1"
+										}`}
+									/>
+								</button>
 							{onSettings && (
 								<button
 									onClick={onSettings}
@@ -92,7 +113,7 @@ export default function PongRulesScreen({
 						</li>
 					</ul>
 
-					<div className="space-y-4">
+				<div className="space-y-4">
 						<h3 className="text-xl font-semibold text-slate-200 mb-3">
 							{t("pong.rules.modeSelection") || "Select Mode"}
 						</h3>

@@ -3,18 +3,15 @@ import { useEffect, useRef } from "react";
 interface UsePongControlsOptions {
 	isEnabled: () => boolean;
 	send: (payload: any) => void;
-	preferredSide: string;
-	side: number | null;
+	side: 0 | 1 | null;
 }
 
 export function usePongControls({
 	isEnabled,
 	send,
-	preferredSide,
 	side,
 }: UsePongControlsOptions) {
 	const enabledRef = useRef(isEnabled);
-	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
 
 	useEffect(() => {
 		enabledRef.current = isEnabled;
@@ -25,14 +22,20 @@ export function usePongControls({
 			if (!enabledRef.current()) return;
 			const key = e.key;
 			let payload: { dir: "up" | "down"; id: number } | null = null;
-			if (["Shift", "s"].includes(key))
-				payload = { dir: "down", id: shouldMirror ? 1 : 0 };
-			else if (["5"].includes(key))
-				payload = { dir: "down", id: shouldMirror ? 0 : 1 };
-			else if ([" ", "w"].includes(key))
-				payload = { dir: "up", id: shouldMirror ? 1 : 0 };
-			else if (["8"].includes(key))
-				payload = { dir: "up", id: shouldMirror ? 0 : 1 };
+
+			// Player 0 controls (left paddle)
+			if (key === "s") {
+				payload = { dir: "down", id: 0 };
+			} else if (key === "w") {
+				payload = { dir: "up", id: 0 };
+			}
+			// Player 1 controls (right paddle)
+			else if (key === "ArrowDown") {
+				payload = { dir: "down", id: 1 };
+			} else if (key === "ArrowUp") {
+				payload = { dir: "up", id: 1 };
+			}
+
 			if (payload) {
 				send({ event: "play", body: { type, ...payload } });
 			}
@@ -48,5 +51,5 @@ export function usePongControls({
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
 		};
-	}, [send, preferredSide, side]);
+	}, [send, side]);
 }

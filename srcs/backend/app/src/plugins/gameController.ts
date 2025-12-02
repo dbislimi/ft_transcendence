@@ -22,14 +22,6 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			const client = fastify.getClient(req, socket);
 			if (!client) return socket.close();
 
-			if (!client.cosmetics) {
-				client.cosmetics = {
-					preferredSide: "left",
-					paddleColor: "White",
-					ballColor: "White",
-				};
-			}
-
 			if (client.rejoinTimer) {
 				console.log(
 					`Client ${client.name} reconnected while tournament rejoin timer active`
@@ -48,212 +40,194 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			console.log("client:", client.name);
 			let local: boolean = false;
 			socket.on("message", async (message: any) => {
-				const data = JSON.parse(message.toString());
-				console.log(`FROM: ${client.name}`);
-				console.log(data);
-				switch (data.event) {
-					case "set_name":
-						if (client.id < 0) {
-							console.log(
-								`Setting guest name from ${client.name} to ${data.name}`
-							);
-							client.name = data.name + " (Guest)";
-						}
-						break;
-					case "invitation": {
-						const { action, invitationId, friendId, options } =
-							data.body;
-						if (action === "invite") {
-							const friend: Client | null =
-								fastify.findClientById(friendId);
-							if (friend) {
-								games.invite(client, friend, options);
-							} else {
-								socket.send(
-									JSON.stringify({
-										event: "invitation_error",
-										to: "invitation_events",
-										body: { reason: "friend_not_found" },
-									})
+				try {
+					const data = JSON.parse(message.toString());
+					if (!data || typeof data !== 'object') return;
+					console.log(`FROM: ${client.name}`);
+					console.log(data);
+					switch (data.event) {
+						case "set_name":
+							if (client.id < 0) {
+								console.log(
+									`Setting guest name from ${client.name} to ${data.name}`
 								);
+								client.name = data.name + " (Guest)";
 							}
 							break;
-						}
-						games.doInvitationAction(action, client, invitationId);
-						break;
-					}
-					case "tournament": {
-						const { action } = data.body;
-						switch (action) {
-							case "list":
-								socket.send(
-									JSON.stringify({
-										event: "tournaments",
-										to: "pong_lobby_list",
-										body: games.listTournaments(),
-									})
-								);
+						case "invitation": {
+							const { action, invitationId, friendId, options } =
+								data.body;
+							if (action === "invite") {
+								const friend: Client | null =
+									fastify.findClientById(friendId);
+								if (friend) {
+									games.invite(client, friend, options);
+								} else {
+									socket.send(
+										JSON.stringify({
+											event: "invitation_error",
+											to: "invitation_events",
+											body: {
+												reason: "friend_not_found",
+											},
+										})
+									);
+								}
 								break;
-							case "create":
-								if (
-									games.createTournament(
-										client,
-										data.body.id,
-										data.body.size,
-										data.body.passwd,
-										data.body.options
+							}
+							games.doInvitationAction(
+								action,
+								client,
+								invitationId
+							);
+							break;
+						}
+						case "tournament": {
+							const { action } = data.body;
+							switch (action) {
+								case "list":
+									socket.send(
+										JSON.stringify({
+											event: "tournaments",
+											to: "pong_lobby_list",
+											body: games.listTournaments(),
+										})
+									);
+									break;
+								case "create":
+									if (
+										games.createTournament(
+											client,
+											data.body.id,
+											data.body.size,
+											data.body.passwd,
+											data.body.options
+										)
 									)
-								)
+										client.tournament = {
+											tournamentId: data.body.id,
+											allowReconnect: true,
+										};
+									break;
+								case "join":
 									client.tournament = {
 										tournamentId: data.body.id,
 										allowReconnect: true,
 									};
-								break;
-							case "join":
-								client.tournament = {
-									tournamentId: data.body.id,
-									allowReconnect: true,
-								};
-								games.joinTournament(
-									client,
-									data.body.id,
-									data.body.passwd
-								);
-								break;
-						}
-						break;
-					}
-					case "rejoin":
-						if (client.rejoinTimer)
-							clearTimeout(client.rejoinTimer);
-						client.rejoinTimer = undefined;
-						if (data.body?.type === "tournament") {
-							console.log("rejoin_tournament from", client.name);
-							games.handleRejoin(client);
-						} else if (data.body?.type === "dismiss") {
-							console.log(
-								"dismiss_rejoin_prompt from",
-								client.name
-							);
-							if (client.tournament) games.stop_online(client);
-						}
-						break;
-					case "stop":
-						console.log("stop called");
-						if (data.body?.type === "offline") {
-							games.stop_offline(client);
-							local = false;
-						} else {
-							games.stop_online(client);
-						}
-						break;
-					case "ready":
-						console.log("ready from", client.name);
-						if (data.body?.type === "player") {
-							games.markPlayerReady(client);
-						} else {
-							if (client.winnerTimer)
-								clearTimeout(client.winnerTimer);
-							if (client.tournament) {
-								games.playerReady(client);
+									games.joinTournament(
+										client,
+										data.body.id,
+										data.body.passwd
+									);
+									break;
 							}
+							break;
 						}
-						break;
-					case "start":
-						if (games.getRoom(client)) break;
-						if (client.rejoinTimer) {
-							clearTimeout(client.rejoinTimer);
+						case "rejoin":
+							if (client.rejoinTimer)
+								clearTimeout(client.rejoinTimer);
 							client.rejoinTimer = undefined;
-							if (client.tournament) {
-								client.tournament.allowReconnect = false;
+							if (data.body?.type === "tournament") {
+								console.log(
+									"rejoin_tournament from",
+									client.name
+								);
+								games.handleRejoin(client);
+							} else if (data.body?.type === "dismiss") {
+								console.log(
+									"dismiss_rejoin_prompt from",
+									client.name
+								);
+								if (client.tournament)
+									games.stop_online(client);
+							}
+							break;
+						case "stop":
+							console.log("stop called");
+							if (data.body?.type === "offline") {
+								games.stop_offline(client);
+								local = false;
+							} else {
 								games.stop_online(client);
 							}
-						}
-						switch (data.body.action) {
-							case "play_online":
-								games.startOnline(client);
-								break;
-							case "play_offline":
-								local = games.startOffline(
-									client,
-									data.body.diff,
-									data.body.options
-								);
-								break;
-							case "trainbot":
-								games.trainBot(socket, data.body.diff, 1000);
-								break;
-						}
-						break;
-					case "play":
-						const room = games.getRoom(client);
-						if (!room) break;
-						if (local === true)
-							games
-								.getRoom(client)
-								?.move(
-									data.body.type,
-									data.body.dir,
-									data.body.id
-								);
-						else
-							games
-								.getRoom(client)
-								?.move(
-									data.body.type,
-									data.body.dir,
-									client.inGameId
-								);
-						break;
-					case "error":
-						console.log("Erreur reçue:", data);
-						break;
-					case "update_cosmetics":
-						const { preferredSide, paddleColor, ballColor } =
-							data.body;
-						const newCosmetics = {
-							preferredSide,
-							paddleColor,
-							ballColor,
-						};
-
-						const currentCosmetics = client.cosmetics || {
-							preferredSide: "left",
-							paddleColor: "White",
-							ballColor: "Rose",
-						};
-
-						const hasChanged =
-							currentCosmetics.preferredSide !==
-							newCosmetics.preferredSide ||
-							currentCosmetics.paddleColor !==
-							newCosmetics.paddleColor ||
-							currentCosmetics.ballColor !==
-							newCosmetics.ballColor;
-
-						if (!hasChanged) return;
-						client.cosmetics = newCosmetics;
-						fastify.db.run(
-							`UPDATE users SET preferred_side = ?, paddle_color = ?, ball_color = ? WHERE id = ?`,
-							[preferredSide, paddleColor, ballColor, client.id],
-							function (updateErr: any) {
-								if (updateErr) {
-									console.error(
-										"Erreur lors de la mise à jour des cosmetics:",
-										updateErr
-									);
-								} else {
-									console.log(
-										`Cosmetics updated for user ${client.name}`
-									);
+							break;
+						case "ready":
+							console.log("ready from", client.name);
+							if (data.body?.type === "player") {
+								games.markPlayerReady(client);
+							} else {
+								if (client.winnerTimer)
+									clearTimeout(client.winnerTimer);
+								if (client.tournament) {
+									games.playerReady(client);
 								}
 							}
-						);
-						break;
-					default:
-						break;
+							break;
+						case "start":
+							if (games.getRoom(client)) break;
+							if (client.rejoinTimer) {
+								clearTimeout(client.rejoinTimer);
+								client.rejoinTimer = undefined;
+								if (client.tournament) {
+									client.tournament.allowReconnect = false;
+									games.stop_online(client);
+								}
+							}
+							switch (data.body.action) {
+								case "play_online":
+									games.startOnline(client);
+									break;
+								case "play_offline":
+									local = games.startOffline(
+										client,
+										data.body.diff,
+										data.body.options
+									);
+									break;
+								case "trainbot":
+									games.trainBot(
+										socket,
+										data.body.diff,
+										1000
+									);
+									break;
+							}
+							break;
+						case "play":
+							const room = games.getRoom(client);
+							if (!room) break;
+							if (local === true)
+								games
+									.getRoom(client)
+									?.move(
+										data.body.type,
+										data.body.dir,
+										data.body.id
+									);
+							else
+								games
+									.getRoom(client)
+									?.move(
+										data.body.type,
+										data.body.dir,
+										client.inGameId
+									);
+							break;
+						case "error":
+							console.log("Erreur reçue:", data);
+							break;
+						default:
+							break;
+					}
+				} catch (error) {
+					console.error("Invalid JSON received:", error);
+					socket.send(
+						JSON.stringify({
+							event: "error",
+							body: { message: "Invalid JSON" },
+						})
+					);
 				}
-
 			});
 			socket.on("close", () => {
 				console.log("close ", client.name);
