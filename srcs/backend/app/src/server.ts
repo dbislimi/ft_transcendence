@@ -104,11 +104,11 @@ async function main() {
 
 	// 6. Auth et utilisateurs (comme dans la reference)
 	await fastify.register(authHook);
+	await fastify.register(twoFaPlugin);
 	await fastify.register(authPlugin);
 	await fastify.register(googleAuth);
 	await fastify.register(userPlugin);
 	await fastify.register(settingsPlugin);
-	await fastify.register(twoFaPlugin);
 	await fastify.register(matchHistoryPlugin);
 	await fastify.register(friendsPlugin);
 
