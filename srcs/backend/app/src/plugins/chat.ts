@@ -183,7 +183,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               [client.id, data.userId],
               (err) => {
                 if (err) return fastify.log.error("Erreur DB block:", err);
-                sendToClient(client, { type: "info", message: ` ${data.name} bloque` });
+                sendToClient(client, { type: "info", message: ` ${data.name} bloqué` });
                 // Rediffuser la liste des utilisateurs pour que le statut "bloque" soit à jour
                 broadcastUsers();
               }
@@ -196,7 +196,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
               [client.id, data.userId],
               (err) => {
                 if (err) return fastify.log.error("Erreur DB unblock:", err);
-                sendToClient(client, { type: "info", message: ` ${data.name} debloque` });
+                sendToClient(client, { type: "info", message: ` ${data.name} debloqué` });
                 // Rediffuser la liste des utilisateurs
                 broadcastUsers();
               }

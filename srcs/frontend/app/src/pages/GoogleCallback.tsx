@@ -12,7 +12,6 @@ export default function GoogleCallback() {
 		const token = searchParams.get("token");
 		const require2fa = searchParams.get("require2fa");
 		const userId = searchParams.get("userId");
-
         if (require2fa === "1" && userId) {
             sessionStorage.setItem("for2FaUserId", userId);
             navigate("/auth");

@@ -104,6 +104,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
       JWT_SECRET,
       { expiresIn: '2h' }
     );
+    console.log("AZYYYYYYYYYYYY:   ", jwtToken);
     return reply.redirect(`https://${HOSTNAME}:8443/google-callback?token=${jwtToken}`);
   });
 });
