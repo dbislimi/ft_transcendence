@@ -95,7 +95,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
   async function broadcastUsers() {
     const snapshot = await clientsLock.acquire(() => [...clients]);
-    const allUsers = snapshot.map(c => ({ id: c.id, name: c.name }));
+    const allUsers = Array.from(
+      new Map(snapshot.map((c) => [c.id, { id: c.id, name: c.name }])).values()
+    );
 
     fastify.log.info(`[Chat] Broadcasting ${allUsers.length} users to ${snapshot.length} clients`);
 
