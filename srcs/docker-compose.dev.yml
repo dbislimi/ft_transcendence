@@ -4,45 +4,65 @@ services:
     container_name: nginx
     ports:
       - "8443:443"
-      # - "8000:80"
-      # - "9090:8080"
     volumes:
       - ./certs:/etc/nginx/ssl:ro
     env_file:
       - ./backend/app/.env
     environment:
-      - VITE_PORT=4173
+      - VITE_PORT=5173
     depends_on:
       - front
       - back
     restart: unless-stopped
 
   back:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     container_name: api
+    working_dir: /usr/app
     volumes:
       - ../AI:/usr/AI
+      - ./backend/app:/usr/app
       - ./shared:/shared
       - ./certs:/usr/certs
+      - /usr/app/node_modules
     env_file:
       - ./backend/app/.env
     expose:
       - "3001"
     restart: unless-stopped
   
-  front:
-    build: ./frontend
-    container_name: front
+  adminer:
+    image: adminer:latest
+    container_name: db_admin
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=sqlite
     volumes:
+      - ./backend/app/data:/var/www/html/data
+    restart: unless-stopped
+    depends_on:
+      - back
+  
+  front:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: front
+    working_dir: /usr/app
+    volumes:
+      - ./frontend/app:/usr/app
       - ./shared:/usr/shared
       - ./certs:/usr/certs
+      - /usr/app/node_modules
     env_file:
       - ./backend/app/.env
     environment:
       - VITE_HOSTNAME=${HOSTNAME:-localhost}
     expose:
-      - "4173"
+      - "5173"
     depends_on:
       - back
     restart: unless-stopped
-  

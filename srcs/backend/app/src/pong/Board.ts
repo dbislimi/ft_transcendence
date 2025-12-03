@@ -27,7 +27,7 @@ export default class Board {
 	private training: boolean = false;
 	botController: BotController[];
 	private score: [number, number] = [0, 0];
-	private maxScore: number = 2;
+	private maxScore: number = 20;
 	private gamesNb: number = 1;
 	normHitpoint: number = 0;
 	private onWin: (id: 0 | 1) => void;

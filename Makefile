@@ -7,10 +7,16 @@ certs : hostname
 	@cd srcs && ./generate_certs.sh
 
 up : certs
-	DOCKER_BUILDKIT=0 docker compose -f ./srcs/docker-compose.yml up	
+	@echo "\033[1;32mLancement en mode PRODUCTION...\033[0m"
+	docker compose -f ./srcs/docker-compose.yml up --build
+
+dev : certs
+	@echo "\033[1;33mLancement en mode DÉVELOPPEMENT...\033[0m"
+	docker compose -f ./srcs/docker-compose.dev.yml up
 
 down :
 	docker compose -f ./srcs/docker-compose.yml down
+	docker compose -f ./srcs/docker-compose.dev.yml down
 
 status : 
 	@echo "\033[1;32mDOCKER:\033[0m"
@@ -35,4 +41,4 @@ fclean: clean clear
 
 re: fclean up
 
-.PHONY: all hostname certs clean fclean re status
+.PHONY: all hostname certs clean fclean re status dev

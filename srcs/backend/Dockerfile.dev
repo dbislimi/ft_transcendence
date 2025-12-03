@@ -10,8 +10,4 @@ RUN npm install
 RUN mkdir -p /usr/certs
 RUN npm rebuild sqlite3
 
-COPY ./app .
-
-RUN npm run build
-
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]

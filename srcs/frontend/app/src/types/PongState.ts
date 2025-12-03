@@ -7,6 +7,8 @@ export interface Player {
 	y: number;
 	size: number;
 	score: number;
+	movingUp: boolean;
+	movingDown: boolean;
 }
 
 export interface Bonus {
@@ -15,7 +17,7 @@ export interface Bonus {
 	radius: number;
 }
 
-export interface GameState {
+export interface PongState {
 	ball: Ball;
 	players: {
 		p1: Player;

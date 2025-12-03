@@ -46,6 +46,17 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					console.log(`FROM: ${client.name}`);
 					console.log(data);
 					switch (data.event) {
+						case "ping":
+							socket.send(
+								JSON.stringify({
+									event: "pong",
+									to: "pong",
+									body: {
+										timestamp: data.body?.timestamp,
+									},
+								})
+							);
+							break;
 						case "set_name":
 							if (client.id < 0) {
 								console.log(

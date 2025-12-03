@@ -1,14 +1,14 @@
 import type { MutableRefObject } from "react";
 import PongCanvas from "../pong/PongCanvas";
 import PongLabels from "../pong/PongLabels";
-import type { GameState } from "../types/GameState";
+import type { PongState } from "../types/PongState";
 
 type PongGameAreaProps = {
 	labels: {
 		self: string;
 		opponent: string;
 	};
-	gameRef: MutableRefObject<GameState>;
+	gameRef: MutableRefObject<PongState>;
 	side: 0 | 1;
 };
 
@@ -24,7 +24,14 @@ export default function PongGameArea({
 				opponentLabel={labels.opponent}
 				side={side}
 			/>
-			<PongCanvas gameRef={gameRef} />
+			<PongCanvas
+				gameRef={gameRef}
+				me={
+					side === 0
+						? gameRef.current.players.p1
+						: gameRef.current.players.p2
+				}
+			/>
 		</div>
 	);
 }

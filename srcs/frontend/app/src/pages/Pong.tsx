@@ -8,16 +8,17 @@ import SearchingOverlay from "../pong/SearchingOverlay";
 import WaitingOverlay from "../pong/WaitingOverlay";
 import { ReadyButton } from "../pong/ReadyButton";
 import { usePongControls } from "../hooks/usePongControls";
+import { usePing } from "../hooks/usePing";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import PongRulesScreen from "../pong/PongRulesScreen";
 import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
-import type { GameState } from "../types/GameState";
+import PingDisplay from "../pong/PingDisplay";
+import type { PongState } from "../types/PongState";
 
 import { useUser } from "../contexts/UserContext";
 import { useGameSession } from "../contexts/GameSessionContext";
-import { useGameSettings } from "../contexts/GameSettingsContext";
 
 type PlayerLabels = {
 	self: string;
@@ -57,11 +58,11 @@ const PLAYER_LABELS = {
 	opponent: "Opponent",
 } as const;
 
-const initGameState = (): GameState => ({
+const initGameState = (): PongState => ({
 	ball: { x: 100, y: 50 },
 	players: {
-		p1: { size: 25, y: 37.5, score: 0 },
-		p2: { size: 25, y: 37.5, score: 0 },
+		p1: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false },
+		p2: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false },
 	},
 	bonuses: [],
 });
@@ -77,11 +78,19 @@ export default function Pong() {
 	const trainingLabelsRef = useRef<PlayerLabels | null>(null);
 	const lastStartPayloadRef = useRef<Record<string, unknown> | null>(null);
 	const activeSessionRef = useRef(false);
-	const gameRef = useRef<GameState>(initGameState());
+	const gameRef = useRef<PongState>(initGameState());
 	const controlsReadyRef = useRef(false);
 
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 	const [bonusEnabled, setBonusEnabled] = useState(false);
+
+	const shouldMeasurePing =
+		session?.sessionType !== "offline" &&
+		["play", "ready", "countdown", "wait"].includes(view.kind);
+	const { ping, handlePongMessage: handlePingPong } = usePing(
+		pongWsRef,
+		shouldMeasurePing
+	);
 
 	const labels = useMemo((): PlayerLabels => {
 		console.log(
@@ -135,6 +144,7 @@ export default function Pong() {
 	const onMessage = useCallback(
 		(data: any) => {
 			if (!data) return;
+			handlePingPong(data);
 			let remaining;
 			//console.log(data);
 			switch (data.event) {
@@ -235,7 +245,7 @@ export default function Pong() {
 					break;
 			}
 		},
-		[applyTournamentRound, clearSession]
+		[applyTournamentRound, clearSession, handlePingPong]
 	);
 
 	useEffect(() => {
@@ -484,7 +494,10 @@ export default function Pong() {
 	usePongControls({
 		isEnabled: isControlsReady,
 		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
-		side: session?.side ?? 0,
+		player:
+			session?.side === 0
+				? gameRef.current.players.p1
+				: gameRef.current.players.p2,
 	});
 
 	console.log(`view: ${view.kind}`);
@@ -519,6 +532,7 @@ export default function Pong() {
 				onContinue={handleContinueFromOverlay}
 				side={session?.side ?? 0}
 			/>
+			{shouldMeasurePing && <PingDisplay ping={ping} />}
 			{waitingView && showGameField && (
 				<WaitingOverlay opponentName={waitingView.opponentName} />
 			)}
