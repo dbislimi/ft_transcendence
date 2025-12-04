@@ -1,6 +1,6 @@
-import { BombPartyEngine } from '../GameEngine.ts';
-import type { Room } from './roomTypes.ts';
-import { broadcastGameState, broadcastTurnStartedWithState, handleGameEnd } from './roomHandlers.ts';
+import { BombPartyEngine } from '../GameEngine.js';
+import type { Room } from './roomTypes.js';
+import { broadcastGameState, broadcastTurnStartedWithState, handleGameEnd } from './roomHandlers.js';
 
 export function startTurnCheckInterval(
   roomEngines: Map<string, BombPartyEngine>,

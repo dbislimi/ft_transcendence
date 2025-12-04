@@ -1,4 +1,4 @@
-import type { Client } from "../plugins/websockets.ts";
+import type { Client } from '../plugins/websockets.js';
 
 export type InvitationState =
 	| "pending"

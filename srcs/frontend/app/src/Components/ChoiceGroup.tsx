@@ -1,6 +1,6 @@
 import React from "react";
 
-interface ColorOption {
+interface ColorOption<T extends string | number> {
 	label: string;
 	value: T;
 	color: string;
@@ -8,7 +8,7 @@ interface ColorOption {
 
 interface ChoiceGroupProps<T extends string | number> {
 	label?: string;
-	options: T[] | ColorOption[];
+	options: T[] | ColorOption<T>[];
 	value: T | T[] | null;
 	onChange: (val: T | T[]) => void;
 	multiple?: boolean;
@@ -100,15 +100,14 @@ export default function ChoiceGroup<T extends string | number>(
 						"value" in opt &&
 						"color" in opt;
 					const displayValue = isColorOption
-						? (opt as ColorOption).label
+						? (opt as ColorOption<T>).label
 						: String(opt);
 					const compareValue = isColorOption
-						? (opt as ColorOption).value
+						? (opt as ColorOption<T>).value
 						: opt;
 					const customColor = isColorOption
-						? (opt as ColorOption).color
+						? (opt as ColorOption<T>).color
 						: undefined;
-
 					const active = multiple
 						? ((value as T[] | null) || []).includes(
 								compareValue as T

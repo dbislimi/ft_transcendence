@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import SpaceBackground from "../Components/SpaceBackground";
 import ShopModal from "../Components/ShopModal";
 import { useUser } from "../contexts/UserContext";

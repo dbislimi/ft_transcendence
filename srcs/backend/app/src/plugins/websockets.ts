@@ -1,19 +1,19 @@
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import gameController from "./gameController.ts";
-import chat from "./chat.ts";
+import gameController from "./gameController.js";
+import chat from "./chat.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-	throw new Error('JWT_SECRET must be defined in environment variables');
+	throw new Error("JWT_SECRET must be defined in environment variables");
 }
 
 if (!JWT_SECRET) {
-	throw new Error('JWT_SECRET must be defined in environment variables');
+	throw new Error("JWT_SECRET must be defined in environment variables");
 }
 
 interface Tournament {
@@ -76,7 +76,6 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 				const decoded = jwt.verify(token, JWT_SECRET) as {
 					id: number;
-					display_name: string;
 					display_name: string;
 					email: string;
 				};

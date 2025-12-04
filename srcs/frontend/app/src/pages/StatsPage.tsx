@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import SpaceBackground from '../Components/SpaceBackground';
 import BombPartyStatsContainer from '../Components/bombparty/BombPartyStatsContainer';
 import PongStatsPage from './PongStatsPage';

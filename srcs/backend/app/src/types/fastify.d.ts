@@ -1,15 +1,31 @@
-declare module "fastify" {
-  interface FastifyInstance {
-    db: any;
-    clients: Map<number, Client>;
-    // extension pour track les clients ws par id
-    getClient(req: FastifyRequest, socket: WebSocket): Client | null;
-  }
-}
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { Client } from "../plugins/websockets.js";
 
-declare module 'fastify' {
-  interface FastifyRequest {
-    // extension pour get les cookies dans les routes
-    cookies: { [cookieName: string]: string };
-  }
+declare module "fastify" {
+	interface FastifyInstance {
+		// Database handle
+		db: any;
+
+		// WebSocket clients registry
+		clients: Map<number, Client>;
+
+		// Decorated helpers
+		getClient(req: FastifyRequest, socket: any): Client | null;
+		authenticate: (
+			req: FastifyRequest,
+			reply: FastifyReply
+		) => Promise<void>;
+		// Custom app decorators
+		generateOtp: () => string;
+		send2faEmail: (email: string, code: string) => Promise<boolean>;
+		broadcastFriends: (message: any, friendIds: number[]) => void;
+		transcendance?: any;
+	}
+
+	interface FastifyRequest {
+
+
+		// Filled by authenticate decorator
+		user?: { id: number; name?: string; email?: string };
+	}
 }

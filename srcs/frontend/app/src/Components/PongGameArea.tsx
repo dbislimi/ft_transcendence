@@ -10,12 +10,14 @@ type PongGameAreaProps = {
 	};
 	gameRef: MutableRefObject<PongState>;
 	side: 0 | 1;
+	me?: any;
 };
 
 export default function PongGameArea({
 	labels,
 	gameRef,
 	side,
+	me,
 }: PongGameAreaProps) {
 	return (
 		<div className="relative">
@@ -23,7 +25,15 @@ export default function PongGameArea({
 				selfLabel={labels.self}
 				opponentLabel={labels.opponent}
 			/>
-			<PongCanvas gameRef={gameRef} />
+			<PongCanvas
+				gameRef={gameRef}
+				me={
+					me ||
+					(side === 0
+						? gameRef.current.players.p1
+						: gameRef.current.players.p2)
+				}
+			/>
 		</div>
 	);
 }

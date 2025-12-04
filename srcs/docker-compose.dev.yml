@@ -24,7 +24,6 @@ services:
     volumes:
       - ../AI:/usr/AI
       - ./backend/app:/usr/app
-      - ./shared:/shared
       - ./certs:/usr/certs
       - /usr/app/node_modules
     env_file:
@@ -54,7 +53,6 @@ services:
     working_dir: /usr/app
     volumes:
       - ./frontend/app:/usr/app
-      - ./shared:/usr/shared
       - ./certs:/usr/certs
       - /usr/app/node_modules
     env_file:

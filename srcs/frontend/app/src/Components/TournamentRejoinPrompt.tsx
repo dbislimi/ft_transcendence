@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../contexts/WebSocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useTranslation } from "react-i18next";
 

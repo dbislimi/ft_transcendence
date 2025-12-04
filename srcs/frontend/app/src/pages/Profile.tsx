@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useUser } from "../contexts/UserContext";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import { useGameSettings } from "../contexts/GameSettingsContext";

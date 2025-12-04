@@ -1,6 +1,6 @@
-import Game from "./Game.ts";
-import type { Client } from "../plugins/websockets.ts";
-import { sendTournamentMessage } from "../plugins/chat.ts";
+import Game from './Game.js';
+import type { Client } from '../plugins/websockets.js';
+import { sendTournamentMessage } from '../plugins/chat.js';
 
 class Node {
 	game?: Game;

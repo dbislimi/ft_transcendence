@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { validateClientMessage, validateAuthMessage } from '../../modules/bombparty/validation.ts';
+import { validateClientMessage, validateAuthMessage } from '../../modules/bombparty/validation.js';
 
 describe('BombParty Validation', () => {
   describe('validateClientMessage', () => {

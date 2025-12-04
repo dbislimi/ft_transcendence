@@ -1,4 +1,4 @@
-import type { GameState, GameConfig, Player } from '../types';
+import type { GameState, GameConfig, Player } from '../types.js';
 
 export const STREAK_FOR_BONUS = 3;
 export const DEFAULT_LIVES = 3;

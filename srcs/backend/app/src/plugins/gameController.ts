@@ -1,9 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
-import type { Client } from "./websockets.ts";
+import type { Client } from "./websockets.js";
 import type { FastifyPluginAsync } from "fastify";
-import GamesManager from "../pong/GamesManager.ts";
-import type WebSocket from "ws";
+import GamesManager from "../pong/GamesManager.js";
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance
@@ -15,12 +14,17 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		"/game",
 		{ websocket: true },
 		(
-			socket: any,
+			connection: any,
 			req: FastifyRequest<{ Querystring: { token?: string } }>
 		) => {
+
+			const socket = connection.socket || connection;
 			console.log("pong WS connected");
 			const client = fastify.getClient(req, socket);
-			if (!client) return socket.close();
+			if (!client) {
+				socket.close();
+				return;
+			}
 
 			if (client.rejoinTimer) {
 				console.log(
@@ -42,7 +46,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			socket.on("message", async (message: any) => {
 				try {
 					const data = JSON.parse(message.toString());
-					if (!data || typeof data !== 'object') return;
+					if (!data || typeof data !== "object") return;
 					console.log(`FROM: ${client.name}`);
 					console.log(data);
 					switch (data.event) {

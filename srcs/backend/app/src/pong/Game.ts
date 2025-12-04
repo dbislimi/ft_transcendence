@@ -1,6 +1,6 @@
-import Board from "./Board.ts";
-import type { difficulty } from "./Player.ts";
-import type { Client } from "../plugins/websockets.ts";
+import Board from './Board.js';
+import type { difficulty } from './Player.js';
+import type { Client } from '../plugins/websockets.js';
 
 let GAMESPEED: number = 1;
 

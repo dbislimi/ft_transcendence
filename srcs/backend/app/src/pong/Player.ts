@@ -1,5 +1,5 @@
-import Board from "./Board.ts";
-import { BonusBase as Bonus } from "./Bonus.ts";
+import Board from './Board.js';
+import { BonusBase as Bonus } from './Bonus.js';
 
 export type difficulty = "easy" | "medium" | "hard" | "impossible";
 

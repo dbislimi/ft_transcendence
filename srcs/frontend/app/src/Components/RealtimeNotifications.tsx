@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useWebSocket } from "../contexts/WebSocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useGameSession } from "../contexts/GameSessionContext";
 import { useTranslation } from "react-i18next";
 

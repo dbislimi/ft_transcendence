@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import cookie from "@fastify/cookie";
+
 import multipart from "@fastify/multipart";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
@@ -8,28 +8,27 @@ import websocket from "@fastify/websocket";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import "./types/fastify.d.ts";
-import wsController from "./plugins/websockets.ts";
+import wsController from "./plugins/websockets.js";
 import dbPlugin from "../index.js";
-import authPlugin from "./plugins/auth.ts";
-import authHook from "./plugins/authHook.ts";
-import userPlugin from "./plugins/user.ts";
-import wsFriends from "./plugins/ws-friends.ts";
-import matchHistoryPlugin from "./plugins/matchHistory.ts";
-import friendsPlugin from "./plugins/friends.ts";
-import googleAuth from "./plugins/google.ts";
-import settingsPlugin from "./plugins/settings.ts";
-import twoFaPlugin from "./plugins/2fa.ts";
-import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.ts";
-import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.ts";
+import authPlugin from "./plugins/auth.js";
+import authHook from "./plugins/authHook.js";
+import userPlugin from "./plugins/user.js";
+import wsFriends from "./plugins/ws-friends.js";
+import matchHistoryPlugin from "./plugins/matchHistory.js";
+import friendsPlugin from "./plugins/friends.js";
+import googleAuth from "./plugins/google.js";
+import settingsPlugin from "./plugins/settings.js";
+import twoFaPlugin from "./plugins/2fa.js";
+import bombPartyWSHandlers from "./modules/bombparty/wsHandlers.js";
+import bombPartyStatsRoutes from "./modules/bombparty/statsRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const HOSTNAME = process.env.HOSTNAME || 'localhost';
+const HOSTNAME = process.env.HOSTNAME || "localhost";
 
 const httpsOptions = {
-	key: fs.readFileSync(path.join(__dirname, '../../certs/key.pem')),
-	cert: fs.readFileSync(path.join(__dirname, '../../certs/cert.pem'))
+	key: fs.readFileSync(path.join(__dirname, "../../certs/key.pem")),
+	cert: fs.readFileSync(path.join(__dirname, "../../certs/cert.pem")),
 };
 
 const fastify = Fastify({
@@ -46,16 +45,17 @@ async function main() {
 	await fastify.register(cors, {
 		origin: (origin, cb) => {
 			// Allow requests with no origin (like mobile apps or curl)
-			if (!origin){
+			if (!origin) {
 				cb(null, true);
 				return;
 			}
 			// Allow localhost, 127.0.0.1, and any IP in local network
-			const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr|.*\.local)(:\d+)?$/;
+			const allowed =
+				/^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr|.*\.local)(:\d+)?$/;
 			if (allowed.test(origin)) {
 				cb(null, true);
 			} else {
-				cb(new Error('Not allowed by CORS'), false);
+				cb(new Error("Not allowed by CORS"), false);
 			}
 		},
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -63,7 +63,7 @@ async function main() {
 		exposedHeaders: ["Content-Length"],
 		credentials: true,
 		maxAge: 86400,
-		strictPreflight: true
+		strictPreflight: true,
 	});
 
 	await fastify.register(websocket);
@@ -72,14 +72,7 @@ async function main() {
 	await fastify.register(wsController);
 
 	// 2. Plugins de base
-	await fastify.register(cookie, {
-		secret: process.env.JWT_SECRET,
-		parseOptions: {
-			httpOnly: true,
-			secure: true,
-			sameSite: 'lax'
-		}
-	});
+
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 
@@ -90,10 +83,15 @@ async function main() {
 	await new Promise<void>((resolve, reject) => {
 		fastify.db.run("UPDATE users SET online = 0", (err: any) => {
 			if (err) {
-				fastify.log.error("Erreur lors du nettoyage des statuts en ligne:", err);
+				fastify.log.error(
+					{ err },
+					"Erreur lors du nettoyage des statuts en ligne"
+				);
 				reject(err);
 			} else {
-				fastify.log.info("Statuts des utilisateurs remis à zero au demarrage");
+				fastify.log.info(
+					"Statuts des utilisateurs remis à zero au demarrage"
+				);
 				resolve();
 			}
 		});
@@ -114,9 +112,9 @@ async function main() {
 
 	await fastify.register(bombPartyWSHandlers);
 
-	console.log('[Stats] Enregistrement des routes de statistiques...');
+	console.log("[Stats] Enregistrement des routes de statistiques...");
 	await fastify.register(bombPartyStatsRoutes);
-	console.log('[Stats] Statistics routes registered');
+	console.log("[Stats] Statistics routes registered");
 
 	// Serve static (for possible public assets)
 	await fastify.register(fastifyStatic, {
@@ -124,11 +122,11 @@ async function main() {
 		prefix: "/",
 	});
 
-	fastify.get('/', async () => ({ hello: 'from docker' }));
+	fastify.get("/", async () => ({ hello: "from docker" }));
 
 	try {
 		// Port 3001 avec HTTPS
-		const address = await fastify.listen({ port: 3001, host: '0.0.0.0' });
+		const address = await fastify.listen({ port: 3001, host: "0.0.0.0" });
 		fastify.log.info(`Serveur HTTPS lance sur ${address}`);
 	} catch (err) {
 		fastify.log.error(err);

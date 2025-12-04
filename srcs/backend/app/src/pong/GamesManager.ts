@@ -1,10 +1,10 @@
-import Game from "./Game.ts";
-import type { difficulty } from "./Player.ts";
-import plotRewards from "./chart.ts";
-import Tournament from "./Tournament.ts";
-import type { Client } from "../plugins/websockets.ts";
-import InvitManager from "./InvitManager.ts";
-import type { Invitation } from "./InvitManager.ts";
+import Game from './Game.js';
+import type { difficulty } from './Player.js';
+import plotRewards from './chart.js';
+import Tournament from './Tournament.js';
+import type { Client } from '../plugins/websockets.js';
+import InvitManager from './InvitManager.js';
+import type { Invitation } from './InvitManager.js';
 
 export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};

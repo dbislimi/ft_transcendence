@@ -1,5 +1,5 @@
-import type { GameState, BonusKey, SyllableDifficulty } from '../types';
-import { FAST_TURN_DURATION } from './engineState.ts';
+import type { GameState, BonusKey, SyllableDifficulty } from '../types.js';
+import { FAST_TURN_DURATION } from './engineState.js';
 
 const EASY_SYLLABLE_DURATION_MS = 12000;
 const MEDIUM_SYLLABLE_DURATION_MS = 15000;

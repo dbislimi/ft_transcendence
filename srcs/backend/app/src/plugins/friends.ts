@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
-import { verifyToken } from "../utils/auth.ts";
-import { broadcastToUsers } from "./ws-friends.ts";
+import { verifyToken } from '../utils/auth.js';
+import { broadcastToUsers } from './ws-friends.js';
 
 export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 	fastify.get("/friends", async (request, reply) => {
@@ -31,7 +31,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 					} else {
 						reply.send(rows);
 					}
-					resolve();
+					resolve(undefined);
 				}
 			);
 		});
@@ -61,7 +61,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 				(err1: any, received: any[]) => {
 					if (err1) {
 						reply.code(500).send({ error: "Erreur serveur" });
-						resolve();
+						resolve(undefined);
 						return;
 					}
 
@@ -85,7 +85,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 							} else {
 								reply.send([...received, ...sent]);
 							}
-							resolve();
+							resolve(undefined);
 						}
 					);
 				}
@@ -115,7 +115,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 					} else {
 						reply.send(rows);
 					}
-					resolve();
+					resolve(undefined);
 				}
 			);
 		});
@@ -170,7 +170,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 									reply.code(404).send({
 										error: "Utilisateur introuvable",
 									});
-									resolve();
+									resolve(undefined);
 									return;
 								}
 
@@ -179,7 +179,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 									reply.code(400).send({
 										error: "Impossible de s'ajouter soi-même",
 									});
-									resolve();
+									resolve(undefined);
 									return;
 								}
 
@@ -205,7 +205,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 											reply.code(403).send({
 												error: "Impossible d'envoyer une demande à cet utilisateur",
 											});
-											resolve();
+											resolve(undefined);
 											return;
 										}
 
@@ -224,7 +224,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 													reply.code(400).send({
 														error: "Vous êtes dejà amis",
 													});
-													resolve();
+													resolve(undefined);
 													return;
 												}
 
@@ -268,7 +268,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 																		error: "Cet utilisateur vous a dejà envoye une demande",
 																	});
 															}
-															resolve();
+															resolve(undefined);
 															return;
 														}
 
@@ -363,7 +363,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 																							"Demande d'ami envoyee avec succes",
 																					}
 																				);
-																				resolve();
+																				resolve(
+																					undefined
+																				);
 																			}
 																		);
 																	}
@@ -423,7 +425,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 								reply.code(403).send({
 									error: "Impossible d'accepter cette demande",
 								});
-								resolve();
+								resolve(undefined);
 								return;
 							}
 
@@ -442,7 +444,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 										reply.code(404).send({
 											error: "Demande introuvable",
 										});
-										resolve();
+										resolve(undefined);
 										return;
 									}
 
@@ -527,7 +529,9 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 																		message:
 																			"Demande acceptee",
 																	});
-																	resolve();
+																	resolve(
+																		undefined
+																	);
 																}
 															);
 														}
@@ -644,7 +648,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 							fastify.db.run("ROLLBACK");
 							reject(err);
 						} else {
-							resolve();
+							resolve(undefined);
 						}
 					});
 				});
@@ -757,7 +761,7 @@ export default fp(async function friendsPlugin(fastify: FastifyInstance) {
 								fastify.db.run("ROLLBACK");
 								reject(err);
 							} else {
-								resolve();
+								resolve(undefined);
 							}
 						});
 					});

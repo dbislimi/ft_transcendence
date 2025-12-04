@@ -22,7 +22,6 @@ services:
     container_name: api
     volumes:
       - ../AI:/usr/AI
-      - ./shared:/shared
       - ./certs:/usr/certs
     env_file:
       - ./backend/app/.env
@@ -34,7 +33,6 @@ services:
     build: ./frontend
     container_name: front
     volumes:
-      - ./shared:/usr/shared
       - ./certs:/usr/certs
     env_file:
       - ./backend/app/.env

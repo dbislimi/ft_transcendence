@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { BombPartyWSServer } from '../../modules/bombparty/wsServer.ts';
+import { BombPartyWSServer } from '../../modules/bombparty/wsServer.js';
 
 describe('BombParty Rate Limiting', () => {
   let wsServer: BombPartyWSServer;

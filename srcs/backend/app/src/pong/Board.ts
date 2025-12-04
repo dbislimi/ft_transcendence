@@ -1,9 +1,9 @@
-import Player, { type difficulty } from "./Player.ts";
-import Ball from "./Ball.ts";
-import BotController, { EasyBot, MediumBot, HardBot } from "./Bot.ts";
-import { BonusBase as Bonus } from "./Bonus.ts";
-import { Bigger, Smaller, Faster } from "./Bonus.ts";
-import plotRewards from "./chart.ts";
+import Player, { type difficulty } from './Player.js';
+import Ball from './Ball.js';
+import BotController, { EasyBot, MediumBot, HardBot } from './Bot.js';
+import { BonusBase as Bonus } from './Bonus.js';
+import { Bigger, Smaller, Faster } from './Bonus.js';
+import plotRewards from './chart.js';
 interface PlayerData {
 	size: number;
 	y: number;
