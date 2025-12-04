@@ -8,6 +8,7 @@ interface PlayerData {
 	size: number;
 	y: number;
 	score: number;
+	lastProcessedInputId: number;
 }
 
 type bounceParam = [player: null] | [player: Player, hitpoint: number];

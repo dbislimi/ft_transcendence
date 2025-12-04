@@ -29,7 +29,7 @@ export function usePing(
 				setPing(null);
 			}
 		}, PING_TIMEOUT);
-
+		console.log("ping sent");
 		wsRef.current.send(
 			JSON.stringify({
 				event: "ping",

@@ -317,6 +317,7 @@ export default class GamesManager {
 			options,
 		});
 		this.setRoom(client, game);
+		this.broadcastPlayersInfo(game, [client], "offline", diff);
 		game.start();
 		return diff === null;
 	}
@@ -463,7 +464,8 @@ export default class GamesManager {
 	private broadcastPlayersInfo(
 		game: Game,
 		clients: (Client | undefined)[],
-		sessionType: string
+		sessionType: string,
+		botDiff?: string | null
 	) {
 		const anyClient = clients.find((c) => !!c);
 		let tournamentDepth: number | undefined = undefined;
@@ -476,7 +478,20 @@ export default class GamesManager {
 		}
 		for (const client of clients) {
 			if (!client?.socket) continue;
-			const opponent = game.getOpp(client)?.name ?? "Opponent";
+			let opponent = game.getOpp(client)?.name ?? "Opponent";
+			let selfLabel = `${client.name} (You)`;
+
+			if (sessionType === "offline") {
+				if (botDiff) {
+					opponent = `Bot (${
+						botDiff.charAt(0).toUpperCase() + botDiff.slice(1)
+					})`;
+				} else {
+					selfLabel = "Player 1";
+					opponent = "Player 2";
+				}
+			}
+
 			client.socket.send(
 				JSON.stringify({
 					event: "game_session_ready",
@@ -487,7 +502,7 @@ export default class GamesManager {
 						}`,
 						sessionType,
 						side: client.inGameId ?? null,
-						labels: { self: `${client.name} (You)`, opponent },
+						labels: { self: selfLabel, opponent },
 						...(tournamentDepth !== undefined
 							? { tournamentDepth }
 							: {}),

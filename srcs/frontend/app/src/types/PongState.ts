@@ -9,6 +9,7 @@ export interface Player {
 	score: number;
 	movingUp: boolean;
 	movingDown: boolean;
+	lastProcessedInputId?: number;
 }
 
 export interface Bonus {
@@ -17,11 +18,17 @@ export interface Bonus {
 	radius: number;
 }
 
-export interface PongState {
+export interface ServerSnapshot {
 	ball: Ball;
 	players: {
 		p1: Player;
 		p2: Player;
 	};
 	bonuses: Bonus[];
+	timestamp: number;
 }
+
+export interface PongState extends ServerSnapshot {
+    serverUpdates: ServerSnapshot[]; 
+}
+

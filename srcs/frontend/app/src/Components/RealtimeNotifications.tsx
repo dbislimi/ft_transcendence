@@ -59,9 +59,9 @@ export default function RealtimeNotifications() {
 	useEffect(() => {
 		const onSessionReady = (data: any) => {
 			if (!data || data.event !== "game_session_ready") return;
+			console.log(data);
 			const body = data.body || {};
 			setSession(body);
-			if (location.pathname !== "/pong") navigate("/pong");
 			if (location.pathname !== "/pong") navigate("/pong");
 		};
 		addPongRoute("game_session", onSessionReady);

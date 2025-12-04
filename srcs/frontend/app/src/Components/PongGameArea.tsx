@@ -1,14 +1,14 @@
 import type { MutableRefObject } from "react";
 import PongCanvas from "../pong/PongCanvas";
 import PongScoreboard from "./PongScoreboard";
-import type { PongState } from "../types/PongState";
+import type { ServerSnapshot } from "../types/PongState";
 
 type PongGameAreaProps = {
 	labels: {
 		self: string;
 		opponent: string;
 	};
-	gameRef: MutableRefObject<PongState>;
+	gameRef: MutableRefObject<ServerSnapshot>;
 	side: 0 | 1;
 	me?: any;
 };

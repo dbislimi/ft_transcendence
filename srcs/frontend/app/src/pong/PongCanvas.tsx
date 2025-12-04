@@ -1,10 +1,10 @@
 import { memo, useEffect, useRef } from "react";
 import type { MutableRefObject } from "react";
-import type { PongState, Player } from "../types/PongState";
+import type { ServerSnapshot, Player, PongState } from "../types/PongState";
 
 interface Props {
 	gameRef: MutableRefObject<PongState>;
-	me: Player;
+	side: 0 | 1;
 }
 
 const SCALE = 4;
@@ -89,7 +89,37 @@ function drawBonuses(
 	}
 }
 
-function PongCanvas({ gameRef, me }: Props) {
+const INTERPOLATION_DELAY = 10;
+
+const interpolate = (gameRefCurrent: PongState, side: 0 | 1) => {
+	const now = Date.now();
+	const renderTime = now - INTERPOLATION_DELAY;
+	const buff = gameRefCurrent.serverUpdates;
+
+	let futureUpdate = null;
+	let pastUpdate = null;
+
+	for (let i = 0; i < buff.length; ++i){
+		if (buff[i].timestamp > renderTime){
+			futureUpdate = buff[i];
+			pastUpdate = buff[i - 1];
+			break;
+		}
+	}
+	if (!pastUpdate || !futureUpdate) return;
+
+	const total = futureUpdate.timestamp - pastUpdate.timestamp;
+	const elapsed = renderTime - pastUpdate.timestamp;
+	const ratio = elapsed / total;
+
+	const lerp = (start: number, end: number, r: number) => start + (end - start) * r;
+	gameRefCurrent.ball.x = lerp(pastUpdate.ball.x, futureUpdate.ball.x, ratio);
+	gameRefCurrent.ball.y = lerp(pastUpdate.ball.y, futureUpdate.ball.y, ratio);
+	const opp = side === 0 ? "p2" : "p1";
+	gameRefCurrent.players[opp].y = lerp(pastUpdate.players[opp].y, futureUpdate.players[opp].y, ratio);
+}
+
+function PongCanvas({ gameRef, side }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 
@@ -105,9 +135,17 @@ function PongCanvas({ gameRef, me }: Props) {
 		if (!ctx) return;
 
 		const loop = () => {
+			interpolate(gameRef.current, side);
 			const { players, ball, bonuses } = gameRef.current;
-			if (me.movingDown) me.y += SPEED_PER_FRAME;
-			if (me.movingUp) me.y -= SPEED_PER_FRAME;
+			const me = side === 0 ? players.p1 : players.p2;
+			if (me.movingDown){
+				me.y += SPEED_PER_FRAME;
+				console.log("down", me.y);
+			}	
+			if (me.movingUp){
+				me.y -= SPEED_PER_FRAME;
+				console.log("up", me.y);
+			}
 
 			const p1Size = players.p1.size * SCALE;
 			const p2Size = players.p2.size * SCALE;
@@ -136,7 +174,7 @@ function PongCanvas({ gameRef, me }: Props) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, [gameRef]);
+	}, [gameRef, side]);
 
 	return (
 		<canvas

@@ -43,7 +43,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			}
 			console.log("client:", client.name);
 			let local: boolean = false;
-			socket.on("message", async (message: any) => {
+			const processInput = async (message: any) => {
 				try {
 					const data = JSON.parse(message.toString());
 					if (!data || typeof data !== "object") return;
@@ -217,7 +217,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 									?.move(
 										data.body.type,
 										data.body.dir,
-										data.body.id
+										data.body.id,
+										data.body.inputId
 									);
 							else
 								games
@@ -225,7 +226,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 									?.move(
 										data.body.type,
 										data.body.dir,
-										client.inGameId
+										client.inGameId,
+										data.body.inputId
 									);
 							break;
 						case "error":
@@ -243,7 +245,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						})
 					);
 				}
-			});
+			};
+
+			socket.on("message", (message: any) => processInput(message));
 			socket.on("close", () => {
 				console.log("close ", client.name);
 				games.stop_online(client);

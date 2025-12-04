@@ -1,6 +1,7 @@
 import Board from './Board.js';
 import type { difficulty } from './Player.js';
 import type { Client } from '../plugins/websockets.js';
+import { withLag } from '../utils/NetworkSimulator.js';
 
 let GAMESPEED: number = 1;
 
@@ -151,10 +152,13 @@ export default class Game {
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
 	}
-	move(type: string, dir: string, player: 0 | 1 | undefined) {
+	move(type: string, dir: string, player: 0 | 1 | undefined, inputId?: number) {
 		if (player === undefined) {
 			console.log("PLAYER GAMEID UNDEFINED");
 			return;
+		}
+		if (inputId !== undefined) {
+			this.board.players[player].lastProcessedInputId = inputId;
 		}
 		if (dir === "up") this.up(type, player);
 		else this.down(type, player);
@@ -174,9 +178,11 @@ export default class Game {
 				},
 				players: this.board.getPlayersData(),
 				bonuses: this.board.getBonusData(),
+				timestamp: Date.now()
 			},
 		};
 	}
+	shouldSend: boolean = true;
 	private gameLoop(): void {
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
@@ -190,8 +196,11 @@ export default class Game {
 		}
 		this.board.update(deltaTime);
 		this.elaspedTime += deltaTime;
-		const data = this.getData();
-		this.send(JSON.stringify(data));
+		if (this.shouldSend) {
+			const data = this.getData();
+			withLag(() => this.send(JSON.stringify(data)));
+		}
+		this.shouldSend = !this.shouldSend;
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);

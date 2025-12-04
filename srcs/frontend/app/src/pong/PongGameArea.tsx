@@ -1,22 +1,23 @@
-import type { MutableRefObject } from "react";
+import { type MutableRefObject, memo } from "react";
 import PongCanvas from "../pong/PongCanvas";
 import PongLabels from "../pong/PongLabels";
-import type { PongState } from "../types/PongState";
+import type { ServerSnapshot } from "../types/PongState";
 
 type PongGameAreaProps = {
 	labels: {
 		self: string;
 		opponent: string;
 	};
-	gameRef: MutableRefObject<PongState>;
+	gameRef: MutableRefObject<ServerSnapshot>;
 	side: 0 | 1;
 };
 
-export default function PongGameArea({
+const PongGameArea = memo(function PongGameArea({
 	labels,
 	gameRef,
 	side,
 }: PongGameAreaProps) {
+	console.log("side", side);
 	return (
 		<div className="relative">
 			<PongLabels
@@ -26,12 +27,10 @@ export default function PongGameArea({
 			/>
 			<PongCanvas
 				gameRef={gameRef}
-				me={
-					side === 0
-						? gameRef.current.players.p1
-						: gameRef.current.players.p2
-				}
+				side={side}
 			/>
 		</div>
 	);
-}
+});
+
+export default PongGameArea;

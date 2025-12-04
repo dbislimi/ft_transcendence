@@ -113,6 +113,12 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         logger.debug('Connexion BombPartyClient annulee - BombPartyService est dejà primaire');
         return;
       }
+
+      if (!user || user.id === -1) {
+        logger.debug('User is guest, skipping BombPartyClient connection');
+        return;
+      }
+
       logger.debug('Tentative de connexion WebSocket');
       client.connect();
     };

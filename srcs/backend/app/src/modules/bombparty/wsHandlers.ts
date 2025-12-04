@@ -99,19 +99,19 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 						userAuthenticated = false;
 					}
 				} else {
-					bombPartyLogger.info(
-						"No token provided on WS upgrade, allowing unauthenticated connection"
+					bombPartyLogger.warn(
+						"No token provided on WS upgrade, rejecting connection"
 					);
-					userId = undefined;
-					userAuthenticated = false;
+					socket.close(1008, "Authentication required");
+					return;
 				}
 			} catch (error) {
 				bombPartyLogger.warn(
 					{ error },
-					"Error during WS authentication, allowing unauthenticated connection"
+					"Error during WS authentication, rejecting connection"
 				);
-				userId = undefined;
-				userAuthenticated = false;
+				socket.close(1008, "Authentication error");
+				return;
 			}
 
 			wsServer.registerConnection(socket, undefined, undefined, userId);
