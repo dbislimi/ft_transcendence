@@ -117,7 +117,7 @@ export function handleJoinRoom(
   if ((room as any).emptyRoomTimeout) {
     clearTimeout((room as any).emptyRoomTimeout);
     (room as any).emptyRoomTimeout = undefined;
-    bombPartyLogger.info({ roomId, playerId }, '✅ Joueur rejoint - annulation suppression room vide');
+    bombPartyLogger.info({ roomId, playerId }, 'Joueur rejoint - annulation suppression room vide');
   }
   const playersList = getPlayersList(room!);
   broadcastToRoom(room, {
@@ -173,6 +173,46 @@ export function handleLeaveRoom(
   if (player.roomId !== roomId) {
     return { success: false, error: 'Not in this room' };
   }
+  const isHost = room.hostId === playerId;
+  const hasGameInProgressForHost = roomEngines.has(roomId);
+  
+
+  if (isHost && !hasGameInProgressForHost && room.players.size > 1) {
+    const hostPlayer = players.get(playerId);
+    const hostName = hostPlayer?.name || 'L\'hôte';
+    
+  
+    const remainingPlayers = Array.from(room.players.keys()).filter(id => id !== playerId);
+    
+    broadcastToRoom(room, {
+      event: 'bp:lobby:host_disconnected',
+      payload: {
+        roomId,
+        hostName,
+        reason: 'host_left'
+      }
+    }, [playerId]);
+    
+  
+    for (const remainingPlayerId of remainingPlayers) {
+      const remainingPlayer = players.get(remainingPlayerId);
+      if (remainingPlayer) {
+        remainingPlayer.roomId = undefined;
+      }
+      room.players.delete(remainingPlayerId);
+    }
+    
+  
+    room.players.clear();
+    rooms.delete(roomId);
+    if (roomEngines.has(roomId)) {
+      roomEngines.delete(roomId);
+    }
+    
+    player.roomId = undefined;
+    return { success: true };
+  }
+  
   let newHostId: string | undefined;
   if (room.hostId === playerId && room.players.size > 1) {
     const remainingPlayers = Array.from(room.players.keys()).filter(id => id !== playerId);
@@ -202,7 +242,7 @@ export function handleLeaveRoom(
   const playerStillInRoom = room.players.has(playerId);
 
   const hasGameInProgress = roomEngines.has(roomId);
-  const gracePeriodMs = hasGameInProgress ? 10000 : 0; // delai avant suppression si partie en cours
+  const gracePeriodMs = hasGameInProgress ? 10000 : 0;
 
   cleanupEmptyRoom(room, roomId, rooms, roomEngines, gracePeriodMs);
 
@@ -269,7 +309,7 @@ export function handleStartGame(
   room.startedAt = Date.now();
 
   const countdownStartTime = Date.now();
-  const countdownDuration = 3000; // 3 secondes
+  const countdownDuration = 3000;
   broadcastToRoom(room, {
     event: 'bp:game:countdown',
     payload: {
@@ -478,11 +518,54 @@ export function handlePlayerDisconnect(
   if (player.roomId) {
     const room = rooms.get(player.roomId);
     const engine = roomEngines.get(player.roomId);
+    const isHost = room?.hostId === playerId;
+    const hasGameInProgress = !!engine;
 
     if (room) {
       const wasCurrentPlayer = engine?.getCurrentPlayer()?.id === playerId;
       room.players.delete(playerId);
 
+    
+    
+      if (isHost && !hasGameInProgress && room.players.size > 0) {
+      
+        const remainingPlayers = Array.from(room.players.keys()).filter(id => id !== playerId);
+        
+      
+      
+        broadcastToRoom(room, {
+          event: 'bp:lobby:host_disconnected',
+          payload: {
+            roomId: player.roomId,
+            hostName: player.name,
+            reason: 'host_disconnected'
+          }
+        }, [playerId]);
+
+      
+        for (const remainingPlayerId of remainingPlayers) {
+          const remainingPlayer = players.get(remainingPlayerId);
+          if (remainingPlayer) {
+            remainingPlayer.roomId = undefined;
+          }
+          room.players.delete(remainingPlayerId);
+        }
+
+      
+        room.players.clear();
+        rooms.delete(player.roomId);
+        if (roomEngines.has(player.roomId)) {
+          roomEngines.delete(player.roomId);
+        }
+
+      
+        player.roomId = undefined;
+
+        return;
+      }
+
+    
+    
       if (room.players.size > 0 && engine && wasCurrentPlayer) {
         engine.resolveTurn(false, true);
         broadcastGameState(player.roomId, roomEngines, rooms);
@@ -606,7 +689,7 @@ export function broadcastTurnStartedWithState(
       payload.gameState = stateWithVersion;
     }
   }
-  // fallback pour anciens environnements sans structuredClone
+
   if (typeof structuredClone !== 'undefined') {
     room.lastGameState = structuredClone(currentState);
   } else {
@@ -746,7 +829,7 @@ export function broadcastGameState(
       payload.gameState = stateWithVersion;
     }
   }
-  // fallback pour anciens environnements sans structuredClone
+
   if (typeof structuredClone !== 'undefined') {
     room.lastGameState = structuredClone(currentState);
   } else {

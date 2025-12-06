@@ -81,26 +81,18 @@
       "disconnected": "Déconnecté"
     },
     "gameOver": {
-      "victoryTitle": "Victoire",
-      "tournamentChampion": "Champion du tournoi !",
-      "victory": "Victoire !",
       "defeat": "Défaite",
       "congratulations": "Félicitations, vous avez remporté le tournoi !",
       "wonRound": "Vous avez gagné cette manche.",
       "lostRound": "Vous avez perdu cette manche.",
-      "finalScore": "Score final",
+      "opponent": "Adversaire :",
+      "finalScore": "Score final :",
       "quit": "Quitter",
       "continue": "Continuer",
       "replay": "Rejouer"
     },
     "gameOverlay": {
-      "mode": "Mode",
-      "offline": "Hors-ligne",
-      "tournament": "Tournoi",
-      "final": "Finale",
-      "semiFinal": "Demi-finale",
-      "quarterFinal": "Quart de finale",
-      "roundOf": "{{count}}ème de finale"
+      "mode": "Mode"
     },
     "readyPhase": {
       "opponent": "Adversaire",
@@ -568,9 +560,7 @@
     "registrationSuccess": "Inscription réussie",
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
-    "error": "Erreur",
-	"invalidCode": "Code invalide",
-    "yourCode": "Votre code"
+    "error": "Erreur"
   },
   "notFound": {
     "title": "404",
@@ -669,35 +659,14 @@
     },
     "close": "Fermer",
     "account": {
-      "title": "Réglages de compte",
+      "title": "Compte",
       "description": "Aperçus des arrière-plans",
       "authRequired": "Connexion requise",
       "preferences": "Préférences",
       "backgroundPreview": "Aperçu des arrière-plans",
       "backgroundPreviewDesc": "Aperçus des arrière-plans sélectionnés pour chaque mode",
       "lightModeBackground": "Mode Clair",
-      "darkModeBackground": "Mode Sombre",
-      "information": "Informations",
-      "pseudo": "Pseudo",
-      "email": "Email",
-      "memberSince": "Membre depuis",
-      "avatar": "Avatar",
-      "twoFALabel": "Double Authentification (2FA)",
-      "twoFAEnabled": "Activée",
-      "twoFADisabled": "Désactivée",
-      "enableTwoFA": "Activer",
-      "disableTwoFA": "Désactiver",
-      "changePassword": "Changer le mot de passe",
-      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
-      "newPasswordPlaceholder": "Nouveau mot de passe",
-      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
-      "profileUpdated": "Profil mis à jour avec succès",
-      "updateError": "Erreur lors de la mise à jour",
-      "connectionError": "Erreur de connexion",
-      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
-      "twoFAActivated": "Double authentification activée",
-      "twoFADeactivated": "Double authentification désactivée",
-      "twoFAError": "Erreur lors de la modification de la 2FA"
+      "darkModeBackground": "Mode Sombre"
     },
     "home": {
       "description": "Retour à l'accueil",
@@ -835,7 +804,6 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",
-    "loading": "Chargement...",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "delete": "Supprimer",
@@ -862,16 +830,6 @@
     "confirmUnblock": "Êtes-vous sûr de vouloir débloquer cet utilisateur ?"
   },
   "chat": {
-    "globalChat": "Chat Global",
-    "privateChat": "Chat Privé",
-    "private": "(privé)",
-    "blocked": "(bloqué)",
-    "inviteToPlay": "Inviter à jouer",
-    "invite": "Inviter",
-    "writePlaceholder": "Écrire...",
-    "messageTo": "Message à {{name}}",
-    "viewProfile": "Voir profil",
-    "closeNotification": "Fermer la notification",
     "privateMessageTo": "Message privé à",
     "globalMessage": "Message global",
     "noUsersOnline": "Aucun utilisateur connecté (WebSocket en attente...)",
@@ -934,6 +892,35 @@
       "errorTitle": "Erreur",
       "errorFriendNotFound": "Ami introuvable",
       "errorPlayerBusy": "Le joueur est occupé"
+    },
+    "bombParty": {
+      "errorTitle": "Erreur",
+      "errorUnknown": "Une erreur est survenue",
+      "roomNotFoundTitle": "Salle introuvable",
+      "roomNotFoundMessage": "La salle demandée n'existe plus ou n'a jamais existé.",
+      "roomFullTitle": "Salle pleine",
+      "roomFullMessage": "Cette salle est déjà pleine. Veuillez choisir une autre salle.",
+      "wrongPasswordTitle": "Mot de passe incorrect",
+      "wrongPasswordMessage": "Le mot de passe fourni est incorrect.",
+      "alreadyInRoomTitle": "Déjà dans une salle",
+      "alreadyInRoomMessage": "Vous êtes déjà dans une salle. Quittez-la d'abord.",
+      "playerJoinedTitle": "Joueur rejoint",
+      "playerJoinedMessage": "{{name}} a rejoint la salle",
+      "playerLeftTitle": "Joueur parti",
+      "playerLeftMessage": "{{name}} a quitté la salle",
+      "gameStartTitle": "Partie démarrée",
+      "gameStartMessage": "La partie commence !",
+      "gameEndTitle": "Partie terminée",
+      "gameEndWinnerMessage": "{{name}} a gagné !",
+      "gameEndMessage": "La partie est terminée.",
+      "bonusAppliedTitle": "Bonus activé",
+      "bonusAppliedMessage": "{{name}} a activé {{bonus}}",
+      "rejoinTitle": "Reconnexion à la partie",
+      "rejoinMessage": "Vous avez quitté la partie. Reconnectez-vous pour continuer à jouer.",
+      "rejoinButton": "Se reconnecter",
+      "ignoreButton": "Ignorer",
+      "hostDisconnectedTitle": "Lobby fermé",
+      "hostDisconnectedMessage": "L'hôte {{name}} s'est déconnecté. Le lobby a été fermé."
     }
   },
   "overlay": {
@@ -963,6 +950,15 @@
     "continue": "Continuer",
     "replay": "Rejouer"
   },
+  "gameOverlay": {
+    "mode": "Mode",
+    "offline": "Hors-ligne",
+    "tournament": "Tournoi",
+    "final": "Finale",
+    "semiFinal": "Demi-finale",
+    "quarterFinal": "Quart de finale",
+    "roundOf": "{{count}}ème de finale"
+  },
   "theme": {
     "switchToLight": "Passer au mode clair",
     "switchToDark": "Passer au mode sombre"
@@ -970,6 +966,32 @@
   "confirm": {
     "confirm": "Confirmer",
     "cancel": "Annuler"
+  },
+  "settings": {
+    "account": {
+      "title": "Réglages de compte",
+      "information": "Informations",
+      "pseudo": "Pseudo",
+      "email": "Email",
+      "memberSince": "Membre depuis",
+      "avatar": "Avatar",
+      "twoFALabel": "Double Authentification (2FA)",
+      "twoFAEnabled": "Activée",
+      "twoFADisabled": "Désactivée",
+      "enableTwoFA": "Activer",
+      "disableTwoFA": "Désactiver",
+      "changePassword": "Changer le mot de passe",
+      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
+      "newPasswordPlaceholder": "Nouveau mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
+      "profileUpdated": "Profil mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour",
+      "connectionError": "Erreur de connexion",
+      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+      "twoFAActivated": "Double authentification activée",
+      "twoFADeactivated": "Double authentification désactivée",
+      "twoFAError": "Erreur lors de la modification de la 2FA"
+    }
   },
   "countdown": {
     "startingIn": "Démarrage dans"

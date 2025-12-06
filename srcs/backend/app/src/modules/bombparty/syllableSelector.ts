@@ -60,13 +60,24 @@ for (const word of frenchLexicon) {
 }
 
 console.log(`[BP] Index des fragments initialise pour ${fragmentIndex.size} syllabes valides`);
+const MIN_WORDS_REQUIRED = 800;
+const filteredSyllables: string[] = availableFragments.filter(s => {
+  const words = fragmentIndex.get(normalizeText(s));
+  return words && words.size >= MIN_WORDS_REQUIRED;
+});
+
+console.log(`[BP] ✓ ${filteredSyllables.length} syllabes avec >= ${MIN_WORDS_REQUIRED} mots disponibles`);
+
+if (filteredSyllables.length === 0) {
+  throw new Error(`[BP] ERREUR CRITIQUE: Aucune syllabe avec >= ${MIN_WORDS_REQUIRED} mots disponibles.`);
+}
 
 const recentSyllablesHistory: string[] = [];
 const MAX_HISTORY_SIZE = 15;
 
 export function getRandomSyllable(excludeSyllable?: string): string {
-  if (availableFragments.length === 0) {
-    throw new Error('[BP] ERREUR: Aucune syllabe disponible. Le fichier syllabes.txt est vide.');
+  if (filteredSyllables.length === 0) {
+    throw new Error(`[BP] ERREUR: Aucune syllabe disponible avec >= ${MIN_WORDS_REQUIRED} mots.`);
   }
 
   const normalizedExclude = excludeSyllable ? normalizeText(excludeSyllable) : undefined;
@@ -77,7 +88,7 @@ export function getRandomSyllable(excludeSyllable?: string): string {
   }
   recentSyllablesHistory.forEach(s => excludeSet.add(normalizeText(s)));
   
-  let candidates = availableFragments.filter(s => !excludeSet.has(s));
+  let candidates = filteredSyllables.filter(s => !excludeSet.has(normalizeText(s)));
   
   if (candidates.length === 0) {
     console.log('[BP] Toutes les syllabes sont recentes, reduction de l\'historique...');
@@ -87,53 +98,24 @@ export function getRandomSyllable(excludeSyllable?: string): string {
       excludeSet.add(normalizedExclude);
     }
     recentSyllablesHistory.forEach(s => excludeSet.add(normalizeText(s)));
-    candidates = availableFragments.filter(s => !excludeSet.has(s));
+    candidates = filteredSyllables.filter(s => !excludeSet.has(normalizeText(s)));
   }
   
-  const pool = candidates.length > 0 ? candidates : availableFragments;
-  
-  const easySyllables = pool.filter(s => {
-    const words = fragmentIndex.get(normalizeText(s));
-    return words && words.size >= 100;
-  });
-  
-  if (easySyllables.length > 0) {
-    const selected = easySyllables[Math.floor(Math.random() * easySyllables.length)];
-    const selectedNormalized = normalizeText(selected);
-    
-    recentSyllablesHistory.push(selectedNormalized);
-    if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
-      recentSyllablesHistory.shift();
-    }
-    
-    return selected.toUpperCase();
-  }
-  
-  const mediumSyllables = pool.filter(s => {
-    const words = fragmentIndex.get(normalizeText(s));
-    return words && words.size >= 50 && words.size < 100;
-  });
-  
-  if (mediumSyllables.length > 0) {
-    const selected = mediumSyllables[Math.floor(Math.random() * mediumSyllables.length)];
-    const selectedNormalized = normalizeText(selected);
-    
-    recentSyllablesHistory.push(selectedNormalized);
-    if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
-      recentSyllablesHistory.shift();
-    }
-    
-    return selected.toUpperCase();
-  }
+  const pool = candidates.length > 0 ? candidates : filteredSyllables;
   
   const selected = pool[Math.floor(Math.random() * pool.length)];
   const selectedNormalized = normalizeText(selected);
   
-  if (!availableFragments.includes(selectedNormalized)) {
-    console.error(`[BP] ERREUR: Syllabe "${selected}" n'est pas dans availableFragments!`);
-    const fallback = availableFragments[0];
+  if (!filteredSyllables.some(s => normalizeText(s) === selectedNormalized)) {
+    console.error(`[BP] ERREUR: Syllabe "${selected}" n'est pas dans filteredSyllables!`);
+    const fallback = filteredSyllables[0];
     if (!fallback) {
       throw new Error('[BP] ERREUR CRITIQUE: Impossible de selectionner une syllabe valide.');
+    }
+    const fallbackNormalized = normalizeText(fallback);
+    recentSyllablesHistory.push(fallbackNormalized);
+    if (recentSyllablesHistory.length > MAX_HISTORY_SIZE) {
+      recentSyllablesHistory.shift();
     }
     return fallback.toUpperCase();
   }
@@ -164,9 +146,9 @@ export function getSyllableDifficulty(syllable: string): 'easy' | 'medium' | 'ha
   const info = getSyllableInfo(syllable);
   const wordCount = info.availableWords;
   
-  if (wordCount >= 100) {
+  if (wordCount >= MIN_WORDS_REQUIRED) {
     return 'easy';
-  } else if (wordCount >= 50) {
+  } else if (wordCount >= 100) {
     return 'medium';
   } else {
     return 'hard';
@@ -174,11 +156,12 @@ export function getSyllableDifficulty(syllable: string): 'easy' | 'medium' | 'ha
 }
 
 export function isValidSyllable(syllable: string): boolean {
-  return availableFragments.includes(normalizeText(syllable));
+  const normalized = normalizeText(syllable);
+  return filteredSyllables.some(s => normalizeText(s) === normalized);
 }
 
 export function getAllSyllables(): string[] {
-  return availableFragments.map(f => f.toUpperCase());
+  return filteredSyllables.map(f => f.toUpperCase());
 }
 
 export async function getWordSuggestions(syllable: string, maxSuggestions: number = 5): Promise<string[]> {

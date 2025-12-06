@@ -23,19 +23,27 @@ export class DictionaryManager {
   private partitionFiles: string[] = [];
   private allWordsPath: string;
   private partitionsDir: string;
+  private metadataPath: string;
   private initialized: boolean = false;
 
   constructor() {
     this.allWordsPath = path.join(__dirname, 'data', 'francais.txt');
     this.partitionsDir = path.join(__dirname, 'data', 'partitions');
+    this.metadataPath = path.join(this.partitionsDir, '.metadata.json');
     this.ensurePartitionsDir();
   }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
+    const needsRegeneration = this.shouldRegeneratePartitions();
 
-    if (!fs.existsSync(this.partitionsDir) || this.getPartitionFiles().length === 0) {
-      console.log('[DictionaryManager] Creation des partitions...');
+    if (!fs.existsSync(this.partitionsDir) || this.getPartitionFiles().length === 0 || needsRegeneration) {
+      if (needsRegeneration) {
+        console.log('[DictionaryManager] Fichier source modifie, regeneration des partitions...');
+        this.deleteAllPartitions();
+      } else {
+        console.log('[DictionaryManager] Creation des partitions...');
+      }
       await this.createPartitions();
     } else {
       this.partitionFiles = this.getPartitionFiles();
@@ -53,6 +61,78 @@ export class DictionaryManager {
     if (!fs.existsSync(this.partitionsDir)) {
       fs.mkdirSync(this.partitionsDir, { recursive: true });
     }
+  }
+
+  private getSourceFileModificationTime(): number | null {
+    if (!fs.existsSync(this.allWordsPath)) {
+      return null;
+    }
+    const stats = fs.statSync(this.allWordsPath);
+    return stats.mtimeMs;
+  }
+
+  private getStoredModificationTime(): number | null {
+    if (!fs.existsSync(this.metadataPath)) {
+      return null;
+    }
+    try {
+      const metadata = JSON.parse(fs.readFileSync(this.metadataPath, 'utf8'));
+      return metadata.sourceModificationTime || null;
+    } catch (error) {
+      console.warn('[DictionaryManager] Erreur lors de la lecture des metadonnees:', error);
+      return null;
+    }
+  }
+
+  private saveMetadata(): void {
+    const sourceModTime = this.getSourceFileModificationTime();
+    if (sourceModTime === null) {
+      return;
+    }
+    const metadata = {
+      sourceModificationTime: sourceModTime,
+      partitionCount: this.partitionCount,
+      createdAt: Date.now()
+    };
+    fs.writeFileSync(this.metadataPath, JSON.stringify(metadata, null, 2), 'utf8');
+  }
+  private shouldRegeneratePartitions(): boolean {
+    const currentModTime = this.getSourceFileModificationTime();
+    const storedModTime = this.getStoredModificationTime();
+
+    if (currentModTime === null) {
+      return false;
+    }
+
+    if (storedModTime === null) {
+      return true;
+    }
+    return currentModTime > storedModTime;
+  }
+
+  private deleteAllPartitions(): void {
+    if (!fs.existsSync(this.partitionsDir)) {
+      return;
+    }
+    const files = fs.readdirSync(this.partitionsDir);
+    for (const file of files) {
+      if (file.startsWith('partition_') && file.endsWith('.txt')) {
+        const filePath = path.join(this.partitionsDir, file);
+        try {
+          fs.unlinkSync(filePath);
+        } catch (error) {
+          console.warn(`[DictionaryManager] Erreur lors de la suppression de ${file}:`, error);
+        }
+      }
+    }
+    if (fs.existsSync(this.metadataPath)) {
+      try {
+        fs.unlinkSync(this.metadataPath);
+      } catch (error) {
+        console.warn('[DictionaryManager] Erreur lors de la suppression des metadonnees:', error);
+      }
+    }
+    console.log('[DictionaryManager] Anciennes partitions supprimees');
   }
 
   private getPartitionFiles(): string[] {
@@ -97,6 +177,7 @@ export class DictionaryManager {
 
     this.partitionCount = partitionIndex;
     this.partitionFiles = this.getPartitionFiles();
+    this.saveMetadata();
     console.log(`[DictionaryManager] ${this.partitionCount} partitions creees`);
   }
 
@@ -135,8 +216,6 @@ export class DictionaryManager {
 
     return words;
   }
-
-  // garde seulement les CACHE_SIZE partitions les plus recentes
   private cleanupCache(): void {
     if (this.partitions.size <= CACHE_SIZE) return;
 
@@ -148,8 +227,6 @@ export class DictionaryManager {
       this.partitions.delete(index);
     }
   }
-
-  // pour l'instant on cherche dans toutes les partitions (pas de tri par syllabe)
   private findPartitionForWord(word: string): number[] {
     return Array.from({ length: this.partitionCount }, (_, i) => i);
   }

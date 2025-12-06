@@ -133,17 +133,36 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
             } else if (user.name) {
               dbName = String(user.name).trim();
             }
-            
-            if (dbName) {
+
+            if (dbName && dbName.length > 0) {
               finalPlayerName = sanitizePlayerName(dbName);
               bombPartyLogger.info({ userId, displayName: finalPlayerName, rawDbName: dbName, source: user.display_name ? 'display_name' : 'name' }, 'Using name from database for authenticated user');
             } else {
-              bombPartyLogger.warn({ userId, user }, 'No valid name found in DB for authenticated user');
+            
+              finalPlayerName = `User_${userId}`;
+              bombPartyLogger.warn({ userId, user }, 'No valid name found in DB for authenticated user, using fallback');
             }
+          } else {
+          
+            finalPlayerName = `User_${userId}`;
+            bombPartyLogger.error({ userId }, 'User not found in database, using fallback name');
           }
         } catch (error) {
-          bombPartyLogger.warn({ userId, error }, 'Failed to fetch user display name from DB, using provided name');
+        
+          finalPlayerName = `User_${userId}`;
+          bombPartyLogger.warn({ userId, error }, 'Failed to fetch user display name from DB, using fallback');
         }
+      }
+
+    
+      if (!finalPlayerName || finalPlayerName.trim() === '') {
+        const timestamp = Date.now().toString().slice(-6);
+        finalPlayerName = userId ? `User_${userId}` : `Guest_${timestamp}`;
+        bombPartyLogger.error({
+          userId,
+          originalName: playerName,
+          fallbackName: finalPlayerName
+        }, 'CRITICAL: Empty final player name, using emergency fallback');
       }
 
       let resolvedPlayerId: string | undefined;
@@ -217,6 +236,14 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           }
 
           if (await authenticatePlayer(validation.data!.payload.playerName)) {
+            bombPartyLogger.info({
+              userId,
+              playerId: session.playerId,
+              playerName: session.playerName,
+              source: userAuthenticated ? 'database' : 'client_provided',
+              isGuest: session.playerName.startsWith('Guest_')
+            }, 'Sending auth success with player name');
+
             sendMessage({
               event: 'bp:auth:success',
               payload: {
@@ -373,6 +400,19 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 
         if (hasGameInProgress) {
           const roomState = roomManager.getRoomStateForReconnect(playerId, payload.roomId);
+          const canRejoin = roomManager.canPlayerRejoin(playerId, payload.roomId);
+
+        
+          if (canRejoin) {
+            const rejoinTimeoutMs = 10000;
+            sendMessage({
+              event: 'bp:game:rejoin_prompt',
+              payload: {
+                roomId: payload.roomId,
+                timeout: Math.floor(rejoinTimeoutMs / 1000)
+              }
+            });
+          }
 
           if (roomState.success && roomState.gameState) {
             bombPartyLogger.info({
@@ -573,16 +613,26 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
     socket.on('close', (code: number, reason: Buffer) => {
       if (session.playerId && session.roomId) {
         const gracePeriodMs = 5000;
+        const rejoinTimeoutMs = 10000;
         const playerId = session.playerId;
         const roomId = session.roomId;
+        const hasGameInProgress = roomManager.hasGameInProgress(roomId);
 
         bombPartyLogger.info({
           playerId,
           roomId,
           code,
           reason: reason.toString(),
-          gracePeriodMs
+          gracePeriodMs,
+          hasGameInProgress
         }, 'WebSocket ferme - Grace period de 5s avant ejection');
+
+      
+        if (hasGameInProgress) {
+        
+        
+          roomManager.markPlayerForRejoin(playerId, roomId);
+        }
 
         setTimeout(() => {
           const room = roomManager.getRoom(roomId);
@@ -598,7 +648,7 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           }
 
           const hasActiveSocket = roomPlayer.sockets && roomPlayer.sockets.size > 0 &&
-            Array.from(roomPlayer.sockets).some(ws => ws.readyState === 1); // OPEN = 1
+            Array.from(roomPlayer.sockets).some(ws => ws.readyState === 1);
 
           if (hasActiveSocket) {
             bombPartyLogger.info({ playerId, roomId }, '✅ Joueur reconnecte pendant grace period - pas d\'ejection');
@@ -606,7 +656,8 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
           }
 
           bombPartyLogger.info({ playerId, roomId }, '❌ Pas de reconnexion apres grace period - ejection du joueur');
-          roomManager.leaveRoom(playerId, roomId, socket);
+        
+          roomManager.handlePlayerDisconnect(playerId);
         }, gracePeriodMs);
       }
     });

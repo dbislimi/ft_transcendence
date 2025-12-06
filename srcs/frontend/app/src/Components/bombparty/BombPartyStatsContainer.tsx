@@ -41,7 +41,7 @@ export default function BombPartyStatsContainer() {
 		setError(null);
 
 		try {
-			// Toujours charger les données globales (accessibles à tous)
+			
 			const [
 				globalStatsResponse,
 				globalHistoryResponse,
@@ -52,13 +52,22 @@ export default function BombPartyStatsContainer() {
 				bombPartyStatsService.getGlobalRanking(),
 			]);
 
-			setGlobalStats(globalStatsResponse.data || globalStatsResponse);
-			setGlobalHistory(
-				globalHistoryResponse.data || globalHistoryResponse
-			);
-			setGlobalRanking(rankingResponse.data || []);
+			logger.debug("Global stats response:", globalStatsResponse);
+			logger.debug("Global history response:", globalHistoryResponse);
+			logger.debug("Ranking response:", rankingResponse);
 
-			// Si l'utilisateur est connecté, charger aussi ses stats personnelles
+			
+			const globalStatsData = globalStatsResponse?.data || globalStatsResponse;
+			const globalHistoryData = globalHistoryResponse?.data || globalHistoryResponse || [];
+			const rankingData = rankingResponse?.data || rankingResponse || [];
+
+			logger.debug("Extracted data:", { globalStatsData, globalHistoryData, rankingData });
+
+			setGlobalStats(globalStatsData);
+			setGlobalHistory(Array.isArray(globalHistoryData) ? globalHistoryData : []);
+			setGlobalRanking(Array.isArray(rankingData) ? rankingData : []);
+
+			
 			if (user?.id) {
 				logger.debug("Loading user-specific data", { userId: user.id });
 
@@ -80,7 +89,8 @@ export default function BombPartyStatsContainer() {
 						"Error loading user stats, continuing with global data",
 						{ error: authError }
 					);
-					// Ne pas définir d'erreur, juste continuer avec les données globales
+					
+	
 				}
 			}
 		} catch (err) {
@@ -189,10 +199,17 @@ export default function BombPartyStatsContainer() {
 				isAuthenticated={!!user?.id}
 			/>
 
-			{activeTab === "overview" && globalStats && (
+			{activeTab === "overview" && (
 				<BombPartyStatsSummary
 					userStats={userStats}
-					globalStats={globalStats}
+					globalStats={globalStats || {
+						totalPlayers: 0,
+						totalMatches: 0,
+						totalValidWords: 0,
+						totalWords: 0,
+						avgMatchDuration: 0,
+						bestWordsInMatch: 0
+					}}
 					isAuthenticated={!!user?.id}
 				/>
 			)}
@@ -200,7 +217,7 @@ export default function BombPartyStatsContainer() {
 			{activeTab === "history" && (
 				<BombPartyStatsTable
 					type="history"
-					data={globalHistory}
+					data={Array.isArray(globalHistory) ? globalHistory : []}
 					user={user}
 				/>
 			)}
@@ -208,7 +225,7 @@ export default function BombPartyStatsContainer() {
 			{activeTab === "ranking" && (
 				<BombPartyStatsTable
 					type="ranking"
-					data={globalRanking}
+					data={Array.isArray(globalRanking) ? globalRanking : []}
 					user={user}
 				/>
 			)}

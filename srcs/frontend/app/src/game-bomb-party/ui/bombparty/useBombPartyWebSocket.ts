@@ -44,7 +44,19 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
 
       const guestId = Math.floor(Math.random() * 1000);
       const storedName = sessionStorage.getItem('bombparty_player_name');
-      const playerName = (storedName && storedName.trim()) || user?.display_name || user?.name || `Guest_${guestId}`;
+      
+      // Si l'utilisateur est connecté, ne pas utiliser un nom de guest stocké
+      let playerName: string;
+      if (user?.id) {
+        // Utilisateur authentifié : utiliser display_name ou name, ignorer le nom stocké s'il est un guest
+        if (storedName && storedName.startsWith('Guest_')) {
+          sessionStorage.removeItem('bombparty_player_name');
+        }
+        playerName = user?.display_name || user?.name || `User_${user.id}`;
+      } else {
+        // Utilisateur non authentifié : utiliser le nom stocké ou générer un guest
+        playerName = (storedName && storedName.trim()) || `Guest_${guestId}`;
+      }
 
       client.authenticate(playerName);
     };
@@ -307,6 +319,18 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
         if (payload.bonusKey === 'plus5sec' && payload.meta?.extendMs) {
           store.setTimerFlash(true);
           timerService.setTimeout(() => store.setTimerFlash(false), 1000);
+        }
+
+        // Émettre un événement pour les notifications
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('bp:bonus:applied', {
+            detail: {
+              roomId: payload.roomId,
+              playerId: payload.playerId,
+              playerName,
+              bonusKey: payload.bonusKey
+            }
+          }));
         }
       }
     });

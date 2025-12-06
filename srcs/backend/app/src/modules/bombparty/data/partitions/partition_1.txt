@@ -1,3 +1,4 @@
+fukuyama
 fumee
 fumer
 fumet
@@ -29,16 +30,23 @@ futur
 future
 futures
 futurs
+fuchs
 fui
 fuite
 fuites
 fuient
 fuir
 fuit
+fur
 furtif
 furtivement
+fus
 fustiger
+fut
+fut
+futs
 fuyant
+gabon
 gadoue
 gage
 gager
@@ -75,21 +83,25 @@ gate
 gateau
 gater
 gaver
+gaza
 gaze
 gazera
 gazeux
 gazole
 gazon
+gabriel
 gacher
 gachette
 gachis
 gadget
 gadgets
+gaelle
 gaffe
 gagnage
 gagnait
 gagnant
 gagnants
+gagne
 gagne
 gagnee
 gagnent
@@ -128,6 +140,7 @@ gard
 gardait
 gardant
 garde
+garde
 garde-corps
 garde-fou
 garde-frontiere
@@ -137,6 +150,7 @@ garden
 gardent
 garder
 gardera
+gardes
 gardes
 gardien
 gardiens
@@ -176,6 +190,8 @@ gemissement
 gemissements
 genant
 gene
+gene
+gene
 genealogie
 gener
 general
@@ -198,6 +214,7 @@ genereux
 generique
 generosite
 genes
+genes
 genese
 genetique
 genetiques
@@ -216,6 +233,7 @@ genou
 genoux
 gerant
 gerard
+gere
 gere
 geree
 gerent
@@ -309,6 +327,7 @@ giscard
 giscardiens
 givre
 glace
+glace
 glacer
 glacial
 glacier
@@ -323,6 +342,7 @@ glander
 glandouiller
 glasgow
 glasnost
+glisse
 glisse
 glissement
 glissent
@@ -339,6 +359,7 @@ glorieuse
 glorieuses
 glorieux
 glorifier
+glose
 glose
 gloser
 gloire
@@ -372,6 +393,8 @@ golf
 golfe
 gombo
 gomme
+gomme a macher
+gomme arabique
 gommer
 goncourt
 gonfle
@@ -442,8 +465,10 @@ gratos
 gratouiller
 gratuit
 gratuite
+gratuite
 gratuitement
 gratuites
+grave
 grave
 gravement
 graver
@@ -560,6 +585,7 @@ grommeler
 grondement
 gronder
 gros
+gros mot
 grosse
 grosses
 grossesse
@@ -612,6 +638,7 @@ guides
 guidon
 guinee
 guise
+guise de
 guitare
 guitariste
 guichet
@@ -645,6 +672,7 @@ habitat
 habitation
 habitations
 habite
+habite
 habitent
 habiter
 habits
@@ -663,6 +691,7 @@ hagiographique
 hale
 haleine
 haler
+haler
 haleter
 hameau
 hanoi
@@ -679,6 +708,7 @@ hate
 hater
 havane
 havas
+have
 have
 havel
 hableur
@@ -713,6 +743,7 @@ hangar
 hanneton
 hans
 hante
+hante
 hantise
 happe
 happer
@@ -730,6 +761,7 @@ harpiste
 harris
 harry
 harvard
+has
 hassan
 hautain
 haute
@@ -786,6 +818,7 @@ hesitant
 hesitation
 hesitations
 hesite
+hesite
 hesitent
 hesiter
 heteroclite
@@ -796,6 +829,7 @@ heaume
 hebdo
 hebdomadaire
 hebdomadaires
+hebreu
 hebreu
 hectare
 hectares
@@ -832,6 +866,7 @@ heureuse
 heureusement
 heureux
 heurte
+heurte
 heurtent
 heurter
 heurts
@@ -867,6 +902,7 @@ hit
 hitchcock
 hitler
 hlm
+ho
 holocauste
 homard
 home
@@ -895,6 +931,7 @@ horizons
 horizontal
 hote
 hotel
+hotel de ville
 hotelier
 hoteliere
 hoteliers
@@ -935,6 +972,7 @@ horreurs
 horrible
 horripiler
 hors
+hors d'oeuvre
 horst
 hospitalier
 hospitaliere
@@ -996,6 +1034,7 @@ huis
 huissier
 huissiers
 huit
+huit cents
 huitre
 huitres
 humble
@@ -1025,6 +1064,7 @@ hypotheses
 hypothetique
 hyacinthe
 hybrides
+hydrate de carbone
 hydraulique
 hydravion
 hydrocarbures
@@ -1038,6 +1078,7 @@ ibert
 iceberg
 iceux
 ici
+ici peu
 ici-bas
 icone
 ideal
@@ -1067,9 +1108,11 @@ ile
 iles
 iliescu
 image
+image
 images
 imaginaire
 imagination
+imagine
 imagine
 imaginee
 imaginer
@@ -1102,6 +1145,7 @@ inattentif
 inattention
 inaugural
 inauguration
+inaugure
 inaugure
 inauguree
 inaugurer
@@ -1184,6 +1228,7 @@ ironie
 ironique
 ironiquement
 ironise
+ironise
 iront
 isabelle
 isere
@@ -1214,6 +1259,7 @@ ignorait
 ignorance
 ignorant
 ignore
+ignore
 ignorent
 ignorer
 il
@@ -1241,6 +1287,7 @@ illustrant
 illustration
 illustrations
 illustre
+illustre
 illustree
 illustrent
 illustrer
@@ -1248,6 +1295,7 @@ ils
 imbattable
 imbecile
 imbroglio
+immaculee conception
 immanquable
 immanquablement
 immature
@@ -1339,6 +1387,7 @@ implicite
 implicitement
 impliquant
 implique
+implique
 impliquer
 impliques
 implorant
@@ -1355,6 +1404,7 @@ importateurs
 importation
 importations
 importe
+importe
 importees
 importer
 importes
@@ -1365,6 +1415,7 @@ imposable
 imposables
 imposait
 imposant
+impose
 impose
 imposee
 imposees
@@ -1377,6 +1428,7 @@ impossible
 impossibles
 imposteur
 impot
+impot indirect
 impotent
 impots
 imprecation
@@ -1419,6 +1471,7 @@ incarcere
 incarceres
 incarnat
 incarne
+incarne
 incarner
 incendie
 incendier
@@ -1438,6 +1491,7 @@ incinerer
 incisive
 incisives
 incitation
+incite
 incite
 incitent
 inciter
@@ -1518,6 +1572,7 @@ incurie
 incursion
 incurver
 inde
+inde
 indecence
 indecent
 indechiffrable
@@ -1573,6 +1628,7 @@ indigne
 indigner
 indiquait
 indiquant
+indique
 indique
 indiquee
 indiquent
@@ -1665,6 +1721,7 @@ inflexible
 inflige
 infliger
 influence
+influence
 influencer
 influences
 influent
@@ -1683,6 +1740,7 @@ informees
 informelle
 informer
 informes
+infortune
 infortune
 infoutu
 infraction
@@ -1742,6 +1800,7 @@ inquietante
 inquietantes
 inquietants
 inquiete
+inquiete
 inquieter
 inquietes
 inquiets
@@ -1780,6 +1839,7 @@ insipide
 insistance
 insistant
 insiste
+insiste
 insistent
 insister
 insociable
@@ -1797,6 +1857,7 @@ inspecteurs
 inspection
 inspectorat
 inspiration
+inspire
 inspire
 inspiree
 inspirees
@@ -1876,6 +1937,7 @@ integralite
 integrant
 integration
 integre
+integre
 integree
 integrees
 integrer
@@ -1927,6 +1989,7 @@ interessante
 interessantes
 interessants
 interesse
+interesse
 interessees
 interessement
 interessent
@@ -1960,6 +2023,7 @@ internationales
 internationalisation
 internationaux
 interne
+interne
 interner
 internes
 internet
@@ -1972,6 +2036,7 @@ interpretatif
 interpretation
 interpretations
 interprete
+interprete
 interpretee
 interpreter
 interpretes
@@ -1981,6 +2046,7 @@ interrogatif
 interrogation
 interrogations
 interrogatoire
+interroge
 interroge
 interrogees
 interroger
@@ -2059,6 +2125,7 @@ invasion
 invectiver
 inventaire
 invente
+invente
 inventee
 inventer
 inventeur
@@ -2090,12 +2157,14 @@ invisibles
 invitant
 invitation
 invite
+invite
 invitee
 invitees
 inviter
 invites
 involontaire
 invoquant
+invoque
 invoque
 invraisemblable
 invulnerable
@@ -2175,6 +2244,7 @@ jalouser
 jalousie
 jaloux
 jamais
+james
 jane
 japon
 japonais
@@ -2226,6 +2296,7 @@ jerome
 jerusalem
 jesuite
 jesus
+jesus
 jesus-christ
 jetait
 jetant
@@ -2236,16 +2307,19 @@ jetes
 jeton
 jetons
 jean
+jean
 jeanne
 jeannette
 jeans
 jeep
 jesse
 jet
+jet eau
 jette
 jettent
 jeu
 jeudi
+jeune
 jeune
 jeunes
 jeunesse
@@ -2271,6 +2345,7 @@ job
 joel
 joelle
 jogging
+john
 johnny
 johnson
 joie
@@ -2290,6 +2365,7 @@ joua
 jouaient
 jouait
 jouant
+joue
 joue
 jouera
 jouee
@@ -2330,6 +2406,7 @@ judicieux
 judith
 judo
 juge
+juge
 jugeaient
 jugeait
 jugeant
@@ -2339,6 +2416,7 @@ jugement
 jugements
 jugent
 juger
+juges
 juges
 jules
 julien
@@ -2351,6 +2429,7 @@ jupes
 jupiter
 jupon
 jura
+jure
 jure
 jurer
 jures
@@ -2372,7 +2451,9 @@ juteux
 juvenile
 juan
 juive
+juive
 juives
+juif
 juif
 juifs
 juillet
@@ -2393,6 +2474,7 @@ justicier
 justifiait
 justifiant
 justification
+justifie
 justifie
 justifiee
 justifiees
@@ -2451,6 +2533,7 @@ kurdistan
 kurt
 kyste
 la
+la valette
 la-bas
 label
 labeur
@@ -2510,6 +2593,7 @@ laxisme
 lazare
 lac
 lache
+lache
 lacher
 lachete
 lacroix
@@ -2522,6 +2606,7 @@ laffont
 laicite
 laideron
 laideur
+laine
 laine
 laineux
 lainier
@@ -2541,6 +2626,7 @@ laissaient
 laissait
 laissant
 laisse
+laisse
 laissee
 laissees
 laissent
@@ -2558,8 +2644,11 @@ lambert
 lambin
 lambris
 lampe
+lampe de poche
+lampe torche
 lamper
 lampyre
+lance
 lance
 lancee
 lancees
@@ -2676,6 +2765,7 @@ letal
 levain
 levant
 leve
+leve
 leve-tot
 levee
 levees
@@ -2727,6 +2817,7 @@ leopold
 leotard
 leon
 les
+les
 lesquelles
 lesquels
 lessive
@@ -2736,6 +2827,8 @@ lester
 lethargie
 lettonie
 lettre
+lettre
+lettre de change
 lettres
 leur
 leurre
@@ -2758,6 +2851,7 @@ liberalite
 liberation
 liberations
 liberaux
+libere
 libere
 liberee
 liberer
@@ -2791,6 +2885,7 @@ ligue
 likoud
 lilas
 lima
+lima
 limacon
 lime
 limer
@@ -2799,10 +2894,12 @@ limitant
 limitation
 limitations
 limite
+limite
 limitee
 limitees
 limitent
 limiter
+limites
 limites
 limogeage
 limoger
@@ -2847,6 +2944,7 @@ libre
 librement
 libres
 lichen
+lie
 lie
 liege
 lienemann
@@ -2904,10 +3002,12 @@ livraison
 livraisons
 livrant
 livre
+livre
 livree
 livrees
 livrent
 livrer
+livres
 livres
 livresque
 livret
@@ -2930,6 +3030,7 @@ loge
 logement
 logements
 loger
+loges
 loges
 logeur
 logiciel
@@ -2975,6 +3076,7 @@ longrine
 longs
 longtemps
 longue
+longue duree
 longue-vue
 longuement
 longues
@@ -2997,6 +3099,7 @@ louvoyer
 louange
 louche
 loucheur
+loue
 loue
 louer
 loueur
@@ -3051,6 +3154,7 @@ ludwig
 lue
 luette
 lueur
+lueur vive
 lufthansa
 lui
 lui-meme
@@ -3140,6 +3244,7 @@ maladresses
 maladroit
 maladroite
 malaise
+malaise
 malaisement
 malaisie
 malappris
@@ -3170,11 +3275,13 @@ manie
 maniement
 manier
 maniere
+maniere
 manifestaient
 manifestant
 manifestants
 manifestation
 manifestations
+manifeste
 manifeste
 manifestee
 manifestement
@@ -3194,6 +3301,7 @@ manuel
 manuelle
 manuels
 manufacture
+manufacture
 manufactures
 manuscrit
 manuscrits
@@ -3205,6 +3313,7 @@ maquiller
 maquis
 maquisards
 marais
+marais salant
 marasme
 marat
 marathon
@@ -3220,6 +3329,7 @@ mariage
 mariages
 marian
 marianne
+marie
 marie
 mariee
 marier
@@ -3288,6 +3398,7 @@ machoire
 machonner
 macro
 madre
+madre
 madrid
 madrier
 maghreb
@@ -3321,6 +3432,7 @@ maillechort
 maillet
 maillon
 maillot
+maillot de corps
 main
 mainmise
 mains
@@ -3338,9 +3450,11 @@ maintient
 maints
 maiolique
 mais
+mais
 maitre
 maitres
 maitresse
+maitrise
 maitrise
 maitrisee
 maitriser
@@ -3351,6 +3465,7 @@ malfacon
 malfaiteur
 malfaiteurs
 malgre
+malgre tout
 malhabile
 malheur
 malheureuse
@@ -3359,6 +3474,7 @@ malheureux
 malheurs
 malhonnete
 malle
+malle arriere
 malmener
 malpropre
 malraux
@@ -3395,6 +3511,7 @@ mannequins
 manquaient
 manquait
 manque
+manque
 manquent
 manquer
 manquera
@@ -3414,10 +3531,12 @@ marchandise
 marchandises
 marchands
 marche
+marche
 marchelli
 marchent
 marchepied
 marcher
+marches
 marches
 marcos
 mardi
@@ -3444,11 +3563,13 @@ marner
 marquait
 marquant
 marque
+marque
 marquee
 marquees
 marquent
 marquer
 marquera
+marques
 marques
 marquis
 marquise
@@ -3487,7 +3608,9 @@ masculine
 masculinite
 masculins
 masque
+masque
 masquer
+masques
 masques
 massacre
 massacrer
@@ -3506,6 +3629,7 @@ mastiquer
 mastodonte
 mat
 match
+match final
 matches
 mathematicien
 mathematique
@@ -3552,9 +3676,11 @@ medaille
 medailler
 medailles
 medecin
+medecin legiste
 medecine
 medecins
 medellin
+media
 media
 median
 medias
@@ -3600,6 +3726,7 @@ melange
 melanger
 melant
 mele
+mele
 melee
 melent
 meler
@@ -3609,6 +3736,8 @@ melodies
 melodieux
 melodique
 melon
+melon eau
+meme
 meme
 memento
 memes
@@ -3619,11 +3748,14 @@ memorial
 memorisation
 memoriser
 menace
+menace
 menacee
 menacees
 menacent
 menacer
 menaces
+menaces
+menage
 menage
 menagement
 menager
@@ -3632,6 +3764,7 @@ menageres
 menages
 menait
 menant
+mene
 mene
 menee
 menees
@@ -3645,11 +3778,13 @@ menu
 menuisier
 menus
 mere
+mere superieure
 meres
 meridien
 meridional
 meringue
 meritait
+merite
 merite
 meritent
 meriter
@@ -3659,6 +3794,7 @@ mesaventures
 mesentente
 mesestimer
 mesintelligence
+mesure
 mesure
 mesuree
 mesurer
@@ -3820,6 +3956,8 @@ mi-temps
 midi
 midinette
 mikado
+mike
+milan
 milan
 milice
 milices
@@ -3978,6 +4116,7 @@ mobilier
 mobilieres
 mobilisation
 mobilise
+mobilise
 mobilisent
 mobiliser
 mobilises
@@ -4008,6 +4147,7 @@ modestie
 modifiant
 modification
 modifications
+modifie
 modifie
 modifiee
 modifient
@@ -4153,6 +4293,7 @@ montante
 montants
 montbeliard
 monte
+monte
 montee
 montees
 montent
@@ -4169,6 +4310,7 @@ montparnasse
 montpellier
 montrait
 montrant
+montre
 montre
 montreal
 montree
@@ -4211,6 +4353,7 @@ mot
 mot-clef
 motrice
 mots
+mots esprit
 mou
 moubarak
 moule
@@ -4247,6 +4390,7 @@ moustachu
 moustique
 moyenageux
 moyen
+moyen age
 moyennant
 moyenne
 moyennes
@@ -4321,15 +4465,18 @@ multipliant
 multiplication
 multiplicite
 multiplie
+multiplie
 multipliees
 multiplient
 multiplier
 multiplies
 multitude
 mur
+mur
 murdoch
 murmure
 murmurer
+murs
 murs
 muscle
 muscles
@@ -4447,11 +4594,13 @@ naufrage
 navratilova
 navrer
 ne
+ne
 nebuleuse
 necessaire
 necessairement
 necessaires
 necessitant
+necessite
 necessite
 necessitent
 necessiter
@@ -4471,6 +4620,7 @@ negociateur
 negociateurs
 negociation
 negociations
+negocie
 negocie
 negociee
 negociees
@@ -4506,6 +4656,8 @@ nephrite
 nephropathie
 nerf
 nerfs
+nerfs acier
+nerfs solides
 nerveuse
 nerveux
 nervi
@@ -4528,6 +4680,8 @@ neuve
 neuves
 neuvieme
 neuf
+neuf cents
+neuf membres
 neufs
 neuilly
 neutraliser
@@ -4558,6 +4712,7 @@ nicher
 nichons
 nickel
 nid
+nie
 nie
 niece
 nier
@@ -4595,6 +4750,7 @@ notait
 notamment
 notant
 notation
+note
 note
 notent
 noter
@@ -4636,6 +4792,7 @@ nombril
 nombrilisme
 nombriliste
 nomme
+nomme
 nommee
 nommement
 nomment
@@ -4675,9 +4832,12 @@ norvege
 norvegien
 norvegiens
 nos
+nos jours
 nostalgie
 nostalgique
 nostalgiques
+not
+notre
 notre
 notres
 noumea
@@ -4685,6 +4845,7 @@ nounou
 nounours
 noureiev
 nouveau
+nouveau testament
 nouveau-ne
 nouveaute
 nouveautes
@@ -4726,6 +4887,7 @@ nuque
 nuage
 nuages
 nuance
+nuance
 nuances
 nucleaire
 nucleaires
@@ -4740,6 +4902,7 @@ nuit
 nuits
 nul
 nulle
+nulle part
 nullement
 nullite
 nuls
@@ -4775,6 +4938,7 @@ omettre
 omis
 omission
 omoplate
+one
 onereux
 onomatopee
 onomatopeique
@@ -4793,6 +4957,7 @@ operationnel
 operationnelle
 operationnelles
 operations
+opere
 opere
 operee
 operees
@@ -4822,7 +4987,10 @@ oreilles
 oreillons
 ores
 orient
+orient
 oriental
+oriental
+orientale
 orientale
 orientales
 orientation
@@ -4842,6 +5010,7 @@ origine
 originel
 origines
 oriolide
+ose
 ose
 osent
 oser
@@ -4874,6 +5043,7 @@ obligatoire
 obligatoirement
 obligatoires
 oblige
+oblige
 obligeant
 obligee
 obligees
@@ -4901,6 +5071,7 @@ observation
 observations
 observatoire
 observe
+observe
 observee
 observees
 observent
@@ -4927,6 +5098,7 @@ obtiendra
 obtiennent
 obtient
 obtus
+oc
 occasion
 occasionner
 occasions
@@ -4943,6 +5115,7 @@ occupait
 occupant
 occupants
 occupation
+occupe
 occupe
 occupee
 occupees
@@ -4989,6 +5162,7 @@ offres
 offrir
 ogre
 ogresse
+oh
 oise
 oiseau
 oiseau-mouche
@@ -4998,6 +5172,7 @@ oisif
 oie
 oignon
 oindre
+ok
 olfaction
 olp
 ombilic
@@ -5012,6 +5187,7 @@ on
 on-dit
 once
 oncle
+oncle maternel
 oncogenes
 onctueux
 onde
@@ -5033,6 +5209,7 @@ opposait
 opposant
 opposants
 oppose
+oppose
 opposee
 opposees
 opposent
@@ -5053,6 +5230,7 @@ option
 options
 optique
 optiques
+or
 orbite
 orchestre
 orchestree
@@ -5063,6 +5241,7 @@ ordinal
 ordinateur
 ordinateurs
 ordonnance
+ordonne
 ordonne
 ordonnee
 ordonner
@@ -5079,6 +5258,7 @@ organisateur
 organisateurs
 organisation
 organisations
+organise
 organise
 organisee
 organisees
@@ -5112,6 +5292,7 @@ orthodoxes
 orthodoxie
 orthographe
 ortie
+os
 oscar
 oscillation
 osciller
@@ -5127,6 +5308,7 @@ ostracisme
 ottawa
 otto
 ottoman
+ou
 ou
 oukase
 oulan-bator
@@ -5146,10 +5328,12 @@ ouate
 oubli
 oubliant
 oublie
+oublie
 oubliee
 oublier
 oublies
 oublions
+ouest
 ouest
 ouf
 oui
@@ -5163,6 +5347,7 @@ ours
 ourse
 oursin
 ourson
+out
 outrage
 outrager
 outre
@@ -5215,6 +5400,7 @@ panacee
 panache
 panacher
 panama
+panama
 panameen
 panameenne
 panameennes
@@ -5259,6 +5445,7 @@ paraissait
 paraisse
 paraissent
 parait
+parait
 paraitre
 parallele
 parallelement
@@ -5274,11 +5461,13 @@ parapher
 parapluie
 parasol
 pare
+pare
 pare-brise
 pareil
 pareille
 pareils
 parent
+parente
 parente
 parenthese
 parents
@@ -5289,6 +5478,7 @@ paresseux
 pari
 paribas
 parier
+paris
 paris
 parisien
 parisienne
@@ -5316,11 +5506,13 @@ patate
 patates
 patauger
 pate
+pate
 patee
 patelin
 pateliner
 patent
 patente
+pater familias
 patere
 paternel
 paternelle
@@ -5359,6 +5551,7 @@ paillasson
 paille
 paillettes
 pain
+pain epice
 pair
 pairs
 paix
@@ -5392,6 +5585,7 @@ par-derriere
 par-dessus
 parc
 parce
+parce que
 parcelle
 parcelles
 parcimonieusement
@@ -5421,6 +5615,7 @@ parlaient
 parlait
 parlant
 parle
+parle
 parlee
 parlement
 parlementaire
@@ -5440,6 +5635,7 @@ parrainage
 parraineur
 parrains
 part
+partage
 partage
 partagee
 partagees
@@ -5461,6 +5657,7 @@ participant
 participants
 participation
 participations
+participe
 participe
 participent
 participer
@@ -5513,6 +5710,7 @@ passait
 passant
 passants
 passe
+passe
 passe-partout
 passee
 passees
@@ -5532,6 +5730,7 @@ passif
 passion
 passionnant
 passionnante
+passionne
 passionne
 passionnement
 passionner
@@ -5576,6 +5775,7 @@ paume
 paumer
 paupiere
 pause
+paul
 paulhan
 pauvre
 pauvres
@@ -5588,6 +5788,7 @@ paysans
 payait
 payant
 payante
+paye
 paye
 payee
 payees
@@ -5627,6 +5828,7 @@ pene
 penetrant
 penetration
 penetre
+penetre
 penetrer
 penible
 peniblement
@@ -5645,6 +5847,7 @@ perec
 peremptoire
 perennite
 perequation
+peres
 peres
 perestroika
 peri
@@ -5675,12 +5878,14 @@ pesant
 pesanteur
 pesanteurs
 pese
+pese
 pese-personne
 pesent
 peser
 pesetas
 petain
 petale
+peter
 petit
 petit-fils
 petite
@@ -5698,12 +5903,16 @@ peau-rouge
 peaufiner
 pebroc
 peche
+peche
+pecher
 pecher
 pecheresse
+pecheur
 pecheur
 pecheurs
 pedro
 pegre
+peine
 peine
 peiner
 peines
@@ -5724,6 +5933,7 @@ peltier
 pence
 penchant
 penche
+penche
 penchent
 pencher
 pendant
@@ -5734,6 +5944,7 @@ penne
 pensaient
 pensait
 pensant
+pense
 pense
 pensee
 pensees
@@ -5813,6 +6024,7 @@ permettrait
 permettre
 permettront
 permis
+permis de conduire
 permission
 permit
 perpetrer
@@ -5890,6 +6102,7 @@ petri
 petrifier
 petrir
 petrole
+petrole brut
 petrolier
 petroliere
 petrolieres
@@ -5900,6 +6113,7 @@ peureuse
 peureux
 peuvent
 peuhl
+peuple
 peuple
 peuplee
 peupler
@@ -6017,6 +6231,7 @@ pivot
 pivotant
 pianiste
 piano
+piano  queue
 pianoforte
 pib
 pic
@@ -6037,6 +6252,7 @@ pietonne
 pietons
 pied
 pieds
+pierre
 pierre
 pierres
 pierreux
@@ -6077,12 +6293,14 @@ pitre
 pittoresque
 placard
 place
+place
 placee
 placees
 placement
 placements
 placent
 placer
+places
 places
 placide
 plafond
@@ -6109,6 +6327,7 @@ plateaux
 plates
 platini
 platon
+plaide
 plaide
 plaident
 plaider
@@ -6144,7 +6363,9 @@ plans
 plant
 plantations
 plante
+plante
 planter
+plantes
 plantes
 planteurs
 plastique
@@ -6177,6 +6398,8 @@ plisser
 plomb
 plombier
 plonge
+plonge
+plonge dans
 plongee
 plongeon
 plonger
@@ -6201,10 +6424,14 @@ pluvieux
 pluie
 pluies
 plus
+plus bas
+plus cher
+plus en plus
 pneu
 pneumatiques
 pneumonie
 pneus
+po
 poher
 polaire
 polar
@@ -6257,6 +6484,7 @@ populeux
 populiste
 posait
 posant
+pose
 pose
 posee
 posees
@@ -6311,6 +6539,7 @@ poitou
 poids
 poignard
 poignee
+poignee de main
 poignet
 poil
 poincon
@@ -6341,6 +6570,9 @@ pollution
 pollutions
 poltron
 pomme
+pomme d'adam
+pomme de pin
+pomme de terre
 pommes
 pommette
 pommettes
@@ -6374,6 +6606,7 @@ portaient
 portait
 portant
 porte
+porte
 porte-bagages
 porte-billets
 porte-clefs
@@ -6393,6 +6626,7 @@ porter
 portera
 porterait
 porteront
+portes
 portes
 porteur
 porteurs
@@ -6423,6 +6657,7 @@ postal
 postale
 postales
 poste
+poste emetteur
 poster
 posterieur
 posterieurement
@@ -6504,6 +6739,7 @@ pourvu
 pourvus
 poussant
 pousse
+pousse
 poussee
 poussent
 pousser
@@ -6516,11 +6752,13 @@ prague
 praticiens
 pratiquant
 pratique
+pratique
 pratiquee
 pratiquees
 pratiquement
 pratiquent
 pratiquer
+pratiques
 pratiques
 pragmatique
 pragmatisme
@@ -6533,6 +6771,7 @@ precaution
 precautionneux
 precautions
 precedant
+precede
 precede
 precedee
 precedemment
@@ -6554,6 +6793,7 @@ precis
 precisait
 precisant
 precise
+precise
 precisement
 precisent
 preciser
@@ -6563,6 +6803,7 @@ precisions
 precoce
 preconcu
 preconisait
+preconise
 preconise
 preconisent
 preconiser
@@ -6584,6 +6825,7 @@ prefecture
 preferable
 preferait
 preferant
+prefere
 prefere
 preferee
 preference
@@ -6610,6 +6852,7 @@ prematurement
 premeditation
 premedite
 premier
+premier ministre
 premiere
 premierement
 premieres
@@ -6634,6 +6877,7 @@ preparation
 preparatoire
 preparatoires
 prepare
+prepare
 preparee
 preparent
 preparer
@@ -6645,11 +6889,13 @@ preposition
 prepositionnel
 preretraite
 preretraites
+preretraites
 prerogative
 prerogatives
 presage
 presager
 presence
+presence esprit
 present
 presentaient
 presentait
@@ -6658,6 +6904,7 @@ presentateur
 presentation
 presentations
 presente
+presente
 presentee
 presentees
 presentent
@@ -6665,11 +6912,14 @@ presenter
 presentera
 presenterait
 presentes
+presentes
 presents
 preservation
 preserve
+preserve
 preserver
 presidait
+preside
 preside
 presidee
 presidence
@@ -6687,6 +6937,7 @@ presume
 presumer
 presumes
 presupposer
+prete
 prete
 pretend
 pretendait
@@ -6754,9 +7005,11 @@ preoccupante
 preoccupation
 preoccupations
 preoccupe
+preoccupe
 preoccupent
 preoccuper
 preoccupes
+pres
 pres
 presbyte
 presbytie
@@ -6768,11 +7021,13 @@ presqu'ile
 presque
 pressant
 presse
+presse
 pressent
 pressenti
 pressentiment
 pressentir
 presser
+presses
 presses
 pression
 pressions
@@ -6796,6 +7051,7 @@ primaires
 primat
 primaute
 prime
+prime
 primer
 primes
 primeur
@@ -6813,6 +7069,8 @@ privatisee
 privatisees
 privatiser
 prive
+prive
+prive air
 privee
 privees
 priver
@@ -6820,11 +7078,13 @@ prives
 privilege
 privileges
 privilegie
+privilegie
 privilegiee
 privilegiees
 privilegient
 privilegier
 privilegies
+prie
 prie
 priere
 prieres
@@ -6840,6 +7100,7 @@ principale
 principalement
 principales
 principaute
+principaute d'andorre
 principaux
 principe
 principes
@@ -6860,6 +7121,7 @@ probe
 probite
 procedant
 procede
+procede
 procedent
 proceder
 procedes
@@ -6870,6 +7132,7 @@ proces-verbal
 procession
 processus
 procuration
+procure
 procure
 procurer
 procureur
@@ -6913,8 +7176,10 @@ profil
 profile
 profils
 profit
+profit de
 profitable
 profitant
+profite
 profite
 profitent
 profiter
@@ -6945,6 +7210,7 @@ proletariat
 proliferation
 proliferer
 prolongation
+prolonge
 prolonge
 prolongee
 prolongement
@@ -6981,6 +7247,7 @@ proner
 pronom
 pronominal
 prononce
+prononce
 prononcee
 prononcees
 prononcent
@@ -7004,6 +7271,7 @@ propos
 proposait
 proposant
 propose
+propose
 proposee
 proposees
 proposent
@@ -7024,6 +7292,7 @@ protectionnisme
 protectionniste
 protections
 protege
+protege
 protegee
 proteger
 proteges
@@ -7036,6 +7305,7 @@ protestants
 protestataires
 protestation
 protestations
+proteste
 proteste
 protestent
 protester
@@ -7070,6 +7340,7 @@ provocation
 provocations
 provoquant
 provoque
+provoque
 provoquee
 provoquent
 provoquer
@@ -7085,10 +7356,12 @@ prochainement
 prochaines
 prochains
 proche
+proche de
 proches
 proclamait
 proclamant
 proclamation
+proclame
 proclame
 proclamee
 proclamer
@@ -7096,12 +7369,15 @@ procreation
 prof
 programmation
 programme
+programme
 programmee
 programmees
 programmer
 programmes
+programmes
 progres
 progressant
+progresse
 progresse
 progressent
 progresser
@@ -7138,7 +7414,9 @@ prost
 prostituee
 prostituees
 prostitution
+prothese dentaire
 prou
+prouve
 prouve
 prouvent
 prouver
@@ -7217,6 +7495,7 @@ publicitaires
 publicite
 publics
 publie
+publie
 publiee
 publiees
 publient
@@ -7258,6 +7537,7 @@ purge
 purger
 purs
 pustule
+put
 putsch
 puy
 puzzle
@@ -7270,6 +7550,7 @@ qualifiait
 qualifiant
 qualification
 qualifications
+qualifie
 qualifie
 qualifiee
 qualifiees
@@ -7297,6 +7578,7 @@ quantite
 quantites
 quart
 quartier
+quartier general
 quartiers
 quarts
 quatre
@@ -7344,6 +7626,7 @@ quittait
 quittance
 quittant
 quitte
+quitte
 quittent
 quitter
 quittera
@@ -7380,6 +7663,7 @@ racontant
 racontar
 racontars
 raconte
+raconte
 racontent
 raconter
 radar
@@ -7406,6 +7690,7 @@ radiodiffuser
 radiophonique
 radios
 radis
+radis noir
 radius
 rafale
 ragaillardir
@@ -7425,6 +7710,7 @@ ramasse
 ramasser
 rame
 rameau
+ramene
 ramene
 ramenee
 ramener
@@ -7456,6 +7742,7 @@ rase
 raser
 rasoir
 rate
+rate
 rateau
 ratelier
 rater
@@ -7471,6 +7758,7 @@ rationnel
 rationnelle
 rationnement
 raturer
+ravage
 ravage
 ravager
 ravages
@@ -7498,6 +7786,7 @@ raccourcir
 rachat
 rachats
 rachetant
+rachete
 rachete
 rachetee
 racheter
@@ -7552,6 +7841,7 @@ rancunier
 randonnee
 rang
 range
+range
 rangee
 rangees
 rangement
@@ -7569,11 +7859,13 @@ rappellent
 rappelons
 rapport
 rapporte
+rapporte
 rapportent
 rapporter
 rapportes
 rapporteur
 rapports
+rapproche
 rapproche
 rapprochee
 rapprochement
@@ -7589,6 +7881,7 @@ rassasie
 rassasier
 rassemblant
 rassemble
+rassemble
 rassemblees
 rassemblement
 rassemblements
@@ -7597,6 +7890,7 @@ rassembler
 rassembles
 rassis
 rassurant
+rassure
 rassure
 rassurer
 rassures
@@ -7620,6 +7914,7 @@ rayonne
 rayonnement
 rayonner
 rayons
+re
 re
 rebaptisee
 rebarbatif
@@ -7663,6 +7958,9 @@ reciprocite
 reciproque
 reciproquement
 recit
+recit concis
+recit sommaire
+recit succinct
 recital
 recitation
 reciter
@@ -7675,9 +7973,12 @@ recoltes
 recommandation
 recommandations
 recommande
+recommande
 recommander
 recommence
+recommence
 recommencer
+recompense
 recompense
 recompenser
 recomposition
@@ -7733,9 +8034,11 @@ recues
 recul
 reculade
 recule
+recule
 reculer
 recuperateur
 recuperation
+recupere
 recupere
 recuperer
 recus
@@ -7744,6 +8047,7 @@ recuser
 recut
 recyclage
 redacteur
+redacteur en chef
 redacteurs
 redaction
 redefinir
@@ -7768,11 +8072,13 @@ redoutables
 redoutait
 redoutant
 redoute
+redoute
 redoutent
 redouter
 reduction
 reductions
 reduire
+reduire en
 reduisant
 reduit
 reduite
@@ -7783,6 +8089,7 @@ refection
 refectoire
 referant
 refere
+refere
 reference
 references
 referendum
@@ -7791,6 +8098,7 @@ refonte
 reformateur
 reformateurs
 reformatrice
+reforme
 reforme
 reformer
 reformes
@@ -7807,6 +8115,7 @@ refusaient
 refusait
 refusant
 refuse
+refuse
 refusee
 refusent
 refuser
@@ -7820,6 +8129,7 @@ regaler
 regalien
 regard
 regardant
+regarde
 regarde
 regardent
 regarder
@@ -7876,6 +8186,7 @@ relacher
 relaches
 relais
 relance
+relance
 relancer
 relater
 relatif
@@ -7894,12 +8205,14 @@ relents
 relevait
 relevant
 releve
+releve
 relevees
 relevement
 relevent
 relever
 releves
 reliant
+relie
 relie
 relief
 relier
@@ -7921,6 +8234,7 @@ remarquablement
 remarquables
 remarquait
 remarque
+remarque
 remarquee
 remarquer
 remarques
@@ -7939,6 +8253,7 @@ reminiscence
 remis
 remise
 remises
+remonte
 remonte
 remontee
 remontees
@@ -7964,6 +8279,7 @@ renard
 renaude
 renault
 rene
+rene
 renegat
 renegate
 renegociation
@@ -7976,6 +8292,7 @@ renoir
 renom
 renomme
 renommee
+renonce
 renonce
 renoncement
 renoncent
@@ -8004,7 +8321,9 @@ reparer
 repart
 reparti
 repartie
+repartie
 reparties
+repartir
 repartir
 repartis
 repartition
@@ -8016,9 +8335,11 @@ repercussion
 repercussions
 repercuter
 repere
+repere
 reperer
 reperes
 repertoire
+repete
 repete
 repetees
 repetent
@@ -8050,6 +8371,7 @@ repose
 reposent
 reposer
 repoussant
+repousse
 repousse
 repoussee
 repousser
@@ -8086,10 +8408,12 @@ reseaux
 reservation
 reservations
 reserve
+reserve
 reservee
 reservees
 reservent
 reserver
+reserves
 reserves
 reservoir
 reservoirs
@@ -8114,6 +8438,7 @@ resistances
 resistant
 resistants
 resiste
+resiste
 resistent
 resister
 resolu
@@ -8130,6 +8455,7 @@ resultat
 resultats
 resulte
 resulter
+resume
 resume
 resument
 resumer
@@ -8160,6 +8486,7 @@ retiendra
 retient
 retine
 retire
+retire
 retiree
 retirent
 retirer
@@ -8169,8 +8496,10 @@ retombee
 retombees
 retomber
 retorque
+retorque
 retorquer
 retour
+retourne
 retourne
 retournement
 retournent
@@ -8184,8 +8513,11 @@ revanche
 revasser
 revasserie
 reve
+reve
 reveche
 reveil
+reveil matin
+reveille
 reveille
 reveiller
 reveillon
@@ -8197,6 +8529,7 @@ revelation
 revelations
 revelatrice
 revele
+revele
 revelee
 revelees
 revelent
@@ -8207,6 +8540,7 @@ revenant
 revendication
 revendications
 revendiquant
+revendique
 revendique
 revendiquee
 revendiquent
@@ -8273,6 +8607,7 @@ realisation
 realisations
 realisatrice
 realise
+realise
 realisee
 realisees
 realisent
@@ -8292,6 +8627,7 @@ reactionnaire
 reactionnaires
 reactions
 reaffirme
+reaffirme
 reaffirmer
 rebrousser
 rechange
@@ -8300,14 +8636,17 @@ rechaud
 rechauffer
 reche
 recherche
+recherche
 recherchent
 rechercher
+recherches
 recherches
 rechute
 reclamaient
 reclamait
 reclamant
 reclamation
+reclame
 reclame
 reclamee
 reclament
@@ -8319,9 +8658,11 @@ reclusionnaire
 recre
 recreation
 recreer
+recreer
 recriminations
 recrudescence
 recrues
+recrute
 recrute
 recrutement
 recrutements
@@ -8373,6 +8714,7 @@ refrigerer
 refroidir
 refroidissement
 regle
+regle
 reglee
 reglement
 reglementaire
@@ -8381,6 +8723,7 @@ reglementation
 reglementations
 reglements
 regler
+regles
 regles
 reglo
 regnait
@@ -8392,6 +8735,7 @@ regret
 regrets
 regrettable
 regrettant
+regrette
 regrette
 regrettent
 regretter
@@ -8423,6 +8767,7 @@ rembourses
 rempart
 remparts
 remplace
+remplace
 remplacee
 remplacement
 remplacer
@@ -8441,10 +8786,12 @@ rencherissement
 rencherit
 rencontrait
 rencontre
+rencontre
 rencontrees
 rencontrent
 rencontrer
 rencontrera
+rencontres
 rencontres
 rend
 rendaient
@@ -8469,6 +8816,7 @@ renferme
 renfermer
 renfoncement
 renforce
+renforce
 renforcee
 renforcement
 renforcent
@@ -8489,6 +8837,7 @@ rentable
 rentables
 rente
 rentrant
+rentre
 rentre
 rentree
 rentrees
@@ -8511,6 +8860,7 @@ replacer
 repli
 replier
 replique
+replique
 repliquer
 reprenait
 reprenant
@@ -8528,6 +8878,7 @@ representatifs
 representation
 representations
 representativite
+represente
 represente
 representee
 representees
@@ -8549,6 +8900,7 @@ reprobation
 reprochait
 reprochant
 reproche
+reproche
 reprochent
 reprocher
 reproches
@@ -8565,6 +8917,7 @@ respect
 respectabilite
 respectable
 respectant
+respecte
 respecte
 respectee
 respectees
@@ -8585,6 +8938,7 @@ resplendissant
 responsabilite
 responsabilites
 responsable
+responsable de
 responsables
 resquillant
 resquille
@@ -8618,6 +8972,7 @@ restauration
 restaure
 restaurer
 reste
+reste
 restee
 restees
 restent
@@ -8625,6 +8980,7 @@ rester
 restera
 resterait
 resteront
+restes
 restes
 restituer
 restitution
@@ -8641,6 +8997,8 @@ retrace
 retracter
 retrait
 retraite
+retraite
+retraites
 retraites
 retranche
 retransmission
@@ -8654,6 +9012,7 @@ retrospective
 retrouvailles
 retrouvait
 retrouvant
+retrouve
 retrouve
 retrouvee
 retrouvees
@@ -8756,10 +9115,12 @@ rien
 riflard
 rimbaud
 rincer
+rincer
 ringard
 rio
 risquaient
 risquait
+risque
 risque
 risquent
 risquer
@@ -8770,11 +9131,14 @@ ristourne
 rit
 riz
 robe
+robe de chambre
+robert
 roberto
 robes
 robespierre
 robin
 robinet
+robinets eau
 robinson
 robot
 robots
@@ -8931,6 +9295,7 @@ rurale
 rurales
 ruraux
 ruse
+ruse
 ruser
 rutabaga
 rutilant
@@ -8961,6 +9326,7 @@ rythme
 rythmes
 s'ensuivre
 sa
+sa vie
 sabine
 sabir
 sabotage
@@ -8988,6 +9354,7 @@ salarie
 salaries
 salaud
 sale
+sale
 saler
 sales
 salete
@@ -9003,11 +9370,13 @@ salissure
 salive
 salomon
 salon
+salon de the
 salons
 salopard
 salope
 salopette
 salubre
+salue
 salue
 saluer
 salut
@@ -9022,6 +9391,7 @@ sapes
 sapeur-pompier
 sapeurs
 sapin
+sapin de noel
 sapins
 sarancolin
 satan
@@ -9115,7 +9485,9 @@ saillir
 sain
 saindoux
 saint
+saint patron
 sainte
+sainte vierge
 saints
 sais
 sait
@@ -9133,6 +9505,7 @@ sanctuaire
 sand
 sandwich
 sang
+sang verse
 sang-froid
 sanglant
 sanglante
@@ -9174,15 +9547,18 @@ sauraient
 saurait
 sauront
 saute
+saute
 sauter
 sauterie
 sautiller
 sauvage
 sauvages
 sauve
+sauve
 sauvegarde
 sauvegarder
 sauver
+sauver sa peau
 sauves
 sauvetage
 sauveteurs
@@ -9209,6 +9585,7 @@ scenario
 scenarios
 scenariste
 scene
+scene de theatre
 scenes
 sceau
 sceaux
@@ -9284,6 +9661,7 @@ seduisant
 seduisante
 seduit
 seguin
+seguin
 sejour
 sejourner
 sejours
@@ -9321,6 +9699,7 @@ separant
 separation
 separatiste
 separatistes
+separe
 separe
 separee
 separees
@@ -9411,6 +9790,7 @@ semblaient
 semblait
 semblant
 semble
+semble
 semblee
 semblent
 sembler
@@ -9419,6 +9799,7 @@ sen
 senna
 senne
 sens
+sens unique
 sensation
 sensationnel
 sensations
@@ -9451,6 +9832,7 @@ sentir
 seoir
 seoul
 sept
+sept cents
 septembre
 septennat
 septentrion
@@ -9469,8 +9851,10 @@ serpent
 serpenter
 serra
 serre
+serre
 serree
 serrer
+serres
 serres
 serrure
 sert
@@ -9491,6 +9875,8 @@ servie
 serviette
 servile
 servir
+servir de
+servir pour
 servira
 serviront
 servis
@@ -9570,12 +9956,14 @@ situant
 situation
 situations
 situe
+situe
 situee
 situees
 situent
 situer
 situes
 sixieme
+sixieme sens
 sic
 siege
 siegent
@@ -9595,6 +9983,7 @@ siffloter
 sigle
 signal
 signale
+signale
 signalent
 signaler
 signales
@@ -9607,3 +9996,5 @@ signature
 signatures
 signaux
 signe
+signe
+signe de croix

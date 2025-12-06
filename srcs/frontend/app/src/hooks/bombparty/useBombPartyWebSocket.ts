@@ -124,9 +124,21 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
       const guestId = Math.floor(Math.random() * 1000);
       const storedName = sessionStorage.getItem('bombparty_player_name');
-      const playerName = (storedName && storedName.trim()) || user?.name || `Guest_${guestId}`;
+      
+      // Si l'utilisateur est connecté, ne pas utiliser un nom de guest stocké
+      let playerName: string;
+      if (user?.id) {
+        // Utilisateur authentifié : utiliser display_name ou name, ignorer le nom stocké s'il est un guest
+        if (storedName && storedName.startsWith('Guest_')) {
+          sessionStorage.removeItem('bombparty_player_name');
+        }
+        playerName = user?.display_name || user?.name || `User_${user.id}`;
+      } else {
+        // Utilisateur non authentifié : utiliser le nom stocké ou générer un guest
+        playerName = (storedName && storedName.trim()) || `Guest_${guestId}`;
+      }
 
-      logger.debug('Authentification avec le nom', { playerName });
+      logger.debug('Authentification avec le nom', { playerName, userId: user?.id, hasDisplayName: !!user?.display_name });
       client.authenticate(playerName);
     };
 
@@ -452,7 +464,10 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
           logger.warn('Game in progress, not resetting auth - will retry later');
           setTimeout(() => {
             if (playerIdRef.current === null) {
-              const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
+              // Si l'utilisateur est connecté, utiliser son nom, sinon guest
+              const playerName = user?.id 
+                ? (user?.display_name || user?.name || `User_${user.id}`)
+                : `Guest_${Math.floor(Math.random() * 1000)}`;
               if (isServicePrimary) {
                 bombPartyService.authenticateWithName(playerName);
               } else {
@@ -483,7 +498,10 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         setPlayerId(null);
         setIsAuthenticating(false);
 
-        const playerName = user?.name || `Guest_${Math.floor(Math.random() * 1000)}`;
+        // Si l'utilisateur est connecté, utiliser son nom, sinon guest
+        const playerName = user?.id 
+          ? (user?.display_name || user?.name || `User_${user.id}`)
+          : `Guest_${Math.floor(Math.random() * 1000)}`;
         if (isServicePrimary) {
           bombPartyService.authenticateWithName(playerName);
         } else {

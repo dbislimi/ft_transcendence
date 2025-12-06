@@ -296,6 +296,15 @@ export class BombPartyService {
       const storedName = sessionStorage.getItem('bombparty_player_name');
       const hasAuthUser = !!token;
 
+      // 🔥 FIX: Clear guest names for authenticated users at connection
+      if (hasAuthUser && storedName && storedName.startsWith('Guest_')) {
+        sessionStorage.removeItem('bombparty_player_name');
+        logger.info('Cleared guest name for authenticated user at connection', {
+          connectionId: this.connectionId,
+          oldName: storedName
+        });
+      }
+
       logger.debug('Auth decision', { hasAuthUser, storedName: storedName ? 'PRESENT' : 'MISSING', pending: this.pendingPlayerName ? 'PRESENT' : 'MISSING' });
 
       if (this.pendingPlayerName) {
@@ -304,13 +313,38 @@ export class BombPartyService {
         return;
       }
 
-      if (storedName) {
-        this.authenticate(storedName);
+      // Si l'utilisateur est authentifié, ne pas utiliser un nom de guest stocké
+      if (hasAuthUser) {
+        // 🔥 FIX: Extract real name from JWT or use placeholder that backend will replace
+        let realName = 'AuthUser';
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          // Try display_name first, then name, then fallback
+          realName = payload.display_name || payload.name || `User_${payload.id || Date.now().toString().slice(-6)}`;
+          logger.info('Extracted name from JWT', {
+            connectionId: this.connectionId,
+            name: realName,
+            hasDisplayName: !!payload.display_name,
+            hasName: !!payload.name
+          });
+        } catch (error) {
+          logger.warn('Failed to parse JWT, backend will provide name', {
+            connectionId: this.connectionId,
+            error
+          });
+        }
+        // Nettoyer un éventuel nom de guest stocké
+        if (storedName && storedName.startsWith('Guest_')) {
+          sessionStorage.removeItem('bombparty_player_name');
+          logger.info('Nettoyage du nom de guest stocké pour utilisateur authentifié');
+        }
+        this.authenticate(realName);
         return;
       }
 
-      if (hasAuthUser) {
-        this.authenticate('AuthenticatedUser');
+      // Pour les utilisateurs non authentifiés, utiliser le nom stocké s'il existe
+      if (storedName) {
+        this.authenticate(storedName);
         return;
       }
 
@@ -440,11 +474,43 @@ export class BombPartyService {
         }
       }
 
+      // Émettre un événement pour les notifications
+      if (typeof window !== 'undefined') {
+        let errorCode = 'UNKNOWN';
+        if (error.code === 'ROOM_NOT_FOUND' || /room not found/i.test(error.msg || '')) {
+          errorCode = 'ROOM_NOT_FOUND';
+        } else if (/full|pleine/i.test(error.msg || '')) {
+          errorCode = 'ROOM_FULL';
+        } else if (/password|mot de passe/i.test(error.msg || '')) {
+          errorCode = 'WRONG_PASSWORD';
+        } else if (/already|déjà/i.test(error.msg || '')) {
+          errorCode = 'ALREADY_IN_ROOM';
+        }
+        window.dispatchEvent(new CustomEvent('bp:lobby:error', {
+          detail: {
+            error: error.msg,
+            code: errorCode
+          }
+        }));
+      }
+
       return;
     }
 
     if (!message.event) {
       logger.warn('Message received without event field', { message });
+      return;
+    }
+
+    // 🔥 FIX: Respond to ping with pong to prevent PONG_TIMEOUT
+    if (message.event === 'bp:ping') {
+      this.lastPong = Date.now();
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({
+          event: 'bp:pong',
+          payload: { ts: message.payload?.ts || Date.now() }
+        }));
+      }
       return;
     }
 
@@ -463,12 +529,34 @@ export class BombPartyService {
         store.setIsAuthenticating(false);
         store.setConnectionState('connected');
 
-        // Sauvegarder le nom du joueur corrigé par le backend (display_name)
+        // 🔥 FIX: Always use backend name and clean old guest names
         if (message.payload.playerName) {
-          sessionStorage.setItem('bombparty_player_name', message.payload.playerName);
-          logger.info('Nom du joueur sauvegardé depuis le backend', {
-            playerName: message.payload.playerName
-          });
+          const currentStored = sessionStorage.getItem('bombparty_player_name');
+
+          // If backend sent a real name, always use it and clean guest names
+          if (!message.payload.playerName.startsWith('Guest_')) {
+            sessionStorage.setItem('bombparty_player_name', message.payload.playerName);
+
+            if (currentStored && currentStored.startsWith('Guest_')) {
+              logger.info('Replaced guest name with real username from backend', {
+                connectionId: this.connectionId,
+                oldName: currentStored,
+                newName: message.payload.playerName
+              });
+            } else {
+              logger.info('Saved player name from backend', {
+                connectionId: this.connectionId,
+                playerName: message.payload.playerName
+              });
+            }
+          } else {
+            // Backend sent a guest name, keep it
+            sessionStorage.setItem('bombparty_player_name', message.payload.playerName);
+            logger.debug('Saved guest name from backend', {
+              connectionId: this.connectionId,
+              playerName: message.payload.playerName
+            });
+          }
         }
 
         this.requestLobbyList();
@@ -543,6 +631,16 @@ export class BombPartyService {
             const first = message.payload.players[0]?.id;
             store.setIsHost(first === store.connection.playerId);
           }
+          // Émettre un événement pour les notifications
+          if (typeof window !== 'undefined' && message.payload.playerId !== store.connection.playerId) {
+            window.dispatchEvent(new CustomEvent('bp:lobby:player_joined', {
+              detail: {
+                playerId: message.payload.playerId,
+                playerName: message.payload.playerName,
+                roomId: message.payload.roomId
+              }
+            }));
+          }
         }
         break;
 
@@ -557,6 +655,16 @@ export class BombPartyService {
           if (message.payload.players && store.connection.playerId) {
             const first = message.payload.players[0]?.id;
             store.setIsHost(first === store.connection.playerId);
+          }
+          // Émettre un événement pour les notifications
+          if (typeof window !== 'undefined' && message.payload.playerId !== store.connection.playerId) {
+            window.dispatchEvent(new CustomEvent('bp:lobby:player_left', {
+              detail: {
+                playerId: message.payload.playerId,
+                playerName: message.payload.playerName,
+                roomId: message.payload.roomId
+              }
+            }));
           }
         }
         break;
@@ -632,6 +740,33 @@ export class BombPartyService {
         store.setLastError('Room closed by host');
         break;
 
+      case 'bp:lobby:host_disconnected':
+        logger.info('Host disconnected - lobby destroyed', {
+          roomId: message.payload.roomId,
+          hostName: message.payload.hostName,
+          reason: message.payload.reason
+        });
+
+        // Si on est dans ce lobby, nettoyer l'état et rediriger
+        if (store.connection.roomId === message.payload.roomId) {
+          store.setRoomId(null);
+          store.setLobbyPlayers([]);
+          store.setIsHost(false);
+          store.setGamePhase('LOBBY');
+
+          // Émettre un événement pour les notifications et la redirection
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('bp:lobby:host_disconnected', {
+              detail: {
+                roomId: message.payload.roomId,
+                hostName: message.payload.hostName,
+                reason: message.payload.reason
+              }
+            }));
+          }
+        }
+        break;
+
       case 'bp:error':
         logger.error('Server error', undefined, { payload: message.payload });
         const errorCode = message.payload.code;
@@ -701,6 +836,14 @@ export class BombPartyService {
           store.setGamePhase('GAME');
           store.setGameStartTime(Date.now());
           logger.info('Jeu demarre', { roomId: message.payload.roomId });
+          // Émettre un événement pour les notifications
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('bp:game:start', {
+              detail: {
+                roomId: message.payload.roomId
+              }
+            }));
+          }
         }
         break;
 
@@ -880,6 +1023,30 @@ export class BombPartyService {
           };
           store.receiveServerState(updatedState);
           logger.debug('Winner added to gameState', { winnerId: endPayload.winner.id });
+        }
+        // Émettre un événement pour les notifications
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('bp:game:end', {
+            detail: {
+              roomId: endPayload.roomId,
+              winner: endPayload.winner,
+              reason: endPayload.reason
+            }
+          }));
+        }
+        break;
+
+      case 'bp:game:rejoin_prompt':
+        logger.debug('Game rejoin prompt received', { payload: message.payload });
+        const rejoinPayload = message.payload;
+        // Émettre un événement pour les notifications
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('bp:game:rejoin_prompt', {
+            detail: {
+              roomId: rejoinPayload.roomId,
+              timeout: rejoinPayload.timeout
+            }
+          }));
         }
         break;
 

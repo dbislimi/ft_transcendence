@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BombPartyHooksState } from './BombPartyHooks';
-import { BottomLeftDebugSuggestions } from './BombPartyUI';
+import { BottomLeftDebugSuggestions } from './UIComponents';
 import { useBombPartyStore } from '../../../store/useBombPartyStore';
 import SettingsModal from '../SettingsModal';
 

@@ -1,56 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BombPartyHooksState } from './BombPartyHooks';
-
-interface BombPartyUIProps {
-  state: BombPartyHooksState;
-  onBackToMenu: () => void;
-}
-
-export default function BombPartyUI({ state, onBackToMenu }: BombPartyUIProps) {
-  const { t } = useTranslation();
-
-  if (state.gameState.phase === 'GAME_OVER') {
-    const winner = (state.gameState as any).winner || state.gameState.players.find((p: any) => !p.isEliminated);
-    
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-40">
-        <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md text-center">
-          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 mb-6 animate-double-chance-glow">
-            🏆 {t('bombParty.gameOver.title')} 🏆
-          </h2>
-          {winner && (
-            <>
-              <div className="text-6xl mb-4">👑</div>
-              <p className="text-slate-200 text-2xl font-bold mb-2">
-                {t('bombParty.gameOver.victory')}
-              </p>
-              <p className="text-cyan-400 text-3xl font-bold mb-4">
-                {winner.name}
-              </p>
-              <p className="text-slate-400 text-lg mb-6">
-                {t('bombParty.gameOver.livesRemaining', { count: winner.lives })}
-              </p>
-            </>
-          )}
-          {!winner && (
-            <p className="text-slate-300 text-xl mb-6">
-              {t('bombParty.gameOver.gameFinished')}
-            </p>
-          )}
-          <button
-            onClick={onBackToMenu}
-            className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl"
-          >
-            {t('bombParty.gameOver.backToMenu')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-}
 
 export function BottomLeftDebugSuggestions({
   title,
@@ -197,3 +146,4 @@ export function DraggablePanel({
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
+

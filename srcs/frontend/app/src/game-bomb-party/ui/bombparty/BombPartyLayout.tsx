@@ -10,7 +10,7 @@ import BombPartyInfoSidebar from '../../../Components/BombPartyInfoSidebar';
 import PlayerProfileModal from '../../../Components/PlayerProfileModal';
 import BackgroundSurface from '../../../Components/BackgroundSurface';
 import SpaceBackground from '../../../Components/SpaceBackground';
-import { DraggablePanel } from './BombPartyUI';
+import { DraggablePanel } from './UIComponents';
 import type { BombPartyHooksState } from './BombPartyHooks';
 import { TurnTransitionAnimation, BonusFlashAnimation, AnimationStyles } from '../Animations';
 import { useSoundEffects } from '../useSoundEffects';
@@ -106,7 +106,7 @@ export default function BombPartyLayout({
 
   const animationsDisabled = settings.game?.preferences?.reducedMotion || !settings.display.animations;
 
-  if ((state.gameState.phase === 'GAME_OVER' && gameMode === 'multiplayer') || (isCurrentPlayerEliminated && gameMode === 'multiplayer')) {
+  if (state.gameState.phase === 'GAME_OVER' || (isCurrentPlayerEliminated && gameMode === 'multiplayer')) {
     return (
       <BackgroundSurface game="bombparty">
         <SpaceBackground />

@@ -9,7 +9,6 @@ import {
 	useBombPartyHooks,
 	BombPartyLayout,
 	BombPartyLobbyView,
-	BombPartyUI,
 } from "./bombparty";
 import { useBombPartyStore } from "../../store/useBombPartyStore";
 
@@ -244,24 +243,18 @@ export default function BombPartyPage() {
 	}
 
 	return (
-		<>
-			<BombPartyUI
-				state={state}
-				onBackToMenu={handlers.handleBackToMenu}
-			/>
-			<BombPartyLayout
-				state={state}
-				engine={engine}
-				remainingMs={remainingMs}
-				isCurrentPlayerTurn={handlers.isCurrentPlayerTurn}
-				onWordSubmit={handlers.handleWordSubmit}
-				onActivateBonus={handlers.handleActivateBonus}
-				onBackToMenu={handlers.handleBackToMenu}
-				onPlayerClick={handlePlayerClick}
-				onInfoToggle={handleInfoToggle}
-				onCloseBonusNotification={handlers.handleCloseBonusNotification}
-				gameMode={state.gameMode}
-			/>
-		</>
+		<BombPartyLayout
+			state={state}
+			engine={engine}
+			remainingMs={remainingMs}
+			isCurrentPlayerTurn={handlers.isCurrentPlayerTurn}
+			onWordSubmit={handlers.handleWordSubmit}
+			onActivateBonus={handlers.handleActivateBonus}
+			onBackToMenu={handlers.handleBackToMenu}
+			onPlayerClick={handlePlayerClick}
+			onInfoToggle={handleInfoToggle}
+			onCloseBonusNotification={handlers.handleCloseBonusNotification}
+			gameMode={state.gameMode}
+		/>
 	);
 }

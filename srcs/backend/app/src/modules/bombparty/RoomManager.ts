@@ -34,6 +34,7 @@ export class BombPartyRoomManager {
   private gameEndCallbacks = new Map<string, (roomId: string, winnerId?: string) => void>();
   private roomLocks = new Map<string, AsyncLock>();
   private disconnectionGracePeriods = new Map<string, NodeJS.Timeout>();
+  private rejoinPrompts = new Map<string, { roomId: string; timestamp: number; timeout: number }>();
 
   private readonly INACTIVE_ROOM_TIMEOUT = 30 * 60 * 1000;
   private readonly EMPTY_ROOM_TIMEOUT = 5 * 60 * 1000;
@@ -68,16 +69,18 @@ export class BombPartyRoomManager {
 
   private startTurnCheckInterval(): NodeJS.Timeout {
     const checkLoop = async () => {
-      // Create a snapshot of room IDs to iterate over
+      
       const roomIds = Array.from(this.roomEngines.keys());
 
       for (const roomId of roomIds) {
         const lock = this.getRoomLock(roomId);
 
-        // Use the lock to ensure we don't conflict with inputs
+        
+
         await lock.acquire(() => {
           const engine = this.roomEngines.get(roomId);
-          if (!engine) return; // Engine might have been removed while waiting for lock
+          if (!engine) return; 
+  
 
           if (engine.checkAndEndExpiredTurn()) {
             console.log('[RoomManager] Tour expire detecte, broadcast de l\'etat mis à jour');
@@ -143,7 +146,7 @@ export class BombPartyRoomManager {
     this.players.set(playerId, player);
 
     ws.on('close', async () => {
-      // Need to check if player was in a room to lock it
+      
       const currentPlayer = this.players.get(playerId);
       const roomId = currentPlayer?.roomId;
 
@@ -174,6 +177,21 @@ export class BombPartyRoomManager {
     return lock.acquire(() => {
       return handleLeaveRoom(playerId, roomId, this.players, this.rooms, this.roomEngines, ws);
     });
+  }
+
+  handlePlayerDisconnect(playerId: string): void {
+    const player = this.players.get(playerId);
+    if (!player) return;
+    
+    const roomId = player.roomId;
+    if (roomId) {
+      const lock = this.getRoomLock(roomId);
+      lock.acquire(() => {
+        handlePlayerDisconnect(playerId, this.players, this.rooms, this.roomEngines);
+      });
+    } else {
+      handlePlayerDisconnect(playerId, this.players, this.rooms, this.roomEngines);
+    }
   }
 
   async startGame(playerId: string, roomId: string): Promise<StartGameResult> {
@@ -265,6 +283,36 @@ export class BombPartyRoomManager {
     return this.roomEngines.has(roomId);
   }
 
+  markPlayerForRejoin(playerId: string, roomId: string): void {
+    const timeoutMs = 10000;
+    this.rejoinPrompts.set(playerId, {
+      roomId,
+      timestamp: Date.now(),
+      timeout: timeoutMs
+    });
+
+  
+    setTimeout(() => {
+      this.rejoinPrompts.delete(playerId);
+    }, timeoutMs);
+  }
+
+  canPlayerRejoin(playerId: string, roomId: string): boolean {
+    const prompt = this.rejoinPrompts.get(playerId);
+    if (!prompt) return false;
+    if (prompt.roomId !== roomId) return false;
+    
+    const elapsed = Date.now() - prompt.timestamp;
+    if (elapsed > prompt.timeout) {
+      this.rejoinPrompts.delete(playerId);
+      return false;
+    }
+
+  
+    this.rejoinPrompts.delete(playerId);
+    return true;
+  }
+
   getRoomStateForReconnect(playerId: string, roomId: string): {
     success: boolean;
     gameState?: any;
@@ -322,7 +370,8 @@ export class BombPartyRoomManager {
 
       await lock.acquire(() => {
         const room = this.rooms.get(roomId);
-        if (!room) return; // Room might have been deleted
+        if (!room) return; 
+
 
         const hasGameInProgress = this.roomEngines.has(roomId);
         const isEmpty = room.players.size === 0;
