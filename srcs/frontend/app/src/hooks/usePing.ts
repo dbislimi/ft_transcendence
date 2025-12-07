@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { withLag } from "../utils/NetworkSimulator";
+
+
+const PING_TIMEOUT = 5000;
 
 export function usePing(
 	wsRef: React.MutableRefObject<WebSocket | null>,
@@ -9,8 +12,6 @@ export function usePing(
 	const pingIntervalRef = useRef<number | null>(null);
 	const pendingPingRef = useRef<number | null>(null);
 	const timeoutRef = useRef<number | null>(null);
-
-	const PING_TIMEOUT = 5000;
 
 	const sendPing = useCallback(() => {
 		if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -40,7 +41,7 @@ export function usePing(
 				})
 			);
 		});
-	}, [wsRef, PING_TIMEOUT]);
+	}, [wsRef]);
 
 	const handlePongMessage = useCallback((data: any) => {
 		if (data.event === "pong" && pendingPingRef.current !== null) {

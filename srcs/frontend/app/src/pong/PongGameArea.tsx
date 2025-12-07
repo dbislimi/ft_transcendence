@@ -1,16 +1,16 @@
 import { type MutableRefObject, memo } from "react";
 import PongCanvas from "../pong/PongCanvas";
 import PongLabels from "../pong/PongLabels";
-import type { ServerSnapshot } from "../types/PongState";
+import type { PongState } from "../types/PongState";
 
 type PongGameAreaProps = {
 	labels: {
 		self: string;
 		opponent: string;
 	};
-	gameRef: MutableRefObject<ServerSnapshot>;
+	gameRef: MutableRefObject<PongState>;
 	side: 0 | 1;
-	interpolationDelay: number;
+	interpolationDelayRef: MutableRefObject<number>;
 	enableIplusPRef: MutableRefObject<boolean>;
 	enableInterpolationRef: MutableRefObject<boolean>;
 };
@@ -19,7 +19,7 @@ const PongGameArea = memo(function PongGameArea({
 	labels,
 	gameRef,
 	side,
-	interpolationDelay,
+	interpolationDelayRef,
 	enableIplusPRef,
 	enableInterpolationRef,
 }: PongGameAreaProps) {
@@ -34,7 +34,7 @@ const PongGameArea = memo(function PongGameArea({
 			<PongCanvas
 				gameRef={gameRef}
 				side={side}
-				interpolationDelay={interpolationDelay}
+				interpolationDelayRef={interpolationDelayRef}
 				enableIplusPRef={enableIplusPRef}
 				enableInterpolationRef={enableInterpolationRef}
 			/>

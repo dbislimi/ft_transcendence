@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import SpaceBackground from "../Components/SpaceBackground";
 import BackgroundSurface from "../Components/BackgroundSurface";
 import PongLobbyList from "./PongLobbyList";
 import PlayersCountDropdown from "../game-bomb-party/ui/PlayersCountDropdown";
@@ -29,7 +28,6 @@ export default function PongTournamentLobby({
 
 	return (
 		<BackgroundSurface game="pong">
-			<SpaceBackground />
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl">
 					<div className="flex items-center justify-between mb-6">

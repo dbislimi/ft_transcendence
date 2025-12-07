@@ -6,15 +6,12 @@ export default function PingDisplay({ ping }: PingDisplayProps) {
 	if (ping === null) {
 		return null;
 	}
-
-	// Déterminer la couleur selon la latence
 	const getPingColor = (ms: number) => {
 		if (ms < 50) return "text-green-400";
 		if (ms < 100) return "text-yellow-400";
 		if (ms < 200) return "text-orange-400";
 		return "text-red-400";
 	};
-
 	return (
 		<div className="absolute top-4 right-4 z-80 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
 			<div className="flex items-center gap-2">

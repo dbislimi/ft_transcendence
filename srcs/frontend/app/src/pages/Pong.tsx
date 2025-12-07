@@ -8,13 +8,12 @@ import SearchingOverlay from "../pong/SearchingOverlay";
 import WaitingOverlay from "../pong/WaitingOverlay";
 import { ReadyButton } from "../pong/ReadyButton";
 import { usePongControls, type PendingInput } from "../hooks/usePongControls";
-import { usePing } from "../hooks/usePing";
+import PingController from "../pong/PingController";
 import BackToMenuButton from "../Components/BackToMenuButton";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import PongRulesScreen from "../pong/PongRulesScreen";
 import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
-import PingDisplay from "../pong/PingDisplay";
 import type { PongState, ServerSnapshot } from "../types/PongState";
 import { useUser } from "../contexts/UserContext";
 import { useGameSession } from "../contexts/GameSessionContext";
@@ -82,24 +81,17 @@ export default function Pong() {
 	const gameRef = useRef<PongState>(initGameState());
 	const controlsReadyRef = useRef(false);
 	const pendingInputsRef = useRef<PendingInput[]>([]);
+	const inputIdRef = useRef(0);
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 	const [bonusEnabled, setBonusEnabled] = useState(false);
 	const enableIplusPRef = useRef(true);
 	const enableInterpolationRef = useRef(true);
 	const shouldMeasurePing =
 		["play", "ready", "countdown", "wait"].includes(view.kind);
-	const {ping, handlePongMessage } = usePing(pongWsRef, shouldMeasurePing);
-	const interpolationDelay = useMemo(() => {
-		if (!ping) return 100;
-		return Math.max(Math.round(ping * 1.5), 50);
-	}, [ping]);
+	const interpolationDelayRef = useRef(100);
+
 	
 	const labels = useMemo((): PlayerLabels => {
-		console.log(
-			`Labels: ${view.kind}, ${
-				view.kind === "result" && view.gameOver?.opponent
-			}`
-		);
 		const defaultSelf = user?.name
 		? `${user.name} (You)`
 		: PLAYER_LABELS.self;
@@ -111,7 +103,6 @@ export default function Pong() {
 			view.gameOver?.opponent ||
 			session?.labels?.opponent ||
 			PLAYER_LABELS.opponent;
-			console.log(`OPPONENT: ${opponent}`);
 			return { self, opponent };
 		}
 		if (session?.labels) return session.labels;
@@ -122,9 +113,41 @@ export default function Pong() {
 		controlsReadyRef.current = next;
 	}, []);
 	const isControlsReady = useCallback(() => controlsReadyRef.current, []);
+
+	const me = useMemo(() => {
+		const myState = session?.side === 0 ? gameRef.current.players.p1 : gameRef.current.players.p2;
+		return myState;
+	}, [session]);
+
+	const sendPongMessage = useCallback((message: any) => {
+		pongWsRef.current?.send(JSON.stringify(message));
+	}, [pongWsRef]);
+
+	usePongControls({
+		isEnabled: isControlsReady,
+		send: sendPongMessage,
+		player: me,
+		pendingInputsRef,
+		inputIdRef,
+	});
+
 	const resetGameState = useCallback(() => {
 		gameRef.current = initGameState();
+		pendingInputsRef.current = [];
+		inputIdRef.current = 0;
 	}, []);
+
+	const clearTrainingState = useCallback(() => {
+		trainingRef.current = false;
+		trainingLabelsRef.current = null;
+	}, []);
+
+	const fullReset = useCallback(() => {
+		resetGameState();
+		setControlsReady(false);
+		clearTrainingState();
+	}, [resetGameState, setControlsReady, clearTrainingState]);
+
 	
 	const applyTournamentRound = useCallback(
 		(body: any) => {
@@ -146,9 +169,9 @@ export default function Pong() {
 	const onMessage = useCallback(
 		(data: any) => {
 			if (!data) return;
-			handlePongMessage(data);
+
 			let remaining;
-			console.log(data);
+			//console.log(data);
 			switch (data.event) {
 				case "searching":
 					applyTournamentRound(data.body);
@@ -156,10 +179,7 @@ export default function Pong() {
 					break;
 					case "waiting":
 						const opponentName = data.who;
-						trainingRef.current = false;
-						trainingLabelsRef.current = null;
-						resetGameState();
-						setControlsReady(false);
+						fullReset();
 						if (
 							typeof opponentName === "string" &&
 							opponentName.trim().length
@@ -172,9 +192,7 @@ export default function Pong() {
 							const opponentReady = data.body?.opponentReady ?? false;
 							const opponentNameReady = data.body?.opponentName;
 							
-							trainingRef.current = false;
-							trainingLabelsRef.current = null;
-							resetGameState();
+							fullReset();
 							
 							if (typeof remaining === "number") {
 								setView({
@@ -204,8 +222,11 @@ export default function Pong() {
 				if (session?.side !== undefined) {
 					const clientMe = session.side === 0 ? gameRef.current.players.p1 : gameRef.current.players.p2;
 					const serverMe = session.side === 0 ? data.body.players.p1 : data.body.players.p2;
-					clientMe.score = serverMe.score;
-					clientMe.size = serverMe.size;
+					const clientOpponent = session.side === 0 ? gameRef.current.players.p2 : gameRef.current.players.p1;
+					const serverOpponent = session.side === 0 ? data.body.players.p2 : data.body.players.p1;
+					
+					[clientMe.score, clientMe.size] = [serverMe.score, serverMe.size];
+					[clientOpponent.score, clientOpponent.size] = [serverOpponent.score, serverOpponent.size];
 					
 					if (enableIplusPRef.current)
 						reconcileWithServer(clientMe, serverMe, data.body.timestamp, pendingInputsRef.current);
@@ -223,10 +244,8 @@ export default function Pong() {
 							data.body?.opponent;
 							applyTournamentRound(data.body);
 							if (trainingRef.current) {
-								trainingRef.current = false;
-								trainingLabelsRef.current = null;
-								resetGameState();
-								setControlsReady(false);
+								fullReset();
+								clearSession();
 								setView({ kind: "search" });
 						break;
 					}
@@ -288,28 +307,26 @@ export default function Pong() {
 		return () => window.removeEventListener('keydown', handleKeyPress);
 	}, []);
 		
-		useEffect(() => {
-			if (!session) return;
-			if (
-				["play", "ready", "countdown", "result", "wait"].includes(view.kind)
-			)
+	useEffect(() => {
+		if (!session) return;
+		if (
+			["play", "ready", "countdown", "result", "wait", "training", "search", "lobby"].includes(view.kind)
+		)
 			return;
-			resetGameState();
-			setControlsReady(false);
-			activeSessionRef.current = true;
-			trainingRef.current = false;
-			trainingLabelsRef.current = null;
-			if (session.sessionType === "offline") setView({ kind: "play" });
-			else {
-				setView({
-					kind: "ready",
-					remaining: 30,
-					selfReady: false,
-					opponentReady: false,
-					opponentName: session.labels.opponent,
-				});
-			}
-		}, [session, view.kind, resetGameState, setControlsReady]);
+		fullReset();
+		activeSessionRef.current = true;
+		if (session.sessionType === "offline") {
+			setView({ kind: "play" });
+		} else {
+			setView({
+				kind: "ready",
+				remaining: 30,
+				selfReady: false,
+				opponentReady: false,
+				opponentName: session.labels.opponent,
+			});
+		}
+	}, [session, view.kind, fullReset]);
 		
 		useEffect(() => {
 			if (prevAuthRef.current && !isAuthenticated && view.kind !== "rules") {
@@ -398,9 +415,6 @@ export default function Pong() {
 			[k: string]: unknown;
 		} | null;
 		resetGameState();
-		console.log(
-			`session.sessionType: ${session?.sessionType}, session.sessionId: ${session?.sessionId}, user.id: ${user?.id}`
-		);
 		if (
 			session?.sessionType === "invite" &&
 			session.sessionId &&
@@ -418,7 +432,6 @@ export default function Pong() {
 			return;
 		}
 		if (payload && payload.action) {
-			console.log("PAYLOAAAADD");
 			if (payload.action === "play_offline") {
 				sendStartEvent({
 					action: "play_offline",
@@ -433,11 +446,8 @@ export default function Pong() {
 		localStop();
 	}, [
 		sendStartEvent,
-		resetGameState,
-		setControlsReady,
 		localStop,
 		user,
-		setSession,
 		session,
 		pongWsRef,
 	]);
@@ -454,12 +464,10 @@ export default function Pong() {
 				body: { type: "offline" },
 			})
 		);
-		trainingRef.current = false;
-		trainingLabelsRef.current = null;
+		fullReset();
+		clearSession();
 		setView({ kind: "search" });
-		resetGameState();
-		setControlsReady(false);
-	}, [pongWsRef, resetGameState, setControlsReady]);
+	}, [pongWsRef, fullReset, clearSession]);
 	
 	const handleRulesContinue = useCallback(
 		(selectedMode: "offline" | "online", config?: any) => {
@@ -488,29 +496,9 @@ export default function Pong() {
 				}
 			}
 		},
-		[
-			user,
-			setSession,
-			resetGameState,
-			setControlsReady,
-			sendStartEvent,
-			isAuthenticated,
-			pongWsRef,
-		]
+		[sendStartEvent, pongWsRef]
 	);
 	
-	
-	usePongControls({
-		isEnabled: isControlsReady,
-		send: (payload) => pongWsRef.current?.send(JSON.stringify(payload)),
-		player:
-		session?.side === 0
-		? gameRef.current.players.p1
-		: gameRef.current.players.p2,
-		pendingInputsRef,
-	});
-	
-	console.log(`view: ${view.kind}`);
 	const isSearching = view.kind === "search";
 	const isTraining = view.kind === "training";
 	const showGameField = [
@@ -542,7 +530,7 @@ export default function Pong() {
 				onContinue={handleContinueFromOverlay}
 				side={session?.side ?? 0}
 				/>
-			{shouldMeasurePing && <PingDisplay ping={ping} />}
+
 			{waitingView && showGameField && (
 				<WaitingOverlay opponentName={waitingView.opponentName} />
 			)}
@@ -608,11 +596,15 @@ export default function Pong() {
 				labels={labels}
 				gameRef={gameRef}
 				side={session?.side ?? 0}
-				interpolationDelay={interpolationDelay}
-				enableNetcodeRef={enableIplusPRef}
+				interpolationDelayRef={interpolationDelayRef}
+				enableIplusPRef={enableIplusPRef}
 				enableInterpolationRef={enableInterpolationRef}
 			/>
 		)}
+			<PingController
+				shouldMeasurePing={shouldMeasurePing}
+				interpolationDelayRef={interpolationDelayRef}
+			/>
 		</div>
 	);
 }

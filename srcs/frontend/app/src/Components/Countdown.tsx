@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 export interface CountdownProps {
@@ -7,7 +7,7 @@ export interface CountdownProps {
 	value?: number | null;
 }
 
-export default function Countdown({
+const Countdown = memo(function Countdown({
 	seconds = 0,
 	onComplete,
 	value: controlledValue,
@@ -61,4 +61,6 @@ export default function Countdown({
 			</div>
 		</div>
 	);
-}
+});
+
+export default Countdown;

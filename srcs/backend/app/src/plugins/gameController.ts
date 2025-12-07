@@ -57,7 +57,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						socket.send(
 							JSON.stringify({
 								event: "pong",
-								to: "pong",
+								to: "ping",
 								body: {
 									timestamp: data.body?.timestamp,
 								},

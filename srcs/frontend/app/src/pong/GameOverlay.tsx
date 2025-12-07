@@ -37,15 +37,24 @@ export default function GameOverlay({
 	const roundLabel = renderRoundLabel();
 
 	return (
-		<div className="absolute top-4 right-4 z-80">
-			<div className="px-3 py-2 bg-slate-900/90 border border-cyan-600/40 rounded-md text-xs text-cyan-100 shadow-lg">
-				<div className="font-semibold">Mode</div>
-				<div className="mt-1">{modeLabel}</div>
-				{isTournamentMode && roundLabel && (
-					<div className="mt-2 text-xs text-slate-200">
-						{roundLabel}
-					</div>
-				)}
+		<div className="absolute top-6 left-1/2 -translate-x-1/2 z-80">
+			<div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20 shadow-lg shadow-white/8">
+				<div className="flex items-center gap-2">
+					{/* Mode label */}
+					<span className="text-white font-medium text-sm">
+						{modeLabel}
+					</span>
+					
+					{/* Round label for tournaments */}
+					{isTournamentMode && roundLabel && (
+						<>
+							<span className="text-white/30">•</span>
+							<span className="text-white/70 text-sm">
+								{roundLabel}
+							</span>
+						</>
+					)}
+				</div>
 			</div>
 		</div>
 	);

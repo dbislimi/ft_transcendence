@@ -318,6 +318,13 @@ export default class GamesManager {
 		});
 		this.setRoom(client, game);
 		this.broadcastPlayersInfo(game, [client], "offline", diff);
+		client.socket?.send(
+			JSON.stringify({
+				event: "countdown",
+				to: "pong",
+				body: { remaining: 0 },
+			})
+		);
 		game.start();
 		return diff === null;
 	}

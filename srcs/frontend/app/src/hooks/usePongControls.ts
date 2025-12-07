@@ -15,6 +15,7 @@ interface UsePongControlsOptions {
 	send: (payload: any) => void;
 	player: Player;
 	pendingInputsRef: React.MutableRefObject<PendingInput[]>;
+	inputIdRef: React.MutableRefObject<number>;
 }
 
 export function usePongControls({
@@ -22,9 +23,9 @@ export function usePongControls({
 	send,
 	player,
 	pendingInputsRef,
+	inputIdRef,
 }: UsePongControlsOptions) {
 	const enabledRef = useRef(isEnabled);
-	const inputIdRef = useRef(0);
 
 	useEffect(() => {
 		enabledRef.current = isEnabled;
@@ -43,12 +44,8 @@ export function usePongControls({
 			if (payload) {
 				const isPress = type === "press";
 				const isDown = payload.dir === "down";
-
-				// Optimistic update
 				if (isDown) player.movingDown = isPress;
 				else player.movingUp = isPress;
-				
-				// Add to pending inputs
 				pendingInputsRef.current.push({
 					inputId: payload.inputId,
 					dir: payload.dir,
@@ -56,7 +53,6 @@ export function usePongControls({
 					inputOwnerId: payload.id,
 					timestamp: payload.timestamp,
 				});
-
 				withLag(() => send({ event: "play", body: { type, ...payload } }));
 			}
 		};
@@ -71,5 +67,5 @@ export function usePongControls({
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
 		};
-	}, [send, player, pendingInputsRef]);
+	}, [send, player, pendingInputsRef, inputIdRef]);
 }
