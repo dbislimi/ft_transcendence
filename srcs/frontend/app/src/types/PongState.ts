@@ -9,7 +9,7 @@ export interface Player {
 	score: number;
 	movingUp: boolean;
 	movingDown: boolean;
-	lastProcessedInputId?: number;
+	lastProcessedInputId: number;
 }
 
 export interface Bonus {

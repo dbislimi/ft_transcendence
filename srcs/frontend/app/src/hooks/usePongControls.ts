@@ -57,8 +57,6 @@ export function usePongControls({
 					timestamp: payload.timestamp,
 				});
 
-				console.log(`player.movingDown: ${player.movingDown}`);
-				console.log(`player.movingUp: ${player.movingUp}`);
 				withLag(() => send({ event: "play", body: { type, ...payload } }));
 			}
 		};

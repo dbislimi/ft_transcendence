@@ -1,7 +1,7 @@
 const NETWORK_CONFIG = {
-    SIMULATE_LAG: false,
-    MIN_LATENCY: 100,
-    MAX_JITTER: 200
+    SIMULATE_LAG: true,
+    MIN_LATENCY: 20,
+    MAX_JITTER: 30
 };
 
 export function withLag(action: () => void) {

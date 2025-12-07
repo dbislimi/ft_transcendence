@@ -16,9 +16,9 @@ import PongTournamentLobby from "../pong/PongTournamentLobby";
 import PongGameArea from "../pong/PongGameArea";
 import PingDisplay from "../pong/PingDisplay";
 import type { PongState, ServerSnapshot } from "../types/PongState";
-
 import { useUser } from "../contexts/UserContext";
 import { useGameSession } from "../contexts/GameSessionContext";
+import { reconcileWithServer } from "../utils/reconciliation";
 
 type PlayerLabels = {
 	self: string;
@@ -61,8 +61,8 @@ const PLAYER_LABELS = {
 const initGameState = (): PongState => ({
 	ball: { x: 100, y: 50 },
 	players: {
-		p1: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false },
-		p2: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false },
+		p1: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false, lastProcessedInputId: -1 },
+		p2: { size: 25, y: 37.5, score: 0, movingUp: false, movingDown: false, lastProcessedInputId: -1 },
 	},
 	bonuses: [],
 	timestamp: Date.now(),
@@ -84,11 +84,15 @@ export default function Pong() {
 	const pendingInputsRef = useRef<PendingInput[]>([]);
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 	const [bonusEnabled, setBonusEnabled] = useState(false);
-	
+	const enableIplusPRef = useRef(true);
+	const enableInterpolationRef = useRef(true);
 	const shouldMeasurePing =
 		["play", "ready", "countdown", "wait"].includes(view.kind);
 	const {ping, handlePongMessage } = usePing(pongWsRef, shouldMeasurePing);
-	
+	const interpolationDelay = useMemo(() => {
+		if (!ping) return 100;
+		return Math.max(Math.round(ping * 1.5), 50);
+	}, [ping]);
 	
 	const labels = useMemo((): PlayerLabels => {
 		console.log(
@@ -191,58 +195,26 @@ export default function Pong() {
 						}
 						break;
 					case "data":
-						setControlsReady(true);
-						
-						gameRef.current.serverUpdates.push(data.body);
-						gameRef.current.serverUpdates.sort((a: ServerSnapshot, b: ServerSnapshot) => a.timestamp - b.timestamp);
-						if (gameRef.current.serverUpdates.length > 60)
-							gameRef.current.serverUpdates.shift();
-						//gameRef.current.ball = data.body.ball;
-						//gameRef.current.bonuses = data.body.bonuses;
-						console.log(`session.side: ${session?.side}`);
-						if (session?.side !== undefined) {
-							const clientMe = session.side === 0 ? gameRef.current.players.p1 : gameRef.current.players.p2;
-							const serverMe = session.side === 0 ? data.body.players.p1 : data.body.players.p2;
-							Object.assign(clientMe, serverMe);
+					setControlsReady(true);
+					gameRef.current.serverUpdates.push(data.body);
+					gameRef.current.serverUpdates.sort((a: ServerSnapshot, b: ServerSnapshot) => a.timestamp - b.timestamp);
+					if (gameRef.current.serverUpdates.length > 60)
+						gameRef.current.serverUpdates.shift();
 					
-
-							//réconciliation
-							pendingInputsRef.current = pendingInputsRef.current.filter((input: PendingInput) => input.inputId > serverMe.lastProcessedInputId);
-						
-							const replayPendingInputs = (serverMe: any, snapshotTimestamp: number, pendingInputs: PendingInput[], now: number) => {
-								let virtualY = serverMe.y;
-								let isMovingUp = serverMe.movingUp;
-								let isMovingDown = serverMe.movingDown;
-								let lastTime = snapshotTimestamp;
-
-								const simulatePhysics = (endTime: number) => {
-									const dt = (endTime - lastTime) / 1000;
-									if (dt <= 0) return;
-									let move = 90 * dt;
-									if (isMovingUp) virtualY -= move;
-									if (isMovingDown) virtualY += move;
-									if (virtualY < 0) virtualY = 0;
-									if (virtualY > 100 - serverMe.size) virtualY = 100 - serverMe.size;
-									lastTime = endTime;
-								}
-
-								for (const input of pendingInputs) {
-									simulatePhysics(input.timestamp);
-									const isPress = input.type === "press";
-									if (input.dir === "up") isMovingUp = isPress;
-									if (input.dir === "down") isMovingDown = isPress;
-								}
-								simulatePhysics(now);
-								
-								return {y: virtualY, movingUp: isMovingUp, movingDown: isMovingDown};
-							}
-							//replay
-							const correctedState = replayPendingInputs(serverMe, data.body.timestamp, pendingInputsRef.current, Date.now());
-							clientMe.y = correctedState.y;
-							clientMe.movingUp = correctedState.movingUp;
-							clientMe.movingDown = correctedState.movingDown;
-						}
-						break;
+				if (session?.side !== undefined) {
+					const clientMe = session.side === 0 ? gameRef.current.players.p1 : gameRef.current.players.p2;
+					const serverMe = session.side === 0 ? data.body.players.p1 : data.body.players.p2;
+					clientMe.score = serverMe.score;
+					clientMe.size = serverMe.size;
+					
+					if (enableIplusPRef.current)
+						reconcileWithServer(clientMe, serverMe, data.body.timestamp, pendingInputsRef.current);
+					const lastProcessedId = serverMe.lastProcessedInputId ?? -1;
+					pendingInputsRef.current = pendingInputsRef.current.filter(
+						(input: PendingInput) => input.inputId > lastProcessedId
+					);
+				}
+					break;
 						case "result":
 							const type: string = data.body.is;
 							const didWin: boolean = data.body.didWin;
@@ -299,6 +271,22 @@ export default function Pong() {
 			addPongRoute("pong", onMessage);
 			return () => removePongRoute("pong", onMessage);
 		}, [addPongRoute, removePongRoute, onMessage]);
+
+	useEffect(() => {
+		const handleKeyPress = (e: KeyboardEvent) => {
+			if (e.key.toLowerCase() === 'b') {
+				enableIplusPRef.current = !enableIplusPRef.current;
+				console.log(`Prediction plus Reconciliation: ${enableIplusPRef.current ? 'ON' : 'OFF'}`);
+			}
+			if (e.key.toLowerCase() === 'i') {
+				enableInterpolationRef.current = !enableInterpolationRef.current;
+				console.log(`Interpolation: ${enableInterpolationRef.current ? 'ON' : 'OFF'}`);
+			}
+		};
+		
+		window.addEventListener('keydown', handleKeyPress);
+		return () => window.removeEventListener('keydown', handleKeyPress);
+	}, []);
 		
 		useEffect(() => {
 			if (!session) return;
@@ -616,12 +604,15 @@ export default function Pong() {
 			)}
 			{countdownView && <Countdown value={countdownView.value} />}
 			{showGameField && (
-				<PongGameArea
-					labels={labels}
-					gameRef={gameRef}
-					side={session?.side ?? 0}
-				/>
-			)}
+			<PongGameArea
+				labels={labels}
+				gameRef={gameRef}
+				side={session?.side ?? 0}
+				interpolationDelay={interpolationDelay}
+				enableNetcodeRef={enableIplusPRef}
+				enableInterpolationRef={enableInterpolationRef}
+			/>
+		)}
 		</div>
 	);
 }

@@ -5,13 +5,14 @@ import type { ServerSnapshot, Player, PongState } from "../types/PongState";
 interface Props {
 	gameRef: MutableRefObject<PongState>;
 	side: 0 | 1;
+	interpolationDelay: number;
+	enableIplusPRef: MutableRefObject<boolean>;
+	enableInterpolationRef: MutableRefObject<boolean>;
 }
 
 const SCALE = 4;
 const BALL_RADIUS = 100 / 70;
 const PLAYER_SPEED = 90; // back
-const FPS = 60;
-const SPEED_PER_FRAME = PLAYER_SPEED / FPS;
 
 function drawField(
 	ctx: CanvasRenderingContext2D,
@@ -89,13 +90,22 @@ function drawBonuses(
 	}
 }
 
-const INTERPOLATION_DELAY = 10;
-
-const interpolate = (gameRefCurrent: PongState, side: 0 | 1) => {
-	const now = Date.now();
-	const renderTime = now - INTERPOLATION_DELAY;
+const interpolate = (gameRefCurrent: PongState, side: 0 | 1, interpolationDelay: number, enableInterpolation: boolean) => {
 	const buff = gameRefCurrent.serverUpdates;
-
+	
+	if (!enableInterpolation) {
+		if (buff.length > 0) {
+			const latest = buff[buff.length - 1];
+			const opp = side === 0 ? "p2" : "p1";
+			gameRefCurrent.players[opp].y = latest.players[opp].y;
+			gameRefCurrent.ball.x = latest.ball.x;
+			gameRefCurrent.ball.y = latest.ball.y;
+		}
+		return;
+	}
+	
+	const now = Date.now();
+	const renderTime = now - interpolationDelay;
 	let futureUpdate = null;
 	let pastUpdate = null;
 
@@ -107,7 +117,6 @@ const interpolate = (gameRefCurrent: PongState, side: 0 | 1) => {
 		}
 	}
 	if (!pastUpdate || !futureUpdate) return;
-
 	const total = futureUpdate.timestamp - pastUpdate.timestamp;
 	const elapsed = renderTime - pastUpdate.timestamp;
 	const ratio = elapsed / total;
@@ -119,7 +128,7 @@ const interpolate = (gameRefCurrent: PongState, side: 0 | 1) => {
 	gameRefCurrent.players[opp].y = lerp(pastUpdate.players[opp].y, futureUpdate.players[opp].y, ratio);
 }
 
-function PongCanvas({ gameRef, side }: Props) {
+function PongCanvas({ gameRef, side, interpolationDelay, enableIplusPRef, enableInterpolationRef }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
 
@@ -134,17 +143,22 @@ function PongCanvas({ gameRef, side }: Props) {
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
-		const loop = () => {
-			interpolate(gameRef.current, side);
+		let lastFrameTime = performance.now();
+		const loop = (now: number) => {
+			const deltaTime = (now - lastFrameTime) / 1000;
+			lastFrameTime = now;
+			interpolate(gameRef.current, side, interpolationDelay, enableInterpolationRef.current);			
 			const { players, ball, bonuses } = gameRef.current;
 			const me = side === 0 ? players.p1 : players.p2;
-			if (me.movingDown){
-				me.y += SPEED_PER_FRAME;
-				console.log("down", me.y);
-			}	
-			if (me.movingUp){
-				me.y -= SPEED_PER_FRAME;
-				console.log("up", me.y);
+			
+			if (enableIplusPRef.current) {
+				const movement = PLAYER_SPEED * deltaTime;
+				if (me.movingDown) {
+					me.y = Math.min(me.y + movement, 100 - me.size);
+				}
+				if (me.movingUp) {
+					me.y = Math.max(me.y - movement, 0);
+				}
 			}
 
 			const p1Size = players.p1.size * SCALE;
@@ -174,7 +188,7 @@ function PongCanvas({ gameRef, side }: Props) {
 		frameIdRef.current = requestAnimationFrame(loop);
 
 		return () => cancelAnimationFrame(frameIdRef.current);
-	}, [gameRef, side]);
+	}, [gameRef, side, interpolationDelay, enableNetcodeRef, enableInterpolationRef]);
 
 	return (
 		<canvas

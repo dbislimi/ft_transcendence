@@ -21,6 +21,12 @@ export default class Game {
 
 	elaspedTime: number = 0;
 	private winner: number | undefined = undefined;
+	
+	private inputQueues: [
+		Array<{inputId: number; type: string; dir: string}>,
+		Array<{inputId: number; type: string; dir: string}>
+	] = [[], []];
+	private lastProcessedInputIds: [number, number] = [-1, -1];
 
 	constructor({
 		p1,
@@ -88,7 +94,11 @@ export default class Game {
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {
-		for (const client of this.clients) client?.socket?.send(data, cb);
+		for (const client of this.clients) {
+			if (client?.socket) {
+				withLag(() => client.socket?.send(data, cb));
+			}
+		}
 	}
 	public startAsync(signal: AbortSignal) {
 		this.signal = signal;
@@ -152,17 +162,39 @@ export default class Game {
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
 	}
+	private applyMove(type: string, dir: string, player: 0 | 1) {
+		if (dir === "up") this.up(type, player);
+		else this.down(type, player);
+	}
+
 	move(type: string, dir: string, player: 0 | 1 | undefined, inputId?: number) {
 		if (player === undefined) {
 			console.log("PLAYER GAMEID UNDEFINED");
 			return;
 		}
-		if (inputId !== undefined) {
-			this.board.players[player].lastProcessedInputId = inputId;
+		if (inputId === undefined) {
+			this.applyMove(type, dir, player);
+			return;
 		}
-		if (dir === "up") this.up(type, player);
-		else this.down(type, player);
+		if (inputId <= this.lastProcessedInputIds[player]) {
+			console.warn(`[Game] Ignoring late/duplicate input ${inputId} for player ${player} (last: ${this.lastProcessedInputIds[player]})`);
+			return;
+		}
+		this.inputQueues[player].push({inputId, type, dir});
+		this.inputQueues[player].sort((a, b) => a.inputId - b.inputId);
+		while (
+			this.inputQueues[player].length > 0 &&
+			this.inputQueues[player][0].inputId === this.lastProcessedInputIds[player] + 1
+		) {
+			const input = this.inputQueues[player].shift()!;
+			this.applyMove(input.type, input.dir, player);
+			this.lastProcessedInputIds[player] = input.inputId;
+			this.board.players[player].lastProcessedInputId = input.inputId;
+		}
+		if (this.inputQueues[player].length > 20)
+			console.warn(`[Game] Input queue for player ${player} has ${this.inputQueues[player].length} pending inputs - possible packet loss`);
 	}
+	
 	setBall(x: number, y: number) {
 		this.board.setBallPos(x, y);
 	}
@@ -198,7 +230,7 @@ export default class Game {
 		this.elaspedTime += deltaTime;
 		if (this.shouldSend) {
 			const data = this.getData();
-			withLag(() => this.send(JSON.stringify(data)));
+			this.send(JSON.stringify(data));
 		}
 		this.shouldSend = !this.shouldSend;
 		const elapsed = performance.now() - now;

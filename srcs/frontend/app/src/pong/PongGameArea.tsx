@@ -10,12 +10,18 @@ type PongGameAreaProps = {
 	};
 	gameRef: MutableRefObject<ServerSnapshot>;
 	side: 0 | 1;
+	interpolationDelay: number;
+	enableIplusPRef: MutableRefObject<boolean>;
+	enableInterpolationRef: MutableRefObject<boolean>;
 };
 
 const PongGameArea = memo(function PongGameArea({
 	labels,
 	gameRef,
 	side,
+	interpolationDelay,
+	enableIplusPRef,
+	enableInterpolationRef,
 }: PongGameAreaProps) {
 	console.log("side", side);
 	return (
@@ -28,6 +34,9 @@ const PongGameArea = memo(function PongGameArea({
 			<PongCanvas
 				gameRef={gameRef}
 				side={side}
+				interpolationDelay={interpolationDelay}
+				enableIplusPRef={enableIplusPRef}
+				enableInterpolationRef={enableInterpolationRef}
 			/>
 		</div>
 	);

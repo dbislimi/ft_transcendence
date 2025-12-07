@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { withLag } from "../utils/NetworkSimulator";
 
 export function usePing(
 	wsRef: React.MutableRefObject<WebSocket | null>,
@@ -29,13 +30,16 @@ export function usePing(
 				setPing(null);
 			}
 		}, PING_TIMEOUT);
-		console.log("ping sent");
-		wsRef.current.send(
-			JSON.stringify({
-				event: "ping",
-				body: { timestamp },
-			})
-		);
+		
+		// Apply lag simulation to ping send (matching game inputs)
+		withLag(() => {
+			wsRef.current?.send(
+				JSON.stringify({
+					event: "ping",
+					body: { timestamp },
+				})
+			);
+		});
 	}, [wsRef, PING_TIMEOUT]);
 
 	const handlePongMessage = useCallback((data: any) => {

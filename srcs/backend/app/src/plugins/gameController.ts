@@ -3,6 +3,8 @@ import fp from "fastify-plugin";
 import type { Client } from "./websockets.js";
 import type { FastifyPluginAsync } from "fastify";
 import GamesManager from "../pong/GamesManager.js";
+import { withLag } from '../utils/NetworkSimulator.js';
+
 
 const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify: FastifyInstance
@@ -51,16 +53,18 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					console.log(data);
 					switch (data.event) {
 						case "ping":
-							socket.send(
-								JSON.stringify({
-									event: "pong",
-									to: "pong",
-									body: {
-										timestamp: data.body?.timestamp,
-									},
-								})
-							);
-							break;
+					withLag(() => {
+						socket.send(
+							JSON.stringify({
+								event: "pong",
+								to: "pong",
+								body: {
+									timestamp: data.body?.timestamp,
+								},
+							})
+						);
+					});
+					break;
 						case "set_name":
 							if (client.id < 0) {
 								console.log(
