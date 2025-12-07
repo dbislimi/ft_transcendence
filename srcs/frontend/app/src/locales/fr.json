@@ -289,10 +289,13 @@
       "newPassword": "Nouveau mot de passe",
       "newPasswordLabel": "Nouveau mot de passe",
       "passwordPlaceholder": "••••••••",
+      "customAvatar": "Importer une photo de profil",
       "chooseAvatar": "Choisir un avatar",
       "preview": "Aperçu",
       "previewAvatar": "Aperçu de l'avatar",
-      "save": "Sauvegarder"
+      "save": "Sauvegarder",
+      "upload": "Envoyer la photo",
+      "uploading": "Envoi en cours..."
     },
     "editProfile": "Modifier le profil"
   },

@@ -24,6 +24,7 @@ export default fp(async function authHook(fastify: FastifyInstance) {
       "/bomb-party",     // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
       "/api/bomb-party",  // Bomb Party API routes (auth handled by preHandler in statsRoutes.ts)
       "/logout",         // Logout endpoint (handles its own token verification/cleanup)
+      "/avatars/custom", // Custom uploaded avatars (public files)
     ];
 
     const rawUrl = (request.raw && (request.raw.url as string)) || (request.url as string) || "";

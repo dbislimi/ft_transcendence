@@ -16,7 +16,6 @@ import authHook from "./plugins/authHook.ts";
 import userPlugin from "./plugins/user.ts";
 import wsFriends from "./plugins/ws-friends.ts";
 import matchHistoryPlugin from "./plugins/matchHistory.ts";
-import friendsPlugin from "./plugins/friends.ts";
 import googleAuth from "./plugins/google.ts";
 import settingsPlugin from "./plugins/settings.ts";
 import twoFaPlugin from "./plugins/2fa.ts";
@@ -110,7 +109,6 @@ async function main() {
 	await fastify.register(settingsPlugin);
 	await fastify.register(twoFaPlugin);
 	await fastify.register(matchHistoryPlugin);
-	await fastify.register(friendsPlugin);
 
 	await fastify.register(bombPartyWSHandlers);
 
@@ -118,10 +116,11 @@ async function main() {
 	await fastify.register(bombPartyStatsRoutes);
 	console.log('[Stats] Statistics routes registered');
 
-	// Serve static (for possible public assets)
+	// Serve static avatars avec un préfixe dédié
 	await fastify.register(fastifyStatic, {
-		root: path.join(__dirname, "public"),
-		prefix: "/",
+		root: path.join(__dirname, "..", "public", "avatars"),
+		prefix: "/avatars/",
+		decorateReply: false
 	});
 
 	fastify.get('/', async () => ({ hello: 'from docker' }));

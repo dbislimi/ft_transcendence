@@ -3,6 +3,14 @@ import type { FastifyInstance } from "fastify";
 import { verifyToken } from "../utils/auth.ts";
 import bcrypt from "bcrypt";
 import { promisify } from "util";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+
+// Obtenir __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default fp(async function userPlugin(fastify: FastifyInstance) {
 	const dbGet = promisify(fastify.db.get.bind(fastify.db));
@@ -205,5 +213,92 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		);
 
 		return reply.send({ success: true });
+	});
+
+	fastify.post("/upload-avatar", async (request, reply) => {
+		const decoded = verifyToken(request, reply);
+		if (!decoded) {
+			return reply.code(401).send({ error: "Token invalide ou manquant" });
+		}
+
+		try {
+			const data = await request.file();
+			if (!data) {
+				return reply.code(400).send({ error: "Aucun fichier fourni" });
+			}
+
+			// Vérifier le type de fichier
+			const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+			if (!allowedTypes.includes(data.mimetype)) {
+				return reply.code(400).send({ 
+					error: "Type de fichier non autorisé. Utilisez JPG, PNG, WEBP ou GIF" 
+				});
+			}
+
+			// Lire le buffer
+			const buffer = await data.toBuffer();
+			
+			// Vérifier la taille (5MB max)
+			const maxSize = 5 * 1024 * 1024;
+			if (buffer.length > maxSize) {
+				return reply.code(400).send({ 
+					error: "Fichier trop volumineux. Maximum 5MB" 
+				});
+			}
+
+			 // Supprimer l'ancien avatar custom si existant
+			 const currentUser = await dbGet("SELECT avatar FROM users WHERE id = ?", [decoded.id]) as any;
+			 if (currentUser?.avatar?.includes('/avatars/custom/')) {
+				 const oldFilename = path.basename(currentUser.avatar);
+				 const oldFilepath = path.join(__dirname, '..', '..', 'public', 'avatars', 'custom', oldFilename);
+				 try {
+					 await fs.unlink(oldFilepath);
+					 console.log('[Upload Avatar] Ancien avatar supprimé:', oldFilename);
+				 } catch (err) {
+					 console.log('[Upload Avatar] Ancien avatar non trouvé (normal si premier upload)');
+				 }
+			 }
+
+			// Générer un nom de fichier unique
+			const ext = path.extname(data.filename) || '.png';
+			const filename = `avatar-${decoded.id}-${Date.now()}${ext}`;
+			
+			// Déterminer le chemin absolu du dossier custom
+			const uploadDir = path.join(__dirname, '..', '..', 'public', 'avatars', 'custom');
+			const filepath = path.join(uploadDir, filename);
+
+			console.log('[Upload Avatar] Dossier de destination:', uploadDir);
+			console.log('[Upload Avatar] Fichier:', filename);
+			console.log('[Upload Avatar] Taille:', (buffer.length / 1024).toFixed(2), 'KB');
+
+			// Créer le dossier s'il n'existe pas
+			await fs.mkdir(uploadDir, { recursive: true });
+
+			// Écrire le fichier
+			await fs.writeFile(filepath, buffer);
+
+			console.log('[Upload Avatar] Fichier écrit avec succès');
+
+			// URL de l'avatar
+			const avatarUrl = `/avatars/custom/${filename}`;
+
+			// Mettre à jour la base de données
+			await dbRun("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, decoded.id]);
+
+			console.log('[Upload Avatar] Base de données mise à jour');
+
+			return reply.send({ 
+				success: true, 
+				avatar: avatarUrl,
+				message: "Avatar uploadé avec succès" 
+			});
+
+		} catch (error) {
+			console.error("[Upload Avatar] Erreur:", error);
+			return reply.code(500).send({ 
+				error: "Erreur lors de l'upload de l'avatar",
+				details: error instanceof Error ? error.message : "Erreur inconnue"
+			});
+		}
 	});
 });
