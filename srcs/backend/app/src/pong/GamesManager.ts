@@ -1,10 +1,10 @@
-import Game from './Game.js';
-import type { difficulty } from './Player.js';
-import plotRewards from './chart.js';
-import Tournament from './Tournament.js';
-import type { Client } from '../plugins/websockets.js';
-import InvitManager from './InvitManager.js';
-import type { Invitation } from './InvitManager.js';
+import Game from "./Game.js";
+import type { difficulty } from "./Player.js";
+import plotRewards from "./chart.js";
+import Tournament from "./Tournament.js";
+import type { Client } from "../plugins/websockets.js";
+import InvitManager from "./InvitManager.js";
+import type { Invitation } from "./InvitManager.js";
 
 export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
@@ -48,9 +48,7 @@ export default class GamesManager {
 		matchType: string = "quick"
 	) {
 		if (!this.fastify) {
-			console.warn(
-				"Fastify instance not available for saving game result"
-			);
+			console.warn("Fastify instance not available for saving game result");
 			return;
 		}
 
@@ -68,11 +66,11 @@ export default class GamesManager {
 				matchType
 			);
 
-			console.log(
-				`Game result processed: P1=${player1.name}, P2=${
-					player2?.name || "Bot"
-				}, Winner=${winner.name}, Type=${matchType}`
-			);
+			// console.log(
+			// 	`Game result processed: P1=${player1.name}, P2=${
+			// 		player2?.name || "Bot"
+			// 	}, Winner=${winner.name}, Type=${matchType}`
+			// );
 		} catch (error) {
 			console.error("Error saving game result:", error);
 		}
@@ -104,12 +102,7 @@ export default class GamesManager {
 				break;
 			}
 			case "accepted": {
-				this.startInvitedGame(
-					inv.sent,
-					inv.receiv,
-					inv.id,
-					inv.options
-				);
+				this.startInvitedGame(inv.sent, inv.receiv, inv.id, inv.options);
 				break;
 			}
 			case "declined": {
@@ -175,7 +168,7 @@ export default class GamesManager {
 			capacity: size,
 			onEnd: () => {
 				delete this.tournaments[id];
-				console.log("onEnd tour called");
+				// console.log("onEnd tour called");
 			},
 			startCountdown: (game, clients) =>
 				this.startWithReadyPhase(game, clients, "tournament"),
@@ -234,14 +227,14 @@ export default class GamesManager {
 		});
 		for (let i = 0; i < games; ++i) {
 			if (signal.aborted) break;
-			console.log(`game ${i + 1}`);
+			// console.log(`game ${i + 1}`);
 			try {
 				await game.startAsync(signal);
 			} catch (e) {
-				console.log("test");
+				// console.log("test");
 				if (signal.aborted)
-					console.log("Training aborted during game ", i);
-				break;
+					// console.log("Training aborted during game ", i);
+					break;
 			}
 		}
 		if (game.board.botController[0] !== undefined)
@@ -250,16 +243,16 @@ export default class GamesManager {
 				game.board.botController[0].rewards,
 				game.board.botController[0].type
 			);
-		console.log("Training loop ended.");
+		// console.log("Training loop ended.");
 		const totalSeconds = Math.floor(game.elaspedTime);
 		const hours = Math.floor(totalSeconds / 3600);
 		const minutes = Math.floor((totalSeconds % 3600) / 60);
 		const seconds = totalSeconds % 60;
-		console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
+		// console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
 	}
 	startTraining(ws: any, bot: difficulty) {
 		this.trainBot(ws, bot, 100);
-		console.log("debug");
+		// console.log("debug");
 		return { playerId: "train" };
 	}
 	startOffline(
@@ -288,13 +281,13 @@ export default class GamesManager {
 				}
 				if (diff !== null && !this.savedGames.has(game)) {
 					const winnerId = didWin ? c.id : -1;
-					console.log(
-						`Saving bot match: ${
-							c.name
-						} vs Bot (${diff}), Winner: ${
-							didWin ? c.name : `Bot (${diff})`
-						}`
-					);
+					// console.log(
+					// 	`Saving bot match: ${
+					// 		c.name
+					// 	} vs Bot (${diff}), Winner: ${
+					// 		didWin ? c.name : `Bot (${diff})`
+					// 	}`
+					// );
 					this.saveGameResult(
 						c,
 						null,
@@ -308,9 +301,9 @@ export default class GamesManager {
 					);
 					this.savedGames.add(game);
 				} else if (diff !== null) {
-					console.log(
-						`Bot match already saved for ${c.name} vs Bot (${diff})`
-					);
+					// console.log(
+					// 	`Bot match already saved for ${c.name} vs Bot (${diff})`
+					// );
 				}
 				this.removeRoom(c);
 			},
@@ -376,7 +369,7 @@ export default class GamesManager {
 		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
-			const winner = didWin ? c : (c === sent ? receiv : sent);
+			const winner = didWin ? c : c === sent ? receiv : sent;
 
 			if (!c.quit) {
 				c.socket?.send(
@@ -392,7 +385,7 @@ export default class GamesManager {
 					})
 				);
 			}
-			this.saveGameResult( sent, receiv, winner, scores, undefined, "quick");
+			this.saveGameResult(sent, receiv, winner, scores, undefined, "quick");
 			this.removeRoom(c);
 		};
 		this.invitManager.removeForClient(sent);
@@ -420,9 +413,9 @@ export default class GamesManager {
 			this.invitManager.removeForClient(opponent);
 			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				const winner = didWin ? c : c === opponent ? client : opponent;
-				console.log(
-					`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
-				);
+				// console.log(
+				// 	`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
+				// );
 
 				if (!c.quit) {
 					c.socket?.send(
@@ -433,8 +426,7 @@ export default class GamesManager {
 								is: "quick",
 								didWin,
 								scores,
-								opponent:
-									this.getRoom(c)?.getOpp(c)?.name ?? null,
+								opponent: this.getRoom(c)?.getOpp(c)?.name ?? null,
 							},
 						})
 					);
@@ -464,7 +456,7 @@ export default class GamesManager {
 	}
 	removeFromQueue(client: Client) {
 		if (this.waitingClient && client === this.waitingClient) {
-			console.log("waiting client removed");
+			// console.log("waiting client removed");
 			this.waitingClient = null;
 		}
 	}
@@ -510,9 +502,7 @@ export default class GamesManager {
 						sessionType,
 						side: client.inGameId ?? null,
 						labels: { self: selfLabel, opponent },
-						...(tournamentDepth !== undefined
-							? { tournamentDepth }
-							: {}),
+						...(tournamentDepth !== undefined ? { tournamentDepth } : {}),
 						countdownStart: GamesManager.COUNTDOWN_SECONDS,
 					},
 				})
@@ -581,9 +571,7 @@ export default class GamesManager {
 					readyState.p2Ready
 				);
 
-				await new Promise((resolve) =>
-					setTimeout(resolve, checkInterval)
-				);
+				await new Promise((resolve) => setTimeout(resolve, checkInterval));
 				readyState.remaining -= 1;
 			}
 			if (!readyState.cancelled) {
@@ -652,8 +640,7 @@ export default class GamesManager {
 	setRoom(client: Client, game: Game) {
 		const room = this.rooms.get(client);
 		if (room) {
-			if (room.clients[0] && room.clients[1])
-				room.disconnectPlayer(client);
+			if (room.clients[0] && room.clients[1]) room.disconnectPlayer(client);
 			else {
 				room.pause();
 				this.removeRoom(client);
@@ -666,7 +653,7 @@ export default class GamesManager {
 		return this.rooms.get(client);
 	}
 	removeRoom(client: Client) {
-		console.log(`removed: ${client.name}`);
+		// console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
 		if (!game) return;
 		try {
@@ -695,7 +682,7 @@ export default class GamesManager {
 		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
-			console.log(`tournament: ${client.tournament.tournamentId}`);
+			// console.log(`tournament: ${client.tournament.tournamentId}`);
 			if (!tournament) return;
 			tournament.disconnect(client);
 		} else {
@@ -729,11 +716,11 @@ export default class GamesManager {
 	}
 
 	handleRejoin(client: Client) {
-		console.log("handle rejoin");
+		// console.log("handle rejoin");
 		if (!client.tournament) return;
 		const t = this.tournaments[client.tournament.tournamentId];
 		if (!t) return;
-		console.log("HANDLE REJOIN CALLED");
+		// console.log("HANDLE REJOIN CALLED");
 		client.quit = false;
 		t.reconnect(client);
 	}

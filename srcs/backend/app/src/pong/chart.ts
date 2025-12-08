@@ -56,9 +56,9 @@ export default async function plotRewards(
 		`../AI/qtable_saves/${diff}/graph/${name}${suffix}.png`,
 		buffer
 	);
-	console.log(
-		`✅ Graphique genere : ${name}${
-			episode ? "_" + episode : ""
-		}.png (episodes: ${tab.length}, affiches: ${data.length})`
-	);
+	// console.log(
+	// 	`✅ Graphique genere : ${name}${
+	// 		episode ? "_" + episode : ""
+	// 	}.png (episodes: ${tab.length}, affiches: ${data.length})`
+	// );
 }

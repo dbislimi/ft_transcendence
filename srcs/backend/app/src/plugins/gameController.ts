@@ -21,7 +21,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 		) => {
 
 			const socket = connection.socket || connection;
-			console.log("pong WS connected");
+			// console.log("pong WS connected");
 			const client = fastify.getClient(req, socket);
 			if (!client) {
 				socket.close();
@@ -29,9 +29,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 			}
 
 			if (client.rejoinTimer) {
-				console.log(
-					`Client ${client.name} reconnected while tournament rejoin timer active`
-				);
+				// console.log(
+				// 	`Client ${client.name} reconnected while tournament rejoin timer active`
+				// );
 				socket.send(
 					JSON.stringify({
 						event: "tournament_rejoin_prompt",
@@ -40,17 +40,17 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 							tournamentId: client.tournament?.tournamentId,
 							timeout: 10,
 						},
-					})
-				);
+					}
+				));
 			}
-			console.log("client:", client.name);
+			// console.log("client:", client.name);
 			let local: boolean = false;
 			const processInput = async (message: any) => {
 				try {
 					const data = JSON.parse(message.toString());
 					if (!data || typeof data !== "object") return;
-					console.log(`FROM: ${client.name}`);
-					console.log(data);
+					// console.log(`FROM: ${client.name}`);
+					// console.log(data);
 					switch (data.event) {
 						case "ping":
 					withLag(() => {
@@ -65,12 +65,12 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 						);
 					});
 					break;
-						case "set_name":
-							if (client.id < 0) {
-								console.log(
-									`Setting guest name from ${client.name} to ${data.name}`
-								);
-								client.name = data.name + " (Guest)";
+					case "set_name":
+						if (client.id < 0) {
+							// console.log(
+							// 	`Setting guest name from ${client.name} to ${data.name}`
+							// );
+							client.name = data.name + " (Guest)";
 							}
 							break;
 						case "invitation": {
@@ -142,37 +142,37 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 							}
 							break;
 						}
-						case "rejoin":
-							if (client.rejoinTimer)
-								clearTimeout(client.rejoinTimer);
-							client.rejoinTimer = undefined;
-							if (data.body?.type === "tournament") {
-								console.log(
-									"rejoin_tournament from",
-									client.name
-								);
-								games.handleRejoin(client);
-							} else if (data.body?.type === "dismiss") {
-								console.log(
-									"dismiss_rejoin_prompt from",
-									client.name
-								);
-								if (client.tournament)
+					case "rejoin":
+						if (client.rejoinTimer)
+							clearTimeout(client.rejoinTimer);
+						client.rejoinTimer = undefined;
+						if (data.body?.type === "tournament") {
+							// console.log(
+							// 	"rejoin_tournament from",
+							// 	client.name
+							// );
+							games.handleRejoin(client);
+						} else if (data.body?.type === "dismiss") {
+							// console.log(
+							// 	"dismiss_rejoin_prompt from",
+							// 	client.name
+							// );
+							if (client.tournament)
 									games.stop_online(client);
 							}
 							break;
-						case "stop":
-							console.log("stop called");
-							if (data.body?.type === "offline") {
+					case "stop":
+						// console.log("stop called");
+						if (data.body?.type === "offline") {
 								games.stop_offline(client);
 								local = false;
 							} else {
 								games.stop_online(client);
 							}
 							break;
-						case "ready":
-							console.log("ready from", client.name);
-							if (data.body?.type === "player") {
+					case "ready":
+						// console.log("ready from", client.name);
+						if (data.body?.type === "player") {
 								games.markPlayerReady(client);
 							} else {
 								if (client.winnerTimer)
@@ -234,9 +234,9 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 										data.body.inputId
 									);
 							break;
-						case "error":
-							console.log("Erreur reçue:", data);
-							break;
+					case "error":
+						// console.log("Erreur reçue:", data);
+						break;
 						default:
 							break;
 					}
@@ -253,7 +253,7 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 			socket.on("message", (message: any) => processInput(message));
 			socket.on("close", () => {
-				console.log("close ", client.name);
+				// console.log("close ", client.name);
 				games.stop_online(client);
 				client.socket = undefined;
 				if (client.id >= 0 && client.rejoinTimer) {
@@ -261,16 +261,16 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 					client.removalTimer = setTimeout(() => {
 						const c = fastify.clients.get(client.id);
 						if (c && !c.socket) {
-							console.log(
-								`Removing client ${c.name} (id=${client.id}) after reconnect timeout`
-							);
+							// console.log(
+							// 	`Removing client ${c.name} (id=${client.id}) after reconnect timeout`
+							// );
 							fastify.clients.delete(client.id);
 						}
 					}, 12000);
 				} else {
-					console.log(
-						`Removing client ${client.name} (id=${client.id}) on disconnect`
-					);
+					// console.log(
+					// 	`Removing client ${client.name} (id=${client.id}) on disconnect`
+					// );
 					fastify.clients.delete(client.id);
 				}
 			});

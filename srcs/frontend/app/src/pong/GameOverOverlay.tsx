@@ -35,7 +35,7 @@ const GameOverOverlay = memo(function GameOverOverlay({
 		: didWin
 		? t("pong.gameOver.victoryTitle")
 		: t("pong.gameOver.defeatTitle");
-	console.log("scores: ", scores);
+	// console.log("scores: ", scores);
 	const isTournament = tournamentDepth != null;
 	const isTournamentRoundWin = isTournament && didWin && !finalTournamentWin;
 	const isTournamentDefeat = isTournament && !didWin;
@@ -44,13 +44,15 @@ const GameOverOverlay = memo(function GameOverOverlay({
 		<div className="fixed inset-0 z-60 flex items-center justify-center pointer-events-none">
 			<div className="bg-black/50 backdrop-blur-sm p-6 rounded-lg border border-white/20 shadow-lg shadow-white/8 max-w-md w-11/12 mx-4 pointer-events-auto">
 				<div className="text-center mb-4">
-					<div className={`text-2xl font-bold ${
-						finalTournamentWin 
-							? "text-yellow-400" 
-							: didWin 
-							? "text-green-400" 
-							: "text-red-400"
-					}`}>
+					<div
+						className={`text-2xl font-bold ${
+							finalTournamentWin
+								? "text-yellow-400"
+								: didWin
+								? "text-green-400"
+								: "text-red-400"
+						}`}
+					>
 						{title}
 					</div>
 				</div>

@@ -1,7 +1,7 @@
-import Board from './Board.js';
-import type { difficulty } from './Player.js';
-import type { Client } from '../plugins/websockets.js';
-import { withLag } from '../utils/NetworkSimulator.js';
+import Board from "./Board.js";
+import type { difficulty } from "./Player.js";
+import type { Client } from "../plugins/websockets.js";
+import { withLag } from "../utils/NetworkSimulator.js";
 
 let GAMESPEED: number = 1;
 
@@ -21,10 +21,10 @@ export default class Game {
 
 	elaspedTime: number = 0;
 	private winner: number | undefined = undefined;
-	
+
 	private inputQueues: [
-		Array<{inputId: number; type: string; dir: string}>,
-		Array<{inputId: number; type: string; dir: string}>
+		Array<{ inputId: number; type: string; dir: string }>,
+		Array<{ inputId: number; type: string; dir: string }>
 	] = [[], []];
 	private lastProcessedInputIds: [number, number] = [-1, -1];
 
@@ -38,9 +38,7 @@ export default class Game {
 	}: {
 		p1: Client;
 		p2?: Client;
-		onEnd:
-			| ((client: Client, winner: boolean, scores: number[]) => void)
-			| null;
+		onEnd: ((client: Client, winner: boolean, scores: number[]) => void) | null;
 		botDiff?: difficulty | null;
 		train?: boolean;
 		options?: {
@@ -48,12 +46,9 @@ export default class Game {
 		};
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board(
-			 (id: number) => {
-				this.winner = id;
-			},
-			options?.bonus ?? false
-		);
+		this.board = new Board((id: number) => {
+			this.winner = id;
+		}, options?.bonus ?? false);
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
 		if (p2 !== undefined) {
@@ -84,10 +79,10 @@ export default class Game {
 	}
 
 	disconnectPlayer(p: Client) {
-		console.log("try to disconnect");
+		// console.log("try to disconnect");
 		const id: 0 | 1 | undefined = p.inGameId;
 		if (id === undefined) return;
-		console.log("disconnected");
+		// console.log("disconnected");
 		this.stop(((id + 1) % 2) as 0 | 1);
 	}
 	send(
@@ -114,14 +109,14 @@ export default class Game {
 		});
 	}
 	public start(): void {
-		console.log("game started");
+		// console.log("game started");
 		if (this.timeoutId) return;
 		this.prevTime = performance.now();
 		this.gameLoop();
 	}
 	public pause(): void {
 		if (!this.timeoutId) return;
-		console.log("game paused");
+		// console.log("game paused");
 		clearTimeout(this.timeoutId);
 		this.timeoutId = null;
 	}
@@ -146,7 +141,7 @@ export default class Game {
 			);
 	}
 	private restart() {
-		console.log("game restarted");
+		// console.log("game restarted");
 		this.winner = undefined;
 		this.start();
 	}
@@ -169,7 +164,7 @@ export default class Game {
 
 	move(type: string, dir: string, player: 0 | 1 | undefined, inputId?: number) {
 		if (player === undefined) {
-			console.log("PLAYER GAMEID UNDEFINED");
+			// console.log("PLAYER GAMEID UNDEFINED");
 			return;
 		}
 		if (inputId === undefined) {
@@ -177,14 +172,17 @@ export default class Game {
 			return;
 		}
 		if (inputId <= this.lastProcessedInputIds[player]) {
-			console.warn(`[Game] Ignoring late/duplicate input ${inputId} for player ${player} (last: ${this.lastProcessedInputIds[player]})`);
+			console.warn(
+				`[Game] Ignoring late/duplicate input ${inputId} for player ${player} (last: ${this.lastProcessedInputIds[player]})`
+			);
 			return;
 		}
-		this.inputQueues[player].push({inputId, type, dir});
+		this.inputQueues[player].push({ inputId, type, dir });
 		this.inputQueues[player].sort((a, b) => a.inputId - b.inputId);
 		while (
 			this.inputQueues[player].length > 0 &&
-			this.inputQueues[player][0].inputId === this.lastProcessedInputIds[player] + 1
+			this.inputQueues[player][0].inputId ===
+				this.lastProcessedInputIds[player] + 1
 		) {
 			const input = this.inputQueues[player].shift()!;
 			this.applyMove(input.type, input.dir, player);
@@ -192,9 +190,11 @@ export default class Game {
 			this.board.players[player].lastProcessedInputId = input.inputId;
 		}
 		if (this.inputQueues[player].length > 20)
-			console.warn(`[Game] Input queue for player ${player} has ${this.inputQueues[player].length} pending inputs - possible packet loss`);
+			console.warn(
+				`[Game] Input queue for player ${player} has ${this.inputQueues[player].length} pending inputs - possible packet loss`
+			);
 	}
-	
+
 	setBall(x: number, y: number) {
 		this.board.setBallPos(x, y);
 	}
@@ -210,7 +210,7 @@ export default class Game {
 				},
 				players: this.board.getPlayersData(),
 				bonuses: this.board.getBonusData(),
-				timestamp: Date.now()
+				timestamp: Date.now(),
 			},
 		};
 	}

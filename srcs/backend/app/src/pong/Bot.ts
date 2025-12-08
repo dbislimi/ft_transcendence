@@ -1,6 +1,6 @@
-import Board from './Board.js';
-import Player from './Player.js';
-import np from './MyNumpy/MyNumpy.js';
+import Board from "./Board.js";
+import Player from "./Player.js";
+import np from "./MyNumpy/MyNumpy.js";
 import * as fs from "fs";
 
 function simulateYAtX(
@@ -140,16 +140,13 @@ export default abstract class BotController {
 				JSON.stringify(this.qTable, null, 2),
 				"utf-8"
 			);
-			console.log(
-				`[SAVED] ${this.type} episode ${episode} (${
-					Object.keys(this.qTable).length
-				} states)`
-			);
+			// console.log(
+			// 	`[SAVED] ${this.type} episode ${episode} (${
+			// 		Object.keys(this.qTable).length
+			// 	} states)`
+			// );
 		} catch (error) {
-			console.error(
-				`[ERROR] Failed to save ${this.type} Q-table:`,
-				error
-			);
+			console.error(`[ERROR] Failed to save ${this.type} Q-table:`, error);
 		}
 	}
 
@@ -160,15 +157,15 @@ export default abstract class BotController {
 				"utf-8"
 			);
 			this.qTable = JSON.parse(raw);
-			console.log(
-				`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`
-			);
+			// console.log(
+			// 	`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`
+			// );
 		} catch (error) {
-			console.log(error);
+			// console.log(error);
 		}
 	}
 	newEpisode() {
-		console.log(`decisionsMade: ${this.decisionsMade}`);
+		// console.log(`decisionsMade: ${this.decisionsMade}`);
 		this.epislons.push(this.epsilon);
 		this.rewards.push(this.reward);
 		this.reward = 0;
@@ -180,18 +177,9 @@ export default abstract class BotController {
 	}
 	takeDecision(board: Board, player: Player) {
 		const state = this.getState(board, player);
-		if (
-			this.training &&
-			this.lastState !== null &&
-			this.lastAction !== null
-		) {
+		if (this.training && this.lastState !== null && this.lastAction !== null) {
 			const actionReward = this.rewardsPolicy(board, player.id);
-			this.updateQtable(
-				this.lastState,
-				this.lastAction,
-				actionReward,
-				state
-			);
+			this.updateQtable(this.lastState, this.lastAction, actionReward, state);
 			this.reward += actionReward;
 		}
 		this.action = this.chooseAction(state);
@@ -300,9 +288,7 @@ export class MediumBot extends BotController {
 			xp,
 			board.H
 		);
-		const ballZone = Math.floor(
-			(this.predictedY / board.H) * this.nbOfActions
-		);
+		const ballZone = Math.floor((this.predictedY / board.H) * this.nbOfActions);
 		return `${dir}_${ballZone}`;
 	}
 }
@@ -357,11 +343,10 @@ export class EasyBot extends BotController {
 		if (isBehind) predictedY = board.ball.getNextXY(0.6).nextY;
 		while (predictedY < 0 || predictedY > board.H) {
 			if (predictedY < 0) predictedY = -predictedY;
-			if (predictedY > board.H)
-				predictedY = board.H - (predictedY - board.H);
+			if (predictedY > board.H) predictedY = board.H - (predictedY - board.H);
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
-		console.log(`ballzone: ${ballZone}`);
+		// console.log(`ballzone: ${ballZone}`);
 		return `${ballZone}`;
 	}
 }
@@ -404,10 +389,7 @@ export class HardBot extends BotController {
 			const relativeBonusY = (bonusY - this.predictedY) / (board.H / 2);
 			const bonusBin =
 				Math.floor(
-					Math.max(
-						-halfCut,
-						Math.min(halfCut, relativeBonusY * halfCut)
-					)
+					Math.max(-halfCut, Math.min(halfCut, relativeBonusY * halfCut))
 				) + halfCut;
 			return `b${bonusBin}_w${clampedWallZone}`;
 		}

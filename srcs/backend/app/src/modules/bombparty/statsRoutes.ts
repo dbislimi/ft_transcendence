@@ -174,10 +174,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 					data: result.data,
 				});
 			} catch (error) {
-				console.error(
-					"[Stats API] Error fetching trigram stats:",
-					error
-				);
+				console.error("[Stats API] Error fetching trigram stats:", error);
 				return reply.code(500).send({ error: "Server error" });
 			}
 		}
@@ -284,33 +281,26 @@ export default fp(async function StatsRoutes(fastify: any) {
 					);
 				}
 				try {
-					const userStatsResult = await statsManager.getUserStats(
-						userId
-					);
+					const userStatsResult = await statsManager.getUserStats(userId);
 					if (userStatsResult.success && userStatsResult.data) {
-						const progressResult =
-							await statsService.updateProgress(
-								userId,
-								{
-									isWin: matchData.isWin,
-									wordsSubmitted: matchData.wordsSubmitted,
-									validWords: matchData.validWords,
-									bestStreak: matchData.bestStreak,
-									matchDuration: matchData.matchDuration,
-									finalLives: matchData.finalLives,
-								},
-								{
-									totalWins: userStatsResult.data.totalWins,
-									totalMatches:
-										userStatsResult.data.totalMatches,
-									totalValidWords:
-										userStatsResult.data.totalValidWords,
-									averageResponseTime:
-										userStatsResult.data
-											.averageResponseTime,
-									bestStreak: userStatsResult.data.bestStreak,
-								}
-							);
+						const progressResult = await statsService.updateProgress(
+							userId,
+							{
+								isWin: matchData.isWin,
+								wordsSubmitted: matchData.wordsSubmitted,
+								validWords: matchData.validWords,
+								bestStreak: matchData.bestStreak,
+								matchDuration: matchData.matchDuration,
+								finalLives: matchData.finalLives,
+							},
+							{
+								totalWins: userStatsResult.data.totalWins,
+								totalMatches: userStatsResult.data.totalMatches,
+								totalValidWords: userStatsResult.data.totalValidWords,
+								averageResponseTime: userStatsResult.data.averageResponseTime,
+								bestStreak: userStatsResult.data.bestStreak,
+							}
+						);
 						if (progressResult.success && progressResult.data) {
 							return reply.send({
 								success: true,
@@ -320,10 +310,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 						}
 					}
 				} catch (progressError) {
-					console.error(
-						"[Stats API] Error updating progress:",
-						progressError
-					);
+					console.error("[Stats API] Error updating progress:", progressError);
 				}
 				return reply.send({
 					success: true,
@@ -361,10 +348,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 					message: "Trigram statistics updated",
 				});
 			} catch (error) {
-				console.error(
-					"[Stats API] Error updating trigram stats:",
-					error
-				);
+				console.error("[Stats API] Error updating trigram stats:", error);
 				return reply.code(500).send({ error: "Server error" });
 			}
 		}
@@ -384,10 +368,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				finalLives: number;
 				playerName: string;
 			};
-			const guestId = await getOrCreateGuestUser(
-				matchData.playerName,
-				db
-			);
+			const guestId = await getOrCreateGuestUser(matchData.playerName, db);
 			console.log(
 				`[stats api] saving local for guest: ${matchData.playerName} (id: ${guestId})`
 			);
@@ -414,10 +395,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				}
 			);
 			if (!historyResult.success) {
-				console.error(
-					"[Stats API] Error adding history:",
-					historyResult.error
-				);
+				console.error("[Stats API] Error adding history:", historyResult.error);
 			}
 			return reply.send({
 				success: true,
@@ -440,10 +418,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				[playerName],
 				(err: any, row: any) => {
 					if (err) {
-						console.error(
-							"[Stats API] Error finding guest user:",
-							err
-						);
+						console.error("[Stats API] Error finding guest user:", err);
 						reject(err);
 						return;
 					}
@@ -457,10 +432,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 						[playerName, guestEmail, "guest", playerName],
 						function (this: any, err: any) {
 							if (err) {
-								console.error(
-									"[Stats API] Error creating guest user:",
-									err
-								);
+								console.error("[Stats API] Error creating guest user:", err);
 								reject(err);
 								return;
 							}
@@ -483,11 +455,8 @@ export default fp(async function StatsRoutes(fastify: any) {
 					.code(400)
 					.send({ error: "Syllable parameter is required" });
 			}
-			const { getWordSuggestions } = await import("./syllableSelector");
-			const suggestions = getWordSuggestions(
-				syllable,
-				parseInt(max) || 5
-			);
+			const { getWordSuggestions } = await import("./syllableSelector.js");
+			const suggestions = getWordSuggestions(syllable, parseInt(max) || 5);
 			return reply.send({
 				success: true,
 				data: {
@@ -496,10 +465,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				},
 			});
 		} catch (error) {
-			console.error(
-				"[BombParty API] Error fetching word suggestions:",
-				error
-			);
+			console.error("[BombParty API] Error fetching word suggestions:", error);
 			return reply.code(500).send({ error: "Server error" });
 		}
 	});
@@ -513,14 +479,12 @@ export default fp(async function StatsRoutes(fastify: any) {
 			};
 
 			if (!word || !syllable) {
-				return reply
-					.code(400)
-					.send({
-						error: "Word and syllable parameters are required",
-					});
+				return reply.code(400).send({
+					error: "Word and syllable parameters are required",
+				});
 			}
 
-			const { validateWithDictionary } = await import("./validator");
+			const { validateWithDictionary } = await import("./validator.js");
 			const validation = await validateWithDictionary(
 				word,
 				syllable,
@@ -541,7 +505,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 		try {
 			const { exclude } = request.query as { exclude?: string };
 			const { getRandomSyllable, getSyllableDifficulty } = await import(
-				"./syllableSelector"
+				"./syllableSelector.js"
 			);
 
 			const syllable = getRandomSyllable(exclude);
@@ -555,48 +519,39 @@ export default fp(async function StatsRoutes(fastify: any) {
 				},
 			});
 		} catch (error) {
-			console.error(
-				"[BombParty API] Error getting random syllable:",
-				error
-			);
+			console.error("[BombParty API] Error getting random syllable:", error);
 			return reply.code(500).send({ error: "Server error" });
 		}
 	});
 
-	fastify.get(
-		"/bomb-party/syllable/info/:syllable",
-		async (request, reply) => {
-			try {
-				const { syllable } = request.params as { syllable: string };
+	fastify.get("/bomb-party/syllable/info/:syllable", async (request, reply) => {
+		try {
+			const { syllable } = request.params as { syllable: string };
 
-				if (!syllable) {
-					return reply
-						.code(400)
-						.send({ error: "Syllable parameter is required" });
-				}
-
-				const { getSyllableInfo, getSyllableDifficulty } = await import(
-					"./syllableSelector"
-				);
-				const info = getSyllableInfo(syllable);
-				const difficulty = getSyllableDifficulty(syllable);
-
-				return reply.send({
-					success: true,
-					data: {
-						...info,
-						difficulty,
-					},
-				});
-			} catch (error) {
-				console.error(
-					"[BombParty API] Error getting syllable info:",
-					error
-				);
-				return reply.code(500).send({ error: "Server error" });
+			if (!syllable) {
+				return reply
+					.code(400)
+					.send({ error: "Syllable parameter is required" });
 			}
+
+			const { getSyllableInfo, getSyllableDifficulty } = await import(
+				"./syllableSelector.js"
+			);
+			const info = getSyllableInfo(syllable);
+			const difficulty = getSyllableDifficulty(syllable);
+
+			return reply.send({
+				success: true,
+				data: {
+					...info,
+					difficulty,
+				},
+			});
+		} catch (error) {
+			console.error("[BombParty API] Error getting syllable info:", error);
+			return reply.code(500).send({ error: "Server error" });
 		}
-	);
+	});
 
 	fastify.get(
 		"/bomb-party/progress/:userId",
@@ -608,9 +563,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				if (parseInt(userId) !== requestingUserId) {
 					return reply.code(403).send({ error: "Access denied" });
 				}
-				const result = await statsService.getUserProgress(
-					requestingUserId
-				);
+				const result = await statsService.getUserProgress(requestingUserId);
 				if (!result.success) {
 					return reply.code(500).send({ error: result.error });
 				}
@@ -641,9 +594,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				};
 				const statsResult = await statsManager.getUserStats(userId);
 				if (!statsResult.success || !statsResult.data) {
-					return reply
-						.code(500)
-						.send({ error: "Failed to get user stats" });
+					return reply.code(500).send({ error: "Failed to get user stats" });
 				}
 				const userStats = statsResult.data;
 				const progressResult = await statsService.updateProgress(
@@ -659,9 +610,7 @@ export default fp(async function StatsRoutes(fastify: any) {
 				);
 
 				if (!progressResult.success) {
-					return reply
-						.code(500)
-						.send({ error: progressResult.error });
+					return reply.code(500).send({ error: progressResult.error });
 				}
 				return reply.send({
 					success: true,
