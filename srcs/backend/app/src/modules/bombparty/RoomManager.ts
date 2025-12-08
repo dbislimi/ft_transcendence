@@ -1,6 +1,6 @@
 import type WebSocket from 'ws';
-import { BombPartyEngine } from './GameEngine.ts';
-import { AsyncLock } from '../../utils/AsyncLock.ts';
+import { BombPartyEngine } from './GameEngine.js';
+import { AsyncLock } from '../../utils/AsyncLock.js';
 import {
   type Room,
   type PlayerConnection,
@@ -21,9 +21,9 @@ import {
   handlePlayerDisconnect,
   startTurnCheckInterval,
   cleanupInterval
-} from './room/index.ts';
-import { broadcastToRoom } from './room/roomUtils.ts';
-import { broadcastTurnStartedWithState, broadcastGameState } from './room/roomHandlers.ts';
+} from './room/index.js';
+import { broadcastToRoom } from './room/roomUtils.js';
+import { broadcastTurnStartedWithState, broadcastGameState } from './room/roomHandlers.js';
 
 export class BombPartyRoomManager {
   private rooms = new Map<string, Room>();

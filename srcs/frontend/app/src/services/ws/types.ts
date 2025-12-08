@@ -1,4 +1,4 @@
-import type { BonusKey, Player } from '@shared/bombparty/types';
+import type { BonusKey, Player } from '../../types/bombparty';
 import type { GameState } from '../../game-bomb-party/core/types';
 
 export interface BPAuthMessage {

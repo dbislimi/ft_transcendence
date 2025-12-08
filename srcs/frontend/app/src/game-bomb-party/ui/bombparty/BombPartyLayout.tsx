@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import PlayerCircle from '../PlayerCircle';
 import BombTimer from '../BombTimer';
@@ -16,7 +16,7 @@ import { TurnTransitionAnimation, BonusFlashAnimation, AnimationStyles } from '.
 import { useSoundEffects } from '../useSoundEffects';
 import { useSettings } from '../../../contexts/SettingsContext';
 import SpectatorView from '../SpectatorView';
-import type { Player } from '@shared/bombparty/types';
+import type { Player } from '../../../types/bombparty';
 
 interface BombPartyLayoutProps {
   state: BombPartyHooksState;

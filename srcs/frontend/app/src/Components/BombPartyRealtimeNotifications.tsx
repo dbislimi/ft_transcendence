@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNotifications } from "../contexts/NotificationContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { bombPartyService } from "../services/bombPartyService";
 import { useBombPartyStore } from "../store/useBombPartyStore";

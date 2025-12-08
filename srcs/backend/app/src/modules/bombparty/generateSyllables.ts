@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { normalizeText, getAllSyllablesFromWord } from './syllableExtractor.ts';
+import { normalizeText, getAllSyllablesFromWord } from './syllableExtractor.js';
 
 const MIN_WORDS_REQUIRED = 800;
 

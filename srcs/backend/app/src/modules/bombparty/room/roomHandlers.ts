@@ -1,6 +1,6 @@
-import { BombPartyEngine } from '../GameEngine.ts';
+import { BombPartyEngine } from '../GameEngine.js';
 import { v4 as uuidv4 } from 'uuid';
-import { bombPartyLogger } from '../log.ts';
+import { bombPartyLogger } from '../log.js';
 
 import type {
   Room,
@@ -13,7 +13,7 @@ import type {
   StartGameResult,
   GameInputResult,
   ActivateBonusResult
-} from './roomTypes.ts';
+} from './roomTypes.js';
 
 import {
   broadcastToRoom,
@@ -23,7 +23,7 @@ import {
   validateGameStart,
   cleanupEmptyRoom,
   incrementRoomState
-} from './roomUtils.ts';
+} from './roomUtils.js';
 
 import {
   validatePlayerId,
@@ -34,7 +34,7 @@ import {
   isCurrentPlayer,
   canActivateBonus,
   sanitizeWord
-} from '../security.ts';
+} from '../security.js';
 
 export function handleCreateRoom(
   creatorId: string,

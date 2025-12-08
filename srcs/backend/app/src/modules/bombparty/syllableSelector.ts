@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { normalizeText, isValidSyllableInWord } from './syllableExtractor.ts';
-import { getDictionaryManager } from './dictionaryManager.ts';
+import { normalizeText, isValidSyllableInWord } from './syllableExtractor.js';
+import { getDictionaryManager } from './dictionaryManager.js';
 
 const francaisWordsPath = new URL('./data/francais.txt', import.meta.url);
 const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');

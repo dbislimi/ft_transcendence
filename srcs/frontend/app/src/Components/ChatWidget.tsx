@@ -15,12 +15,7 @@ export default function ChatWidget() {
   const [view, setView] = useState<"chat" | "users">("chat");
   const [target, setTarget] = useState<number | null>(null);
 
-	const [contextMenu, setContextMenu] = useState<{
-		x: number;
-		y: number;
-		userId: number;
-		userName: string;
-	} | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userId: number; userName: string } | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,25 +66,21 @@ export default function ChatWidget() {
     }
   };
 
-	const handleContextMenu = (
-		e: React.MouseEvent,
-		userId: number,
-		userName: string
-	) => {
-		e.preventDefault();
-		setContextMenu({
-			x: e.clientX,
-			y: e.clientY,
-			userId: userId,
-			userName: userName,
-		});
-	};
+  const handleContextMenu = (e: React.MouseEvent, userId: number, userName: string) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      userId: userId,
+      userName: userName
+    });
+  };
 
-	const goToProfile = (userId: number) => {
-		navigate(`/user/${userId}`);
-		setOpen(false);
-		setContextMenu(null);
-	};
+  const goToProfile = (userId: number) => {
+    navigate(`/user/${userId}`);
+    setOpen(false);
+    setContextMenu(null);
+  };
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
@@ -139,7 +130,7 @@ export default function ChatWidget() {
                           : "bg-gray-200 dark:bg-gray-700"
                         } px-3 py-2 rounded-xl text-black dark:text-white`}
                     >
-                      <div>{msg.text ?? msg.message}</div>
+                      <div>{msg.text ?? msg.text}</div>
                     </div>
                   </div>
                 ))}

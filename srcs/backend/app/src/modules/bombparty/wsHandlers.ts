@@ -2,17 +2,17 @@ import type { FastifyPluginAsync } from 'fastify';
 import '@fastify/websocket';
 import WebSocket from 'ws';
 import jwt from 'jsonwebtoken';
-import { BombPartyRoomManager } from './RoomManager.ts';
-import { BombPartyWSServer } from './wsServer.ts';
+import { BombPartyRoomManager } from './RoomManager.js';
+import { BombPartyWSServer } from './wsServer.js';
 import {
   validateClientMessage,
   validatePlayerName,
   validateAuthMessage
-} from './validation.ts';
-import { sanitizePlayerName } from './security.ts';
-import { ErrorCode } from './types.ts';
+} from './validation.js';
+import { sanitizePlayerName } from './security.js';
+import { ErrorCode } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
-import { bombPartyLogger } from './log.ts';
+import { bombPartyLogger } from './log.js';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
