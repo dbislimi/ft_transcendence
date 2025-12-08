@@ -1,6 +1,6 @@
 import "fastify";
 import sqlite3 from "sqlite3";
-import type { Client } from "./plugins/websockets.ts";
+import type { Client } from './plugins/websockets.js';
 
 declare module "fastify" {
 	interface FastifyInstance {

@@ -1,4 +1,4 @@
-import { AsyncLock } from '../../../utils/AsyncLock.ts';
+import { AsyncLock } from '../../../utils/AsyncLock.js';
 import type {
   DBResult,
   UserStats,
@@ -7,14 +7,14 @@ import type {
   MatchData,
   MatchHistoryData,
   RankingEntry
-} from './statsModel.ts';
-import { StatsModel } from './statsModel.ts';
+} from './statsModel.js';
+import { StatsModel } from './statsModel.js';
 import {
   computeUpdatedUserStats,
   computeNewUserStats,
   computeUpdatedTrigramStats,
   computeNewTrigramStats
-} from './statsCompute.ts';
+} from './statsCompute.js';
 
 export class StatsPersistence {
   private model: StatsModel;

@@ -1,6 +1,6 @@
-import type { ValidationResult } from './types.ts';
-import { normalizeText, isValidSyllableInWord } from './syllableExtractor.ts';
-import { wordExistsInDictionary, wordExistsInDictionarySync, getWordSuggestions as getSyllableWordSuggestions, getWordSuggestionsSync as getSyllableWordSuggestionsSync } from './syllableSelector.ts';
+import type { ValidationResult } from './types.js';
+import { normalizeText, isValidSyllableInWord } from './syllableExtractor.js';
+import { wordExistsInDictionary, wordExistsInDictionarySync, getWordSuggestions as getSyllableWordSuggestions, getWordSuggestionsSync as getSyllableWordSuggestionsSync } from './syllableSelector.js';
 
 export async function validateWithDictionary(word: string, syllable: string, usedWords: string[]): Promise<ValidationResult> {
   const normalizedWord = normalizeText(word);

@@ -9,7 +9,7 @@ interface ReadyButtonProps {
 	onReady: () => void;
 }
 
-export function ReadyButton({
+export const ReadyButton = React.memo(function ReadyButton({
 	remaining,
 	selfReady,
 	opponentReady,
@@ -22,35 +22,37 @@ export function ReadyButton({
 		sessionLabels?.opponent || t("pong.readyPhase.opponent");
 
 	return (
-		<div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-			<div className="bg-linear-to-br from-gray-900 to-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 max-w-md w-full mx-4">
+		<div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+			<div className="bg-black/50 backdrop-blur-sm p-6 rounded-lg border border-white/20 shadow-lg shadow-white/8 max-w-md w-full mx-4 pointer-events-auto">
+				{/* Timer Display */}
 				<div className="text-center mb-6">
-					<div className="text-6xl font-bold text-cyan-400 mb-2 font-mono">
+					<div className="text-5xl font-bold text-white mb-2 font-mono">
 						{remaining}
 					</div>
-					<div className="text-gray-400 text-sm uppercase tracking-wider">
+					<div className="text-white/60 text-xs uppercase tracking-wider">
 						{t("pong.readyPhase.timeRemaining", "Time Remaining")}
 					</div>
 				</div>
 
-				<div className="space-y-3 mb-6">
-					<div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 border border-gray-700">
-						<div className="flex items-center gap-3">
+				{/* Player Status */}
+				<div className="space-y-2 mb-6">
+					<div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+						<div className="flex items-center gap-2">
 							<div
-								className={`w-3 h-3 rounded-full ${
+								className={`w-2 h-2 rounded-full ${
 									selfReady
-										? "bg-green-500 animate-pulse"
-										: "bg-gray-600"
+										? "bg-green-400 animate-pulse"
+										: "bg-white/30"
 								}`}
 							/>
-							<span className="text-white font-medium">
+							<span className="text-white/90 text-sm font-medium">
 								{sessionLabels?.self ||
 									t("pong.readyPhase.you", "You")}
 							</span>
 						</div>
 						<span
-							className={`text-sm font-semibold ${
-								selfReady ? "text-green-400" : "text-gray-500"
+							className={`text-xs font-semibold ${
+								selfReady ? "text-green-400" : "text-white/50"
 							}`}
 						>
 							{selfReady
@@ -59,24 +61,24 @@ export function ReadyButton({
 						</span>
 					</div>
 
-					<div className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 border border-gray-700">
-						<div className="flex items-center gap-3">
+					<div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+						<div className="flex items-center gap-2">
 							<div
-								className={`w-3 h-3 rounded-full ${
+								className={`w-2 h-2 rounded-full ${
 									opponentReady
-										? "bg-green-500 animate-pulse"
-										: "bg-gray-600"
+										? "bg-green-400 animate-pulse"
+										: "bg-white/30"
 								}`}
 							/>
-							<span className="text-white font-medium">
+							<span className="text-white/90 text-sm font-medium">
 								{displayOpponentName}
 							</span>
 						</div>
 						<span
-							className={`text-sm font-semibold ${
+							className={`text-xs font-semibold ${
 								opponentReady
 									? "text-green-400"
-									: "text-gray-500"
+									: "text-white/50"
 							}`}
 						>
 							{opponentReady
@@ -86,17 +88,19 @@ export function ReadyButton({
 					</div>
 				</div>
 
+				{/* Action Button */}
 				{!selfReady && (
 					<button
 						onClick={onReady}
-						className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-cyan-500/50"
+						className="w-full py-3 px-6 bg-emerald-500/30 hover:bg-emerald-500/40 text-emerald-300 font-semibold rounded-lg transition-all duration-200 border border-emerald-500/40 hover:border-emerald-500/60"
 					>
 						{t("pong.readyPhase.imReady", "I'M READY!")}
 					</button>
 				)}
 
+				{/* Status Message */}
 				{selfReady && (
-					<div className="text-center py-4 text-gray-400">
+					<div className="text-center py-3 text-white/60 text-sm">
 						{opponentReady
 							? t(
 									"pong.readyPhase.bothReady",
@@ -109,7 +113,8 @@ export function ReadyButton({
 					</div>
 				)}
 
-				<div className="mt-4 text-xs text-gray-500 text-center">
+				{/* Info Text */}
+				<div className="mt-4 text-xs text-white/40 text-center">
 					{t(
 						"pong.readyPhase.info",
 						"The game will start automatically when both players are ready or when the timer expires."
@@ -118,4 +123,4 @@ export function ReadyButton({
 			</div>
 		</div>
 	);
-}
+});

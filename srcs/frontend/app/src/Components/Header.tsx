@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import Logo from "../assets/logo.png";
 import LanguageDropdown from "./LanguageDropdown";
 import ThemeToggle from "./ThemeToggle";

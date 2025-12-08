@@ -1,7 +1,7 @@
-import type { GameState } from '../types';
-import { getAlivePlayers, isGameOver } from './engineState.ts';
-import { bombPartyLogger } from '../log.ts';
-import { getSyllableDifficulty } from '../syllableSelector.ts';
+import type { GameState } from '../types.js';
+import { getAlivePlayers, isGameOver } from './engineState.js';
+import { bombPartyLogger } from '../log.js';
+import { getSyllableDifficulty } from '../syllableSelector.js';
 
 export function startCountdown(state: GameState): void {
   state.phase = 'COUNTDOWN';

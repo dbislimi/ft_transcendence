@@ -1,4 +1,4 @@
-import Player from "./Player.ts";
+import Player from './Player.js';
 
 export abstract class BonusBase {
   y: number;

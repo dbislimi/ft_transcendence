@@ -3,19 +3,15 @@ import { useRef } from "react";
 type PongScoreboardProps = {
 	selfLabel: string;
 	opponentLabel: string;
-	preferredSide: string;
-	side: number | null;
+	side: 0 | 1;
 };
 
 export default function PongLabels({
 	selfLabel,
 	opponentLabel,
-	preferredSide,
 	side,
 }: PongScoreboardProps) {
-	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
-	const selfOnLeft =
-		(side === 0 && !shouldMirror) || (side === 1 && shouldMirror);
+	const selfOnLeft = side === 0;
 	const playerPaddle = side === 0 ? "P1" : "P2";
 	const opponentPaddle = side === 0 ? "P2" : "P1";
 

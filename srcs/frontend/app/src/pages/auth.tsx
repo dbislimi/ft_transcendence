@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useUser } from "../contexts/UserContext";
 import { API_BASE_URL } from "../config/api";
 import { useTranslation } from "react-i18next";

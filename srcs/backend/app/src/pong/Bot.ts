@@ -1,6 +1,6 @@
-import Board from "./Board.ts";
-import Player from "./Player.ts";
-import np from "./MyNumpy/MyNumpy.ts";
+import Board from './Board.js';
+import Player from './Player.js';
+import np from './MyNumpy/MyNumpy.js';
 import * as fs from "fs";
 
 function simulateYAtX(

@@ -10,16 +10,16 @@ const __dirname = path.dirname(__filename);
 const dbPath = path.join(__dirname, 'data', 'my-database.db');
 
 async function dbPlugin(fastify, opts) {
-  const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-    if (err) {
-      fastify.log.error("❌ Erreur d'ouverture de la base :", err.message);
-    } else {
-      fastify.log.info("✅ Connecté à la base SQLite");
-    }
-  });
+	const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+		if (err) {
+			fastify.log.error("❌ Erreur d'ouverture de la base :", err.message);
+		} else {
+			fastify.log.info("✅ Connecté à la base SQLite");
+		}
+	});
 
-  db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users (
+	db.serialize(() => {
+		db.run(`CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		email TEXT NOT NULL UNIQUE,
@@ -31,13 +31,10 @@ async function dbPlugin(fastify, opts) {
 		wins INTEGER DEFAULT 0,
 		losses INTEGER DEFAULT 0,
 		online INTEGER DEFAULT 0,
-		tournaments_won INTEGER DEFAULT 0,
-		preferred_side TEXT DEFAULT 'left',
-		paddle_color TEXT DEFAULT 'White',
-		ball_color TEXT DEFAULT 'Rose'
+		tournaments_won INTEGER DEFAULT 0
 	);`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS matches (
+		db.run(`CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       player1_id INTEGER NOT NULL,
       player2_id INTEGER,
@@ -52,7 +49,7 @@ async function dbPlugin(fastify, opts) {
       FOREIGN KEY (winner_id) REFERENCES users(id)
     );`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS friends (
+		db.run(`CREATE TABLE IF NOT EXISTS friends (
       user_id INTEGER NOT NULL,
       friend_id INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -85,7 +82,7 @@ async function dbPlugin(fastify, opts) {
 		);
 	`);
 
-    db.run(`
+		db.run(`
 		CREATE TABLE IF NOT EXISTS bp_participants (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			match_id INTEGER NOT NULL,
@@ -141,13 +138,13 @@ async function dbPlugin(fastify, opts) {
       date TEXT NOT null
     );`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS blocks (
+		db.run(`CREATE TABLE IF NOT EXISTS blocks (
       blockerId INTEGER,
       blockedId INTEGER,
       PRIMARY KEY (blockerId, blockedId)
     );`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS blocked_users (
+		db.run(`CREATE TABLE IF NOT EXISTS blocked_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       blocker_id INTEGER NOT NULL,
       blocked_id INTEGER NOT NULL,
@@ -166,20 +163,20 @@ async function dbPlugin(fastify, opts) {
     db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_user_id ON bp_match_history (user_id);`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_bp_match_history_played_at ON bp_match_history (played_at);`);
 
-    console.log("✅ Tables Bomb Party initialisees");
-  });
+		console.log("✅ Tables Bomb Party initialisees");
+	});
 
-  fastify.decorate('db', db);
+	fastify.decorate('db', db);
 
-  fastify.get('/db-check', (request, reply) => {
-    db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
-      if (err) {
-        reply.code(500).send({ status: 'DB error', error: err.message });
-      } else {
-        reply.send({ status: 'OK', users: row.count });
-      }
-    });
-  });
+	fastify.get('/db-check', (request, reply) => {
+		db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+			if (err) {
+				reply.code(500).send({ status: 'DB error', error: err.message });
+			} else {
+				reply.send({ status: 'OK', users: row.count });
+			}
+		});
+	});
 }
 
 export default fp(dbPlugin);

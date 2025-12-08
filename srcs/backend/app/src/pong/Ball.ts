@@ -1,4 +1,4 @@
-import Board from "./Board.ts";
+import Board from './Board.js';
 
 const MAX_BALL_SPEED = 200;
 

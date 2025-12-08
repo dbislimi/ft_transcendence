@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ErrorCode } from './types.ts';
+import type { ErrorCode } from './types.js';
 import { 
   clientMessageSchema,
   authMessageSchema,
@@ -10,7 +10,7 @@ import {
   gameInputSchema,
   bonusActivateSchema,
   playerNameSchema
-} from './schemas.ts';
+} from './schemas.js';
 
 export interface ValidationResult<T = any> {
   success: boolean;

@@ -1,47 +1,45 @@
-import type { MutableRefObject } from "react";
-import PongCanvas from "./PongCanvas";
-import PongLabels from "./PongLabels";
-import type { GameState } from "../types/GameState";
+import { type MutableRefObject, memo } from "react";
+import PongCanvas from "../pong/PongCanvas";
+import PongLabels from "../pong/PongLabels";
+import type { PongState } from "../types/PongState";
 
 type PongGameAreaProps = {
 	labels: {
 		self: string;
 		opponent: string;
 	};
-	gameRef: MutableRefObject<GameState>;
-	scale: number;
-	cosmetics: {
-		preferredSide: string;
-		paddleColor: string;
-		ballColor: string;
-	};
-	opponentPaddleColor?: string;
-	side: number | null;
+	gameRef: MutableRefObject<PongState>;
+	side: 0 | 1;
+	interpolationDelayRef: MutableRefObject<number>;
+	enableIplusPRef: MutableRefObject<boolean>;
+	enableInterpolationRef: MutableRefObject<boolean>;
 };
 
-export default function PongGameArea({
+const PongGameArea = memo(function PongGameArea({
 	labels,
 	gameRef,
-	scale,
-	cosmetics,
-	opponentPaddleColor,
 	side,
+	interpolationDelayRef,
+	enableIplusPRef,
+	enableInterpolationRef,
 }: PongGameAreaProps) {
+	console.log("side", side);
 	return (
 		<div className="relative">
 			<PongLabels
 				selfLabel={labels.self}
 				opponentLabel={labels.opponent}
-				preferredSide={cosmetics.preferredSide}
 				side={side}
 			/>
 			<PongCanvas
 				gameRef={gameRef}
-				scale={scale}
-				cosmetics={cosmetics}
-				opponentPaddleColor={opponentPaddleColor}
 				side={side}
+				interpolationDelayRef={interpolationDelayRef}
+				enableIplusPRef={enableIplusPRef}
+				enableInterpolationRef={enableInterpolationRef}
 			/>
 		</div>
 	);
-}
+});
+
+export default PongGameArea;

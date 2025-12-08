@@ -78,7 +78,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				console.log("Pong Websocket fermé (guest)");
 			pongWsRef.current.onmessage = (event) => {
 				const data = JSON.parse(event.data);
-				console.log("received pong (guest): ", data);
+				//console.log("received pong (guest): ", data);
 				if (!data.to) return;
 				const handler = pongRoutesRef.current.get(data.to);
 				if (!handler) return;

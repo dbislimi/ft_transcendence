@@ -1,20 +1,31 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import type { Player } from "../types/PongState";
+import { withLag } from "../utils/NetworkSimulator";
+
+export interface PendingInput {
+	inputId: number;
+	dir: "up" | "down";
+	type: "press" | "release";
+	inputOwnerId: number;
+	timestamp: number;
+}
 
 interface UsePongControlsOptions {
 	isEnabled: () => boolean;
 	send: (payload: any) => void;
-	preferredSide: string;
-	side: number | null;
+	player: Player;
+	pendingInputsRef: React.MutableRefObject<PendingInput[]>;
+	inputIdRef: React.MutableRefObject<number>;
 }
 
 export function usePongControls({
 	isEnabled,
 	send,
-	preferredSide,
-	side,
+	player,
+	pendingInputsRef,
+	inputIdRef,
 }: UsePongControlsOptions) {
 	const enabledRef = useRef(isEnabled);
-	const shouldMirror = preferredSide === "right" ? side === 0 : side === 1;
 
 	useEffect(() => {
 		enabledRef.current = isEnabled;
@@ -24,17 +35,25 @@ export function usePongControls({
 		const handleKey = (e: KeyboardEvent, type: "press" | "release") => {
 			if (!enabledRef.current()) return;
 			const key = e.key;
-			let payload: { dir: "up" | "down"; id: number } | null = null;
-			if (["Shift", "s"].includes(key))
-				payload = { dir: "down", id: shouldMirror ? 1 : 0 };
-			else if (["5"].includes(key))
-				payload = { dir: "down", id: shouldMirror ? 0 : 1 };
-			else if ([" ", "w"].includes(key))
-				payload = { dir: "up", id: shouldMirror ? 1 : 0 };
-			else if (["8"].includes(key))
-				payload = { dir: "up", id: shouldMirror ? 0 : 1 };
+			let payload: { inputId: number; dir: "up" | "down"; id: number, timestamp: number } | null = null;
+			if (key === "s") payload = {inputId: inputIdRef.current++, dir: "down", id: 0, timestamp: Date.now() };
+			else if (key === "w") payload = {inputId: inputIdRef.current++, dir: "up", id: 0, timestamp: Date.now() };
+			else if (key === "ArrowDown") payload = {inputId: inputIdRef.current++, dir: "down", id: 1, timestamp: Date.now() };
+			else if (key === "ArrowUp") payload = {inputId: inputIdRef.current++, dir: "up", id: 1, timestamp: Date.now() };
+
 			if (payload) {
-				send({ event: "play", body: { type, ...payload } });
+				const isPress = type === "press";
+				const isDown = payload.dir === "down";
+				if (isDown) player.movingDown = isPress;
+				else player.movingUp = isPress;
+				pendingInputsRef.current.push({
+					inputId: payload.inputId,
+					dir: payload.dir,
+					type: type,
+					inputOwnerId: payload.id,
+					timestamp: payload.timestamp,
+				});
+				withLag(() => send({ event: "play", body: { type, ...payload } }));
 			}
 		};
 		const keydown = (e: KeyboardEvent) => {
@@ -48,5 +67,5 @@ export function usePongControls({
 			document.removeEventListener("keydown", keydown);
 			document.removeEventListener("keyup", keyup);
 		};
-	}, [send, preferredSide, side]);
+	}, [send, player, pendingInputsRef, inputIdRef]);
 }

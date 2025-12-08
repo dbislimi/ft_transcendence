@@ -1,7 +1,7 @@
-import type { Room, PlayerConnection } from './room/roomTypes.ts';
-import { normalizeText } from './syllableExtractor.ts';
-import { validateWithDictionary } from './validator.ts';
-import type { GameState } from './types.ts';
+import type { Room, PlayerConnection } from './room/roomTypes.js';
+import { normalizeText } from './syllableExtractor.js';
+import { validateWithDictionary } from './validator.js';
+import type { GameState } from './types.js';
 
 export function sanitizePlayerName(name: string): string {
   let sanitized = name.trim();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { useTurnTimer } from "../core/timer";
 import { isTimerExpired } from "../core/timerUtils";
 import { useUser } from "../../contexts/UserContext";

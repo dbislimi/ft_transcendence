@@ -1,6 +1,7 @@
-import Board from "./Board.ts";
-import type { difficulty } from "./Player.ts";
-import type { Client } from "../plugins/websockets.ts";
+import Board from './Board.js';
+import type { difficulty } from './Player.js';
+import type { Client } from '../plugins/websockets.js';
+import { withLag } from '../utils/NetworkSimulator.js';
 
 let GAMESPEED: number = 1;
 
@@ -20,6 +21,12 @@ export default class Game {
 
 	elaspedTime: number = 0;
 	private winner: number | undefined = undefined;
+	
+	private inputQueues: [
+		Array<{inputId: number; type: string; dir: string}>,
+		Array<{inputId: number; type: string; dir: string}>
+	] = [[], []];
+	private lastProcessedInputIds: [number, number] = [-1, -1];
 
 	constructor({
 		p1,
@@ -37,19 +44,16 @@ export default class Game {
 		botDiff?: difficulty | null;
 		train?: boolean;
 		options?: {
-			maxScore?: number;
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		};
 	}) {
 		this.onEnd = onEnd;
-		this.board = new Board({
-			onWin: (id: number) => {
+		this.board = new Board(
+			 (id: number) => {
 				this.winner = id;
 			},
-			...options,
-		});
+			options?.bonus ?? false
+		);
 		this.clientsId.set(p1, 0);
 		p1.inGameId = 0;
 		if (p2 !== undefined) {
@@ -90,7 +94,11 @@ export default class Game {
 		data: string | Buffer | ArrayBuffer | Buffer[],
 		cb?: (err?: Error) => void
 	) {
-		for (const client of this.clients) client?.socket?.send(data, cb);
+		for (const client of this.clients) {
+			if (client?.socket) {
+				withLag(() => client.socket?.send(data, cb));
+			}
+		}
 	}
 	public startAsync(signal: AbortSignal) {
 		this.signal = signal;
@@ -154,14 +162,39 @@ export default class Game {
 		else if (this.board.players[player].down && type === "release")
 			this.board.players[player].moveDown(false);
 	}
-	move(type: string, dir: string, player: 0 | 1 | undefined) {
+	private applyMove(type: string, dir: string, player: 0 | 1) {
+		if (dir === "up") this.up(type, player);
+		else this.down(type, player);
+	}
+
+	move(type: string, dir: string, player: 0 | 1 | undefined, inputId?: number) {
 		if (player === undefined) {
 			console.log("PLAYER GAMEID UNDEFINED");
 			return;
 		}
-		if (dir === "up") this.up(type, player);
-		else this.down(type, player);
+		if (inputId === undefined) {
+			this.applyMove(type, dir, player);
+			return;
+		}
+		if (inputId <= this.lastProcessedInputIds[player]) {
+			console.warn(`[Game] Ignoring late/duplicate input ${inputId} for player ${player} (last: ${this.lastProcessedInputIds[player]})`);
+			return;
+		}
+		this.inputQueues[player].push({inputId, type, dir});
+		this.inputQueues[player].sort((a, b) => a.inputId - b.inputId);
+		while (
+			this.inputQueues[player].length > 0 &&
+			this.inputQueues[player][0].inputId === this.lastProcessedInputIds[player] + 1
+		) {
+			const input = this.inputQueues[player].shift()!;
+			this.applyMove(input.type, input.dir, player);
+			this.lastProcessedInputIds[player] = input.inputId;
+			this.board.players[player].lastProcessedInputId = input.inputId;
+		}
+		if (this.inputQueues[player].length > 20)
+			console.warn(`[Game] Input queue for player ${player} has ${this.inputQueues[player].length} pending inputs - possible packet loss`);
 	}
+	
 	setBall(x: number, y: number) {
 		this.board.setBallPos(x, y);
 	}
@@ -172,17 +205,16 @@ export default class Game {
 			to: "pong",
 			body: {
 				ball: {
-					...this.board.getBallData(),
-					speed: (this.board.getBallSpeed() * 3.6).toFixed(2),
+					x: this.board.getBallData().x,
+					y: this.board.getBallData().y,
 				},
 				players: this.board.getPlayersData(),
-				bonuses: {
-					count: this.board.bonus.length,
-					bonuses: this.board.getBonusData(),
-				},
+				bonuses: this.board.getBonusData(),
+				timestamp: Date.now()
 			},
 		};
 	}
+	shouldSend: boolean = true;
 	private gameLoop(): void {
 		const now = performance.now();
 		let deltaTime = ((now - this.prevTime) / 1000) * GAMESPEED;
@@ -196,8 +228,11 @@ export default class Game {
 		}
 		this.board.update(deltaTime);
 		this.elaspedTime += deltaTime;
-		const data = this.getData();
-		this.send(JSON.stringify(data));
+		if (this.shouldSend) {
+			const data = this.getData();
+			this.send(JSON.stringify(data));
+		}
+		this.shouldSend = !this.shouldSend;
 		const elapsed = performance.now() - now;
 		const delay = Math.max(0, Game.TICK_RATE - elapsed);
 		this.timeoutId = setTimeout(() => this.gameLoop(), delay);

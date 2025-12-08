@@ -17,11 +17,6 @@ interface User {
 	wins?: number;
 	losses?: number;
 	created_at?: string;
-	cosmetics: {
-		preferredSide: string;
-		paddleColor: string;
-		ballColor: string;
-	};
 }
 
 interface UserContextType {
@@ -149,11 +144,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 					avatar: "",
 					wins: 0,
 					losses: 0,
-					cosmetics: {
-						preferredSide: "left",
-						paddleColor: "White",
-						ballColor: "White",
-					},
 				});
 			}
 		},
@@ -183,11 +173,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 					avatar: "",
 					wins: 0,
 					losses: 0,
-					cosmetics: {
-						preferredSide: "left",
-						paddleColor: "White",
-						ballColor: "White",
-					},
 				});
 			} catch {
 				setUser({
@@ -198,11 +183,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 					avatar: "",
 					wins: 0,
 					losses: 0,
-					cosmetics: {
-						preferredSide: "left",
-						paddleColor: "White",
-						ballColor: "White",
-					},
 				});
 			}
 			setIsLoading(false);

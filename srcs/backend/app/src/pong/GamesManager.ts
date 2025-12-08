@@ -1,10 +1,10 @@
-import Game from "./Game.ts";
-import type { difficulty } from "./Player.ts";
-import plotRewards from "./chart.ts";
-import Tournament from "./Tournament.ts";
-import type { Client } from "../plugins/websockets.ts";
-import InvitManager from "./InvitManager.ts";
-import type { Invitation } from "./InvitManager.ts";
+import Game from './Game.js';
+import type { difficulty } from './Player.js';
+import plotRewards from './chart.js';
+import Tournament from './Tournament.js';
+import type { Client } from '../plugins/websockets.js';
+import InvitManager from './InvitManager.js';
+import type { Invitation } from './InvitManager.js';
 
 export default class GamesManager {
 	private tournaments: Record<string, Tournament> = {};
@@ -155,9 +155,7 @@ export default class GamesManager {
 		size: number,
 		passwd: string,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	): boolean {
 		if (this.tournaments[id]) {
@@ -268,9 +266,7 @@ export default class GamesManager {
 		client: Client,
 		diff: difficulty | null,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	): boolean {
 		const game = new Game({
@@ -321,6 +317,14 @@ export default class GamesManager {
 			options,
 		});
 		this.setRoom(client, game);
+		this.broadcastPlayersInfo(game, [client], "offline", diff);
+		client.socket?.send(
+			JSON.stringify({
+				event: "countdown",
+				to: "pong",
+				body: { remaining: 0 },
+			})
+		);
 		game.start();
 		return diff === null;
 	}
@@ -329,9 +333,7 @@ export default class GamesManager {
 		client: Client,
 		friend: Client,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	) {
 		if (this.getRoom(client) || this.getRoom(friend)) {
@@ -370,9 +372,7 @@ export default class GamesManager {
 		receiv: Client,
 		invitationId?: string,
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		}
 	) {
 		const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
@@ -471,7 +471,8 @@ export default class GamesManager {
 	private broadcastPlayersInfo(
 		game: Game,
 		clients: (Client | undefined)[],
-		sessionType: string
+		sessionType: string,
+		botDiff?: string | null
 	) {
 		const anyClient = clients.find((c) => !!c);
 		let tournamentDepth: number | undefined = undefined;
@@ -484,9 +485,20 @@ export default class GamesManager {
 		}
 		for (const client of clients) {
 			if (!client?.socket) continue;
-			const opponent = game.getOpp(client)?.name ?? "Opponent";
-			const opponentPaddleColor =
-				game.getOpp(client)?.cosmetics?.paddleColor ?? "#ffffff";
+			let opponent = game.getOpp(client)?.name ?? "Opponent";
+			let selfLabel = `${client.name} (You)`;
+
+			if (sessionType === "offline") {
+				if (botDiff) {
+					opponent = `Bot (${
+						botDiff.charAt(0).toUpperCase() + botDiff.slice(1)
+					})`;
+				} else {
+					selfLabel = "Player 1";
+					opponent = "Player 2";
+				}
+			}
+
 			client.socket.send(
 				JSON.stringify({
 					event: "game_session_ready",
@@ -496,9 +508,8 @@ export default class GamesManager {
 							game.clients[1]?.id ?? ""
 						}`,
 						sessionType,
-						opponentPaddleColor,
 						side: client.inGameId ?? null,
-						labels: { self: `${client.name} (You)`, opponent },
+						labels: { self: selfLabel, opponent },
 						...(tournamentDepth !== undefined
 							? { tournamentDepth }
 							: {}),

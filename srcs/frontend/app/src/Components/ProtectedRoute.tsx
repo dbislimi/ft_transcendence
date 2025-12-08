@@ -1,6 +1,6 @@
 import { useUser } from "../contexts/UserContext";
-import { Navigate } from "react-router-dom";
-import { Outlet } from "react-router-dom";
+import { Navigate } from "react-router";
+import { Outlet } from "react-router";
 import { useTranslation } from "react-i18next";
 
 export default function ProtectedRoute() {

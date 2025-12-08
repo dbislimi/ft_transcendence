@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
-import { verifyToken } from "../utils/auth.ts";
+import { verifyToken } from '../utils/auth.js';
 import bcrypt from "bcrypt";
 import { promisify } from "util";
 
@@ -11,7 +11,9 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 	fastify.get("/me", async (request, reply) => {
 		const decoded = verifyToken(request, reply);
 		if (!decoded) {
-			return reply.code(401).send({ error: "Token invalide ou manquant" });
+			return reply
+				.code(401)
+				.send({ error: "Token invalide ou manquant" });
 		}
 		await dbRun("UPDATE users SET online = 1 WHERE id = ?", [decoded.id]);
 		const user = await dbGet(
@@ -21,28 +23,17 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (!user)
 			return reply.code(404).send({ error: "Utilisateur introuvable" });
 		if (!user.avatar) user.avatar = "/avatars/avatar1.webp";
-		user.cosmetics = {
-			preferredSide: "left",
-			paddleColor: "White",
-			ballColor: "White",
-		};
 		return reply.send(user);
 	});
 
 	fastify.put("/me", async (request, reply) => {
 		const decoded = verifyToken(request, reply);
 		if (!decoded) {
-			return reply.code(401).send({ error: "Token invalide ou manquant" });
+			return reply
+				.code(401)
+				.send({ error: "Token invalide ou manquant" });
 		}
-		const {
-			email,
-			password,
-			display_name,
-			avatar,
-			preferredSide,
-			paddleColor,
-			ballColor,
-		} = request.body as any;
+		const { email, password, display_name, avatar } = request.body as any;
 		const updates: string[] = [];
 		const values: any[] = [];
 
@@ -62,12 +53,15 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 					[email.trim(), decoded.id]
 				);
 				if (existing)
-					return reply.code(409).send({ error: "Email dejà utilise" });
+					return reply
+						.code(409)
+						.send({ error: "Email dejà utilise" });
 				updates.push("email = ?");
 				values.push(email.trim());
 				updates.push("twoFAEnabled = 0");
 			}
-		} if (password && password.trim() !== "") {
+		}
+		if (password && password.trim() !== "") {
 			const passwordRegex =
 				/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 			if (!passwordRegex.test(password))
@@ -76,7 +70,6 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 			updates.push("password = ?");
 			values.push(hashedPassword);
 		}
-		
 
 		if (display_name && display_name.trim() !== "") {
 			const displayNameRegex = /^[a-zA-Z0-9-]+$/;
@@ -95,33 +88,6 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 		if (avatar && avatar.trim() !== "") {
 			updates.push("avatar = ?");
 			values.push(avatar.trim());
-		}
-
-		if (
-			preferredSide &&
-			(preferredSide === "left" || preferredSide === "right")
-		) {
-			updates.push("preferred_side = ?");
-			values.push(preferredSide);
-		}
-
-		const validColors = [
-			"Cyan",
-			"Emerald",
-			"Rose",
-			"Blue",
-			"Amber",
-			"White",
-		];
-
-		if (paddleColor && validColors.includes(paddleColor)) {
-			updates.push("paddle_color = ?");
-			values.push(paddleColor);
-		}
-
-		if (ballColor && validColors.includes(ballColor)) {
-			updates.push("ball_color = ?");
-			values.push(ballColor);
 		}
 
 		if (updates.length === 0)
@@ -177,7 +143,7 @@ export default fp(async function userPlugin(fastify: FastifyInstance) {
 						}
 					);
 				}
-			} catch (err) { }
+			} catch (err) {}
 
 			return reply.send({ success: true });
 		}

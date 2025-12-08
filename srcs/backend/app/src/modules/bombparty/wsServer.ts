@@ -1,238 +1,275 @@
-import WebSocket from 'ws';
-import { ErrorCode } from './types.ts';
-import type { TypedError } from './types.ts';
-import { bombPartyLogger } from './log.ts';
+import { ErrorCode } from "./types.js";
+import type { TypedError } from "./types.js";
+import { bombPartyLogger } from "./log.js";
 
 export interface WSConnection {
-  socket: WebSocket;
-  playerId?: string;
-  roomId?: string;
-  userId?: number; // JWT user ID
-  lastPong: number;
-  heartbeatInterval?: NodeJS.Timeout;
-  messageCounts?: Map<string, { count: number; resetAt: number }>;
+	socket: any;
+	playerId?: string;
+	roomId?: string;
+	userId?: number; // JWT user ID
+	lastPong: number;
+	heartbeatInterval?: NodeJS.Timeout;
+	messageCounts?: Map<string, { count: number; resetAt: number }>;
 }
 
 export class BombPartyWSServer {
-  private connections = new Map<WebSocket, WSConnection>();
-  private userToPlayerId = new Map<number, string>();
-  private readonly PING_INTERVAL = 25000; // aligne avec frontend 20s + marge
-  private readonly PONG_TIMEOUT = 15000;
+	private connections = new Map<any, WSConnection>();
+	private userToPlayerId = new Map<number, string>();
+	private readonly PING_INTERVAL = 25000; // aligne avec frontend 20s + marge
+	private readonly PONG_TIMEOUT = 15000;
 
-  constructor() {
-    this.startHeartbeatInterval();
-  }
+	constructor() {
+		this.startHeartbeatInterval();
+	}
 
-  private startHeartbeatInterval(): void {
-    setInterval(() => {
-      this.sendPingToAll();
-    }, this.PING_INTERVAL);
-  }
+	private startHeartbeatInterval(): void {
+		setInterval(() => {
+			this.sendPingToAll();
+		}, this.PING_INTERVAL);
+	}
 
-  private sendPingToAll(): void {
-    const now = Date.now();
-    
-    for (const [socket, connection] of this.connections) {
-      if (socket.readyState === WebSocket.OPEN) {
-        try {
-          socket.ping();
-          bombPartyLogger.debug({ 
-            playerId: connection.playerId,
-            lastPong: connection.lastPong,
-            timeSinceLastPong: now - connection.lastPong
-          }, 'Ping sent');
-        } catch (error) {
-          bombPartyLogger.error({ error }, 'Ping error');
-          this.closeConnection(socket, 'PING_ERROR');
-        }
-      }
-    }
+	private sendPingToAll(): void {
+		const now = Date.now();
 
-    setTimeout(() => {
-      this.checkPongTimeouts();
-    }, this.PONG_TIMEOUT);
-  }
+		for (const [socket, connection] of this.connections) {
+			if (socket.readyState === 1) {
+				try {
+					socket.ping();
+					bombPartyLogger.debug(
+						{
+							playerId: connection.playerId,
+							lastPong: connection.lastPong,
+							timeSinceLastPong: now - connection.lastPong,
+						},
+						"Ping sent"
+					);
+				} catch (error) {
+					bombPartyLogger.error({ error }, "Ping error");
+					this.closeConnection(socket, "PING_ERROR");
+				}
+			}
+		}
 
-  private checkPongTimeouts(): void {
-    const now = Date.now();
-    
-    for (const [socket, connection] of this.connections) {
-      if (socket.readyState === WebSocket.OPEN) {
-        const timeSinceLastPong = now - connection.lastPong;
-        if (timeSinceLastPong > this.PONG_TIMEOUT) {
-          bombPartyLogger.warn({ 
-            playerId: connection.playerId, 
-            timeSinceLastPong 
-          }, 'Pong timeout, closing connection');
-          this.closeConnection(socket, 'PONG_TIMEOUT');
-        }
-      }
-    }
-  }
+		setTimeout(() => {
+			this.checkPongTimeouts();
+		}, this.PONG_TIMEOUT);
+	}
 
-  registerConnection(socket: WebSocket, playerId?: string, roomId?: string, userId?: number): void {
-    const connection: WSConnection = {
-      socket,
-      playerId,
-      roomId,
-      userId,
-      lastPong: Date.now(),
-      messageCounts: new Map()
-    };
+	private checkPongTimeouts(): void {
+		const now = Date.now();
 
-    this.connections.set(socket, connection);
+		for (const [socket, connection] of this.connections) {
+			if (socket.readyState === 1) {
+				const timeSinceLastPong = now - connection.lastPong;
+				if (timeSinceLastPong > this.PONG_TIMEOUT) {
+					bombPartyLogger.warn(
+						{
+							playerId: connection.playerId,
+							timeSinceLastPong,
+						},
+						"Pong timeout, closing connection"
+					);
+					this.closeConnection(socket, "PONG_TIMEOUT");
+				}
+			}
+		}
+	}
 
-    socket.on('pong', () => {
-      const conn = this.connections.get(socket);
-      if (conn) {
-        const now = Date.now();
-        conn.lastPong = now;
-        bombPartyLogger.debug({ 
-          playerId: conn.playerId,
-          pongReceived: now
-        }, 'Pong received');
-      }
-    });
+	registerConnection(
+		socket: any,
+		playerId?: string,
+		roomId?: string,
+		userId?: number
+	): void {
+		const connection: WSConnection = {
+			socket,
+			playerId,
+			roomId,
+			userId,
+			lastPong: Date.now(),
+			messageCounts: new Map(),
+		};
 
-    socket.on('close', () => {
-      this.connections.delete(socket);
-    });
+		this.connections.set(socket, connection);
 
-    socket.on('error', (error) => {
-      bombPartyLogger.error({ error }, 'WebSocket error');
-      this.connections.delete(socket);
-    });
-  }
+		socket.on("pong", () => {
+			const conn = this.connections.get(socket);
+			if (conn) {
+				const now = Date.now();
+				conn.lastPong = now;
+				bombPartyLogger.debug(
+					{
+						playerId: conn.playerId,
+						pongReceived: now,
+					},
+					"Pong received"
+				);
+			}
+		});
 
-  updateConnection(socket: WebSocket, playerId?: string, roomId?: string, userId?: number): void {
-    const connection = this.connections.get(socket);
-    if (connection) {
-      connection.playerId = playerId;
-      connection.roomId = roomId;
-      if (userId !== undefined) {
-        connection.userId = userId;
-      }
+		socket.on("close", () => {
+			this.connections.delete(socket);
+		});
 
-      if (connection.userId !== undefined && connection.playerId) {
-        this.userToPlayerId.set(connection.userId, connection.playerId);
-      }
-    }
-  }
+		socket.on("error", (error) => {
+			bombPartyLogger.error({ error }, "WebSocket error");
+			this.connections.delete(socket);
+		});
+	}
 
-  closeConnection(socket: WebSocket, reason: string): void {
-    const connection = this.connections.get(socket);
-    if (connection) {
-      bombPartyLogger.info({ 
-        playerId: connection.playerId, 
-        roomId: connection.roomId, 
-        reason 
-      }, 'Closing connection');
-      this.connections.delete(socket);
-      
-      if (connection.heartbeatInterval) {
-        clearInterval(connection.heartbeatInterval);
-      }
-      
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close(1008, reason); // 1008 = Policy Violation
-      }
-    }
-  }
+	updateConnection(
+		socket: any,
+		playerId?: string,
+		roomId?: string,
+		userId?: number
+	): void {
+		const connection = this.connections.get(socket);
+		if (connection) {
+			connection.playerId = playerId;
+			connection.roomId = roomId;
+			if (userId !== undefined) {
+				connection.userId = userId;
+			}
 
-  getPlayerIdForUser(userId: number): string | undefined {
-    return this.userToPlayerId.get(userId);
-  }
+			if (connection.userId !== undefined && connection.playerId) {
+				this.userToPlayerId.set(connection.userId, connection.playerId);
+			}
+		}
+	}
 
-  setPlayerIdForUser(userId: number, playerId: string): void {
-    this.userToPlayerId.set(userId, playerId);
-  }
+	closeConnection(socket: any, reason: string): void {
+		const connection = this.connections.get(socket);
+		if (connection) {
+			bombPartyLogger.info(
+				{
+					playerId: connection.playerId,
+					roomId: connection.roomId,
+					reason,
+				},
+				"Closing connection"
+			);
+			this.connections.delete(socket);
 
-  sendError(socket: WebSocket, error: string, code: ErrorCode = ErrorCode.STATE_ERROR): void {
-    const message: TypedError = {
-      t: 'error',
-      code,
-      msg: error
-    };
-    
-    try {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(message));
-      }
-    } catch (err) {
-      bombPartyLogger.error({ error: err }, 'Error sending error message');
-    }
-  }
+			if (connection.heartbeatInterval) {
+				clearInterval(connection.heartbeatInterval);
+			}
 
-  sendMessage(socket: WebSocket, message: any): void {
-    try {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(message));
-      }
-    } catch (err) {
-      bombPartyLogger.error({ error: err }, 'Error sending message');
-    }
-  }
+			if (socket.readyState === 1) {
+				socket.close(1008, reason); // 1008 = Policy Violation
+			}
+		}
+	}
 
-  checkRateLimit(
-    socket: WebSocket, 
-    messageType: string, 
-    maxMessages: number = 10, 
-    windowMs: number = 2000
-  ): boolean {
-    const connection = this.connections.get(socket);
-    if (!connection) return false;
+	getPlayerIdForUser(userId: number): string | undefined {
+		return this.userToPlayerId.get(userId);
+	}
 
-    if (!connection.messageCounts) {
-      connection.messageCounts = new Map();
-    }
+	setPlayerIdForUser(userId: number, playerId: string): void {
+		this.userToPlayerId.set(userId, playerId);
+	}
 
-    const now = Date.now();
-    const countInfo = connection.messageCounts.get(messageType);
-    
-    if (!countInfo || now >= countInfo.resetAt) {
-      connection.messageCounts.set(messageType, { count: 1, resetAt: now + windowMs });
-      return true;
-    }
+	sendError(
+		socket: any,
+		error: string,
+		code: ErrorCode = ErrorCode.STATE_ERROR
+	): void {
+		const message: TypedError = {
+			t: "error",
+			code,
+			msg: error,
+		};
 
-    if (countInfo.count >= maxMessages) {
-      bombPartyLogger.warn({ 
-        playerId: connection.playerId, 
-        messageType, 
-        count: countInfo.count 
-      }, 'Rate limit exceeded');
-      return false;
-    }
+		try {
+			if (socket.readyState === 1) {
+				socket.send(JSON.stringify(message));
+			}
+		} catch (err) {
+			bombPartyLogger.error(
+				{ error: err },
+				"Error sending error message"
+			);
+		}
+	}
 
-    countInfo.count++;
-    return true;
-  }
+	sendMessage(socket: any, message: any): void {
+		try {
+			if (socket.readyState === 1) {
+				socket.send(JSON.stringify(message));
+			}
+		} catch (err) {
+			bombPartyLogger.error({ error: err }, "Error sending message");
+		}
+	}
 
-  broadcastToAll(message: any): void {
-    for (const [socket] of this.connections) {
-      this.sendMessage(socket, message);
-    }
-  }
+	checkRateLimit(
+		socket: any,
+		messageType: string,
+		maxMessages: number = 10,
+		windowMs: number = 2000
+	): boolean {
+		const connection = this.connections.get(socket);
+		if (!connection) return false;
 
-  broadcastToPlayers(playerIds: string[], message: any): void {
-    for (const [socket, connection] of this.connections) {
-      if (connection.playerId && playerIds.includes(connection.playerId)) {
-        this.sendMessage(socket, message);
-      }
-    }
-  }
+		if (!connection.messageCounts) {
+			connection.messageCounts = new Map();
+		}
 
-  getConnection(socket: WebSocket): WSConnection | undefined {
-    return this.connections.get(socket);
-  }
+		const now = Date.now();
+		const countInfo = connection.messageCounts.get(messageType);
 
-  getAllConnections(): WSConnection[] {
-    return Array.from(this.connections.values());
-  }
+		if (!countInfo || now >= countInfo.resetAt) {
+			connection.messageCounts.set(messageType, {
+				count: 1,
+				resetAt: now + windowMs,
+			});
+			return true;
+		}
 
-  cleanup(): void {
-    for (const [socket] of this.connections) {
-      this.closeConnection(socket, 'SERVER_SHUTDOWN');
-    }
-    this.connections.clear();
-  }
+		if (countInfo.count >= maxMessages) {
+			bombPartyLogger.warn(
+				{
+					playerId: connection.playerId,
+					messageType,
+					count: countInfo.count,
+				},
+				"Rate limit exceeded"
+			);
+			return false;
+		}
+
+		countInfo.count++;
+		return true;
+	}
+
+	broadcastToAll(message: any): void {
+		for (const [socket] of this.connections) {
+			this.sendMessage(socket, message);
+		}
+	}
+
+	broadcastToPlayers(playerIds: string[], message: any): void {
+		for (const [socket, connection] of this.connections) {
+			if (
+				connection.playerId &&
+				playerIds.includes(connection.playerId)
+			) {
+				this.sendMessage(socket, message);
+			}
+		}
+	}
+
+	getConnection(socket: any): WSConnection | undefined {
+		return this.connections.get(socket);
+	}
+
+	getAllConnections(): WSConnection[] {
+		return Array.from(this.connections.values());
+	}
+
+	cleanup(): void {
+		for (const [socket] of this.connections) {
+			this.closeConnection(socket, "SERVER_SHUTDOWN");
+		}
+		this.connections.clear();
+	}
 }

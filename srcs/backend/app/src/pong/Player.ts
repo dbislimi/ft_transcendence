@@ -1,5 +1,5 @@
-import Board from "./Board.ts";
-import { BonusBase as Bonus } from "./Bonus.ts";
+import Board from './Board.js';
+import { BonusBase as Bonus } from './Bonus.js';
 
 export type difficulty = "easy" | "medium" | "hard" | "impossible";
 
@@ -16,6 +16,7 @@ export default class Player {
 	readonly id: 0 | 1;
 	ActiveBonus: Bonus[] = [];
 	bonusCollectedTotal: number = 0;
+	lastProcessedInputId: number = -1;
 
 	constructor(field: Board, id: 0 | 1, speed?: number) {
 		this.boardHeight = field.H;
@@ -35,8 +36,8 @@ export default class Player {
 		this.movingDown = state;
 	}
 
-	getData(): { size: number; y: number } {
-		return { size: this.size, y: this.y };
+	getData(): { size: number; y: number, lastProcessedInputId: number, movingUp: boolean, movingDown: boolean } {
+		return { size: this.size, y: this.y, lastProcessedInputId: this.lastProcessedInputId, movingUp: this.movingUp, movingDown: this.movingDown };
 	}
 	reset() {
 		//this.bot = undefined;

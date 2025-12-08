@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { validateWithDictionarySync, validateLocal, getWordSuggestionsSync } from '../../modules/bombparty/validator.ts';
+import { validateWithDictionarySync, validateLocal, getWordSuggestionsSync } from '../../modules/bombparty/validator.js';
 
 describe('BombParty Validator', () => {
   describe('validateWithDictionarySync', () => {

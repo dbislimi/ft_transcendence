@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useWebSocket } from "../contexts/WebSocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useGameSession } from "../contexts/GameSessionContext";
 import { useTranslation } from "react-i18next";
 
@@ -59,9 +59,9 @@ export default function RealtimeNotifications() {
 	useEffect(() => {
 		const onSessionReady = (data: any) => {
 			if (!data || data.event !== "game_session_ready") return;
+			console.log(data);
 			const body = data.body || {};
 			setSession(body);
-			if (location.pathname !== "/pong") navigate("/pong");
 			if (location.pathname !== "/pong") navigate("/pong");
 		};
 		addPongRoute("game_session", onSessionReady);

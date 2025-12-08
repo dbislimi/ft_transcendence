@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useWebSocket } from "../contexts/WebSocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useUser } from "../contexts/UserContext";
 
 export default function ChatWidget() {
@@ -15,7 +15,12 @@ export default function ChatWidget() {
   const [view, setView] = useState<"chat" | "users">("chat");
   const [target, setTarget] = useState<number | null>(null);
 
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; userId: number; userName: string } | null>(null);
+	const [contextMenu, setContextMenu] = useState<{
+		x: number;
+		y: number;
+		userId: number;
+		userName: string;
+	} | null>(null);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,21 +71,25 @@ export default function ChatWidget() {
     }
   };
 
-  const handleContextMenu = (e: React.MouseEvent, userId: number, userName: string) => {
-    e.preventDefault();
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      userId: userId,
-      userName: userName
-    });
-  };
+	const handleContextMenu = (
+		e: React.MouseEvent,
+		userId: number,
+		userName: string
+	) => {
+		e.preventDefault();
+		setContextMenu({
+			x: e.clientX,
+			y: e.clientY,
+			userId: userId,
+			userName: userName,
+		});
+	};
 
-  const goToProfile = (userId: number) => {
-    navigate(`/user/${userId}`);
-    setOpen(false);
-    setContextMenu(null);
-  };
+	const goToProfile = (userId: number) => {
+		navigate(`/user/${userId}`);
+		setOpen(false);
+		setContextMenu(null);
+	};
 
   return (
     <div className="fixed bottom-4 left-4 z-50">

@@ -1,6 +1,6 @@
-import Game from "./Game.ts";
-import type { Client } from "../plugins/websockets.ts";
-import { sendTournamentMessage } from "../plugins/chat.ts";
+import Game from './Game.js';
+import type { Client } from '../plugins/websockets.js';
+import { sendTournamentMessage } from '../plugins/chat.js';
 
 class Node {
 	game?: Game;
@@ -54,9 +54,7 @@ export default class Tournament {
 	private cancelCountdown: (game: Game) => void;
 	private fastify: any;
 	private options?: {
-		bonusNb?: number;
-		bonusTypes?: string[];
-		playerSpeed?: number;
+		bonus?: boolean;
 	};
 
 	constructor({
@@ -81,9 +79,7 @@ export default class Tournament {
 		setRoom: (client: Client, game: Game) => void;
 		fastify?: any;
 		options?: {
-			bonusNb?: number;
-			bonusTypes?: string[];
-			playerSpeed?: number;
+			bonus?: boolean;
 		};
 	}) {
 		this.rooms = rooms;

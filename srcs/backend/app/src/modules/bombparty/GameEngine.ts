@@ -5,7 +5,7 @@ import type {
   BonusKey, 
   TurnStartedEvent,
   GameStateSyncEvent
-} from './types.ts';
+} from './types.js';
 import {
   getInitialState,
   createGamePlayers,
@@ -14,7 +14,7 @@ import {
   getWinner,
   getCurrentPlayer,
   getAlivePlayersCount
-} from './engine/index.ts';
+} from './engine/index.js';
 import {
   startCountdown,
   startTurn,
@@ -22,16 +22,16 @@ import {
   nextPlayer,
   isTurnExpired,
   checkAndEndExpiredTurn
-} from './engine/index.ts';
+} from './engine/index.js';
 import {
   submitWord,
   giveRandomBonus
-} from './engine/index.ts';
+} from './engine/index.js';
 import {
   getTurnDurationForCurrentPlayer,
   activateBonus
-} from './engine/index.ts';
-import { getRandomSyllable } from './syllableSelector.ts';
+} from './engine/index.js';
+import { getRandomSyllable } from './syllableSelector.js';
 
 export class BombPartyEngine {
   private state: GameState;

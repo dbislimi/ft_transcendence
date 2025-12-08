@@ -197,6 +197,12 @@ export class BombPartyService {
   }
 
   private connect(): void {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      logger.debug('No token found (guest), skipping BombParty WebSocket connection', { connectionId: this.connectionId });
+      return;
+    }
+
     if (this.isConnecting) {
       logger.warn('Connection already in progress, ignoring duplicate request', {
         connectionId: this.connectionId,

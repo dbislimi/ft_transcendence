@@ -1,7 +1,6 @@
-import { Children, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./i18n";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import "./index.css";
 import * as pages from "./pages";
 import Layout from "./Components/Layout";
@@ -29,7 +28,10 @@ const router = createBrowserRouter(
 							path: "/profile/:name",
 							element: <pages.ProfileChat />,
 						},
-						{ path: "/user/:userId", element: <pages.UserProfile /> },
+						{
+							path: "/user/:userId",
+							element: <pages.UserProfile />,
+						},
 						{ path: "/stats", element: <pages.StatsPage /> },
 						{
 							path: "/stats/bombparty",
@@ -54,17 +56,7 @@ const router = createBrowserRouter(
 				{ path: "*", element: <pages.NotFoundPage /> },
 			],
 		},
-	],
-	{
-		future: {
-			v7_startTransition: true,
-			v7_relativeSplatPath: true,
-			v7_fetcherPersist: true,
-			v7_normalizeFormMethod: true,
-			v7_partialHydration: true,
-			v7_skipActionErrorRevalidation: true,
-		},
-	}
+	]
 );
 
 createRoot(document.getElementById("root")!).render(
