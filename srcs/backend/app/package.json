@@ -7,7 +7,7 @@
 	"scripts": {
 		"test": "jest",
 		"test:watch": "jest --watch",
-		"build": "tsc -p tsconfig.json",
+		"build": "tsc -p tsconfig.json && mkdir -p dist/modules/bombparty/data && cp -r src/modules/bombparty/data/* dist/modules/bombparty/data/",
 		"start": "node --no-deprecation dist/server.js",
 		"dev": "tsx watch src/server.ts"
 	},

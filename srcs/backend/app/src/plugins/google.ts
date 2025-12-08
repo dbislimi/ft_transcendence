@@ -12,11 +12,6 @@ if (!JWT_SECRET) {
 }
 const HOSTNAME = process.env.HOSTNAME || "localhost";
 
-interface GoogleUserInfo {
-	email: string;
-	name: string;
-}
-
 export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 	fastify.register(fastifyOauth2, {
 		name: "transcendance",
@@ -35,7 +30,7 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 	});
 
 	fastify.get("/auth/google/callback", async function (req, reply) {
-		const query = req.query as any;
+		const query = req.query as { code?: string };
 		if (!query.code) {
 			return reply.send("Erreur : code manquant depuis Google");
 		}
@@ -48,10 +43,9 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 				);
 		} catch (err) {
 			console.error("[Google Callback] Token Exchange Error:", err);
-			// Clear the state cookie and redirect to login or show a clear error
-			//reply.clearCookie('oauth2-redirect-state', { path: '/' });
 			return reply.code(400).send({
-				error: "Session expiree ou invalide. Veuillez reessayer de vous connecter.",
+				error:
+					"Session expiree ou invalide. Veuillez reessayer de vous connecter.",
 			});
 		}
 
@@ -62,16 +56,15 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 					Authorization: "Bearer " + result.token.access_token,
 				},
 			}
-		).then((res) => res.json())) as GoogleUserInfo;
+		).then((res) => res.json())) as { email: string; name: string };
 		const { email, name } = userInfo;
-
-    let result;
-    try {
-      result = await fastify.transcendance.getAccessTokenFromAuthorizationCodeFlow(req);
-    } catch (err) {
-      console.error('[Google Callback] Token Exchange Error:', err);
-      return reply.code(400).send({ error: "Session expiree ou invalide. Veuillez reessayer de vous connecter." });
-    }
+		const db = fastify.db;
+		let user = await new Promise<any>((resolve, reject) => {
+			db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+				if (err) reject(err);
+				else resolve(row);
+			});
+		});
 
 		if (!user) {
 			const lastID = await new Promise<number>((resolve, reject) => {
@@ -80,12 +73,13 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 					Math.random().toString(36).slice(-8);
 
 				db.run(
-					"INSERT INTO users (name, email, password, display_name) VALUES (?, ?, ?, ?)",
+					"INSERT INTO users (name, email, password, display_name, avatar) VALUES (?, ?, ?, ?, ?)",
 					[
 						userInfo.name,
 						userInfo.email,
 						dummyPassword,
 						userInfo.name,
+						"/avatars/avatar1.png",
 					],
 					function (err) {
 						if (err) reject(err);
@@ -94,27 +88,28 @@ export default fp(async function GoogleAuth(fastify: FastifyInstance) {
 				);
 			});
 
-			user = { id: lastID, name, email };
+			user = { id: lastID, name, email, display_name: userInfo.name };
 		}
 		if (user.twoFAEnabled === 1) {
 			const otp = fastify.generateOtp();
 
-        db.run(
-          'INSERT INTO users (name, email, password, display_name, avatar) VALUES (?, ?, ?, ?, ?)',
-          [userInfo.name, userInfo.email, dummyPassword, userInfo.name, '/avatars/avatar1.png'],
-          function (err) {
-            if (err)
-              reject(err);
-            else
-              resolve(this.lastID);
-          }
-        );
-      });
+			await new Promise<void>((resolve, reject) => {
+				db.run(
+					"UPDATE users SET twoFAOtp = ? WHERE id = ?",
+					[otp, user.id],
+					(err: any) => {
+						if (err) reject(err);
+						else resolve();
+					}
+				);
+			});
 
-      user = { id: lastID, name, email, display_name: userInfo.name };
-    }
-    if (user.twoFAEnabled === 1) {
-      const otp = fastify.generateOtp();
+			const emailSent = await fastify.send2faEmail(user.email, otp);
+			if (!emailSent) {
+				return reply
+					.code(500)
+					.send({ error: "Erreur lors de l'envoi de l'e-mail" });
+			}
 
 			return reply.redirect(
 				`https://${HOSTNAME}:8443/google-callback?require2fa=${user.twoFAEnabled}&userId=${user.id}`
