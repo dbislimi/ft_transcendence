@@ -403,7 +403,8 @@
       "waitingForGame": "Esperando a que comience el juego",
       "errors": {
         "tooShort": "La palabra debe tener al menos 3 letras",
-        "duplicate": "Palabra ya utilizada"
+        "duplicate": "Palabra ya utilizada",
+        "missingSyllable": "La palabra debe contener la sílaba requerida"
       }
     },
     "difficulty": {

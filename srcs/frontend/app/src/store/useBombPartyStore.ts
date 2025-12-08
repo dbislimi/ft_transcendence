@@ -192,7 +192,7 @@ const initialConnectionState: ConnectionState = {
 	isHost: false,
 	lobbyPlayers: [],
 	lobbyMaxPlayers: 4,
-	isAuthenticating: true,
+	isAuthenticating: false,
 	reconnectAttempts: 0,
 	lastError: null,
 };

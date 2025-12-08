@@ -5,74 +5,80 @@ import type { BombPartyClient } from '../../services/ws/bombPartyClient';
 import { bombPartyService } from '../../services/bombPartyService';
 
 export interface UseBombPartyLobbyReturn {
-  lobbyPlayers: Array<{id: string; name: string}>;
+  lobbyPlayers: Array<{ id: string; name: string }>;
   isHost: boolean;
   lobbyMaxPlayers: number;
-  setLobbyPlayers: (players: Array<{id: string; name: string}>) => void;
+  setLobbyPlayers: (players: Array<{ id: string; name: string }>) => void;
   setIsHost: (isHost: boolean) => void;
   setLobbyMaxPlayers: (max: number) => void;
   handleLobbyCreate: (meta: { name: string; isPrivate: boolean; password?: string; maxPlayers: number; }, client?: any) => void;
   handleLobbyJoin: (roomId: string, password: string | undefined, client?: any) => void;
   handleLeaveLobby: (roomId: string | null, client: BombPartyClient) => void;
-  handleStartGame: (roomId: string | null, isHost: boolean, lobbyPlayers: Array<{id: string; name: string}>, client?: BombPartyClient) => void;
+  handleStartGame: (roomId: string | null, isHost: boolean, lobbyPlayers: Array<{ id: string; name: string }>, client?: BombPartyClient) => void;
 }
 
 export function useBombPartyLobby() {
-  const [lobbyPlayers, setLobbyPlayers] = useState<Array<{id: string; name: string}>>([]);
+  const [lobbyPlayers, setLobbyPlayers] = useState<Array<{ id: string; name: string }>>([]);
   const [isHost, setIsHost] = useState(false);
   const [lobbyMaxPlayers, setLobbyMaxPlayers] = useState(4);
   const startingGameRef = useRef(false);
-  
+
   const setGamePhase = useBombPartyStore((state) => state.setGamePhase);
   const playerId = useBombPartyStore((state) => state.connection.playerId);
   const isAuthenticating = useBombPartyStore((state) => state.connection.isAuthenticating);
   const connectionState = useBombPartyStore((state) => state.connection.state);
 
   const handleLobbyCreate = useCallback((meta: { name: string; isPrivate: boolean; password?: string; maxPlayers: number; }, client?: any) => {
-    logger.info('handleLobbyCreate appele', { 
-      maxPlayers: meta.maxPlayers, 
+    logger.info('handleLobbyCreate appele', {
+      maxPlayers: meta.maxPlayers,
       name: meta.name,
       isPrivate: meta.isPrivate,
       playerId,
       isAuthenticating,
       connectionState
     });
-    
+
     if (!playerId || isAuthenticating) {
-      logger.warn('Impossible de creer le lobby: non authentifie', { 
-        playerId, 
+      logger.warn('Impossible de créer le lobby: non authentifié', {
+        playerId,
         isAuthenticating,
-        connectionState 
+        connectionState
       });
-      useBombPartyStore.getState().setLastError('Vous devez être connecte pour creer un lobby');
+
+      // 🔧 FIX: Better error messages based on state
+      if (isAuthenticating) {
+        useBombPartyStore.getState().setLastError('Authentification en cours, veuillez patienter quelques secondes...');
+      } else {
+        useBombPartyStore.getState().setLastError('Vous devez être connecté pour créer un lobby');
+      }
       return;
     }
-    
+
     if (connectionState !== 'connected') {
       logger.warn('Impossible de creer le lobby: connexion non etablie', { connectionState });
       useBombPartyStore.getState().setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
-    
+
     if (!meta.name || meta.name.trim().length === 0) {
       logger.error('Impossible de creer le lobby: nom invalide', undefined, { name: meta.name });
       useBombPartyStore.getState().setLastError('Le nom du lobby ne peut pas être vide');
       return;
     }
-    
+
     if (meta.maxPlayers < 2 || meta.maxPlayers > 12) {
       logger.error('Impossible de creer le lobby: nombre de joueurs invalide', undefined, { maxPlayers: meta.maxPlayers });
       useBombPartyStore.getState().setLastError('Le nombre de joueurs doit être entre 2 et 12');
       return;
     }
-    
-    logger.info('Creation du lobby via bombPartyService', { 
-      name: meta.name, 
-      isPrivate: meta.isPrivate, 
+
+    logger.info('Creation du lobby via bombPartyService', {
+      name: meta.name,
+      isPrivate: meta.isPrivate,
       maxPlayers: meta.maxPlayers,
       playerId
     });
-    
+
     try {
       bombPartyService.createRoom(meta.name, meta.isPrivate, meta.password, meta.maxPlayers);
       logger.info('bombPartyService.createRoom appele avec succes');
@@ -88,21 +94,21 @@ export function useBombPartyLobby() {
       useBombPartyStore.getState().setLastError('Vous devez être connecte pour rejoindre un lobby');
       return;
     }
-    
+
     if (connectionState !== 'connected') {
       logger.warn('Impossible de rejoindre le lobby: connexion non etablie', { connectionState, roomId });
       useBombPartyStore.getState().setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
-    
+
     if (!roomId || roomId.trim().length === 0) {
       logger.error('Impossible de rejoindre le lobby: roomId invalide', undefined, { roomId });
       useBombPartyStore.getState().setLastError('ID de lobby invalide');
       return;
     }
-    
+
     logger.info('Rejoindre le lobby via bombPartyService', { roomId, playerId, hasPassword: !!password });
-    
+
     try {
       bombPartyService.joinRoom(roomId, password);
       logger.info('bombPartyService.joinRoom appele avec succes');
@@ -128,19 +134,19 @@ export function useBombPartyLobby() {
     setIsHost(false);
   }, [setGamePhase]);
 
-  const handleStartGame = useCallback((roomId: string | null, isHost: boolean, lobbyPlayers: Array<{id: string; name: string}>, client?: BombPartyClient) => {
+  const handleStartGame = useCallback((roomId: string | null, isHost: boolean, lobbyPlayers: Array<{ id: string; name: string }>, client?: BombPartyClient) => {
     if (startingGameRef.current) {
       logger.warn('Demarrage dejà en cours, appel ignore');
       return;
     }
-    
+
     logger.debug('Demarrage du jeu demande', {
       roomId,
       isHost,
       playersCount: lobbyPlayers.length,
       players: lobbyPlayers
     });
-    
+
     if (!roomId) {
       logger.error('Impossible de demarrer: pas de roomId', undefined, { isHost, playersCount: lobbyPlayers.length });
       useBombPartyStore.getState().setLastError('Room ID manquant');
@@ -156,30 +162,30 @@ export function useBombPartyLobby() {
       useBombPartyStore.getState().setLastError('Il faut au moins 2 joueurs pour demarrer');
       return;
     }
-    
+
     startingGameRef.current = true;
-    
+
     const store = useBombPartyStore.getState();
     if (store.connection.state !== 'connected') {
       logger.warn('Impossible de demarrer: connexion non etablie', { connectionState: store.connection.state, roomId });
       store.setLastError('Connexion non etablie. Veuillez reessayer.');
       return;
     }
-    
+
     if (store.connection.roomId !== roomId) {
-      logger.warn('RoomId mismatch, mise à jour du store', { 
-        storeRoomId: store.connection.roomId, 
-        providedRoomId: roomId 
+      logger.warn('RoomId mismatch, mise à jour du store', {
+        storeRoomId: store.connection.roomId,
+        providedRoomId: roomId
       });
       store.setRoomId(roomId);
     }
-    
+
     logger.info('Envoi du demarrage au serveur via bombPartyService', { roomId, playersCount: lobbyPlayers.length });
-    
+
     try {
       bombPartyService.startGame();
       logger.info('bombPartyService.startGame appele avec succes');
-      
+
       setTimeout(() => {
         startingGameRef.current = false;
       }, 2000);

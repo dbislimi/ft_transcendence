@@ -427,7 +427,8 @@
       "waitingForGame": "En attente du début de la partie",
       "errors": {
         "tooShort": "Le mot doit contenir au moins 3 lettres",
-        "duplicate": "Ce mot a déjà été utilisé dans cette partie"
+        "duplicate": "Ce mot a déjà été utilisé dans cette partie",
+        "missingSyllable": "Le mot doit contenir la syllabe requise"
       }
     },
     "difficulty": {

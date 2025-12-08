@@ -395,7 +395,8 @@
       "waitingForGame": "Waiting for game to start",
       "errors": {
         "tooShort": "The word must contain at least 3 letters",
-        "duplicate": "This word has already been used in this game"
+        "duplicate": "This word has already been used in this game",
+        "missingSyllable": "The word must contain the required syllable"
       }
     },
     "difficulty": {

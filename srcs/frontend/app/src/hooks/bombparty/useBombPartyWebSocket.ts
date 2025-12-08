@@ -146,6 +146,83 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
 
       logger.debug('Authentification avec le nom', { playerName, userId: user?.id, hasDisplayName: !!user?.display_name });
       client.authenticate(playerName);
+
+      // Set auth timeout only when connection is actually established
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+      
+      const authTimeout = setTimeout(() => {
+        const currentStore = useBombPartyStore.getState();
+        const hasPlayerId = playerIdRef.current !== null;
+        const isInGame = currentStore.gamePhase === 'GAME' && currentStore.gameState?.phase === 'TURN_ACTIVE';
+
+        logger.warn('Authentication timeout check', {
+          isStillAuthenticating: !hasPlayerId,
+          isInGame,
+          hasPlayerId,
+          gamePhase: currentStore.gamePhase
+        });
+
+        if (hasPlayerId) {
+          logger.info('Authentication already succeeded, ignoring timeout');
+          return;
+        }
+
+        const connectionsInfo = wsCoordinator.getConnectionsInfo();
+        const isServicePrimary = connectionsInfo.primaryConnection &&
+          connectionsInfo.allConnections.some(
+            c => c.id === connectionsInfo.primaryConnection && c.type === 'bombPartyService'
+          );
+
+        if (isInGame) {
+          logger.warn('Game in progress, not resetting auth - will retry later');
+          setTimeout(() => {
+            if (playerIdRef.current === null) {
+              const retryPlayerName = user?.id 
+                ? (user?.display_name || user?.name || `User_${user.id}`)
+                : `Guest_${Math.floor(Math.random() * 1000)}`;
+              if (isServicePrimary) {
+                bombPartyService.authenticateWithName(retryPlayerName);
+              } else {
+                logger.warn('BombPartyService not primary, skipping authentication retry');
+              }
+            }
+          }, 2000);
+          return;
+        }
+
+        const store = useBombPartyStore.getState();
+        const isConnected = store.connection.state === 'connected';
+
+        if (!isConnected) {
+          logger.warn('Authentication timeout but connection not established, skipping re-auth', {
+            connectionState: store.connection.state,
+            isServicePrimary
+          });
+          setPlayerId(null);
+          setIsAuthenticating(false);
+          return;
+        }
+
+        logger.warn('Authentication timeout - attempting re-auth', {
+          connectionState: store.connection.state,
+          isServicePrimary
+        });
+        setPlayerId(null);
+        setIsAuthenticating(false);
+
+        const retryPlayerName = user?.id 
+          ? (user?.display_name || user?.name || `User_${user.id}`)
+          : `Guest_${Math.floor(Math.random() * 1000)}`;
+        if (isServicePrimary) {
+          bombPartyService.authenticateWithName(retryPlayerName);
+        } else {
+          logger.warn('BombPartyService not primary, skipping authentication');
+        }
+      }, 10000) as unknown as number;
+
+      authTimeoutRef.current = authTimeout;
     };
 
     const handleAuthSuccess = (payload: any) => {
@@ -440,83 +517,6 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         }
       }
     };
-
-    // Only set auth timeout if we are actually connecting (i.e. not using primary service)
-    if (checkPrimaryConnection()) {
-      const authTimeout = setTimeout(() => {
-        const currentStore = useBombPartyStore.getState();
-        const hasPlayerId = playerIdRef.current !== null;
-        const isInGame = currentStore.gamePhase === 'GAME' && currentStore.gameState?.phase === 'TURN_ACTIVE';
-
-        logger.warn('Authentication timeout check', {
-          isStillAuthenticating: !hasPlayerId,
-          isInGame,
-          hasPlayerId,
-          gamePhase: currentStore.gamePhase
-        });
-
-        if (hasPlayerId) {
-          logger.info('Authentication already succeeded, ignoring timeout');
-          return;
-        }
-
-        const connectionsInfo = wsCoordinator.getConnectionsInfo();
-        const isServicePrimary = connectionsInfo.primaryConnection &&
-          connectionsInfo.allConnections.some(
-            c => c.id === connectionsInfo.primaryConnection && c.type === 'bombPartyService'
-          );
-
-        if (isInGame) {
-          logger.warn('Game in progress, not resetting auth - will retry later');
-          setTimeout(() => {
-            if (playerIdRef.current === null) {
-              // Si l'utilisateur est connecté, utiliser son nom, sinon guest
-              const playerName = user?.id 
-                ? (user?.display_name || user?.name || `User_${user.id}`)
-                : `Guest_${Math.floor(Math.random() * 1000)}`;
-              if (isServicePrimary) {
-                bombPartyService.authenticateWithName(playerName);
-              } else {
-                logger.warn('BombPartyService not primary, skipping authentication retry');
-              }
-            }
-          }, 2000);
-          return;
-        }
-
-        const store = useBombPartyStore.getState();
-        const isConnected = store.connection.state === 'connected';
-
-        if (!isConnected) {
-          logger.warn('Authentication timeout but connection not established, skipping re-auth', {
-            connectionState: store.connection.state,
-            isServicePrimary
-          });
-          setPlayerId(null);
-          setIsAuthenticating(false);
-          return;
-        }
-
-        logger.warn('Authentication timeout - attempting re-auth', {
-          connectionState: store.connection.state,
-          isServicePrimary
-        });
-        setPlayerId(null);
-        setIsAuthenticating(false);
-
-        // Si l'utilisateur est connecté, utiliser son nom, sinon guest
-        const playerName = user?.id 
-          ? (user?.display_name || user?.name || `User_${user.id}`)
-          : `Guest_${Math.floor(Math.random() * 1000)}`;
-        if (isServicePrimary) {
-          bombPartyService.authenticateWithName(playerName);
-        } else {
-          logger.warn('BombPartyService not primary, skipping authentication');
-        }
-      }, 10000) as unknown as number;
-
-      authTimeoutRef.current = authTimeout;
-    }
 
     const unsubscribeAuth = client.on('bp:auth:success', handleAuthSuccess);
     const unsubscribeCreated = client.on('bp:lobby:created', handleLobbyCreated);

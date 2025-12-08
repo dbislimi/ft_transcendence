@@ -404,7 +404,8 @@
       "waitingForGame": "Ожидание начала игры",
       "errors": {
         "tooShort": "Слово должно содержать минимум 3 буквы",
-        "duplicate": "Слово уже использовано"
+        "duplicate": "Слово уже использовано",
+        "missingSyllable": "Слово должно содержать требуемый слог"
       }
     },
     "difficulty": {
@@ -721,7 +722,7 @@
     "serverError": "Ошибка сервера",
     "networkError": "Ошибка сети",
     "error": "Ошибка",
-	"invalidCode": "Неверный код",
+    "invalidCode": "Неверный код",
     "yourCode": "Ваш код"
   },
   "notFound": {
