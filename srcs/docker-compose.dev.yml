@@ -25,7 +25,7 @@ services:
       - ../AI:/usr/AI
       - ./backend/app:/usr/app
       - ./certs:/usr/certs
-      - db_data:/usr/app/data
+      - ./backend/app/data:/usr/app/data
       - ./backend/app/public/avatars/custom:/usr/app/public/avatars/custom
       - /usr/app/node_modules
     env_file:
@@ -42,7 +42,7 @@ services:
     environment:
       - ADMINER_DEFAULT_SERVER=sqlite
     volumes:
-      - db_data:/var/www/html/data
+      - ./backend/app/data:/var/www/html/data
     restart: unless-stopped
     depends_on:
       - back
