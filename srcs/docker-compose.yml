@@ -24,6 +24,7 @@ services:
       - ../AI:/usr/AI
       - ./certs:/usr/certs
       - db_data:/usr/app/data
+      - ./backend/app/public/avatars/custom:/usr/app/dist/public/avatars/custom
     env_file:
       - ./backend/app/.env
     expose:
