@@ -284,7 +284,9 @@
       "chooseAvatar": "Choisir un avatar",
       "preview": "Aperçu",
       "previewAvatar": "Aperçu de l'avatar",
-      "save": "Sauvegarder"
+      "save": "Sauvegarder",
+      "upload": "Envoyer la photo",
+      "uploading": "Envoi en cours..."
     },
     "editProfile": "Modifier le profil"
   },

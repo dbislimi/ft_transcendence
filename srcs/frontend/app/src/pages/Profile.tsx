@@ -5,6 +5,7 @@ import { useWebSocket } from "../contexts/WebSocketContext";
 import { useGameSettings } from "../contexts/GameSettingsContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import SpaceBackground from "../Components/SpaceBackground";
+import ConfirmModal from "../Components/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../config/api";
 
@@ -66,11 +67,25 @@ export default function Profile() {
 	>("list");
 	const [isLoaded, setIsLoaded] = useState(false);
 
+	// États pour la modale de confirmation
+	const [confirmModal, setConfirmModal] = useState({
+		isOpen: false,
+		title: "",
+		message: "",
+		type: "warning" as "danger" | "warning" | "info",
+		onConfirm: () => {},
+	});
+
 	const [editMode, setEditMode] = useState(false);
 	const [email, setEmail] = useState("");
 	const [displayName, setDisplayName] = useState("");
 	const [password, setPassword] = useState("");
 	const [avatar, setAvatar] = useState("/avatars/avatar1.png");
+	const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null); // Nouvel état pour l'avatar sélectionné
+	const [customAvatar, setCustomAvatar] = useState<File | null>(null);
+	const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null);
+	const [uploadedCustomAvatar, setUploadedCustomAvatar] = useState<string | null>(null); // URL de l'avatar uploadé
+	const [uploadingAvatar, setUploadingAvatar] = useState(false);
 	const [message, setMessage] = useState("");
 	const [isError, setIsError] = useState(false);
 
@@ -112,48 +127,21 @@ export default function Profile() {
 		"/avatars/avatar10.png",
 	];
 
-	const fetchFriends = async () => {
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/friends`, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			if (res.ok) {
-				const data = await res.json();
-				setFriends(data);
-			}
-		} catch (err) {
-			console.error("Erreur lors du chargement des amis:", err);
+	const fetchFriends = () => {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ type: 'get_friends' }));
 		}
 	};
 
-	const fetchRequests = async () => {
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			if (res.ok) {
-				const data = await res.json();
-				setRequests(data);
-			}
-		} catch (err) {
-			console.error("Erreur lors du chargement des demandes:", err);
+	const fetchRequests = () => {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ type: 'get_friend_requests' }));
 		}
 	};
 
-	const fetchBlockedUsers = async () => {
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/blocked-users`, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			if (res.ok) {
-				const data = await res.json();
-				setBlockedUsers(data);
-			}
-		} catch (err) {
-			console.error(
-				"Erreur lors du chargement des utilisateurs bloques:",
-				err
-			);
+	const fetchBlockedUsers = () => {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ type: 'get_blocked_users' }));
 		}
 	};
 
@@ -247,147 +235,103 @@ export default function Profile() {
 		});
 	};
 
-	const handleAddFriend = async () => {
+	const handleAddFriend = () => {
 		if (!newFriendName.trim()) return;
 
 		setFriendsLoading(true);
 		setFriendsError(null);
 
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/friend-requests`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({ display_name: newFriendName.trim() }),
-			});
-
-			const data = await res.json();
-
-			if (res.ok) {
-				setNewFriendName("");
-				fetchRequests();
-			} else {
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({
+				type: 'send_friend_request',
+				display_name: newFriendName.trim()
+			}));
+		} else {
 			setFriendsError(t("errors.network"));
-		} finally {
 			setFriendsLoading(false);
 		}
 	};
 
-	const handleAcceptRequest = async (senderId: number) => {
-		try {
-			const res = await fetch(
-				`${API_BASE_URL}/api/friend-requests/${senderId}/accept`,
-				{
-					method: "POST",
-					headers: { Authorization: `Bearer ${token}` },
+	const handleAcceptRequest = (senderId: number) => {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({
+				type: 'accept_friend_request',
+				sender_id: senderId
+			}));
+		} else {
+			setFriendsError(t("errors.network"));
+		}
+	};
+
+	const handleRejectRequest = (senderId: number) => {
+		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({
+				type: 'reject_friend_request',
+				sender_id: senderId
+			}));
+		} else {
+			setFriendsError(t("errors.network"));
+		}
+	};
+
+	const handleRemoveFriend = (friendId: number) => {
+		setConfirmModal({
+			isOpen: true,
+			title: "🗑️ Supprimer cet ami",
+			message: t("friends.confirmDelete"),
+			type: "danger",
+			onConfirm: () => {
+				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+					friendsWsRef.current.send(JSON.stringify({
+						type: 'remove_friend',
+						friend_id: friendId
+					}));
+				} else {
+					setFriendsError(t("errors.network"));
 				}
-			);
-
-			if (res.ok) {
-				fetchFriends();
-				fetchRequests();
-			} else {
-				const data = await res.json();
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
-			setFriendsError(t("errors.network"));
-		}
+				setConfirmModal({ ...confirmModal, isOpen: false });
+			},
+		});
 	};
 
-	const handleRejectRequest = async (senderId: number) => {
-		try {
-			const res = await fetch(
-				`${API_BASE_URL}/api/friend-requests/${senderId}/reject`,
-				{
-					method: "POST",
-					headers: { Authorization: `Bearer ${token}` },
+	const handleBlockUser = (userId: number) => {
+		setConfirmModal({
+			isOpen: true,
+			title: "🚫 Bloquer cet utilisateur",
+			message: t("friends.confirmBlock"),
+			type: "warning",
+			onConfirm: () => {
+				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+					friendsWsRef.current.send(JSON.stringify({
+						type: 'block_user',
+						user_id: userId
+					}));
+				} else {
+					setFriendsError(t("errors.network"));
 				}
-			);
-
-			if (res.ok) {
-				fetchRequests();
-			} else {
-				const data = await res.json();
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
-			setFriendsError(t("errors.network"));
-		}
+				setConfirmModal({ ...confirmModal, isOpen: false });
+			},
+		});
 	};
 
-	const handleRemoveFriend = async (friendId: number) => {
-		if (!confirm(t("friends.confirmDelete"))) return;
-
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, {
-				method: "DELETE",
-				headers: { Authorization: `Bearer ${token}` },
-			});
-
-			if (res.ok) {
-				fetchFriends();
-			} else {
-				const data = await res.json();
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
-			setFriendsError(t("errors.network"));
-		}
-	};
-
-	const handleBlockUser = async (userId: number) => {
-		if (!confirm(t("friends.confirmBlock"))) return;
-
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/block-user`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({ user_id: userId }),
-			});
-
-			if (res.ok) {
-				fetchFriends();
-				fetchRequests();
-				fetchBlockedUsers();
-			} else {
-				const data = await res.json();
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
-			setFriendsError(t("errors.network"));
-		}
-	};
-
-	const handleUnblockUser = async (userId: number) => {
-		if (!confirm(t("friends.confirmUnblock"))) return;
-
-		try {
-			const res = await fetch(
-				`${API_BASE_URL}/api/blocked-users/${userId}`,
-				{
-					method: "DELETE",
-					headers: { Authorization: `Bearer ${token}` },
+	const handleUnblockUser = (userId: number) => {
+		setConfirmModal({
+			isOpen: true,
+			title: "✅ Débloquer cet utilisateur",
+			message: t("friends.confirmUnblock"),
+			type: "info",
+			onConfirm: () => {
+				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
+					friendsWsRef.current.send(JSON.stringify({
+						type: 'unblock_user',
+						user_id: userId
+					}));
+				} else {
+					setFriendsError(t("errors.network"));
 				}
-			);
-
-			if (res.ok) {
-				fetchBlockedUsers();
-			} else {
-				const data = await res.json();
-				setFriendsError(data.error || t("errors.unknown"));
-			}
-		} catch (err) {
-			setFriendsError(t("errors.network"));
-		}
+				setConfirmModal({ ...confirmModal, isOpen: false });
+			},
+		});
 	};
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -402,11 +346,103 @@ export default function Profile() {
 		fetchData();
 	}, [user, token]);
 
+	// Initialiser les champs quand on entre en mode édition
+	useEffect(() => {
+		if (editMode && user) {
+			setEmail(user.email || '');
+			setDisplayName(user.display_name || '');
+			setAvatar(user.avatar || '/avatars/avatar1.png');
+			setSelectedAvatar(null); // Réinitialiser la sélection
+			setPassword('');
+			setCustomAvatar(null);
+			setCustomAvatarPreview(null);
+			setUploadedCustomAvatar(null);
+		}
+	}, [editMode, user]);
+
 	useEffect(() => {
 		const handleFriendsMessage = (event: CustomEvent) => {
 			const data = event.detail;
 
 			switch (data.type) {
+				case "friends_list":
+					if (data.data) {
+						setFriends(data.data);
+					} else if (data.error) {
+						setFriendsError(data.error);
+					}
+					break;
+
+				case "friend_requests_list":
+					if (data.data) {
+						setRequests(data.data);
+					} else if (data.error) {
+						setFriendsError(data.error);
+					}
+					break;
+
+				case "blocked_users_list":
+					if (data.data) {
+						setBlockedUsers(data.data);
+					} else if (data.error) {
+						setFriendsError(data.error);
+					}
+					break;
+
+				case "friend_request_sent":
+					if (data.error) {
+						setFriendsError(data.error);
+						setFriendsLoading(false);
+					} else {
+						setNewFriendName("");
+						setFriendsLoading(false);
+						fetchRequests();
+					}
+					break;
+
+				case "friend_request_accepted_response":
+					if (data.error) {
+						setFriendsError(data.error);
+					} else {
+						fetchFriends();
+						fetchRequests();
+					}
+					break;
+
+				case "friend_request_rejected_response":
+					if (data.error) {
+						setFriendsError(data.error);
+					} else {
+						fetchRequests();
+					}
+					break;
+
+				case "friend_removed_response":
+					if (data.error) {
+						setFriendsError(data.error);
+					} else {
+						fetchFriends();
+					}
+					break;
+
+				case "user_blocked_response":
+					if (data.error) {
+						setFriendsError(data.error);
+					} else {
+						fetchFriends();
+						fetchRequests();
+						fetchBlockedUsers();
+					}
+					break;
+
+				case "user_unblocked_response":
+					if (data.error) {
+						setFriendsError(data.error);
+					} else {
+						fetchBlockedUsers();
+					}
+					break;
+
 				case "friend_request_received":
 					fetchRequests();
 					break;
@@ -475,14 +511,97 @@ export default function Profile() {
 			password
 		);
 
+	const handleCustomAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			// Vérifier la taille (max 5MB)
+			if (file.size > 5 * 1024 * 1024) {
+				setIsError(true);
+				setMessage("L'image ne doit pas dépasser 5MB");
+				setTimeout(() => setMessage(""), 3000);
+				return;
+			}
+
+			// Vérifier le type
+			if (!file.type.startsWith('image/')) {
+				setIsError(true);
+				setMessage("Veuillez sélectionner une image valide");
+				setTimeout(() => setMessage(""), 3000);
+				return;
+			}
+
+			setCustomAvatar(file);
+			
+			// Créer une preview
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setCustomAvatarPreview(reader.result as string);
+			};
+			reader.readAsDataURL(file);
+		}
+	};
+
+	const handleUploadCustomAvatar = async () => {
+		if (!customAvatar || !token) return;
+
+		setUploadingAvatar(true);
+		setMessage("");
+		setIsError(false);
+
+		try {
+			const formData = new FormData();
+			formData.append('avatar', customAvatar);
+
+			const res = await fetch(`${API_BASE_URL}/api/upload-avatar`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				body: formData,
+			});
+
+			const data = await res.json();
+
+			if (res.ok) {
+				setIsError(false);
+				setMessage("Avatar uploadé avec succès ! Sélectionnez-le pour l'enregistrer.");
+				
+				// Stocker l'URL de l'avatar uploadé mais ne pas fermer le mode édition
+				setUploadedCustomAvatar(data.avatar);
+				setCustomAvatar(null);
+				setCustomAvatarPreview(null);
+				
+				setTimeout(() => setMessage(""), 3000);
+			} else {
+				setIsError(true);
+				setMessage(data.error || "Erreur lors de l'upload");
+				setTimeout(() => setMessage(""), 3000);
+			}
+		} catch (error) {
+			setIsError(true);
+			setMessage("Erreur réseau lors de l'upload");
+			setTimeout(() => setMessage(""), 3000);
+		} finally {
+			setUploadingAvatar(false);
+		}
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+
+		// Si une image custom est en attente d'upload, uploader d'abord
+		if (customAvatar) {
+			await handleUploadCustomAvatar();
+			return;
+		}
+
 		const body: any = {};
 
 		if (email && email !== user?.email) {
 			if (!validateEmail(email)) {
 				setIsError(true);
 				setMessage("Email invalide.");
+				setTimeout(() => setMessage(""), 3000);
 				return;
 			}
 			body.email = email;
@@ -494,6 +613,7 @@ export default function Profile() {
 				setMessage(
 					"Le pseudo ne doit contenir que des lettres, chiffres ou tirets."
 				);
+				setTimeout(() => setMessage(""), 3000);
 				return;
 			}
 			body.display_name = displayName;
@@ -505,18 +625,21 @@ export default function Profile() {
 				setMessage(
 					"Le mot de passe doit contenir au moins 6 caracteres, une majuscule, une minuscule, un chiffre et un caractere special."
 				);
+				setTimeout(() => setMessage(""), 3000);
 				return;
 			}
 			body.password = password;
 		}
 
-		if (avatar && avatar !== user?.avatar) {
-			body.avatar = avatar;
+		const finalAvatar = selectedAvatar || avatar;
+		if (finalAvatar && finalAvatar !== user?.avatar) {
+			body.avatar = finalAvatar;
 		}
 
 		if (Object.keys(body).length === 0) {
 			setIsError(true);
 			setMessage("Aucune modification detectee.");
+			setTimeout(() => setMessage(""), 3000);
 			return;
 		}
 
@@ -574,6 +697,14 @@ export default function Profile() {
 	return (
 		<>
 			<SpaceBackground />
+			<ConfirmModal
+				isOpen={confirmModal.isOpen}
+				onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+				onConfirm={confirmModal.onConfirm}
+				title={confirmModal.title}
+				message={confirmModal.message}
+				type={confirmModal.type}
+			/>
 			<div
 				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${
 					isLoaded ? "opacity-100" : "opacity-0"
@@ -1090,7 +1221,7 @@ export default function Profile() {
 																			fill="none"
 																			stroke="currentColor"
 																			viewBox="0 0 24 24"
-																		>
+																			>
 																			<path
 																				strokeLinecap="round"
 																				strokeLinejoin="round"
@@ -1511,7 +1642,7 @@ export default function Profile() {
 										{/* Ajouter un ami */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-												➕ {t("profile.friend.add")}
+												 ➕ {t("profile.friend.add")}
 											</h4>
 											<div className="flex gap-3">
 												<input
@@ -2058,6 +2189,32 @@ export default function Profile() {
 														placeholder="••••••••"
 													/>
 												</div>
+																								<div>
+													<label className="block text-sm font-medium text-gray-300 mb-2">
+														{t(
+															"profile.settings.customAvatar"
+														)}
+													</label>
+													<input
+														type="file"
+														accept="image/*"
+														onChange={
+															handleCustomAvatarChange
+														}
+														className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+													/>
+													{customAvatarPreview && (
+														<div className="mt-4 flex justify-center">
+															<img
+																src={
+																	customAvatarPreview
+																}
+																alt="Custom Avatar Preview"
+																className="w-32 h-32 rounded-full border-4 border-purple-500/50 object-cover"
+															/>
+														</div>
+													)}
+												</div>
 											</div>
 
 											<div>
@@ -2072,14 +2229,12 @@ export default function Profile() {
 															<button
 																key={avatarUrl}
 																type="button"
-																onClick={() =>
-																	setAvatar(
-																		avatarUrl
-																	)
-																}
+																onClick={() => {
+																	setSelectedAvatar(avatarUrl);
+																	setAvatar(avatarUrl);
+																}}
 																className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-																	avatar ===
-																	avatarUrl
+																	selectedAvatar === avatarUrl || (!selectedAvatar && avatar === avatarUrl)
 																		? "ring-4 ring-purple-500 scale-110"
 																		: "hover:scale-105 opacity-70 hover:opacity-100"
 																}`}
@@ -2096,6 +2251,33 @@ export default function Profile() {
 													)}
 												</div>
 
+												{/* Avatar personnalisé uploadé */}
+												{uploadedCustomAvatar && (
+													<div className="mt-4">
+														<p className="text-sm font-medium text-gray-300 mb-2">
+															📸 Avatar personnalisé disponible
+														</p>
+														<button
+															type="button"
+															onClick={() => {
+																setSelectedAvatar(uploadedCustomAvatar);
+																setAvatar(uploadedCustomAvatar);
+															}}
+															className={`relative rounded-full overflow-hidden transition-all duration-300 ${
+																selectedAvatar === uploadedCustomAvatar
+																	? "ring-4 ring-green-500 scale-110"
+																	: "hover:scale-105 opacity-70 hover:opacity-100"
+															}`}
+														>
+															<img
+																src={uploadedCustomAvatar}
+																alt="Avatar personnalisé"
+																className="w-20 h-20 object-cover"
+															/>
+														</button>
+													</div>
+												)}
+
 												<div className="mt-6 flex justify-center">
 													<div className="text-center">
 														<p className="text-gray-400 text-sm mb-2">
@@ -2104,7 +2286,7 @@ export default function Profile() {
 															)}
 														</p>
 														<img
-															src={avatar}
+															src={selectedAvatar || avatar}
 															alt={t(
 																"profile.settings.previewAvatar"
 															)}
@@ -2118,19 +2300,27 @@ export default function Profile() {
 										<div className="flex gap-4 justify-center">
 											<button
 												type="submit"
-												className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+												disabled={uploadingAvatar}
+												className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
 											>
-												💾 {t("profile.settings.save")}
+												{uploadingAvatar ? (
+													<span className="flex items-center gap-2">
+														<div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+														{t("profile.settings.uploading")}
+													</span>
+												) : customAvatar ? (
+													<span>📤 {t("profile.settings.upload")}</span>
+												) : (
+													<span>💾 {t("profile.settings.save")}</span>
+												)}
 											</button>
 											<button
 												type="button"
-												onClick={() =>
-													setEditMode(false)
-												}
-												className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+												onClick={() => setEditMode(false)}
+												disabled={uploadingAvatar}
+												className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
 											>
-												❌{" "}
-												{t("profile.settings.cancel")}
+												❌ {t("profile.settings.cancel")}
 											</button>
 										</div>
 									</form>

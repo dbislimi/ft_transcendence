@@ -15,7 +15,7 @@ import authHook from "./plugins/authHook.js";
 import userPlugin from "./plugins/user.js";
 import wsFriends from "./plugins/ws-friends.js";
 import matchHistoryPlugin from "./plugins/matchHistory.js";
-import friendsPlugin from "./plugins/friends.js";
+// import friendsPlugin supprimé - tout est en WebSocket maintenant
 import googleAuth from "./plugins/google.js";
 import settingsPlugin from "./plugins/settings.js";
 import twoFaPlugin from "./plugins/2fa.js";
@@ -108,7 +108,6 @@ async function main() {
 	await fastify.register(settingsPlugin);
 	await fastify.register(twoFaPlugin);
 	await fastify.register(matchHistoryPlugin);
-	await fastify.register(friendsPlugin);
 
 	await fastify.register(bombPartyWSHandlers);
 

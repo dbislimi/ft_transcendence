@@ -8,7 +8,7 @@ import {
 import type { Dispatch, SetStateAction, ReactNode } from "react";
 import { useUser } from "../contexts/UserContext";
 import { useNotifications } from "../contexts/NotificationContext";
-import { API_BASE_URL } from "../config/api";
+import { useWebSocket } from "../contexts/WebSocketContext";
 
 interface Friend {
 	id: number;
@@ -22,9 +22,13 @@ interface FriendsContextType {
 	setFriends: Dispatch<SetStateAction<Friend[]>>;
 	isOnline: (userId: number) => boolean;
 	isOnlineStatus: (online?: number | boolean) => boolean;
-	refreshFriends: () => Promise<void>;
-	acceptFriendRequest: (senderId: number) => Promise<void>;
-	rejectFriendRequest: (senderId: number) => Promise<void>;
+	refreshFriends: () => void;
+	acceptFriendRequest: (senderId: number) => void;
+	rejectFriendRequest: (senderId: number) => void;
+	sendFriendRequest: (displayName: string) => Promise<{success: boolean; error?: string}>;
+	removeFriend: (friendId: number) => void;
+	blockUser: (userId: number) => void;
+	unblockUser: (userId: number) => void;
 }
 
 const FriendsContext = createContext<FriendsContextType | null>(null);
@@ -35,6 +39,7 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const { token, user } = useUser();
 	const { notify } = useNotifications();
+	const { friendsWsRef } = useWebSocket();
 
 	const isOnline = (userId: number): boolean => {
 		const friend = friends.find((f) => f.id === userId);
@@ -45,75 +50,93 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 		return online === true || online === 1;
 	};
 
-	const refreshFriends = useCallback(async (): Promise<void> => {
-		if (!token) return;
-
-		try {
-			const res = await fetch(`${API_BASE_URL}/api/friends`, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			if (res.ok) {
-				const data = await res.json();
-				setFriends(data);
-			}
-		} catch (err) {
-			console.error("Erreur lors du chargement des amis:", err);
+	const refreshFriends = useCallback((): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ type: 'get_friends' }));
 		}
-	}, [token]);
+	}, [friendsWsRef]);
 
-	const acceptFriendRequest = useCallback(
-		async (senderId: number): Promise<void> => {
-			if (!token) return;
-
-			try {
-				const res = await fetch(
-					`${API_BASE_URL}/api/friend-requests/${senderId}/accept`,
-					{
-						method: "POST",
-						headers: { Authorization: `Bearer ${token}` },
-					}
-				);
-
-				if (res.ok) {
-					refreshFriends();
-					window.dispatchEvent(
-						new CustomEvent("refreshFriendRequests")
-					);
-				}
-			} catch (err) {
-				console.error(
-					"Erreur lors de l'acceptation de la demande:",
-					err
-				);
+	const sendFriendRequest = useCallback(async (displayName: string): Promise<{success: boolean; error?: string}> => {
+		return new Promise((resolve) => {
+			if (!friendsWsRef.current || friendsWsRef.current.readyState !== WebSocket.OPEN) {
+				resolve({ success: false, error: 'Connexion non établie' });
+				return;
 			}
-		},
-		[token, refreshFriends]
-	);
 
-	const rejectFriendRequest = useCallback(
-		async (senderId: number): Promise<void> => {
-			if (!token) return;
-
-			try {
-				const res = await fetch(
-					`${API_BASE_URL}/api/friend-requests/${senderId}/reject`,
-					{
-						method: "POST",
-						headers: { Authorization: `Bearer ${token}` },
+			const handler = (event: MessageEvent) => {
+				try {
+					const data = JSON.parse(event.data);
+					if (data.type === 'friend_request_sent') {
+						friendsWsRef.current?.removeEventListener('message', handler);
+						if (data.error) {
+							resolve({ success: false, error: data.error });
+						} else {
+							window.dispatchEvent(new CustomEvent('refreshFriendRequests'));
+							resolve({ success: true });
+						}
 					}
-				);
-
-				if (res.ok) {
-					window.dispatchEvent(
-						new CustomEvent("refreshFriendRequests")
-					);
+				} catch (e) {
+					// Ignore
 				}
-			} catch (err) {
-				console.error("Erreur lors du rejet de la demande:", err);
-			}
-		},
-		[token]
-	);
+			};
+
+			friendsWsRef.current.addEventListener('message', handler);
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'send_friend_request',
+				display_name: displayName 
+			}));
+
+			setTimeout(() => {
+				friendsWsRef.current?.removeEventListener('message', handler);
+				resolve({ success: false, error: 'Timeout' });
+			}, 5000);
+		});
+	}, [friendsWsRef]);
+
+	const acceptFriendRequest = useCallback((senderId: number): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'accept_friend_request',
+				sender_id: senderId 
+			}));
+		}
+	}, [friendsWsRef]);
+
+	const rejectFriendRequest = useCallback((senderId: number): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'reject_friend_request',
+				sender_id: senderId 
+			}));
+		}
+	}, [friendsWsRef]);
+
+	const removeFriend = useCallback((friendId: number): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'remove_friend',
+				friend_id: friendId 
+			}));
+		}
+	}, [friendsWsRef]);
+
+	const blockUser = useCallback((userId: number): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'block_user',
+				user_id: userId 
+			}));
+		}
+	}, [friendsWsRef]);
+
+	const unblockUser = useCallback((userId: number): void => {
+		if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+			friendsWsRef.current.send(JSON.stringify({ 
+				type: 'unblock_user',
+				user_id: userId 
+			}));
+		}
+	}, [friendsWsRef]);
 
 	useEffect(() => {
 		if (token && user?.id) {
@@ -121,7 +144,7 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 		} else {
 			setFriends([]);
 		}
-	}, [token, user?.id]);
+	}, [token, user?.id, refreshFriends]);
 
 	useEffect(() => {
 		const handleFriendsMessage = (event: CustomEvent) => {
@@ -130,10 +153,18 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 			switch (data.type) {
 				case "connected":
 					console.log("Friends WebSocket: connecté");
+					refreshFriends();
+					break;
+
+				case "friends_list":
+					if (data.data) {
+						setFriends(data.data);
+					}
 					break;
 
 				case "friend_request_received":
 					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
 					notify({
 						variant: "info",
 						title: "Nouvelle demande d'ami",
@@ -155,6 +186,7 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 
 				case "friend_request_accepted":
 					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
 					notify({
 						variant: "success",
 						title: "Demande acceptée",
@@ -163,14 +195,121 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 					});
 					break;
 
+				case "friend_request_accepted_response":
+					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
+					if (data.error) {
+						notify({
+							variant: "error",
+							title: "Erreur",
+							message: data.error,
+							duration: 5000,
+						});
+					} else {
+						notify({
+							variant: "success",
+							title: "Demande acceptée",
+							message: data.message || "Demande acceptée avec succès",
+							duration: 5000,
+						});
+					}
+					break;
+
 				case "friend_request_rejected":
 					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
 					notify({
 						variant: "warning",
 						title: "Demande refusée",
 						message: `${data.display_name} a refusé votre demande d'ami`,
 						duration: 5000,
 					});
+					break;
+
+				case "friend_request_rejected_response":
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
+					if (data.error) {
+						notify({
+							variant: "error",
+							title: "Erreur",
+							message: data.error,
+							duration: 5000,
+						});
+					}
+					break;
+
+				case "friend_removed":
+					refreshFriends();
+					notify({
+						variant: "info",
+						title: "Ami supprimé",
+						message: `${data.display_name} vous a retiré de sa liste d'amis`,
+						duration: 5000,
+					});
+					break;
+
+				case "friend_removed_response":
+					refreshFriends();
+					if (data.error) {
+						notify({
+							variant: "error",
+							title: "Erreur",
+							message: data.error,
+							duration: 5000,
+						});
+					} else {
+						notify({
+							variant: "success",
+							title: "Ami supprimé",
+							message: data.message || "Ami supprimé avec succès",
+							duration: 3000,
+						});
+					}
+					break;
+
+				case "user_blocked":
+					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
+					break;
+
+				case "user_blocked_response":
+					refreshFriends();
+					window.dispatchEvent(new CustomEvent("refreshFriendRequests"));
+					window.dispatchEvent(new CustomEvent("refreshBlockedUsers"));
+					if (data.error) {
+						notify({
+							variant: "error",
+							title: "Erreur",
+							message: data.error,
+							duration: 5000,
+						});
+					} else {
+						notify({
+							variant: "success",
+							title: "Utilisateur bloqué",
+							message: data.message || "Utilisateur bloqué avec succès",
+							duration: 3000,
+						});
+					}
+					break;
+
+				case "user_unblocked_response":
+					window.dispatchEvent(new CustomEvent("refreshBlockedUsers"));
+					if (data.error) {
+						notify({
+							variant: "error",
+							title: "Erreur",
+							message: data.error,
+							duration: 5000,
+						});
+					} else {
+						notify({
+							variant: "success",
+							title: "Utilisateur débloqué",
+							message: data.message || "Utilisateur débloqué avec succès",
+							duration: 3000,
+						});
+					}
 					break;
 
 				case "status_update":
@@ -184,6 +323,9 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 					break;
 
 				case "heartbeat":
+					if (friendsWsRef.current && friendsWsRef.current.readyState === WebSocket.OPEN) {
+						friendsWsRef.current.send(JSON.stringify({ type: "pong" }));
+					}
 					break;
 			}
 		};
@@ -199,7 +341,7 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 				handleFriendsMessage as EventListener
 			);
 		};
-	}, [refreshFriends]);
+	}, [refreshFriends, notify, acceptFriendRequest, rejectFriendRequest, friendsWsRef]);
 
 	return (
 		<FriendsContext.Provider
@@ -211,6 +353,10 @@ export const FriendsProvider: React.FC<{ children: ReactNode }> = ({
 				refreshFriends,
 				acceptFriendRequest,
 				rejectFriendRequest,
+				sendFriendRequest,
+				removeFriend,
+				blockUser,
+				unblockUser,
 			}}
 		>
 			{children}

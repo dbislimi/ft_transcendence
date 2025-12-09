@@ -23,6 +23,7 @@ services:
     volumes:
       - ../AI:/usr/AI
       - ./certs:/usr/certs
+      - db_data:/usr/app/data
     env_file:
       - ./backend/app/.env
     expose:
@@ -43,4 +44,6 @@ services:
     depends_on:
       - back
     restart: unless-stopped
-  
+
+volumes:
+  db_data:
