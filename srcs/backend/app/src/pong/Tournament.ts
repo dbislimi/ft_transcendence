@@ -171,15 +171,12 @@ export default class Tournament {
 	join(player: Client) {
 		if (!this.players.includes(player)) this.players.push(player);
 		player.socket?.send(JSON.stringify({ event: "searching", to: "pong" }));
-		// console.log("Joined tournament: ", this.id);
-		// console.log(`Nb of players: ${this.players.length}`);
 		if (this.players.length === this.capacity) this.startTournament();
 	}
 
 	private removePlayer(player: Client) {
 		player.tournament = undefined;
 		this.players = this.players.filter((p) => p !== player);
-		// console.log(`nb of players: ${this.players.length}`);
 		if (this.players.length === 0) this.onEnd();
 	}
 
@@ -188,7 +185,6 @@ export default class Tournament {
 			this.root = null;
 			return;
 		}
-		// console.log("building nodes");
 		let depth = Math.ceil(Math.log2(this.players.length));
 		this.initialDepth = depth;
 		let nodes: Node[] = this.players.map((p, idx) => {
@@ -222,14 +218,9 @@ export default class Tournament {
 	joinMatch(node: Node) {
 		const parent = node.parent;
 		const player = node.winner;
-		// console.log("joinMatch called");
-		// console.log(
-		// 	`depth: ${node.depth}, id: ${node.bracketId} TO depth: ${parent?.depth}, id: ${parent?.bracketId}`
-		// );
 		if (!player) return;
 
 		if (!parent) {
-			// console.log("tournament winner");
 
 			if (this.fastify && player) {
 				this.fastify.incrementTournamentsWon(player.id).catch((error: any) => {
@@ -244,14 +235,12 @@ export default class Tournament {
 			return;
 		}
 		if (parent.loser) {
-			// console.log(player.name, " passing by bye");
 			if (!parent.winner) {
 				parent.winner = player;
 				this.notifyRoundWinAndAdvance(player, parent);
 			}
 			return;
 		}
-		// console.log("start");
 		if (parent.waiting) {
 			const waitingPlayer = parent.waiting;
 			const currentPlayer = player;
@@ -266,7 +255,6 @@ export default class Tournament {
 				p2: currentPlayer,
 				options: this.options,
 				onEnd: async (client, didWin, scores) => {
-					// console.log("game onEnd");
 
 					const opponent =
 						client === waitingPlayer ? currentPlayer : waitingPlayer;
@@ -354,7 +342,6 @@ export default class Tournament {
 		return undefined;
 	}
 	init() {
-		// console.log(`leafs: ${this.leafs.length}`);
 		for (const leaf of this.leafs) this.joinMatch(leaf);
 	}
 
@@ -381,7 +368,6 @@ export default class Tournament {
 		if (this.started === false) this.removePlayer(client);
 		else {
 			const game = this.rooms.get(client);
-			// quit while in game
 			if (game) {
 				this.cancelCountdown(game);
 				if (client.id >= 0 && client.tournament?.allowReconnect) {
@@ -407,13 +393,11 @@ export default class Tournament {
 				return;
 			}
 
-			// quit while between games
 			const node = this.clientNode.get(client);
 			const parent = node?.parent;
 			if (parent && parent.waiting === client) parent.waiting = undefined;
 			if (!parent) {
 				this.removePlayer(client);
-				// console.log("Tournament cleaned up after final disconnect");
 				return;
 			}
 			if (client.winnerTimer) {
@@ -432,13 +416,11 @@ export default class Tournament {
 				this.removePlayer(client);
 			}
 		}
-		// console.log(`nb of players: ${this.players.length}`);
 		if (this.players.length === 0) this.onEnd();
 	}
 
 	printTree(root: Node | null = this.root) {
 		if (!root) {
-			// console.log("(arbre vide)");
 			return;
 		}
 		const label = (n: Node) => {
@@ -451,7 +433,6 @@ export default class Tournament {
 			if (!n) return;
 			if (n.right)
 				traverse(n.right, prefix + (isLeft ? "│   " : "    "), false);
-			// console.log(prefix + (isLeft ? "└── " : "┌── ") + label(n));
 			if (n.left) traverse(n.left, prefix + (isLeft ? "    " : "│   "), true);
 		};
 		traverse(root, "", true);
@@ -473,16 +454,10 @@ export default class Tournament {
 		scores: number[]
 	) {
 		if (!this.fastify) {
-			// console.log(
-			// 	"Warning: No fastify instance available for saving tournament match"
-			// );
 			return;
 		}
 
 		try {
-			// console.log(
-			// 	`Saving tournament match: ${player1.name} (ID:${player1.id}) vs ${player2.name} (ID:${player2.id}), Winner: ${winner.name} (ID:${winner.id})`
-			// );
 
 			await this.fastify.saveMatch(
 				player1.id,
@@ -493,9 +468,6 @@ export default class Tournament {
 				"tournament"
 			);
 
-			// console.log(
-			// 	`Tournament match saved: ${player1.name} vs ${player2.name}, Winner: ${winner.name}`
-			// );
 		} catch (error) {
 			console.error("Error saving tournament match:", error);
 		}

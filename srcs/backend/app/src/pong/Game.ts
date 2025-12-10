@@ -79,10 +79,8 @@ export default class Game {
 	}
 
 	disconnectPlayer(p: Client) {
-		// console.log("try to disconnect");
 		const id: 0 | 1 | undefined = p.inGameId;
 		if (id === undefined) return;
-		// console.log("disconnected");
 		this.stop(((id + 1) % 2) as 0 | 1);
 	}
 	send(
@@ -109,14 +107,12 @@ export default class Game {
 		});
 	}
 	public start(): void {
-		// console.log("game started");
 		if (this.timeoutId) return;
 		this.prevTime = performance.now();
 		this.gameLoop();
 	}
 	public pause(): void {
 		if (!this.timeoutId) return;
-		// console.log("game paused");
 		clearTimeout(this.timeoutId);
 		this.timeoutId = null;
 	}
@@ -141,7 +137,6 @@ export default class Game {
 			);
 	}
 	private restart() {
-		// console.log("game restarted");
 		this.winner = undefined;
 		this.start();
 	}
@@ -164,7 +159,6 @@ export default class Game {
 
 	move(type: string, dir: string, player: 0 | 1 | undefined, inputId?: number) {
 		if (player === undefined) {
-			// console.log("PLAYER GAMEID UNDEFINED");
 			return;
 		}
 		if (inputId === undefined) {
@@ -172,9 +166,6 @@ export default class Game {
 			return;
 		}
 		if (inputId <= this.lastProcessedInputIds[player]) {
-			console.warn(
-				`[Game] Ignoring late/duplicate input ${inputId} for player ${player} (last: ${this.lastProcessedInputIds[player]})`
-			);
 			return;
 		}
 		this.inputQueues[player].push({ inputId, type, dir });
@@ -189,10 +180,6 @@ export default class Game {
 			this.lastProcessedInputIds[player] = input.inputId;
 			this.board.players[player].lastProcessedInputId = input.inputId;
 		}
-		if (this.inputQueues[player].length > 20)
-			console.warn(
-				`[Game] Input queue for player ${player} has ${this.inputQueues[player].length} pending inputs - possible packet loss`
-			);
 	}
 
 	setBall(x: number, y: number) {

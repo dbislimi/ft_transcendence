@@ -66,11 +66,6 @@ export default class GamesManager {
 				matchType
 			);
 
-			// console.log(
-			// 	`Game result processed: P1=${player1.name}, P2=${
-			// 		player2?.name || "Bot"
-			// 	}, Winner=${winner.name}, Type=${matchType}`
-			// );
 		} catch (error) {
 			console.error("Error saving game result:", error);
 		}
@@ -168,7 +163,6 @@ export default class GamesManager {
 			capacity: size,
 			onEnd: () => {
 				delete this.tournaments[id];
-				// console.log("onEnd tour called");
 			},
 			startCountdown: (game, clients) =>
 				this.startWithReadyPhase(game, clients, "tournament"),
@@ -227,13 +221,10 @@ export default class GamesManager {
 		});
 		for (let i = 0; i < games; ++i) {
 			if (signal.aborted) break;
-			// console.log(`game ${i + 1}`);
 			try {
 				await game.startAsync(signal);
 			} catch (e) {
-				// console.log("test");
 				if (signal.aborted)
-					// console.log("Training aborted during game ", i);
 					break;
 			}
 		}
@@ -243,16 +234,13 @@ export default class GamesManager {
 				game.board.botController[0].rewards,
 				game.board.botController[0].type
 			);
-		// console.log("Training loop ended.");
 		const totalSeconds = Math.floor(game.elaspedTime);
 		const hours = Math.floor(totalSeconds / 3600);
 		const minutes = Math.floor((totalSeconds % 3600) / 60);
 		const seconds = totalSeconds % 60;
-		// console.log(`Training time: ${hours}h${minutes}min${seconds}sec`);
 	}
 	startTraining(ws: any, bot: difficulty) {
 		this.trainBot(ws, bot, 100);
-		// console.log("debug");
 		return { playerId: "train" };
 	}
 	startOffline(
@@ -281,13 +269,6 @@ export default class GamesManager {
 				}
 				if (diff !== null && !this.savedGames.has(game)) {
 					const winnerId = didWin ? c.id : -1;
-					// console.log(
-					// 	`Saving bot match: ${
-					// 		c.name
-					// 	} vs Bot (${diff}), Winner: ${
-					// 		didWin ? c.name : `Bot (${diff})`
-					// 	}`
-					// );
 					this.saveGameResult(
 						c,
 						null,
@@ -301,9 +282,6 @@ export default class GamesManager {
 					);
 					this.savedGames.add(game);
 				} else if (diff !== null) {
-					// console.log(
-					// 	`Bot match already saved for ${c.name} vs Bot (${diff})`
-					// );
 				}
 				this.removeRoom(c);
 			},
@@ -413,9 +391,6 @@ export default class GamesManager {
 			this.invitManager.removeForClient(opponent);
 			const onEnd = (c: Client, didWin: boolean, scores: number[]) => {
 				const winner = didWin ? c : c === opponent ? client : opponent;
-				// console.log(
-				// 	`OnEnd called: ${c.name} (didWin: ${didWin}), Winner: ${winner.name}`
-				// );
 
 				if (!c.quit) {
 					c.socket?.send(
@@ -456,7 +431,6 @@ export default class GamesManager {
 	}
 	removeFromQueue(client: Client) {
 		if (this.waitingClient && client === this.waitingClient) {
-			// console.log("waiting client removed");
 			this.waitingClient = null;
 		}
 	}
@@ -653,7 +627,6 @@ export default class GamesManager {
 		return this.rooms.get(client);
 	}
 	removeRoom(client: Client) {
-		// console.log(`removed: ${client.name}`);
 		const game = this.rooms.get(client);
 		if (!game) return;
 		try {
@@ -682,7 +655,6 @@ export default class GamesManager {
 		client.quit = true;
 		if (client.tournament) {
 			const tournament = this.tournaments[client.tournament.tournamentId];
-			// console.log(`tournament: ${client.tournament.tournamentId}`);
 			if (!tournament) return;
 			tournament.disconnect(client);
 		} else {
@@ -716,11 +688,9 @@ export default class GamesManager {
 	}
 
 	handleRejoin(client: Client) {
-		// console.log("handle rejoin");
 		if (!client.tournament) return;
 		const t = this.tournaments[client.tournament.tournamentId];
 		if (!t) return;
-		// console.log("HANDLE REJOIN CALLED");
 		client.quit = false;
 		t.reconnect(client);
 	}
