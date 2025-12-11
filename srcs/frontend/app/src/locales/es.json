@@ -303,6 +303,8 @@
       "username": "Nombre de usuario",
       "currentAvatar": "Avatar Actual",
       "newPassword": "Nueva Contraseña",
+      "customAvatar": "Avatar personalizado",
+      "customAvatarAvailable": "Avatar personalizado disponible",
       "chooseAvatar": "Elegir un avatar",
       "preview": "Vista previa",
       "previewAvatar": "Vista previa del Avatar",

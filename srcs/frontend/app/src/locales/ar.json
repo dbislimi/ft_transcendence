@@ -303,6 +303,8 @@
       "username": "اسم المستخدم",
       "currentAvatar": "الصورة الرمزية الحالية",
       "newPassword": "كلمة المرور الجديدة",
+      "customAvatar": "صورة رمزية مخصصة",
+      "customAvatarAvailable": "صورة رمزية مخصصة متاحة",
       "chooseAvatar": "اختر صورة رمزية",
       "preview": "معاينة",
       "previewAvatar": "معاينة الصورة الرمزية",

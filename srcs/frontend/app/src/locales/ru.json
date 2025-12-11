@@ -303,6 +303,8 @@
       "username": "Имя пользователя",
       "currentAvatar": "Текущий Аватар",
       "newPassword": "Новый Пароль",
+      "customAvatar": "Пользовательский аватар",
+      "customAvatarAvailable": "Доступен пользовательский аватар",
       "chooseAvatar": "Выберите аватар",
       "preview": "Предпросмотр",
       "previewAvatar": "Предпросмотр аватара",

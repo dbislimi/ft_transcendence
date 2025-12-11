@@ -288,6 +288,8 @@
       "username": "Pseudo",
       "currentAvatar": "Avatar actuel",
       "newPassword": "Nouveau mot de passe",
+      "customAvatar": "Avatar personnalisé",
+      "customAvatarAvailable": "Avatar personnalisé disponible",
       "chooseAvatar": "Choisir un avatar",
       "preview": "Aperçu",
       "previewAvatar": "Aperçu de l'avatar",

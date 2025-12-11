@@ -72,7 +72,7 @@ export default function Profile() {
 		title: "",
 		message: "",
 		type: "warning" as "danger" | "warning" | "info",
-		onConfirm: () => {},
+		onConfirm: () => { },
 	});
 
 	const [editMode, setEditMode] = useState(false);
@@ -725,9 +725,8 @@ export default function Profile() {
 				type={confirmModal.type}
 			/>
 			<div
-				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${
-					isLoaded ? "opacity-100" : "opacity-0"
-				}`}
+				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"
+					}`}
 			>
 				<div className="max-w-7xl mx-auto px-6 py-8">
 					<div className="bg-gradient-to-r from-slate-800/80 via-purple-900/80 to-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/20 p-8 mb-8 shadow-2xl">
@@ -789,11 +788,10 @@ export default function Profile() {
 						<div className="flex flex-wrap">
 							<button
 								onClick={() => setActiveTab("overview")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-									activeTab === "overview"
-										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-								}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "overview"
+									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+									}`}
 							>
 								<span className="mr-2 inline-flex">
 									<svg
@@ -815,11 +813,10 @@ export default function Profile() {
 
 							<button
 								onClick={() => setActiveTab("stats")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-									activeTab === "stats"
-										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-								}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "stats"
+									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+									}`}
 							>
 								<span className="mr-2 inline-flex">
 									<svg
@@ -841,11 +838,10 @@ export default function Profile() {
 
 							<button
 								onClick={() => setActiveTab("history")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-									activeTab === "history"
-										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-								}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "history"
+									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+									}`}
 							>
 								<span className="mr-2 inline-flex">
 									<svg
@@ -867,11 +863,10 @@ export default function Profile() {
 
 							<button
 								onClick={() => setActiveTab("friends")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-									activeTab === "friends"
-										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-								}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "friends"
+									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+									}`}
 							>
 								<span className="mr-2 inline-flex">
 									<svg
@@ -893,11 +888,10 @@ export default function Profile() {
 
 							<button
 								onClick={() => setActiveTab("settings")}
-								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${
-									activeTab === "settings"
-										? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
-										: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-								}`}
+								className={`flex-1 min-w-0 px-6 py-4 font-semibold transition-all duration-300 rounded-xl m-2 ${activeTab === "settings"
+									? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50 text-purple-200"
+									: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+									}`}
 							>
 								<span className="mr-2 inline-flex">
 									<svg
@@ -1037,27 +1031,27 @@ export default function Profile() {
 										{friends.filter((f) =>
 											isOnline(f.online)
 										).length === 0 && (
-											<div className="text-center py-8 text-gray-400">
-												<svg
-													className="w-16 h-16 mx-auto mb-2 text-gray-500"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-													/>
-												</svg>
-												<p>
-													{t(
-														"profile.view.noOnlineFriends"
-													)}
-												</p>
-											</div>
-										)}
+												<div className="text-center py-8 text-gray-400">
+													<svg
+														className="w-16 h-16 mx-auto mb-2 text-gray-500"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+														/>
+													</svg>
+													<p>
+														{t(
+															"profile.view.noOnlineFriends"
+														)}
+													</p>
+												</div>
+											)}
 									</div>
 								</div>
 							</div>
@@ -1217,11 +1211,10 @@ export default function Profile() {
 											{matchHistory.map((match) => (
 												<div
 													key={match.id}
-													className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
-														match.isWinner
-															? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
-															: "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
-													}`}
+													className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${match.isWinner
+														? "bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-green-500/30 hover:border-green-400/50"
+														: "bg-gradient-to-r from-red-600/20 to-pink-600/20 border-red-500/30 hover:border-red-400/50"
+														}`}
 												>
 													<div className="flex items-center justify-between">
 														<div className="flex items-center gap-4">
@@ -1299,19 +1292,18 @@ export default function Profile() {
 																		</svg>
 																	)}
 																	<span
-																		className={`font-bold text-lg ${
-																			match.isWinner
-																				? "text-green-300"
-																				: "text-red-300"
-																		}`}
+																		className={`font-bold text-lg ${match.isWinner
+																			? "text-green-300"
+																			: "text-red-300"
+																			}`}
 																	>
 																		{match.isWinner
 																			? t(
-																					"profile.history.victory"
-																			  )
+																				"profile.history.victory"
+																			)
 																			: t(
-																					"profile.history.defeat"
-																			  )}
+																				"profile.history.defeat"
+																			)}
 																	</span>
 																</div>
 
@@ -1329,35 +1321,35 @@ export default function Profile() {
 																	{match
 																		.opponent
 																		.isBot && (
-																		<span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
-																			{t(
-																				"profile.history.bot"
-																			)}
-																		</span>
-																	)}
+																			<span className="px-2 py-1 bg-orange-600/20 text-orange-300 rounded-md text-xs border border-orange-500/30">
+																				{t(
+																					"profile.history.bot"
+																				)}
+																			</span>
+																		)}
 																	{match.matchType ===
 																		"tournament" && (
-																		<span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-md text-xs border border-purple-500/30 flex items-center gap-1">
-																			<svg
-																				className="w-3 h-3"
-																				fill="none"
-																				stroke="currentColor"
-																				viewBox="0 0 24 24"
-																			>
-																				<path
-																					strokeLinecap="round"
-																					strokeLinejoin="round"
-																					strokeWidth={
-																						2
-																					}
-																					d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-																				/>
-																			</svg>
-																			{t(
-																				"profile.history.tournament"
-																			)}
-																		</span>
-																	)}
+																			<span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-md text-xs border border-purple-500/30 flex items-center gap-1">
+																				<svg
+																					className="w-3 h-3"
+																					fill="none"
+																					stroke="currentColor"
+																					viewBox="0 0 24 24"
+																				>
+																					<path
+																						strokeLinecap="round"
+																						strokeLinejoin="round"
+																						strokeWidth={
+																							2
+																						}
+																						d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+																					/>
+																				</svg>
+																				{t(
+																					"profile.history.tournament"
+																				)}
+																			</span>
+																		)}
 																	{match.matchType ===
 																		"quick" &&
 																		!match
@@ -1423,11 +1415,10 @@ export default function Profile() {
 														<div className="text-right">
 															{match.scores && (
 																<div
-																	className={`text-2xl font-bold mb-2 ${
-																		match.isWinner
-																			? "text-green-300"
-																			: "text-red-300"
-																	}`}
+																	className={`text-2xl font-bold mb-2 ${match.isWinner
+																		? "text-green-300"
+																		: "text-red-300"
+																		}`}
 																>
 																	{
 																		match
@@ -1633,11 +1624,10 @@ export default function Profile() {
 											onClick={() =>
 												setFriendsSubTab(tab.id as any)
 											}
-											className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-												friendsSubTab === tab.id
-													? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
-													: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
-											}`}
+											className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${friendsSubTab === tab.id
+												? "bg-gradient-to-r from-blue-600/30 to-cyan-600/30 border border-blue-500/50 text-blue-200"
+												: "text-gray-400 hover:text-gray-200 hover:bg-slate-700/50"
+												}`}
 										>
 											<span className="mr-2">
 												{tab.icon}
@@ -1706,13 +1696,12 @@ export default function Profile() {
 																	className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover"
 																/>
 																<div
-																	className={`absolute -bottom-1 -right-1 w-5 h-5 ${
-																		isOnline(
-																			friend.online
-																		)
-																			? "bg-green-500"
-																			: "bg-gray-500"
-																	} rounded-full border-2 border-slate-800`}
+																	className={`absolute -bottom-1 -right-1 w-5 h-5 ${isOnline(
+																		friend.online
+																	)
+																		? "bg-green-500"
+																		: "bg-gray-500"
+																		} rounded-full border-2 border-slate-800`}
 																></div>
 															</div>
 															<div className="flex-1">
@@ -1722,62 +1711,61 @@ export default function Profile() {
 																	}
 																</h4>
 																<p
-																	className={`text-sm ${
-																		isOnline(
-																			friend.online
-																		)
-																			? "text-green-400"
-																			: "text-gray-500"
-																	}`}
+																	className={`text-sm ${isOnline(
+																		friend.online
+																	)
+																		? "text-green-400"
+																		: "text-gray-500"
+																		}`}
 																>
 																	{isOnline(
 																		friend.online
 																	)
 																		? `🟢 ${t(
-																				"profile.friend.online"
-																		  )}`
+																			"profile.friend.online"
+																		)}`
 																		: `⚫ ${t(
-																				"profile.friend.offline"
-																		  )}`}
+																			"profile.friend.offline"
+																		)}`}
 																</p>
 															</div>
 															<div className="flex gap-2">
 																{isOnline(
 																	friend.online
 																) && (
-																	<button
-																		onClick={() => {
-																			if (
-																				pongWsRef
-																					.current
-																					?.readyState ===
-																				WebSocket.OPEN
-																			) {
-																				pongWsRef.current.send(
-																					JSON.stringify(
-																						{
-																							event: "invitation",
-																							body: {
-																								action: "invite",
-																								friendId:
-																									friend.id,
-																								options:
+																		<button
+																			onClick={() => {
+																				if (
+																					pongWsRef
+																						.current
+																						?.readyState ===
+																					WebSocket.OPEN
+																				) {
+																					pongWsRef.current.send(
+																						JSON.stringify(
+																							{
+																								event: "invitation",
+																								body: {
+																									action: "invite",
+																									friendId:
+																										friend.id,
+																									options:
 																									{
 																										bonus: bonusEnabled,
 																									},
-																							},
-																						}
-																					)
-																				);
-																			}
-																		}}
-																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
-																	>
-																		{t(
-																			"profile.friend.invite"
-																		)}
-																	</button>
-																)}
+																								},
+																							}
+																						)
+																					);
+																				}
+																			}}
+																			className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
+																		>
+																			{t(
+																				"profile.friend.invite"
+																			)}
+																		</button>
+																	)}
 																<button
 																	onClick={() =>
 																		handleBlockUser(
@@ -2093,29 +2081,27 @@ export default function Profile() {
 									</h3>
 									<button
 										onClick={() => setEditMode(!editMode)}
-										className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-											editMode
-												? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
-												: "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
-										}`}
+										className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${editMode
+											? "bg-red-600/20 text-red-300 border border-red-500/30 hover:border-red-400/50"
+											: "bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/50"
+											}`}
 									>
 										{editMode
 											? `❌ ${t(
-													"profile.settings.cancel"
-											  )}`
+												"profile.settings.cancel"
+											)}`
 											: `✏️ ${t(
-													"profile.settings.edit"
-											  )}`}
+												"profile.settings.edit"
+											)}`}
 									</button>
 								</div>
 
 								{message && (
 									<div
-										className={`mb-6 p-4 rounded-lg border ${
-											isError
-												? "bg-red-600/20 border-red-500/30 text-red-300"
-												: "bg-green-600/20 border-green-500/30 text-green-300"
-										}`}
+										className={`mb-6 p-4 rounded-lg border ${isError
+											? "bg-red-600/20 border-red-500/30 text-red-300"
+											: "bg-green-600/20 border-green-500/30 text-green-300"
+											}`}
 									>
 										{message}
 									</div>
@@ -2290,15 +2276,14 @@ export default function Profile() {
 																		avatarUrl
 																	);
 																}}
-																className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-																	selectedAvatar ===
-																		avatarUrl ||
+																className={`relative rounded-full overflow-hidden transition-all duration-300 ${selectedAvatar ===
+																	avatarUrl ||
 																	(!selectedAvatar &&
 																		avatar ===
-																			avatarUrl)
-																		? "ring-4 ring-purple-500 scale-110"
-																		: "hover:scale-105 opacity-70 hover:opacity-100"
-																}`}
+																		avatarUrl)
+																	? "ring-4 ring-purple-500 scale-110"
+																	: "hover:scale-105 opacity-70 hover:opacity-100"
+																	}`}
 															>
 																<img
 																	src={
@@ -2315,9 +2300,10 @@ export default function Profile() {
 												{uploadedCustomAvatar && (
 													<div className="mt-4">
 														<p className="text-sm font-medium text-gray-300 mb-2">
-															📸 Avatar
-															personnalisé
-															disponible
+															📸{" "}
+															{t(
+																"profile.settings.customAvatarAvailable"
+															)}
 														</p>
 														<button
 															type="button"
@@ -2329,18 +2315,19 @@ export default function Profile() {
 																	uploadedCustomAvatar
 																);
 															}}
-															className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-																selectedAvatar ===
+															className={`relative rounded-full overflow-hidden transition-all duration-300 ${selectedAvatar ===
 																uploadedCustomAvatar
-																	? "ring-4 ring-green-500 scale-110"
-																	: "hover:scale-105 opacity-70 hover:opacity-100"
-															}`}
+																? "ring-4 ring-green-500 scale-110"
+																: "hover:scale-105 opacity-70 hover:opacity-100"
+																}`}
 														>
 															<img
 																src={
 																	uploadedCustomAvatar
 																}
-																alt="Avatar personnalisé"
+																alt={t(
+																	"profile.settings.customAvatar"
+																)}
 																className="w-20 h-20 object-cover"
 															/>
 														</button>
