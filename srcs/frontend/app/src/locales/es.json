@@ -474,7 +474,11 @@
       "lives": "Vidas",
       "streak": "Racha",
       "words": "Palabras",
-      "avgTime": "Tiempo Prom."
+      "avgTime": "Tiempo Prom.",
+      "recentHistory": "Historial Reciente",
+      "valid": "Válido",
+      "invalid": "Inválido",
+      "unknownPlayer": "Jugador Desconocido"
     },
     "backToMenu": "Volver al menú",
     "stats": {
@@ -741,7 +745,7 @@
     "serverError": "Error del servidor",
     "networkError": "Error de red",
     "error": "Error",
-	"invalidCode": "Código inválido",
+    "invalidCode": "Código inválido",
     "yourCode": "Tu código"
   },
   "notFound": {
@@ -885,10 +889,38 @@
     "privateMessagePlaceholder": "Mensaje privado a {{name}}"
   },
   "registration": {
-    "confirmPassword": "Confirmar contraseña",
+    "title": "Registro",
+    "subtitle": "Únete al universo Transcendence",
+    "step1Title": "Tu información",
+    "nameLabel": "Nombre (Nombre Apellido)",
     "namePlaceholder": "Juan Pérez",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "usernameLabel": "Nombre de usuario",
     "usernamePlaceholder": "Tu nombre de usuario",
-    "avatarSelected": "Avatar seleccionado"
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirmar contraseña",
+    "nextButton": "Siguiente",
+    "chooseAvatar": "Elige tu avatar",
+    "avatarSelected": "Avatar seleccionado",
+    "backButton": "Volver",
+    "submitButton": "Registrarse",
+    "orContinue": "O",
+    "signUpWithGoogle": "Registrarse con Google",
+    "alreadyRegistered": "¿Ya estás registrado?",
+    "signIn": "Iniciar sesión",
+    "success": "¡Registro exitoso! Redirigiendo...",
+    "errors": {
+      "allFieldsRequired": "Todos los campos son obligatorios.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "invalidName": "El nombre debe comenzar con una letra y puede contener letras, espacios, apóstrofes y guiones.",
+      "invalidEmail": "La dirección de correo electrónico no es válida.",
+      "invalidDisplayName": "El nombre de usuario solo debe contener letras, números y guiones.",
+      "invalidPassword": "La contraseña debe contener al menos 6 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
+      "emailOrUsernameExists": "Este correo electrónico o nombre de usuario ya está en uso.",
+      "registrationError": "Error durante el registro."
+    }
   },
   "account": {
     "confirmNewPassword": "Confirmar nueva contraseña"

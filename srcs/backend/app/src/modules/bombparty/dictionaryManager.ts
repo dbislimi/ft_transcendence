@@ -22,12 +22,16 @@ export class DictionaryManager {
   private partitionCount: number = 0;
   private partitionFiles: string[] = [];
   private allWordsPath: string;
+  private frenchWordsPath: string;
+  private englishWordsPath: string;
   private partitionsDir: string;
   private metadataPath: string;
   private initialized: boolean = false;
 
   constructor() {
-    this.allWordsPath = path.join(__dirname, 'data', 'francais.txt');
+    this.frenchWordsPath = path.join(__dirname, 'data', 'francais.txt');
+    this.englishWordsPath = path.join(__dirname, 'data', 'anglais.txt');
+    this.allWordsPath = path.join(__dirname, 'data', 'francais.txt'); // Pour compatibilité
     this.partitionsDir = path.join(__dirname, 'data', 'partitions');
     this.metadataPath = path.join(this.partitionsDir, '.metadata.json');
     this.ensurePartitionsDir();
@@ -50,10 +54,17 @@ export class DictionaryManager {
       this.partitionCount = this.partitionFiles.length;
     }
 
-		const allWords = fs.readFileSync(this.allWordsPath, "utf8");
-		this.totalWords = allWords
-			.split("\n")
-			.filter((line) => line.trim().length > 0).length;
+		// Compter les mots des deux fichiers
+		let totalCount = 0;
+		if (fs.existsSync(this.frenchWordsPath)) {
+			const frenchWords = fs.readFileSync(this.frenchWordsPath, "utf8");
+			totalCount += frenchWords.split("\n").filter((line) => line.trim().length > 0).length;
+		}
+		if (fs.existsSync(this.englishWordsPath)) {
+			const englishWords = fs.readFileSync(this.englishWordsPath, "utf8");
+			totalCount += englishWords.split("\n").filter((line) => line.trim().length > 0).length;
+		}
+		this.totalWords = totalCount;
 
 		this.initialized = true;
 		console.log(
@@ -68,11 +79,22 @@ export class DictionaryManager {
 	}
 
   private getSourceFileModificationTime(): number | null {
-    if (!fs.existsSync(this.allWordsPath)) {
-      return null;
+    let maxTime = 0;
+    let hasFile = false;
+    
+    if (fs.existsSync(this.frenchWordsPath)) {
+      const stats = fs.statSync(this.frenchWordsPath);
+      maxTime = Math.max(maxTime, stats.mtimeMs);
+      hasFile = true;
     }
-    const stats = fs.statSync(this.allWordsPath);
-    return stats.mtimeMs;
+    
+    if (fs.existsSync(this.englishWordsPath)) {
+      const stats = fs.statSync(this.englishWordsPath);
+      maxTime = Math.max(maxTime, stats.mtimeMs);
+      hasFile = true;
+    }
+    
+    return hasFile ? maxTime : null;
   }
 
   private getStoredModificationTime(): number | null {
@@ -154,12 +176,28 @@ export class DictionaryManager {
   }
 
 	private async createPartitions(): Promise<void> {
-		const allWords = fs.readFileSync(this.allWordsPath, "utf8");
-		const words = allWords
-			.split("\n")
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0)
-			.map((word) => normalizeText(word));
+		// Charger les mots français
+		let words: string[] = [];
+		if (fs.existsSync(this.frenchWordsPath)) {
+			const frenchWords = fs.readFileSync(this.frenchWordsPath, "utf8");
+			const frenchWordsList = frenchWords
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0)
+				.map((word) => normalizeText(word));
+			words = [...words, ...frenchWordsList];
+		}
+		
+		// Charger les mots anglais
+		if (fs.existsSync(this.englishWordsPath)) {
+			const englishWords = fs.readFileSync(this.englishWordsPath, "utf8");
+			const englishWordsList = englishWords
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0)
+				.map((word) => normalizeText(word));
+			words = [...words, ...englishWordsList];
+		}
 
 		let partitionIndex = 0;
 		let currentPartition: string[] = [];

@@ -18,9 +18,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const handleSuggestionsCountChange = (count: 0 | 3 | 5 | 10) => {
     setUserPreferences({ suggestionsCount: count });
   };
-  const handleDifficultyChange = (difficulty: 'easy' | 'medium' | 'hard' | 'all') => {
-    setUserPreferences({ suggestionsDifficulty: difficulty });
-  };
   const handleReset = () => {
     resetUserPreferences();
   };
@@ -95,37 +92,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </div>
               <p className="text-xs text-slate-400 mt-2">
                 {t('bombParty.settings.suggestionsCountDesc', 'Choisissez le nombre de suggestions à afficher')}
-              </p>
-            </div>
-          )}
-          {userPreferences.suggestionsEnabled && userPreferences.suggestionsCount > 0 && (
-            <div>
-              <label className="block text-slate-200 font-medium mb-3">
-                {t('bombParty.settings.suggestionsDifficulty', 'Difficulte des suggestions')}
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['all', 'easy', 'medium', 'hard'] as const).map((difficulty) => (
-                  <button
-                    key={difficulty}
-                    onClick={() => handleDifficultyChange(difficulty)}
-                    className={`py-2 px-3 rounded-lg font-medium transition-all duration-200 ${
-                      userPreferences.suggestionsDifficulty === difficulty
-                        ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    }`}
-                  >
-                    {difficulty === 'all'
-                      ? t('bombParty.settings.difficultyAll', 'Toutes')
-                      : difficulty === 'easy'
-                      ? t('bombParty.settings.difficultyEasy', 'Faciles')
-                      : difficulty === 'medium'
-                      ? t('bombParty.settings.difficultyMedium', 'Moyennes')
-                      : t('bombParty.settings.difficultyHard', 'Difficiles')}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-slate-400 mt-2">
-                {t('bombParty.settings.suggestionsDifficultyDesc', 'Filtrez les suggestions selon leur difficulte')}
               </p>
             </div>
           )}

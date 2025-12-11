@@ -161,7 +161,7 @@ export default function Connection() {
 										fill="#EA4335"
 									/>
 								</svg>
-								Sign in with Google
+								{t("connection.signInGoogle")}
 							</a>
 						</form>
 

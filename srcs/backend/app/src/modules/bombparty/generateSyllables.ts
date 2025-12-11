@@ -4,19 +4,40 @@ import { normalizeText, getAllSyllablesFromWord } from './syllableExtractor.js';
 const MIN_WORDS_REQUIRED = 800;
 
 const francaisWordsPath = new URL('./data/francais.txt', import.meta.url);
+const anglaisWordsPath = new URL('./data/anglais.txt', import.meta.url);
 const syllablesPath = new URL('./data/syllabes.txt', import.meta.url);
 
 console.log('[BP] Génération des syllabes avec >=', MIN_WORDS_REQUIRED, 'mots...');
 
+// Charger les mots français
 const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
-const words = francaisWordsData
+const frenchWords = francaisWordsData
   .split('\n')
   .map(line => line.trim())
   .filter(line => line.length > 0)
   .map(word => normalizeText(word))
   .filter(word => word.length >= 3);
 
-console.log(`[BP] ${words.length} mots chargés depuis francais.txt`);
+console.log(`[BP] ${frenchWords.length} mots français chargés depuis francais.txt`);
+
+// Charger les mots anglais
+let englishWords: string[] = [];
+if (fs.existsSync(anglaisWordsPath)) {
+  const anglaisWordsData = fs.readFileSync(anglaisWordsPath, 'utf8');
+  englishWords = anglaisWordsData
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(word => normalizeText(word))
+    .filter(word => word.length >= 3);
+  console.log(`[BP] ${englishWords.length} mots anglais chargés depuis anglais.txt`);
+} else {
+  console.log('[BP] Avertissement: fichier anglais.txt introuvable, utilisation uniquement du français');
+}
+
+// Combiner les deux listes
+const words = [...frenchWords, ...englishWords];
+console.log(`[BP] ${words.length} mots totaux (français + anglais)`);
 const syllableCount = new Map<string, number>();
 
 let processedWords = 0;

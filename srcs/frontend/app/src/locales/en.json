@@ -467,7 +467,11 @@
       "lives": "Lives",
       "streak": "Streak",
       "words": "Words",
-      "avgTime": "Avg. Time"
+      "avgTime": "Avg. Time",
+      "recentHistory": "Recent History",
+      "valid": "Valid",
+      "invalid": "Invalid",
+      "unknownPlayer": "Unknown Player"
     },
     "hud": {
       "yourTurn": "Your turn",
@@ -741,7 +745,7 @@
     "serverError": "Server error",
     "networkError": "Network error",
     "error": "Error",
-	"invalidCode": "Invalid code",
+    "invalidCode": "Invalid code",
     "yourCode": "Your code"
   },
   "notFound": {
@@ -885,10 +889,38 @@
     "privateMessagePlaceholder": "Private message to {{name}}"
   },
   "registration": {
-    "confirmPassword": "Confirm password",
+    "title": "Registration",
+    "subtitle": "Join the Transcendence universe",
+    "step1Title": "Your information",
+    "nameLabel": "Name (First Last)",
     "namePlaceholder": "John Doe",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your@email.com",
+    "usernameLabel": "Username",
     "usernamePlaceholder": "Your username",
-    "avatarSelected": "Selected avatar"
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirm password",
+    "nextButton": "Next",
+    "chooseAvatar": "Choose your avatar",
+    "avatarSelected": "Selected avatar",
+    "backButton": "Back",
+    "submitButton": "Sign up",
+    "orContinue": "Or",
+    "signUpWithGoogle": "Sign up with Google",
+    "alreadyRegistered": "Already registered?",
+    "signIn": "Sign in",
+    "success": "Registration successful! Redirecting...",
+    "errors": {
+      "allFieldsRequired": "All fields are required.",
+      "passwordMismatch": "Passwords do not match.",
+      "invalidName": "Name must start with a letter and can contain letters, spaces, apostrophes and hyphens.",
+      "invalidEmail": "The email address is not valid.",
+      "invalidDisplayName": "Username must contain only letters, numbers and hyphens.",
+      "invalidPassword": "Password must contain at least 6 characters, one uppercase, one lowercase, one number and one special character.",
+      "emailOrUsernameExists": "This email or username is already in use.",
+      "registrationError": "Error during registration."
+    }
   },
   "account": {
     "confirmNewPassword": "Confirm new password"

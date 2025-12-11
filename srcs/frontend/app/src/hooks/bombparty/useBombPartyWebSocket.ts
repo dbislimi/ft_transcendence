@@ -346,6 +346,17 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
     };
 
     const handleGameEnd = (payload: any) => {
+      logger.info('[useBombPartyWebSocket] Jeu termine - nettoyage du timer');
+      
+      if (timerRef.current && timerRef.current.isTimerActive()) {
+        timerRef.current.stop();
+      }
+      
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+      
       setGameState({
         ...gameState!,
         phase: 'GAME_OVER',
@@ -353,6 +364,10 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         finalStats: payload.finalStats
       } as any);
       setGamePhase('GAME_OVER');
+      
+      setWordJustSubmitted(false);
+      setTurnInProgress(false);
+      setTimerGracePeriod(false);
     };
 
     const handleWordResult = (payload: any) => {
@@ -441,6 +456,22 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
         onGameStateUpdateRef.current(payload.gameState);
       }
 
+      if (payload.gameState.phase === "GAME_OVER") {
+        logger.info('[useBombPartyWebSocket] GAME_OVER detecte dans handleGameState');
+        if (timerRef.current && timerRef.current.isTimerActive()) {
+          timerRef.current.stop();
+        }
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
+        setGamePhase('GAME_OVER');
+        setWordJustSubmitted(false);
+        setTurnInProgress(false);
+        setTimerGracePeriod(false);
+        return;
+      }
+
       if (payload.gameState.phase === "TURN_ACTIVE") {
         setGamePhase("GAME");
         setCountdown(0);
@@ -483,6 +514,11 @@ export function useBombPartyWebSocket(user: any, options?: UseBombPartyWebSocket
             phase: payload.gameState.phase
           });
         }
+      } else if (payload.gameState.phase !== "TURN_ACTIVE" && timerRef.current && timerRef.current.isTimerActive()) {
+        logger.info('[useBombPartyWebSocket] Phase non-TURN_ACTIVE detectee - arret du timer', {
+          phase: payload.gameState.phase
+        });
+        timerRef.current.stop();
       }
     };
 

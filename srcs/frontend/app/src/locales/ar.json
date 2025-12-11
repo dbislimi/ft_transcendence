@@ -370,7 +370,11 @@
       "lives": "الأرواح",
       "streak": "سلسلة",
       "words": "كلمات",
-      "avgTime": "متوسط الوقت"
+      "avgTime": "متوسط الوقت",
+      "recentHistory": "التاريخ الأخير",
+      "valid": "صحيح",
+      "invalid": "غير صحيح",
+      "unknownPlayer": "لاعب غير معروف"
     },
     "backToMenu": "العودة إلى القائمة",
     "stats": {
@@ -654,7 +658,7 @@
     "serverError": "خطأ في الخادم",
     "networkError": "خطأ في الشبكة",
     "error": "خطأ",
-	"invalidCode": "كود غير صالح",
+    "invalidCode": "كود غير صالح",
     "yourCode": "الكود الخاص بك"
   },
   "notFound": {
@@ -885,10 +889,38 @@
     "privateMessagePlaceholder": "رسالة خاصة إلى {{name}}"
   },
   "registration": {
-    "confirmPassword": "تأكيد كلمة المرور",
+    "title": "التسجيل",
+    "subtitle": "انضم إلى عالم Transcendence",
+    "step1Title": "معلوماتك",
+    "nameLabel": "الاسم (الاسم الأول الأخير)",
     "namePlaceholder": "محمد أحمد",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "your@email.com",
+    "usernameLabel": "اسم المستخدم",
     "usernamePlaceholder": "اسم المستخدم",
-    "avatarSelected": "الصورة الرمزية المحددة"
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "nextButton": "التالي",
+    "chooseAvatar": "اختر صورتك الرمزية",
+    "avatarSelected": "الصورة الرمزية المحددة",
+    "backButton": "رجوع",
+    "submitButton": "تسجيل",
+    "orContinue": "أو",
+    "signUpWithGoogle": "التسجيل باستخدام Google",
+    "alreadyRegistered": "مسجل بالفعل؟",
+    "signIn": "تسجيل الدخول",
+    "success": "التسجيل ناجح! جاري التحويل...",
+    "errors": {
+      "allFieldsRequired": "جميع الحقول مطلوبة.",
+      "passwordMismatch": "كلمات المرور غير متطابقة.",
+      "invalidName": "يجب أن يبدأ الاسم بحرف ويمكن أن يحتوي على أحرف ومسافات وفواصل عليا وشرطات.",
+      "invalidEmail": "عنوان البريد الإلكتروني غير صالح.",
+      "invalidDisplayName": "يجب أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات فقط.",
+      "invalidPassword": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل، حرف كبير واحد، حرف صغير واحد، رقم واحد وحرف خاص واحد.",
+      "emailOrUsernameExists": "هذا البريد الإلكتروني أو اسم المستخدم قيد الاستخدام بالفعل.",
+      "registrationError": "خطأ أثناء التسجيل."
+    }
   },
   "account": {
     "confirmNewPassword": "تأكيد كلمة المرور الجديدة"

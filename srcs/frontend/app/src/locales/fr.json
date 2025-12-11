@@ -474,7 +474,11 @@
       "lives": "Vies",
       "streak": "Série",
       "words": "Mots",
-      "avgTime": "Temps moy."
+      "avgTime": "Temps moy.",
+      "recentHistory": "Historique récent",
+      "valid": " Valide",
+      "invalid": "Invalide",
+      "unknownPlayer": "Joueur inconnu"
     },
     "backToMenu": "Retour au menu",
     "stats": {
@@ -568,7 +572,7 @@
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
     "error": "Erreur",
-	"invalidCode": "Code invalide",
+    "invalidCode": "Code invalide",
     "yourCode": "Votre code"
   },
   "notFound": {
@@ -885,10 +889,38 @@
     "privateMessagePlaceholder": "Message privé à {{name}}"
   },
   "registration": {
-    "confirmPassword": "Confirmer le mot de passe",
+    "title": "Inscription",
+    "subtitle": "Rejoignez l'univers Transcendence",
+    "step1Title": "Vos informations",
+    "nameLabel": "Nom (Prénom Nom)",
     "namePlaceholder": "Jean Dupont",
+    "emailLabel": "Email",
+    "emailPlaceholder": "votre@email.com",
+    "usernameLabel": "Pseudo",
     "usernamePlaceholder": "Votre pseudo",
-    "avatarSelected": "Avatar sélectionné"
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirmer le mot de passe",
+    "nextButton": "Suivant",
+    "chooseAvatar": "Choisissez votre avatar",
+    "avatarSelected": "Avatar sélectionné",
+    "backButton": "Retour",
+    "submitButton": "S'inscrire",
+    "orContinue": "Ou",
+    "signUpWithGoogle": "S'inscrire avec Google",
+    "alreadyRegistered": "Déjà inscrit ?",
+    "signIn": "Se connecter",
+    "success": "Inscription réussie ! Redirection...",
+    "errors": {
+      "allFieldsRequired": "Tous les champs sont requis.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "invalidName": "Le nom doit commencer par une lettre et peut contenir des lettres, espaces, apostrophes et tirets.",
+      "invalidEmail": "L'adresse email n'est pas valide.",
+      "invalidDisplayName": "Le pseudo ne doit contenir que des lettres, chiffres et tirets.",
+      "invalidPassword": "Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.",
+      "emailOrUsernameExists": "Cet email ou ce pseudo est déjà utilisé.",
+      "registrationError": "Erreur lors de l'inscription."
+    }
   },
   "account": {
     "confirmNewPassword": "Confirmer le nouveau mot de passe"

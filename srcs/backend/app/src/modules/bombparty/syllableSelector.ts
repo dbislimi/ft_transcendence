@@ -3,15 +3,36 @@ import { normalizeText, isValidSyllableInWord } from './syllableExtractor.js';
 import { getDictionaryManager } from './dictionaryManager.js';
 
 const francaisWordsPath = new URL('./data/francais.txt', import.meta.url);
-const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
+const anglaisWordsPath = new URL('./data/anglais.txt', import.meta.url);
 
-const frenchLexicon: Set<string> = new Set(
-  francaisWordsData
+// Charger les mots français
+const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
+const frenchWords = francaisWordsData
+  .split('\n')
+  .map(line => line.trim())
+  .filter(line => line.length > 0)
+  .map(word => normalizeText(word));
+
+// Charger les mots anglais
+let englishWords: string[] = [];
+if (fs.existsSync(anglaisWordsPath)) {
+  const anglaisWordsData = fs.readFileSync(anglaisWordsPath, 'utf8');
+  englishWords = anglaisWordsData
     .split('\n')
     .map(line => line.trim())
     .filter(line => line.length > 0)
-    .map(word => normalizeText(word))
-);
+    .map(word => normalizeText(word));
+  console.log(`[BP] ✓ ${englishWords.length} mots anglais chargés`);
+} else {
+  console.log('[BP] Avertissement: fichier anglais.txt introuvable, utilisation uniquement du français');
+}
+
+// Combiner les deux lexiques
+const combinedLexicon: Set<string> = new Set([...frenchWords, ...englishWords]);
+const frenchLexicon: Set<string> = new Set(frenchWords);
+
+console.log(`[BP] ✓ ${frenchWords.length} mots français chargés`);
+console.log(`[BP] ✓ ${combinedLexicon.size} mots totaux (français + anglais) chargés`);
 
 const syllablesPath = new URL('./data/syllabes.txt', import.meta.url);
 
@@ -38,7 +59,7 @@ const validSyllablesSet = new Set(availableFragments);
 
 console.log('[BP] Initialisation de l\'index des fragments pour les syllabes valides...');
 let wordCount = 0;
-for (const word of frenchLexicon) {
+for (const word of combinedLexicon) {
   if (word.length >= 3) {
     const normalized = normalizeText(word);
     for (let len = 2; len <= Math.min(4, normalized.length); len++) {
@@ -195,9 +216,17 @@ export async function wordExistsInDictionary(word: string): Promise<boolean> {
 }
 
 export function wordExistsInDictionarySync(word: string): boolean {
-  return frenchLexicon.has(normalizeText(word));
+  return combinedLexicon.has(normalizeText(word));
 }
 
 export function getFrenchLexicon(): Set<string> {
   return frenchLexicon;
+}
+
+export function getEnglishLexicon(): Set<string> {
+  return new Set(englishWords);
+}
+
+export function getCombinedLexicon(): Set<string> {
+  return combinedLexicon;
 }

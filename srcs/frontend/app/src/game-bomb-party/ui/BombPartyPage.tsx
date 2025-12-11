@@ -82,11 +82,16 @@ export default function BombPartyPage() {
 		timerRef.current = timer;
 	}, [state, actions, engine, timer]);
 
-	// timer unifie pour local et multiplayer
 	const isTimerActive = state.gameState.phase === "TURN_ACTIVE";
 	const remainingMs = useTurnTimer(timer, isTimerActive);
 
-	// debug temporaire
+	useEffect(() => {
+		if (state.gameState.phase === "GAME_OVER" && timer.isTimerActive()) {
+			console.log("[BombPartyPage] GAME_OVER detected - stopping timer");
+			timer.stop();
+		}
+	}, [state.gameState.phase, timer]);
+
 	useEffect(() => {
 		if (isTimerActive && remainingMs === 0) {
 			console.warn("[BombPartyPage] Timer actif mais remainingMs = 0", {
@@ -164,7 +169,7 @@ export default function BombPartyPage() {
 			} else {
 				const currentPlayer =
 					currentState.gameState.players[
-						currentState.gameState.currentPlayerIndex
+					currentState.gameState.currentPlayerIndex
 					];
 				if (currentPlayer && currentPlayer.id) {
 					currentActions.setTimerGracePeriod(true);

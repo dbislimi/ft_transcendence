@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { computeRemainingTime } from './timerUtils';
 
 export class TurnTimer {
@@ -115,6 +115,8 @@ export class TurnTimer {
 
 export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
   const [remainingMs, setRemainingMs] = useState(0);
+  const zeroCountRef = useRef(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateTimer = useCallback(() => {
     console.log('[useTurnTimer] updateTimer appele', {
@@ -128,30 +130,59 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
       const remaining = timer.getRemainingMs();
       const finalRemaining = Math.max(0, remaining);
       
-      if (finalRemaining === 0 && timer.isTimerActive()) {
+      if (finalRemaining === 0) {
+        zeroCountRef.current++;
+        
+        if (zeroCountRef.current > 5) {
+          console.warn('[useTurnTimer] Boucle infinie detectee - arret force du timer', {
+            zeroCount: zeroCountRef.current,
+            isActive,
+            timerIsActive: timer.isTimerActive()
+          });
+          
+          timer.stop();
+          
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          
+          setRemainingMs(0);
+          return;
+        }
+        
         console.warn('[useTurnTimer] Timer actif mais remaining = 0', {
           isActive,
           timerIsActive: timer.isTimerActive(),
           remaining,
-          finalRemaining
+          finalRemaining,
+          zeroCount: zeroCountRef.current
         });
+      } else {
+        zeroCountRef.current = 0;
       }
       
       setRemainingMs(finalRemaining);
     } else {
       setRemainingMs(0);
+      zeroCountRef.current = 0;
     }
   }, [timer, isActive]);
 
   useEffect(() => {
     if (!isActive) {
       setRemainingMs(0);
+      zeroCountRef.current = 0;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       return;
     }
 
     updateTimer();
 
-    const interval = setInterval(updateTimer, 100);
+    intervalRef.current = setInterval(updateTimer, 100);
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -162,7 +193,10 @@ export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isActive, updateTimer]);

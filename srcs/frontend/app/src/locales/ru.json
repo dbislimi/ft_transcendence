@@ -474,7 +474,11 @@
       "lives": "Жизни",
       "streak": "Серия",
       "words": "Слова",
-      "avgTime": "Ср. время"
+      "avgTime": "Ср. время",
+      "recentHistory": "Недавняя история",
+      "valid": "Верно",
+      "invalid": "Неверно",
+      "unknownPlayer": "Неизвестный игрок"
     },
     "backToMenu": "Вернуться в меню",
     "stats": {
@@ -863,18 +867,6 @@
     "userNotFound": "Пользователь не найден"
   },
   "chat": {
-    "privateMessageTo": "Личное сообщение для",
-    "globalMessage": "Глобальное сообщение",
-    "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
-    "privateMessagePlaceholder": "Личное сообщение для {{name}}"
-  },
-  "friends": {
-    "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
-    "deleteButton": "Удалить",
-    "confirmBlock": "Вы уверены, что хотите заблокировать этого пользователя?",
-    "confirmUnblock": "Вы уверены, что хотите разблокировать этого пользователя?"
-  },
-  "chat": {
     "globalChat": "Глобальный чат",
     "privateChat": "Личный чат",
     "private": "(личное)",
@@ -890,11 +882,45 @@
     "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
     "privateMessagePlaceholder": "Личное сообщение для {{name}}"
   },
+  "friends": {
+    "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
+    "deleteButton": "Удалить",
+    "confirmBlock": "Вы уверены, что хотите заблокировать этого пользователя?",
+    "confirmUnblock": "Вы уверены, что хотите разблокировать этого пользователя?"
+  },
   "registration": {
-    "confirmPassword": "Подтвердите пароль",
+    "title": "Регистрация",
+    "subtitle": "Присоединяйтесь к вселенной Transcendence",
+    "step1Title": "Ваша информация",
+    "nameLabel": "Имя (Имя Фамилия)",
     "namePlaceholder": "Иван Иванов",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "your@email.com",
+    "usernameLabel": "Имя пользователя",
     "usernamePlaceholder": "Ваше имя пользователя",
-    "avatarSelected": "Выбранный аватар"
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Подтвердите пароль",
+    "nextButton": "Далее",
+    "chooseAvatar": "Выберите аватар",
+    "avatarSelected": "Выбранный аватар",
+    "backButton": "Назад",
+    "submitButton": "Зарегистрироваться",
+    "orContinue": "Или",
+    "signUpWithGoogle": "Зарегистрироваться через Google",
+    "alreadyRegistered": "Уже зарегистрированы?",
+    "signIn": "Войти",
+    "success": "Регистрация успешна! Перенаправление...",
+    "errors": {
+      "allFieldsRequired": "Все поля обязательны.",
+      "passwordMismatch": "Пароли не совпадают.",
+      "invalidName": "Имя должно начинаться с буквы и может содержать буквы, пробелы, апострофы и дефисы.",
+      "invalidEmail": "Адрес электронной почты недействителен.",
+      "invalidDisplayName": "Имя пользователя должно содержать только буквы, цифры и дефисы.",
+      "invalidPassword": "Пароль должен содержать не менее 6 символов, одну заглавную букву, одну строчную букву, одну цифру и один специальный символ.",
+      "emailOrUsernameExists": "Этот адрес электронной почты или имя пользователя уже используется.",
+      "registrationError": "Ошибка при регистрации."
+    }
   },
   "account": {
     "confirmNewPassword": "Подтвердите новый пароль"

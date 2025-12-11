@@ -1,11 +1,14 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { API_BASE_URL } from "../config/api";
 
 interface GoogleAuthButtonProps {
   className?: string;
+  variant?: "signin" | "signup";
 }
 
-export default function GoogleAuthButton({ className = "" }: GoogleAuthButtonProps) {
+export default function GoogleAuthButton({ className = "", variant = "signin" }: GoogleAuthButtonProps) {
+  const { t } = useTranslation();
   const handleGoogleAuth = () => {
     // Rediriger vers l'endpoint Google OAuth du backend
     // Utiliser la même logique que les autres appels API dans l'application
@@ -42,7 +45,7 @@ export default function GoogleAuthButton({ className = "" }: GoogleAuthButtonPro
           fill="#EA4335"
         />
       </svg>
-      <span>Continuer avec Google</span>
+      <span>{variant === "signin" ? t("connection.signInGoogle") : t("registration.signUpWithGoogle")}</span>
     </button>
   );
 }
