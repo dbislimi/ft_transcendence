@@ -44,17 +44,14 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
 
       const guestId = Math.floor(Math.random() * 1000);
       const storedName = sessionStorage.getItem('bombparty_player_name');
-      
-      // Si l'utilisateur est connecté, ne pas utiliser un nom de guest stocké
+
       let playerName: string;
       if (user?.id) {
-        // Utilisateur authentifié : utiliser display_name ou name, ignorer le nom stocké s'il est un guest
         if (storedName && storedName.startsWith('Guest_')) {
           sessionStorage.removeItem('bombparty_player_name');
         }
         playerName = user?.display_name || user?.name || `User_${user.id}`;
       } else {
-        // Utilisateur non authentifié : utiliser le nom stocké ou générer un guest
         playerName = (storedName && storedName.trim()) || `Guest_${guestId}`;
       }
 
@@ -133,6 +130,17 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
     };
 
     const handleGameEnd = (payload: any) => {
+      console.log('[useBombPartyWebSocket] Jeu termine - nettoyage du timer');
+
+      if (timerRef.current) {
+        timerRef.current.stop();
+      }
+
+      if (countdownIntervalRef.current) {
+        timerService.clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+
       const currentState = store.gameState;
       if (currentState) {
         store.receiveServerState({
@@ -143,6 +151,10 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
         } as any);
       }
       store.setGamePhase('GAME_OVER');
+
+      store.setWordJustSubmitted(false);
+      store.setTurnInProgress(false);
+      store.setTimerGracePeriod(false);
     };
 
     const handleWordResult = (payload: any) => {
@@ -288,6 +300,11 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
             Math.abs(currentTurnStartTime - serverTurnStart) > 500;
 
           if (needsResync) {
+            console.log('[useBombPartyWebSocket] Demarrage du timer', {
+              serverTurnStart,
+              turnDuration,
+              clientNow
+            });
             timerRef.current.startTurn(serverTurnStart, turnDuration, clientNow);
             store.setTurnStartTime(serverTurnStart);
             store.setTimerGracePeriod(true);
@@ -295,10 +312,22 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
             timerService.setTimeout(() => store.setTimerGracePeriod(false), 500);
           }
         } else {
+          console.log('[useBombPartyWebSocket] Parametres timer invalides - arret du timer');
           timerRef.current.stop();
         }
       } else if (gameState.phase !== "TURN_ACTIVE" && timerRef.current.isTimerActive()) {
+        console.log('[useBombPartyWebSocket] Phase non-active detectee - arret du timer', {
+          phase: gameState.phase
+        });
         timerRef.current.stop();
+      } else if (gameState.phase === "GAME_OVER") {
+        console.log('[useBombPartyWebSocket] GAME_OVER detecte - arret force du timer');
+        timerRef.current.stop();
+
+        if (countdownIntervalRef.current) {
+          timerService.clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
       }
     });
 
@@ -312,7 +341,7 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
       if (payload?.roomId === curRoom && payload?.playerId && payload?.bonusKey) {
         const currentState = store.gameState;
         const player = currentState?.players?.find((p: any) => p.id === payload.playerId);
-        const playerName = player?.name || 'un joueur';
+        const playerName = player?.name || 'a player';
 
         store.setBonusNotification({ bonusKey: payload.bonusKey as BonusKey, playerName });
 
@@ -321,7 +350,6 @@ export function useBombPartyWebSocket({ client, timer, user }: UseBombPartyWebSo
           timerService.setTimeout(() => store.setTimerFlash(false), 1000);
         }
 
-        // Émettre un événement pour les notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('bp:bonus:applied', {
             detail: {

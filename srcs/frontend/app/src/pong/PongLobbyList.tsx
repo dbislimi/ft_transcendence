@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useWebSocket } from "../contexts/WebSocketContext";
-import { useGameSettings } from "../contexts/GameSettingsContext";
-
-interface PongLobbyListProps {}
 
 interface Tournament {
 	id: string;
@@ -12,10 +9,9 @@ interface Tournament {
 	private: boolean;
 }
 
-export default function PongLobbyList({}: PongLobbyListProps) {
+export default function PongLobbyList() {
 	const { t } = useTranslation();
 	const { pongWsRef, addPongRoute, removePongRoute } = useWebSocket();
-	const { settings: gameSettings } = useGameSettings();
 	const [tournaments, setTournaments] = useState<Tournament[]>([]);
 	const [selectedLobby, setSelectedLobby] = useState<string | null>(null);
 	const [password, setPassword] = useState("");
@@ -33,59 +29,44 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 	};
 
 	useEffect(() => {
-		const handler = (d: any) => {
-			if (!d) return;
-			if (d.event === "tournaments") {
-				setTournaments(d.body);
+		const handler = (data: any) => {
+			if (data?.event === "tournaments") {
+				setTournaments(data.body);
 				setIsLoading(false);
 			}
 		};
 
 		addPongRoute("pong_lobby_list", handler);
+		sendListRequest();
 
-		const fetchTournaments = () => {
-			sendListRequest();
-		};
-
-		fetchTournaments();
-
-		return () => {
-			removePongRoute("pong_lobby_list", handler);
-		};
+		return () => removePongRoute("pong_lobby_list", handler);
 	}, [addPongRoute, removePongRoute, pongWsRef]);
+
+	const joinTournament = (tournamentId: string, password: string = "") => {
+		pongWsRef.current?.send(
+			JSON.stringify({
+				event: "tournament",
+				body: {
+					action: "join",
+					id: tournamentId,
+					passwd: password,
+				},
+			})
+		);
+	};
 
 	const handleJoinClick = (tour: Tournament) => {
 		if (tour.private) {
 			setSelectedLobby(tour.id);
 			setPassword("");
 		} else {
-			pongWsRef.current?.send(
-				JSON.stringify({
-					event: "tournament",
-					body: {
-						action: "join",
-						id: tour.id,
-						passwd: "",
-						options: gameSettings,
-					},
-				})
-			);
+			joinTournament(tour.id);
 		}
 	};
 
 	const handlePasswordSubmit = () => {
 		if (selectedLobby && password.trim()) {
-			pongWsRef.current?.send(
-				JSON.stringify({
-					event: "tournament",
-					body: {
-						action: "join",
-						id: selectedLobby,
-						passwd: password,
-						options: gameSettings,
-					},
-				})
-			);
+			joinTournament(selectedLobby, password);
 			setSelectedLobby(null);
 			setPassword("");
 		}
@@ -101,6 +82,9 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 		sendListRequest();
 		setTimeout(() => setIsLoading(false), 2000);
 	};
+	const availableTournaments = tournaments.filter(
+		(tour) => tour.players < tour.capacity
+	);
 
 	return (
 		<div className="space-y-4">
@@ -108,7 +92,7 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 				<h3 className="text-lg font-semibold text-slate-200">
 					{t("pong.lobby.availableTournaments") ||
 						"Available Tournaments"}{" "}
-					({tournaments.length})
+					({availableTournaments.length})
 				</h3>
 				<button
 					onClick={handleRefresh}
@@ -123,7 +107,7 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 				</button>
 			</div>
 
-			{tournaments.length === 0 ? (
+			{availableTournaments.length === 0 ? (
 				<div className="text-center py-8">
 					<p className="text-slate-400 mb-2">
 						{t("pong.lobby.noTournaments") ||
@@ -136,14 +120,10 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 				</div>
 			) : (
 				<div className="space-y-2 max-h-96 overflow-y-auto">
-					{tournaments.map((tour) => (
+					{availableTournaments.map((tour) => (
 						<div
 							key={tour.id}
-							className={`p-4 rounded-lg border transition-all duration-200 ${
-								tour.players >= tour.capacity
-									? "border-slate-600 bg-slate-700/30 opacity-60"
-									: "border-slate-600 bg-slate-700/60 hover:border-slate-500 hover:bg-slate-700/80"
-							}`}
+							className="p-4 rounded-lg border transition-all duration-200 border-slate-600 bg-slate-700/60 hover:border-slate-500 hover:bg-slate-700/80"
 						>
 							<div className="flex items-center justify-between">
 								<div className="flex-1">
@@ -157,17 +137,9 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 													"Private"}
 											</span>
 										)}
-										<span
-											className={`text-xs font-medium ${
-												tour.players >= tour.capacity
-													? "text-orange-400"
-													: "text-green-400"
-											}`}
-										>
-											{tour.players >= tour.capacity
-												? t("pong.lobby.full") || "Full"
-												: t("pong.lobby.waiting") ||
-												  "Waiting"}
+										<span className="text-xs font-medium text-green-400">
+											{t("pong.lobby.waiting") ||
+												"Waiting"}
 										</span>
 									</div>
 									<div className="flex items-center gap-4 text-sm text-slate-400">
@@ -180,16 +152,9 @@ export default function PongLobbyList({}: PongLobbyListProps) {
 								</div>
 								<button
 									onClick={() => handleJoinClick(tour)}
-									disabled={tour.players >= tour.capacity}
-									className={`px-4 py-2 rounded font-medium transition-all duration-200 ${
-										tour.players >= tour.capacity
-											? "bg-slate-600 text-slate-400 cursor-not-allowed"
-											: "bg-linear-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
-									}`}
+									className="px-4 py-2 rounded font-medium transition-all duration-200 bg-linear-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white"
 								>
-									{tour.players >= tour.capacity
-										? t("pong.lobby.full") || "Full"
-										: t("pong.lobby.join") || "Join"}
+									{t("pong.lobby.join") || "Join"}
 								</button>
 							</div>
 						</div>

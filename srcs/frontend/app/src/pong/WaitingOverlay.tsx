@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 interface Props {
@@ -19,7 +19,10 @@ const WaitingOverlay = memo(function WaitingOverlay({ opponentName }: Props) {
 						</span>
 					</div>
 					<div className="text-white/80 text-sm">
-						{t("pong.waitingOverlay.waitingForOpponent")} <span className="text-white font-medium">{opponentName}</span>
+						{t("pong.waitingOverlay.waitingForOpponent")}{" "}
+						<span className="text-white font-medium">
+							{opponentName}
+						</span>
 					</div>
 					<div className="text-white/60 text-xs">
 						{t("pong.waitingOverlay.gamePaused")}

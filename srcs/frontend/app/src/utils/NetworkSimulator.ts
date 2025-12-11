@@ -1,5 +1,5 @@
 const NETWORK_CONFIG = {
-    SIMULATE_LAG: true,
+    SIMULATE_LAG: false,
     MIN_LATENCY: 25,
     MAX_JITTER: 35
 };

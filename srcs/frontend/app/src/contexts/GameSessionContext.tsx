@@ -12,6 +12,7 @@ export type GameSession = {
 	opponentPaddleColor?: string;
 	side: 0 | 1;
 	labels: { self: string; opponent: string };
+	botDifficulty?: string;
 	tournamentDepth?: number | null;
 	countdownStart?: number;
 };

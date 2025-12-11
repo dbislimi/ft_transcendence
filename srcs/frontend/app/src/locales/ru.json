@@ -14,10 +14,10 @@
     "welcome": "добро пожаловать",
     "connectDesc": "Войти в аккаунт",
     "registrationDesc": "Присоединиться к приключению",
-    "pongTitle": "Pong",
+    "pongTitle": "Понг",
     "pongDesc": "Запустить Понг",
     "shopDesc": "Настроить опыт",
-    "bombPartyTitle": "Bomb Party",
+    "bombPartyTitle": "Бомб-Парти",
     "bombPartyDesc": "Запустить Bomb Party",
     "aboutDesc": "Узнать о команде",
     "readyToTranscend": "Готов преодолеть свои пределы?",
@@ -27,7 +27,7 @@
     "rules": {
       "title": "Правила Понга",
       "rule1": "Первый до 11 очков побеждает.",
-      "rule2": "Используйте ракетку, чтобы ударить мяч.",
+      "rule2": "Угол отскока зависит от точки удара по ракетке.",
       "rule3": "Не дайте мячу пройти мимо вас.",
       "rule4": "Могут появиться бонусы!",
       "modeSelection": "Выбрать Режим",
@@ -46,12 +46,23 @@
       "tournament": "Турнир",
       "tournamentDesc": "Присоединиться или создать турнир",
       "enterName": "Введите ваше Имя",
-      "namePlaceholder": "Ваше имя"
+      "namePlaceholder": "Ваше имя",
+      "bonus": "Бонус"
     },
     "difficulty": {
       "easy": "Легко",
       "medium": "Средне",
       "hard": "Сложно"
+    },
+    "labels": {
+      "defaultSelf": "Вы",
+      "defaultOpponent": "Противник",
+      "selfWithName": "{{name}} (Вы)",
+      "bot": "Бот ({{difficulty}})",
+      "player1": "Игрок 1",
+      "player2": "Игрок 2",
+      "p1": "И1",
+      "p2": "И2"
     },
     "lobby": {
       "title": "Лобби Турнира",
@@ -79,28 +90,6 @@
       "cancel": "Отмена",
       "connected": "Подключен",
       "disconnected": "Отключен"
-    },
-    "gameOver": {
-      "defeat": "Поражение",
-      "congratulations": "Поздравляем, вы выиграли турнир!",
-      "wonRound": "Вы выиграли этот раунд.",
-      "lostRound": "Вы проиграли этот раунд.",
-      "opponent": "Противник:",
-      "finalScore": "Финальный Счет:",
-      "quit": "Выйти",
-      "continue": "Продолжить",
-      "replay": "Переиграть",
-      "tournamentChampion": "Чемпион Турнира!",
-      "victoryTitle": "Победа!",
-      "defeatTitle": "Поражение"
-    },
-    "waitingOverlay": {
-      "waitingOpponent": "Ожидание противника",
-      "waitingForOpponent": "Ожидание ",
-      "gamePaused": "Игра на паузе в ожидании переподключения вашего противника"
-    },
-    "gameOverlay": {
-      "mode": "Режим"
     },
     "readyPhase": {
       "opponent": "Противник",
@@ -156,6 +145,32 @@
         "smaller": "Меньше",
         "faster": "Быстрее"
       }
+    },
+    "gameOver": {
+      "tournamentChampion": "Чемпион турнира!",
+      "victory": "Победа!",
+      "defeat": "Поражение",
+      "congratulations": "Поздравляем, вы выиграли турнир!",
+      "wonRound": "Вы выиграли этот раунд.",
+      "lostRound": "Вы проиграли этот раунд.",
+      "opponent": "Противник:",
+      "finalScore": "Итоговый счет",
+      "quit": "Выйти",
+      "continue": "Продолжить",
+      "replay": "Переиграть"
+    },
+    "gameOverlay": {
+      "offline": "Оффлайн",
+      "tournament": "Турнир",
+      "final": "Финал",
+      "semiFinal": "Полуфинал",
+      "quarterFinal": "Четвертьфинал",
+      "roundOf": "1/{{count}} финала"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Ожидание противника",
+      "waitingForOpponent": "Ожидание",
+      "gamePaused": "Игра приостановлена"
     },
     "victory": "Победа",
     "offline": "Оффлайн",
@@ -235,6 +250,7 @@
       "defeat": "ПОРАЖЕНИЕ",
       "vs": "против",
       "bot": "БОТ",
+      "unknownPlayer": "Неизвестный игрок",
       "tournament": "ТУРНИР",
       "quick": "БЫСТРАЯ",
       "training": "ТРЕНИРОВКА",
@@ -243,7 +259,12 @@
       "loadMore": "Загрузить больше матчей",
       "noGamesPlayed": "Игры не сыграны",
       "historyPlaceholder": "Ваша история матчей появится здесь",
-      "playFirstGame": "Сыграть первую игру"
+      "playFirstGame": "Сыграть первую игру",
+      "difficulty": {
+        "easy": "легко",
+        "medium": "средне",
+        "hard": "сложно"
+      }
     },
     "friend": {
       "manage": "Управление Друзьями",
@@ -267,28 +288,26 @@
       "sentRequests": "Отправленные Запросы",
       "pending": "Ожидание...",
       "noSentRequests": "Нет отправленных запросов",
-      "blockedUsers": "Заблокированные Пользователи",
+      "blockedUsers": "Заблокированные пользователи",
       "blockedOn": "Заблокирован",
       "unblock": "Разблокировать",
-      "noBlockedUsersTitle": "Нет заблокированных пользователей",
-      "peaceMessage": "Вы в мире со всеми!",
-      "noBlockedUsers": "Нет заблокированных пользователей"
+      "noBlockedUsers": "Нет заблокированных пользователей",
+      "peaceMessage": "Вы в мире со всеми!"
     },
     "settings": {
       "title": "Настройки Профиля",
       "cancel": "Отмена",
       "edit": "Редактировать",
-      "personalInfo": "Личная Информация",
-      "email": "Email",
+      "personalInfo": "Личная информация",
+      "email": "Эл. почта",
       "username": "Имя пользователя",
       "currentAvatar": "Текущий Аватар",
       "newPassword": "Новый Пароль",
       "chooseAvatar": "Выберите аватар",
       "preview": "Предпросмотр",
-      "previewAvatar": "Предпросмотр Аватара",
+      "previewAvatar": "Предпросмотр аватара",
       "save": "Сохранить"
-    },
-    "editProfile": "Редактировать профиль"
+    }
   },
   "bombParty": {
     "info": {
@@ -455,7 +474,11 @@
       "lives": "Жизни",
       "streak": "Серия",
       "words": "Слова",
-      "avgTime": "Ср. время"
+      "avgTime": "Ср. время",
+      "recentHistory": "Недавняя история",
+      "valid": "Верно",
+      "invalid": "Неверно",
+      "unknownPlayer": "Неизвестный игрок"
     },
     "backToMenu": "Вернуться в меню",
     "stats": {
@@ -802,11 +825,18 @@
       "win": "ПОБЕДА",
       "loss": "ПОРАЖЕНИЕ",
       "vs": "против",
+      "bot": "Бот",
+      "unknownPlayer": "Неизвестный игрок",
       "standard": "Стандарт",
-      "loadMore": "Загрузить больше матчей",
+      "loadMore": "Показать больше матчей",
       "loading": "Загрузка...",
       "empty": "Пустая История",
-      "noMatches": "Нет записанных матчей для этого пилота."
+      "noMatches": "Нет записей матчей для этого пилота.",
+      "difficulty": {
+        "easy": "легко",
+        "medium": "средне",
+        "hard": "сложно"
+      }
     }
   },
   "common": {
@@ -828,24 +858,13 @@
     "unblock": "Разблокировать",
     "send": "Отправить",
     "sending": "Отправка...",
-    "players": "игроков"
+    "players": "игроков",
+    "winRateShort": "П"
   },
   "errors": {
     "network": "Ошибка сети",
     "unknown": "Неизвестная ошибка",
     "userNotFound": "Пользователь не найден"
-  },
-  "chat": {
-    "privateMessageTo": "Личное сообщение для",
-    "globalMessage": "Глобальное сообщение",
-    "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
-    "privateMessagePlaceholder": "Личное сообщение для {{name}}"
-  },
-  "friends": {
-    "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
-    "deleteButton": "Удалить",
-    "confirmBlock": "Вы уверены, что хотите заблокировать этого пользователя?",
-    "confirmUnblock": "Вы уверены, что хотите разблокировать этого пользователя?"
   },
   "chat": {
     "globalChat": "Глобальный чат",
@@ -863,26 +882,50 @@
     "noUsersOnline": "Нет подключенных пользователей (Ожидание WebSocket...)",
     "privateMessagePlaceholder": "Личное сообщение для {{name}}"
   },
+  "friends": {
+    "confirmDelete": "Вы уверены, что хотите удалить этого друга?",
+    "deleteButton": "Удалить",
+    "confirmBlock": "Вы уверены, что хотите заблокировать этого пользователя?",
+    "confirmUnblock": "Вы уверены, что хотите разблокировать этого пользователя?"
+  },
   "registration": {
-    "confirmPassword": "Подтвердите пароль",
+    "title": "Регистрация",
+    "subtitle": "Присоединяйтесь к вселенной Transcendence",
+    "step1Title": "Ваша информация",
+    "nameLabel": "Имя (Имя Фамилия)",
     "namePlaceholder": "Иван Иванов",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "your@email.com",
+    "usernameLabel": "Имя пользователя",
     "usernamePlaceholder": "Ваше имя пользователя",
-    "avatarSelected": "Выбранный аватар"
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Подтвердите пароль",
+    "nextButton": "Далее",
+    "chooseAvatar": "Выберите аватар",
+    "avatarSelected": "Выбранный аватар",
+    "backButton": "Назад",
+    "submitButton": "Зарегистрироваться",
+    "orContinue": "Или",
+    "signUpWithGoogle": "Зарегистрироваться через Google",
+    "alreadyRegistered": "Уже зарегистрированы?",
+    "signIn": "Войти",
+    "success": "Регистрация успешна! Перенаправление...",
+    "errors": {
+      "allFieldsRequired": "Все поля обязательны.",
+      "passwordMismatch": "Пароли не совпадают.",
+      "invalidName": "Имя должно начинаться с буквы и может содержать буквы, пробелы, апострофы и дефисы.",
+      "invalidEmail": "Адрес электронной почты недействителен.",
+      "invalidDisplayName": "Имя пользователя должно содержать только буквы, цифры и дефисы.",
+      "invalidPassword": "Пароль должен содержать не менее 6 символов, одну заглавную букву, одну строчную букву, одну цифру и один специальный символ.",
+      "emailOrUsernameExists": "Этот адрес электронной почты или имя пользователя уже используется.",
+      "registrationError": "Ошибка при регистрации."
+    }
   },
   "account": {
     "confirmNewPassword": "Подтвердите новый пароль"
   },
-  "auth": {
-    "invalidCode": "Неверный код",
-    "yourCode": "Ваш код"
-  },
   "notifications": {
-    "tournament": {
-      "rejoinTitle": "Турнир в процессе",
-      "rejoinMessage": "Вы покинули раунд. Присоединитесь до истечения времени.",
-      "rejoinButton": "Присоединиться",
-      "ignoreButton": "Игнорировать"
-    },
     "invitation": {
       "sentTitle": "Приглашение отправлено",
       "sentMessage": "Приглашение отправлено {{to}}. Ожидание принятия или отклонения.",
@@ -953,27 +996,6 @@
       "medium": "Средне",
       "hard": "Сложно"
     }
-  },
-  "gameOver": {
-    "tournamentChampion": "Чемпион турнира!",
-    "victory": "Победа!",
-    "defeat": "Поражение",
-    "congratulations": "Поздравляем, вы выиграли турнир!",
-    "wonRound": "Вы выиграли этот раунд.",
-    "lostRound": "Вы проиграли этот раунд.",
-    "finalScore": "Итоговый счет",
-    "quit": "Выйти",
-    "continue": "Продолжить",
-    "replay": "Переиграть"
-  },
-  "gameOverlay": {
-    "mode": "Режим",
-    "offline": "Оффлайн",
-    "tournament": "Турнир",
-    "final": "Финал",
-    "semiFinal": "Полуфинал",
-    "quarterFinal": "Четвертьфинал",
-    "roundOf": "1/{{count}} финала"
   },
   "theme": {
     "switchToLight": "Переключить на светлый режим",

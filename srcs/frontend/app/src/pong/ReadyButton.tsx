@@ -24,7 +24,6 @@ export const ReadyButton = React.memo(function ReadyButton({
 	return (
 		<div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
 			<div className="bg-black/50 backdrop-blur-sm p-6 rounded-lg border border-white/20 shadow-lg shadow-white/8 max-w-md w-full mx-4 pointer-events-auto">
-				{/* Timer Display */}
 				<div className="text-center mb-6">
 					<div className="text-5xl font-bold text-white mb-2 font-mono">
 						{remaining}
@@ -34,7 +33,6 @@ export const ReadyButton = React.memo(function ReadyButton({
 					</div>
 				</div>
 
-				{/* Player Status */}
 				<div className="space-y-2 mb-6">
 					<div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
 						<div className="flex items-center gap-2">
@@ -88,7 +86,6 @@ export const ReadyButton = React.memo(function ReadyButton({
 					</div>
 				</div>
 
-				{/* Action Button */}
 				{!selfReady && (
 					<button
 						onClick={onReady}
@@ -98,7 +95,6 @@ export const ReadyButton = React.memo(function ReadyButton({
 					</button>
 				)}
 
-				{/* Status Message */}
 				{selfReady && (
 					<div className="text-center py-3 text-white/60 text-sm">
 						{opponentReady
@@ -113,7 +109,6 @@ export const ReadyButton = React.memo(function ReadyButton({
 					</div>
 				)}
 
-				{/* Info Text */}
 				<div className="mt-4 text-xs text-white/40 text-center">
 					{t(
 						"pong.readyPhase.info",

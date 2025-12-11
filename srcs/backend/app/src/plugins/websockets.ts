@@ -18,7 +18,6 @@ if (!JWT_SECRET) {
 
 interface Tournament {
 	tournamentId: string;
-	allowReconnect: boolean;
 }
 
 export interface Client {
@@ -28,9 +27,7 @@ export interface Client {
 	tournament?: Tournament;
 	inGameId?: 0 | 1;
 	winnerTimer?: ReturnType<typeof setTimeout>;
-	rejoinTimer?: ReturnType<typeof setTimeout>;
 	quit?: boolean;
-	removalTimer?: ReturnType<typeof setTimeout>;
 }
 
 const wsController: FastifyPluginAsync<{ prefix?: string }> = async (

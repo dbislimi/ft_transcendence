@@ -221,16 +221,18 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
 									opponent:
 										match.is_bot === 1
 											? {
-													name: `Bot (${match.bot_difficulty})`,
+													name: null,
 													avatar: "/avatars/bot.png",
 													isBot: true,
+													botDifficulty:
+														match.bot_difficulty,
 											  }
 											: match.player1_id ===
 											  parseInt(userId)
 											? {
 													name:
 														match.player2_name ||
-														"Joueur inconnu",
+														null,
 													avatar:
 														match.player2_avatar ||
 														"/avatars/avatar1.png",
@@ -239,7 +241,7 @@ async function matchHistoryPlugin(fastify: any, opts: any) {
 											: {
 													name:
 														match.player1_name ||
-														"Joueur inconnu",
+														null,
 													avatar:
 														match.player1_avatar ||
 														"/avatars/avatar1.png",

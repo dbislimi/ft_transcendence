@@ -23,7 +23,6 @@ const PongGameArea = memo(function PongGameArea({
 	enableIplusPRef,
 	enableInterpolationRef,
 }: PongGameAreaProps) {
-	// console.log("side", side);
 	return (
 		<div className="relative">
 			<PongLabels

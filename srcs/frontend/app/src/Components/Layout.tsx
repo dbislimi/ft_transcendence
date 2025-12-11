@@ -8,14 +8,13 @@ import Notifications from "./Notifications";
 export default function Layout() {
 	return (
 		<>
+			<BackgroundSurface />
 			<Header />
-			<BackgroundSurface>
-				<main className="h-full">
-					<Outlet />
-				</main>
-				<ChatWidget />
-			</BackgroundSurface>
+			<main className="w-full h-full">
+				<Outlet />
+			</main>
+			<ChatWidget />
 			<Notifications />
 		</>
-	)
+	);
 }

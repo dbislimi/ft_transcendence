@@ -98,7 +98,11 @@ export default class Board {
 		};
 	}
 	getBonusData() {
-		return this.bonus.map((b) => ({ name: b.name, y: b.y, radius: b.radius }));
+		return this.bonus.map((b) => ({
+			name: b.name,
+			y: b.y,
+			radius: b.radius,
+		}));
 	}
 	checkBonusCollision() {
 		const player: 0 | 1 = this.ball.dx > 0 ? 0 : 1;
@@ -109,9 +113,11 @@ export default class Board {
 		)
 			this.bonus = this.bonus.filter((bonus) => {
 				if (
-					(this.ball.x - this.width / 2) * (this.ball.x - this.width / 2) +
+					(this.ball.x - this.width / 2) *
+						(this.ball.x - this.width / 2) +
 						(this.ball.y - bonus.y) * (this.ball.y - bonus.y) <=
-					(this.ball.radius + bonus.radius) * (this.ball.radius + bonus.radius)
+					(this.ball.radius + bonus.radius) *
+						(this.ball.radius + bonus.radius)
 				) {
 					this.players[player].bonusCollectedTotal++;
 					if (bonus.is === "bonus") {
@@ -119,7 +125,8 @@ export default class Board {
 							this.players[player].ActiveBonus.push(bonus);
 					} else {
 						const opp = this.players[(player + 1) % 2];
-						if (opp && bonus.apply(opp)) opp.ActiveBonus.push(bonus);
+						if (opp && bonus.apply(opp))
+							opp.ActiveBonus.push(bonus);
 					}
 
 					return false;
@@ -208,9 +215,13 @@ export default class Board {
 				);
 				for (let i = 0; i < this.bonus.length && retries; ) {
 					const bonusi = this.bonus[i];
-					if (bonusi && Math.abs(bonusi.y - y) < this.bonusRadius * 3) {
+					if (
+						bonusi &&
+						Math.abs(bonusi.y - y) < this.bonusRadius * 3
+					) {
 						y = Math.floor(
-							Math.random() * (this.height - 2 * this.bonusRadius) +
+							Math.random() *
+								(this.height - 2 * this.bonusRadius) +
 								this.bonusRadius
 						);
 						i = 0;
@@ -273,7 +284,6 @@ export default class Board {
 	}
 	connectBot(id: 0 | 1, diff: difficulty, training: boolean = false) {
 		this.players[id].bot = diff;
-		// console.log(`[Board] connectBot called: id=${id}, diff=${diff}, training=${training}`);
 		switch (diff) {
 			case "easy":
 				this.botController[id] = new EasyBot({
@@ -306,7 +316,6 @@ export default class Board {
 				});
 				break;
 		}
-		// console.log(`[Board] Bot connected at index ${id}, botController.length=${this.botController.length}`);
 	}
 
 	reset() {

@@ -52,13 +52,5 @@ export default async function plotRewards(
 	const Buf: any = (globalThis as any).Buffer; // utilisation via globalThis
 	const buffer = Buf.from(await res.arrayBuffer());
 	const suffix = episode && episode !== 0 ? `_${episode}` : "";
-	writeFileSync(
-		`../AI/qtable_saves/${diff}/graph/${name}${suffix}.png`,
-		buffer
-	);
-	// console.log(
-	// 	`✅ Graphique genere : ${name}${
-	// 		episode ? "_" + episode : ""
-	// 	}.png (episodes: ${tab.length}, affiches: ${data.length})`
-	// );
+	writeFileSync(`../../data/AI/${diff}/graph/${name}${suffix}.png`, buffer);
 }

@@ -13,50 +13,6 @@ export default function RealtimeNotifications() {
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		const listener = (data: any) => {
-			if (!data) return;
-			if (data?.event === "tournament_rejoin_prompt") {
-				const timeoutSec = Number(data.body?.timeout ?? 10);
-				notify({
-					variant: "info",
-					title: t("notifications.tournament.rejoinTitle"),
-					message: t("notifications.tournament.rejoinMessage"),
-					duration: timeoutSec * 1000,
-					actions: [
-						{
-							label: t("notifications.tournament.rejoinButton"),
-							primary: true,
-							onPress: () => {
-								navigate("/pong");
-								navigate("/pong");
-								pongWsRef.current?.send(
-									JSON.stringify({
-										event: "rejoin",
-										body: { type: "tournament" },
-									})
-								);
-							},
-						},
-						{
-							label: t("notifications.tournament.ignoreButton"),
-							onPress: () => {
-								pongWsRef.current?.send(
-									JSON.stringify({
-										event: "rejoin",
-										body: { type: "dismiss" },
-									})
-								);
-							},
-						},
-					],
-				});
-			}
-		};
-		addPongRoute("tournament_rejoin_prompt", listener);
-		return () => removePongRoute("tournament_rejoin_prompt", listener);
-	}, [addPongRoute, removePongRoute, notify, pongWsRef, navigate, t]);
-
-	useEffect(() => {
 		const onSessionReady = (data: any) => {
 			if (!data || data.event !== "game_session_ready") return;
 			console.log(data);

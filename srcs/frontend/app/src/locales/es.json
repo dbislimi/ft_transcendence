@@ -27,7 +27,7 @@
     "rules": {
       "title": "Reglas de Pong",
       "rule1": "El primero en llegar a 11 puntos gana.",
-      "rule2": "Usa la pala para golpear la pelota.",
+      "rule2": "El ángulo de rebote depende del punto de impacto en la pala.",
       "rule3": "No dejes que la pelota pase.",
       "rule4": "¡Pueden aparecer bonos!",
       "modeSelection": "Seleccionar Modo",
@@ -46,12 +46,23 @@
       "tournament": "Torneo",
       "tournamentDesc": "Unirse o crear un torneo",
       "enterName": "Ingresa tu Nombre",
-      "namePlaceholder": "Tu nombre"
+      "namePlaceholder": "Tu nombre",
+      "bonus": "Bonus"
     },
     "difficulty": {
       "easy": "Fácil",
       "medium": "Medio",
       "hard": "Difícil"
+    },
+    "labels": {
+      "defaultSelf": "Tú",
+      "defaultOpponent": "Oponente",
+      "selfWithName": "{{name}} (Tú)",
+      "bot": "Bot ({{difficulty}})",
+      "player1": "Jugador 1",
+      "player2": "Jugador 2",
+      "p1": "J1",
+      "p2": "J2"
     },
     "lobby": {
       "title": "Sala de Torneo",
@@ -79,28 +90,6 @@
       "cancel": "Cancelar",
       "connected": "Conectado",
       "disconnected": "Desconectado"
-    },
-    "gameOver": {
-      "defeat": "Derrota",
-      "congratulations": "¡Felicidades, ganaste el torneo!",
-      "wonRound": "Ganaste esta ronda.",
-      "lostRound": "Perdiste esta ronda.",
-      "opponent": "Oponente:",
-      "finalScore": "Puntuación Final:",
-      "quit": "Salir",
-      "continue": "Continuar",
-      "replay": "Repetir",
-      "tournamentChampion": "¡Campeón del Torneo!",
-      "victoryTitle": "¡Victoria!",
-      "defeatTitle": "Derrota"
-    },
-    "waitingOverlay": {
-      "waitingOpponent": "Esperando oponente",
-      "waitingForOpponent": "Esperando a ",
-      "gamePaused": "El juego está en pausa esperando a que tu oponente se reconecte"
-    },
-    "gameOverlay": {
-      "mode": "Modo"
     },
     "readyPhase": {
       "opponent": "Oponente",
@@ -156,6 +145,32 @@
         "smaller": "Más pequeño",
         "faster": "Más rápido"
       }
+    },
+    "gameOver": {
+      "tournamentChampion": "¡Campeón del torneo!",
+      "victory": "¡Victoria!",
+      "defeat": "Derrota",
+      "congratulations": "¡Felicidades, has ganado el torneo!",
+      "wonRound": "Has ganado esta ronda.",
+      "lostRound": "Has perdido esta ronda.",
+      "opponent": "Oponente:",
+      "finalScore": "Puntuación final",
+      "quit": "Salir",
+      "continue": "Continuar",
+      "replay": "Volver a jugar"
+    },
+    "gameOverlay": {
+      "offline": "Fuera de línea",
+      "tournament": "Torneo",
+      "final": "Final",
+      "semiFinal": "Semifinal",
+      "quarterFinal": "Cuartos de final",
+      "roundOf": "Ronda de {{count}}"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Esperando al oponente",
+      "waitingForOpponent": "Esperando a",
+      "gamePaused": "Juego en pausa"
     },
     "victory": "Victoria",
     "offline": "Fuera de línea",
@@ -230,20 +245,26 @@
       "tournamentsWon": "Torneos Ganados"
     },
     "history": {
-      "matchHistory": "Historial de Partidas",
+      "matchHistory": "Historial de partidas",
       "victory": "VICTORIA",
       "defeat": "DERROTA",
       "vs": "vs",
       "bot": "BOT",
+      "unknownPlayer": "Jugador desconocido",
       "tournament": "TORNEO",
       "quick": "RÁPIDA",
       "training": "ENTRENAMIENTO",
-      "matchNumber": "Partida #",
+      "matchNumber": "Partido #",
       "loading": "Cargando...",
       "loadMore": "Cargar más partidas",
-      "noGamesPlayed": "No se han jugado partidas",
-      "historyPlaceholder": "Tu historial de partidas aparecerá aquí",
-      "playFirstGame": "Jugar mi primera partida"
+      "noGamesPlayed": "No se han jugado partidos",
+      "historyPlaceholder": "Tu historial de partidos aparecerá aquí",
+      "playFirstGame": "Jugar mi primer partido",
+      "difficulty": {
+        "easy": "fácil",
+        "medium": "medio",
+        "hard": "difícil"
+      }
     },
     "friend": {
       "manage": "Gestión de Amigos",
@@ -277,8 +298,8 @@
       "title": "Configuración del Perfil",
       "cancel": "Cancelar",
       "edit": "Editar",
-      "personalInfo": "Información Personal",
-      "email": "Email",
+      "personalInfo": "Información personal",
+      "email": "Correo electrónico",
       "username": "Nombre de usuario",
       "currentAvatar": "Avatar Actual",
       "newPassword": "Nueva Contraseña",
@@ -286,8 +307,7 @@
       "preview": "Vista previa",
       "previewAvatar": "Vista previa del Avatar",
       "save": "Guardar"
-    },
-    "editProfile": "Editar perfil"
+    }
   },
   "bombParty": {
     "info": {
@@ -454,7 +474,11 @@
       "lives": "Vidas",
       "streak": "Racha",
       "words": "Palabras",
-      "avgTime": "Tiempo Prom."
+      "avgTime": "Tiempo Prom.",
+      "recentHistory": "Historial Reciente",
+      "valid": "Válido",
+      "invalid": "Inválido",
+      "unknownPlayer": "Jugador Desconocido"
     },
     "backToMenu": "Volver al menú",
     "stats": {
@@ -720,7 +744,9 @@
     "registrationSuccess": "Registro exitoso",
     "serverError": "Error del servidor",
     "networkError": "Error de red",
-    "error": "Error"
+    "error": "Error",
+    "invalidCode": "Código inválido",
+    "yourCode": "Tu código"
   },
   "notFound": {
     "title": "404",
@@ -799,11 +825,18 @@
       "win": "VICTORIA",
       "loss": "DERROTA",
       "vs": "vs",
+      "bot": "Bot",
+      "unknownPlayer": "Jugador desconocido",
       "standard": "Estándar",
       "loadMore": "Ver más partidas",
       "loading": "Cargando...",
       "empty": "Historial Vacío",
-      "noMatches": "No hay partidas registradas para este piloto."
+      "noMatches": "No hay partidas registradas para este piloto.",
+      "difficulty": {
+        "easy": "fácil",
+        "medium": "medio",
+        "hard": "difícil"
+      }
     }
   },
   "common": {
@@ -825,7 +858,8 @@
     "unblock": "Desbloquear",
     "send": "Enviar",
     "sending": "Enviando...",
-    "players": "jugadores"
+    "players": "jugadores",
+    "winRateShort": "V"
   },
   "errors": {
     "network": "Error de red",
@@ -855,37 +889,43 @@
     "privateMessagePlaceholder": "Mensaje privado a {{name}}"
   },
   "registration": {
-    "confirmPassword": "Confirmar contraseña",
+    "title": "Registro",
+    "subtitle": "Únete al universo Transcendence",
+    "step1Title": "Tu información",
+    "nameLabel": "Nombre (Nombre Apellido)",
     "namePlaceholder": "Juan Pérez",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "usernameLabel": "Nombre de usuario",
     "usernamePlaceholder": "Tu nombre de usuario",
-    "avatarSelected": "Avatar seleccionado",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirmar contraseña",
+    "nextButton": "Siguiente",
     "chooseAvatar": "Elige tu avatar",
+    "avatarSelected": "Avatar seleccionado",
+    "backButton": "Volver",
+    "submitButton": "Registrarse",
+    "orContinue": "O",
+    "signUpWithGoogle": "Registrarse con Google",
+    "alreadyRegistered": "¿Ya estás registrado?",
+    "signIn": "Iniciar sesión",
+    "success": "¡Registro exitoso! Redirigiendo...",
     "errors": {
       "allFieldsRequired": "Todos los campos son obligatorios.",
       "passwordMismatch": "Las contraseñas no coinciden.",
-      "invalidName": "El nombre debe comenzar con mayúscula seguido solo de letras.",
-      "invalidEmail": "Dirección de correo inválida.",
-      "invalidDisplayName": "El nombre de usuario debe contener solo letras, números o guiones.",
+      "invalidName": "El nombre debe comenzar con una letra y puede contener letras, espacios, apóstrofes y guiones.",
+      "invalidEmail": "La dirección de correo electrónico no es válida.",
+      "invalidDisplayName": "El nombre de usuario solo debe contener letras, números y guiones.",
       "invalidPassword": "La contraseña debe contener al menos 6 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
-      "emailOrUsernameExists": "Correo o nombre de usuario ya en uso.",
-      "registrationError": "Error durante el registro"
-    },
-    "success": "¡Registro exitoso! Redirigiendo..."
+      "emailOrUsernameExists": "Este correo electrónico o nombre de usuario ya está en uso.",
+      "registrationError": "Error durante el registro."
+    }
   },
   "account": {
     "confirmNewPassword": "Confirmar nueva contraseña"
   },
-  "auth": {
-    "invalidCode": "Código inválido",
-    "yourCode": "Tu código"
-  },
   "notifications": {
-    "tournament": {
-      "rejoinTitle": "Torneo en curso",
-      "rejoinMessage": "Has dejado una ronda. Reunirse antes de que expire.",
-      "rejoinButton": "Reunirse",
-      "ignoreButton": "Ignorar"
-    },
     "invitation": {
       "sentTitle": "Invitación enviada",
       "sentMessage": "Invitación enviada a {{to}}. Esperando aceptación o rechazo.",
@@ -956,27 +996,6 @@
       "medium": "Medio",
       "hard": "Difícil"
     }
-  },
-  "gameOver": {
-    "tournamentChampion": "¡Campeón del torneo!",
-    "victory": "¡Victoria!",
-    "defeat": "Derrota",
-    "congratulations": "¡Felicidades, has ganado el torneo!",
-    "wonRound": "Has ganado esta ronda.",
-    "lostRound": "Has perdido esta ronda.",
-    "finalScore": "Puntuación final",
-    "quit": "Salir",
-    "continue": "Continuar",
-    "replay": "Volver a jugar"
-  },
-  "gameOverlay": {
-    "mode": "Modo",
-    "offline": "Fuera de línea",
-    "tournament": "Torneo",
-    "final": "Final",
-    "semiFinal": "Semifinal",
-    "quarterFinal": "Cuartos de final",
-    "roundOf": "Ronda de {{count}}"
   },
   "theme": {
     "switchToLight": "Cambiar a modo claro",

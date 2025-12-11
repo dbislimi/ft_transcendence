@@ -42,9 +42,6 @@ function simulateYAtX(
 	return Math.max(0, Math.min(height, simY));
 }
 
-// alpha = learning_rate
-// gamma = discount_factor
-// epsilon = explo
 export default abstract class BotController {
 	protected training: boolean;
 	protected learning_rate: number;
@@ -131,7 +128,7 @@ export default abstract class BotController {
 
 	public save(episode: number): void {
 		try {
-			const dirPath = `../AI/qtable_saves/${this.type}`;
+			const dirPath = `/usr/app/data/AI/${this.type}`;
 			if (!fs.existsSync(dirPath)) {
 				fs.mkdirSync(dirPath, { recursive: true });
 			}
@@ -140,32 +137,24 @@ export default abstract class BotController {
 				JSON.stringify(this.qTable, null, 2),
 				"utf-8"
 			);
-			// console.log(
-			// 	`[SAVED] ${this.type} episode ${episode} (${
-			// 		Object.keys(this.qTable).length
-			// 	} states)`
-			// );
 		} catch (error) {
-			console.error(`[ERROR] Failed to save ${this.type} Q-table:`, error);
+			console.error(
+				`[ERROR] Failed to save ${this.type} Q-table:`,
+				error
+			);
 		}
 	}
 
 	protected load() {
 		try {
-			const raw = fs.readFileSync(
-				`../AI/qtable_saves/${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`,
-				"utf-8"
-			);
+			const qtablePath = `/usr/app/data/AI/${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`;
+			const raw = fs.readFileSync(qtablePath, "utf-8");
 			this.qTable = JSON.parse(raw);
-			// console.log(
-			// 	`Loaded: ${this.type}/qtable_${this.type}_episode_${this.qtable_nb}.json`
-			// );
 		} catch (error) {
-			// console.log(error);
+			console.error(`[BOT] Failed to load ${this.type} Q-table:`, error);
 		}
 	}
 	newEpisode() {
-		// console.log(`decisionsMade: ${this.decisionsMade}`);
 		this.epislons.push(this.epsilon);
 		this.rewards.push(this.reward);
 		this.reward = 0;
@@ -177,9 +166,18 @@ export default abstract class BotController {
 	}
 	takeDecision(board: Board, player: Player) {
 		const state = this.getState(board, player);
-		if (this.training && this.lastState !== null && this.lastAction !== null) {
+		if (
+			this.training &&
+			this.lastState !== null &&
+			this.lastAction !== null
+		) {
 			const actionReward = this.rewardsPolicy(board, player.id);
-			this.updateQtable(this.lastState, this.lastAction, actionReward, state);
+			this.updateQtable(
+				this.lastState,
+				this.lastAction,
+				actionReward,
+				state
+			);
 			this.reward += actionReward;
 		}
 		this.action = this.chooseAction(state);
@@ -196,7 +194,7 @@ export default abstract class BotController {
 export class MediumBot extends BotController {
 	targetZone: number | null = null;
 	nbOfActions: number = 10;
-	type = "medium2";
+	type = "medium";
 	qtable_nb = 600;
 	private predictedY: number = 0;
 
@@ -288,14 +286,16 @@ export class MediumBot extends BotController {
 			xp,
 			board.H
 		);
-		const ballZone = Math.floor((this.predictedY / board.H) * this.nbOfActions);
+		const ballZone = Math.floor(
+			(this.predictedY / board.H) * this.nbOfActions
+		);
 		return `${dir}_${ballZone}`;
 	}
 }
 
 export class EasyBot extends BotController {
 	nbOfActions: number = 10;
-	type = "easy1";
+	type = "easy";
 	qtable_nb = 300;
 
 	constructor(options = {}) {
@@ -343,17 +343,17 @@ export class EasyBot extends BotController {
 		if (isBehind) predictedY = board.ball.getNextXY(0.6).nextY;
 		while (predictedY < 0 || predictedY > board.H) {
 			if (predictedY < 0) predictedY = -predictedY;
-			if (predictedY > board.H) predictedY = board.H - (predictedY - board.H);
+			if (predictedY > board.H)
+				predictedY = board.H - (predictedY - board.H);
 		}
 		const ballZone = Math.floor((predictedY / board.H) * this.nbOfActions);
-		// console.log(`ballzone: ${ballZone}`);
 		return `${ballZone}`;
 	}
 }
 
 export class HardBot extends BotController {
 	nbOfActions: number = 13;
-	type = "hard_advanced1";
+	type = "hard";
 	qtable_nb = 600;
 
 	private trainingPhase: number = 1;
@@ -389,7 +389,10 @@ export class HardBot extends BotController {
 			const relativeBonusY = (bonusY - this.predictedY) / (board.H / 2);
 			const bonusBin =
 				Math.floor(
-					Math.max(-halfCut, Math.min(halfCut, relativeBonusY * halfCut))
+					Math.max(
+						-halfCut,
+						Math.min(halfCut, relativeBonusY * halfCut)
+					)
 				) + halfCut;
 			return `b${bonusBin}_w${clampedWallZone}`;
 		}

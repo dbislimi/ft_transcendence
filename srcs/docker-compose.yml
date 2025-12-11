@@ -21,7 +21,6 @@ services:
     build: ./backend
     container_name: api
     volumes:
-      - ../AI:/usr/AI
       - ./certs:/usr/certs
       - ./backend/app/data:/usr/app/data
       - ./backend/app/public/avatars/custom:/usr/app/dist/public/avatars/custom

@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 interface Props {
@@ -33,9 +33,8 @@ const GameOverOverlay = memo(function GameOverOverlay({
 	const title = finalTournamentWin
 		? t("pong.gameOver.tournamentChampion")
 		: didWin
-		? t("pong.gameOver.victoryTitle")
-		: t("pong.gameOver.defeatTitle");
-	// console.log("scores: ", scores);
+		? t("pong.gameOver.victory")
+		: t("pong.gameOver.defeat");
 	const isTournament = tournamentDepth != null;
 	const isTournamentRoundWin = isTournament && didWin && !finalTournamentWin;
 	const isTournamentDefeat = isTournament && !didWin;
@@ -72,7 +71,9 @@ const GameOverOverlay = memo(function GameOverOverlay({
 				{opponent && (
 					<div className="text-center mb-3 text-sm text-white/60">
 						{t("pong.gameOver.opponent")}{" "}
-						<span className="font-semibold text-white/90">{opponent}</span>
+						<span className="font-semibold text-white/90">
+							{opponent}
+						</span>
 					</div>
 				)}
 

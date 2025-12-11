@@ -27,7 +27,7 @@
     "rules": {
       "title": "Règles du Pong",
       "rule1": "Le premier à 11 points gagne.",
-      "rule2": "Utilisez la raquette pour frapper la balle.",
+      "rule2": "L'angle de rebond dépend du point d'impact sur la raquette.",
       "rule3": "Ne laissez pas la balle passer derrière vous.",
       "rule4": "Des bonus peuvent apparaître !",
       "modeSelection": "Sélection du mode",
@@ -46,12 +46,23 @@
       "tournament": "Tournoi",
       "tournamentDesc": "Rejoindre ou créer un tournoi",
       "enterName": "Entrez votre nom",
-      "namePlaceholder": "Votre nom"
+      "namePlaceholder": "Votre nom",
+      "bonus": "Bonus"
     },
     "difficulty": {
       "easy": "Facile",
       "medium": "Moyen",
       "hard": "Difficile"
+    },
+    "labels": {
+      "defaultSelf": "Vous",
+      "defaultOpponent": "Adversaire",
+      "selfWithName": "{{name}} (Vous)",
+      "bot": "Bot ({{difficulty}})",
+      "player1": "Joueur 1",
+      "player2": "Joueur 2",
+      "p1": "J1",
+      "p2": "J2"
     },
     "lobby": {
       "title": "Salon de Tournoi",
@@ -79,20 +90,6 @@
       "cancel": "Annuler",
       "connected": "Connecté",
       "disconnected": "Déconnecté"
-    },
-    "gameOver": {
-      "defeat": "Défaite",
-      "congratulations": "Félicitations, vous avez remporté le tournoi !",
-      "wonRound": "Vous avez gagné cette manche.",
-      "lostRound": "Vous avez perdu cette manche.",
-      "opponent": "Adversaire :",
-      "finalScore": "Score final :",
-      "quit": "Quitter",
-      "continue": "Continuer",
-      "replay": "Rejouer"
-    },
-    "gameOverlay": {
-      "mode": "Mode"
     },
     "readyPhase": {
       "opponent": "Adversaire",
@@ -149,13 +146,39 @@
         "faster": "Plus rapide"
       }
     },
+    "gameOver": {
+      "tournamentChampion": "Champion du tournoi !",
+      "victory": "Victoire !",
+      "defeat": "Défaite",
+      "congratulations": "Félicitations, vous avez gagné le tournoi !",
+      "wonRound": "Vous avez gagné cette manche.",
+      "lostRound": "Vous avez perdu cette manche.",
+      "opponent": "Adversaire :",
+      "finalScore": "Score final",
+      "quit": "Quitter",
+      "continue": "Continuer",
+      "replay": "Rejouer"
+    },
+    "gameOverlay": {
+      "offline": "Hors ligne",
+      "tournament": "Tournoi",
+      "final": "Finale",
+      "semiFinal": "Demi-finale",
+      "quarterFinal": "Quart de finale",
+      "roundOf": "Tour de {{count}}"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "En attente d'un adversaire",
+      "waitingForOpponent": "En attente de",
+      "gamePaused": "Partie en pause"
+    },
     "victory": "Victoire",
     "offline": "Hors ligne",
     "online": "En ligne",
     "final": "Finale",
     "semiFinal": "Demi-finale",
     "quarterFinal": "Quart de finale",
-    "round": "Tour"
+    "round": "Manche"
   },
   "profile": {
     "error_msg": {
@@ -212,6 +235,7 @@
       "defeat": "DÉFAITE",
       "vs": "vs",
       "bot": "BOT",
+      "unknownPlayer": "Joueur inconnu",
       "tournament": "TOURNOI",
       "quick": "RAPIDE",
       "training": "ENTRAINEMENT",
@@ -220,23 +244,28 @@
       "loadMore": "Charger plus de parties",
       "noGamesPlayed": "Aucune partie jouée",
       "historyPlaceholder": "Votre historique de parties apparaîtra ici",
-      "playFirstGame": "Jouer ma première partie"
+      "playFirstGame": "Jouer ma première partie",
+      "difficulty": {
+        "easy": "facile",
+        "medium": "moyen",
+        "hard": "difficile"
+      }
     },
     "friend": {
-      "friendManagement": "Gestion des amis",
-      "friendsTab": "Amis",
-      "requestsTab": "Demandes",
-      "blockedTab": "Bloqués",
-      "addFriend": "Ajouter un ami",
+      "manage": "Gestion des amis",
+      "friends": "Amis",
+      "requests": "Demandes",
+      "blocked": "Bloqués",
+      "add": "Ajouter un ami",
       "usernamePlaceholder": "Nom d'utilisateur",
-      "addFriendHelp": "Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.",
-      "statusOnline": "🟢 En ligne",
-      "statusOffline": "⚫ Hors ligne",
-      "inviteToPlay": "🎮 Inviter à jouer",
+      "addHint": "Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "invite": "🎮 Inviter à jouer",
       "block": "🚫 Bloquer",
       "remove": "🗑️ Supprimer",
-      "noFriendsTitle": "Aucun ami pour l'instant",
-      "noFriendsDesc": "Commencez par ajouter quelqu'un !",
+      "notFound": "Aucun ami pour l'instant",
+      "searchPlaceholder": "Commencez par ajouter quelqu'un !",
       "receivedRequests": "Demandes reçues",
       "accept": "✅ Accepter",
       "reject": "❌ Refuser",
@@ -247,40 +276,18 @@
       "blockedUsers": "Utilisateurs bloqués",
       "blockedOn": "Bloqué le",
       "unblock": "🔓 Débloquer",
-      "noBlockedUsersTitle": "Aucun utilisateur bloqué",
-      "noBlockedUsersDesc": "Vous êtes en paix avec tout le monde !",
-      "manage": "Gestion des amis",
-      "friends": "Amis",
-      "requests": "Demandes",
-      "blocked": "Bloqués",
-      "add": "Ajouter un ami",
-      "addHint": "Entrez le nom d'utilisateur exact de la personne que vous souhaitez ajouter.",
-      "online": "En ligne",
-      "offline": "Hors ligne",
-      "invite": "Inviter à jouer",
-      "notFound": "Aucun ami pour l'instant",
-      "searchPlaceholder": "Commencez par ajouter quelqu'un !",
       "noBlockedUsers": "Aucun utilisateur bloqué",
       "peaceMessage": "Vous êtes en paix avec tout le monde !"
     },
     "settings": {
       "title": "Paramètres du profil",
-      "profileSettings": "⚙️ Paramètres du profil",
       "cancel": "Annuler",
       "edit": "Modifier",
       "personalInfo": "Informations personnelles",
-      "email": "Email",
-      "emailLabel": "Email :",
+      "email": "E-mail",
       "username": "Pseudo",
-      "usernameLabel": "Pseudo :",
       "currentAvatar": "Avatar actuel",
-      "emailInputLabel": "Email",
-      "emailPlaceholder": "votre@email.com",
-      "usernameInputLabel": "Pseudo",
-      "usernamePlaceholder": "Votre pseudo",
       "newPassword": "Nouveau mot de passe",
-      "newPasswordLabel": "Nouveau mot de passe",
-      "passwordPlaceholder": "••••••••",
       "chooseAvatar": "Choisir un avatar",
       "preview": "Aperçu",
       "previewAvatar": "Aperçu de l'avatar",
@@ -470,7 +477,11 @@
       "lives": "Vies",
       "streak": "Série",
       "words": "Mots",
-      "avgTime": "Temps moy."
+      "avgTime": "Temps moy.",
+      "recentHistory": "Historique récent",
+      "valid": " Valide",
+      "invalid": "Invalide",
+      "unknownPlayer": "Joueur inconnu"
     },
     "backToMenu": "Retour au menu",
     "stats": {
@@ -563,7 +574,9 @@
     "registrationSuccess": "Inscription réussie",
     "serverError": "Erreur serveur",
     "networkError": "Erreur réseau",
-    "error": "Erreur"
+    "error": "Erreur",
+    "invalidCode": "Code invalide",
+    "yourCode": "Votre code"
   },
   "notFound": {
     "title": "404",
@@ -662,14 +675,35 @@
     },
     "close": "Fermer",
     "account": {
-      "title": "Compte",
+      "title": "Réglages de compte",
       "description": "Aperçus des arrière-plans",
       "authRequired": "Connexion requise",
       "preferences": "Préférences",
       "backgroundPreview": "Aperçu des arrière-plans",
       "backgroundPreviewDesc": "Aperçus des arrière-plans sélectionnés pour chaque mode",
       "lightModeBackground": "Mode Clair",
-      "darkModeBackground": "Mode Sombre"
+      "darkModeBackground": "Mode Sombre",
+      "information": "Informations",
+      "pseudo": "Pseudo",
+      "email": "Email",
+      "memberSince": "Membre depuis",
+      "avatar": "Avatar",
+      "twoFALabel": "Double Authentification (2FA)",
+      "twoFAEnabled": "Activée",
+      "twoFADisabled": "Désactivée",
+      "enableTwoFA": "Activer",
+      "disableTwoFA": "Désactiver",
+      "changePassword": "Changer le mot de passe",
+      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
+      "newPasswordPlaceholder": "Nouveau mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
+      "profileUpdated": "Profil mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour",
+      "connectionError": "Erreur de connexion",
+      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+      "twoFAActivated": "Double authentification activée",
+      "twoFADeactivated": "Double authentification désactivée",
+      "twoFAError": "Erreur lors de la modification de la 2FA"
     },
     "home": {
       "description": "Retour à l'accueil",
@@ -794,11 +828,18 @@
       "win": "WIN",
       "loss": "LOSS",
       "vs": "vs",
+      "bot": "Bot",
+      "unknownPlayer": "Joueur inconnu",
       "standard": "Standard",
       "loadMore": "Voir plus de matchs",
       "loading": "Chargement...",
       "empty": "Historique Vierge",
-      "noMatches": "Aucun match enregistré pour ce pilote."
+      "noMatches": "Aucun match enregistré pour ce pilote.",
+      "difficulty": {
+        "easy": "facile",
+        "medium": "moyen",
+        "hard": "difficile"
+      }
     }
   },
   "common": {
@@ -807,6 +848,7 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",
+    "loading": "Chargement...",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "delete": "Supprimer",
@@ -819,7 +861,8 @@
     "unblock": "Débloquer",
     "send": "Envoyer",
     "sending": "Envoi...",
-    "players": "joueurs"
+    "players": "joueurs",
+    "winRateShort": "V"
   },
   "errors": {
     "network": "Erreur réseau",
@@ -833,43 +876,59 @@
     "confirmUnblock": "Êtes-vous sûr de vouloir débloquer cet utilisateur ?"
   },
   "chat": {
+    "globalChat": "Chat global",
+    "privateChat": "Chat privé",
+    "private": "(privé)",
+    "blocked": "(bloqué)",
+    "inviteToPlay": "Inviter à jouer",
+    "invite": "Inviter",
+    "writePlaceholder": "Écrire...",
+    "messageTo": "Message à {{name}}",
+    "viewProfile": "Voir le profil",
+    "closeNotification": "Fermer la notification",
     "privateMessageTo": "Message privé à",
     "globalMessage": "Message global",
     "noUsersOnline": "Aucun utilisateur connecté (WebSocket en attente...)",
     "privateMessagePlaceholder": "Message privé à {{name}}"
   },
   "registration": {
-    "confirmPassword": "Confirmer le mot de passe",
+    "title": "Inscription",
+    "subtitle": "Rejoignez l'univers Transcendence",
+    "step1Title": "Vos informations",
+    "nameLabel": "Nom (Prénom Nom)",
     "namePlaceholder": "Jean Dupont",
+    "emailLabel": "Email",
+    "emailPlaceholder": "votre@email.com",
+    "usernameLabel": "Pseudo",
     "usernamePlaceholder": "Votre pseudo",
-    "avatarSelected": "Avatar sélectionné",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirmer le mot de passe",
+    "nextButton": "Suivant",
     "chooseAvatar": "Choisissez votre avatar",
+    "avatarSelected": "Avatar sélectionné",
+    "backButton": "Retour",
+    "submitButton": "S'inscrire",
+    "orContinue": "Ou",
+    "signUpWithGoogle": "S'inscrire avec Google",
+    "alreadyRegistered": "Déjà inscrit ?",
+    "signIn": "Se connecter",
+    "success": "Inscription réussie ! Redirection...",
     "errors": {
-      "allFieldsRequired": "Tous les champs sont obligatoires.",
+      "allFieldsRequired": "Tous les champs sont requis.",
       "passwordMismatch": "Les mots de passe ne correspondent pas.",
-      "invalidName": "Le nom doit commencer par une majuscule suivie uniquement de lettres.",
-      "invalidEmail": "Adresse email invalide.",
-      "invalidDisplayName": "Le pseudo ne doit contenir que des lettres, chiffres ou tirets.",
+      "invalidName": "Le nom doit commencer par une lettre et peut contenir des lettres, espaces, apostrophes et tirets.",
+      "invalidEmail": "L'adresse email n'est pas valide.",
+      "invalidDisplayName": "Le pseudo ne doit contenir que des lettres, chiffres et tirets.",
       "invalidPassword": "Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.",
-      "emailOrUsernameExists": "Email ou pseudo déjà utilisé.",
-      "registrationError": "Erreur lors de l'inscription"
-    },
-    "success": "Inscription réussie ! Redirection..."
+      "emailOrUsernameExists": "Cet email ou ce pseudo est déjà utilisé.",
+      "registrationError": "Erreur lors de l'inscription."
+    }
   },
   "account": {
     "confirmNewPassword": "Confirmer le nouveau mot de passe"
   },
-  "auth": {
-    "invalidCode": "Code invalide",
-    "yourCode": "Votre code"
-  },
   "notifications": {
-    "tournament": {
-      "rejoinTitle": "Tournoi en cours",
-      "rejoinMessage": "Vous avez quitté une manche. Rejoindre avant expiration.",
-      "rejoinButton": "Rejoindre",
-      "ignoreButton": "Ignorer"
-    },
     "invitation": {
       "sentTitle": "Invitation envoyée",
       "sentMessage": "Invitation envoyée à {{to}}. En attente d'acceptation ou de refus.",
@@ -935,32 +994,11 @@
       "trainButton": "S'entraîner",
       "trainSubtitle": "Jouer contre un bot",
       "quitTrainingButton": "Quitter l'entraînement",
-      "selectDifficulty": "Selectionnez la difficulte",
+      "selectDifficulty": "Selectionnez la difficulté",
       "easy": "Facile",
       "medium": "Moyen",
       "hard": "Difficile"
     }
-  },
-  "gameOver": {
-    "tournamentChampion": "Champion du tournoi !",
-    "victory": "Victoire !",
-    "defeat": "Défaite",
-    "congratulations": "Félicitations, vous avez remporté le tournoi !",
-    "wonRound": "Vous avez gagné cette manche.",
-    "lostRound": "Vous avez perdu cette manche.",
-    "finalScore": "Score final",
-    "quit": "Quitter",
-    "continue": "Continuer",
-    "replay": "Rejouer"
-  },
-  "gameOverlay": {
-    "mode": "Mode",
-    "offline": "Hors-ligne",
-    "tournament": "Tournoi",
-    "final": "Finale",
-    "semiFinal": "Demi-finale",
-    "quarterFinal": "Quart de finale",
-    "roundOf": "{{count}}ème de finale"
   },
   "theme": {
     "switchToLight": "Passer au mode clair",
@@ -969,32 +1007,6 @@
   "confirm": {
     "confirm": "Confirmer",
     "cancel": "Annuler"
-  },
-  "settings": {
-    "account": {
-      "title": "Réglages de compte",
-      "information": "Informations",
-      "pseudo": "Pseudo",
-      "email": "Email",
-      "memberSince": "Membre depuis",
-      "avatar": "Avatar",
-      "twoFALabel": "Double Authentification (2FA)",
-      "twoFAEnabled": "Activée",
-      "twoFADisabled": "Désactivée",
-      "enableTwoFA": "Activer",
-      "disableTwoFA": "Désactiver",
-      "changePassword": "Changer le mot de passe",
-      "currentPasswordPlaceholder": "Mot de passe actuel (si changement)",
-      "newPasswordPlaceholder": "Nouveau mot de passe",
-      "confirmPasswordPlaceholder": "Confirmer le nouveau mot de passe",
-      "profileUpdated": "Profil mis à jour avec succès",
-      "updateError": "Erreur lors de la mise à jour",
-      "connectionError": "Erreur de connexion",
-      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
-      "twoFAActivated": "Double authentification activée",
-      "twoFADeactivated": "Double authentification désactivée",
-      "twoFAError": "Erreur lors de la modification de la 2FA"
-    }
   },
   "countdown": {
     "startingIn": "Démarrage dans"

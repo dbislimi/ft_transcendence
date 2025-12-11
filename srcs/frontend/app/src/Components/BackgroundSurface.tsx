@@ -1,29 +1,19 @@
-import React from 'react';
-import { useGlobalBackground } from '../contexts/GlobalBackgroundContext';
+import { useGlobalBackground } from "../contexts/GlobalBackgroundContext";
+import SpaceBackground from "./SpaceBackground";
 
-interface BackgroundSurfaceProps {
-  game?: 'bombparty' | 'pong';
-  className?: string;
-  children: React.ReactNode;
-}
+export default function BackgroundSurface() {
+	const { currentBackground } = useGlobalBackground();
 
-export default function BackgroundSurface({ game, className = '', children }: BackgroundSurfaceProps) {
-  const { currentBackground } = useGlobalBackground();
-  if (currentBackground.id === 'default') {
-    return <>{children}</>;
-  }
-  return (
-    <div
-      className={`relative min-h-screen ${className}`}
-      style={{
-        backgroundImage: currentBackground.url ? `url(${currentBackground.url})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      <div className="backdrop-blur-0">
-        {children}
-      </div>
-    </div>
-  );
+	if (currentBackground.id === "default")
+		return <SpaceBackground />;
+	return (
+		<div
+			className="fixed inset-0 -z-10 bg-cover bg-center bg-fixed"
+			style={{
+				backgroundImage: currentBackground.url
+					? `url(${currentBackground.url})`
+					: "none",
+			}}
+		/>
+	);
 }

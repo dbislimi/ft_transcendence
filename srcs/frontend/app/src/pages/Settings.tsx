@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import SpaceBackground from "../Components/SpaceBackground";
 import DisplaySettingsModal from "../Components/DisplaySettingsModal";
 import GameSettingsModal from "../Components/GameSettingsModal";
 import AccountSettingsModal from "../Components/AccountSettingsModal";
@@ -48,7 +47,6 @@ export default function Settings() {
 
 	return (
 		<>
-			<SpaceBackground />
 			<div className="flex items-center justify-center min-h-screen">
 				<div className="text-center max-w-4xl mx-auto px-6">
 					{/* titre principal */}
