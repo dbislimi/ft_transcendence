@@ -79,10 +79,6 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 				let client = fastify.clients.get(decoded.id);
 				if (client) {
 					console.log("Changement de socket");
-					if (client.removalTimer) {
-						clearTimeout(client.removalTimer);
-						client.removalTimer = undefined;
-					}
 					client.socket = socket;
 					client.id = decoded.id;
 				} else {

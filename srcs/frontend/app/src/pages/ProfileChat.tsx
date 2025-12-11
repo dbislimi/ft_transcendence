@@ -495,7 +495,8 @@ export default function PublicProfile() {
 																		alt={
 																			match
 																				.opponent
-																				.name
+																				.name ??
+																			""
 																		}
 																		className="w-12 h-12 rounded-full border border-slate-500 dark:border-slate-500 object-cover"
 																	/>

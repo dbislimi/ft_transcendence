@@ -59,7 +59,7 @@ export default function Profile() {
 	const navigate = useNavigate();
 	const { user, refreshUser, token } = useUser();
 	const { pongWsRef, friendsWsRef } = useWebSocket();
-	const { settings: gameSettings } = useGameSettings();
+	const { bonusEnabled } = useGameSettings();
 	const { notify } = useNotifications();
 	const [activeTab, setActiveTab] = useState("overview");
 	const [friendsSubTab, setFriendsSubTab] = useState<
@@ -83,8 +83,12 @@ export default function Profile() {
 	const [avatar, setAvatar] = useState("/avatars/avatar1.png");
 	const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null); // Nouvel état pour l'avatar sélectionné
 	const [customAvatar, setCustomAvatar] = useState<File | null>(null);
-	const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null);
-	const [uploadedCustomAvatar, setUploadedCustomAvatar] = useState<string | null>(null); // URL de l'avatar uploadé
+	const [customAvatarPreview, setCustomAvatarPreview] = useState<
+		string | null
+	>(null);
+	const [uploadedCustomAvatar, setUploadedCustomAvatar] = useState<
+		string | null
+	>(null); // URL de l'avatar uploadé
 	const [uploadingAvatar, setUploadingAvatar] = useState(false);
 	const [message, setMessage] = useState("");
 	const [isError, setIsError] = useState(false);
@@ -129,19 +133,23 @@ export default function Profile() {
 
 	const fetchFriends = () => {
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({ type: 'get_friends' }));
+			friendsWsRef.current.send(JSON.stringify({ type: "get_friends" }));
 		}
 	};
 
 	const fetchRequests = () => {
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({ type: 'get_friend_requests' }));
+			friendsWsRef.current.send(
+				JSON.stringify({ type: "get_friend_requests" })
+			);
 		}
 	};
 
 	const fetchBlockedUsers = () => {
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({ type: 'get_blocked_users' }));
+			friendsWsRef.current.send(
+				JSON.stringify({ type: "get_blocked_users" })
+			);
 		}
 	};
 
@@ -242,10 +250,12 @@ export default function Profile() {
 		setFriendsError(null);
 
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({
-				type: 'send_friend_request',
-				display_name: newFriendName.trim()
-			}));
+			friendsWsRef.current.send(
+				JSON.stringify({
+					type: "send_friend_request",
+					display_name: newFriendName.trim(),
+				})
+			);
 		} else {
 			setFriendsError(t("errors.network"));
 			setFriendsLoading(false);
@@ -254,10 +264,12 @@ export default function Profile() {
 
 	const handleAcceptRequest = (senderId: number) => {
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({
-				type: 'accept_friend_request',
-				sender_id: senderId
-			}));
+			friendsWsRef.current.send(
+				JSON.stringify({
+					type: "accept_friend_request",
+					sender_id: senderId,
+				})
+			);
 		} else {
 			setFriendsError(t("errors.network"));
 		}
@@ -265,10 +277,12 @@ export default function Profile() {
 
 	const handleRejectRequest = (senderId: number) => {
 		if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-			friendsWsRef.current.send(JSON.stringify({
-				type: 'reject_friend_request',
-				sender_id: senderId
-			}));
+			friendsWsRef.current.send(
+				JSON.stringify({
+					type: "reject_friend_request",
+					sender_id: senderId,
+				})
+			);
 		} else {
 			setFriendsError(t("errors.network"));
 		}
@@ -282,10 +296,12 @@ export default function Profile() {
 			type: "danger",
 			onConfirm: () => {
 				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-					friendsWsRef.current.send(JSON.stringify({
-						type: 'remove_friend',
-						friend_id: friendId
-					}));
+					friendsWsRef.current.send(
+						JSON.stringify({
+							type: "remove_friend",
+							friend_id: friendId,
+						})
+					);
 				} else {
 					setFriendsError(t("errors.network"));
 				}
@@ -302,10 +318,12 @@ export default function Profile() {
 			type: "warning",
 			onConfirm: () => {
 				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-					friendsWsRef.current.send(JSON.stringify({
-						type: 'block_user',
-						user_id: userId
-					}));
+					friendsWsRef.current.send(
+						JSON.stringify({
+							type: "block_user",
+							user_id: userId,
+						})
+					);
 				} else {
 					setFriendsError(t("errors.network"));
 				}
@@ -322,10 +340,12 @@ export default function Profile() {
 			type: "info",
 			onConfirm: () => {
 				if (friendsWsRef.current?.readyState === WebSocket.OPEN) {
-					friendsWsRef.current.send(JSON.stringify({
-						type: 'unblock_user',
-						user_id: userId
-					}));
+					friendsWsRef.current.send(
+						JSON.stringify({
+							type: "unblock_user",
+							user_id: userId,
+						})
+					);
 				} else {
 					setFriendsError(t("errors.network"));
 				}
@@ -349,11 +369,11 @@ export default function Profile() {
 	// Initialiser les champs quand on entre en mode édition
 	useEffect(() => {
 		if (editMode && user) {
-			setEmail(user.email || '');
-			setDisplayName(user.display_name || '');
-			setAvatar(user.avatar || '/avatars/avatar1.png');
+			setEmail(user.email || "");
+			setDisplayName(user.display_name || "");
+			setAvatar(user.avatar || "/avatars/avatar1.png");
 			setSelectedAvatar(null); // Réinitialiser la sélection
-			setPassword('');
+			setPassword("");
 			setCustomAvatar(null);
 			setCustomAvatarPreview(null);
 			setUploadedCustomAvatar(null);
@@ -511,7 +531,9 @@ export default function Profile() {
 			password
 		);
 
-	const handleCustomAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleCustomAvatarChange = (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
 		const file = e.target.files?.[0];
 		if (file) {
 			// Vérifier la taille (max 5MB)
@@ -523,7 +545,7 @@ export default function Profile() {
 			}
 
 			// Vérifier le type
-			if (!file.type.startsWith('image/')) {
+			if (!file.type.startsWith("image/")) {
 				setIsError(true);
 				setMessage("Veuillez sélectionner une image valide");
 				setTimeout(() => setMessage(""), 3000);
@@ -531,7 +553,7 @@ export default function Profile() {
 			}
 
 			setCustomAvatar(file);
-			
+
 			// Créer une preview
 			const reader = new FileReader();
 			reader.onloadend = () => {
@@ -550,10 +572,10 @@ export default function Profile() {
 
 		try {
 			const formData = new FormData();
-			formData.append('avatar', customAvatar);
+			formData.append("avatar", customAvatar);
 
 			const res = await fetch(`${API_BASE_URL}/api/upload-avatar`, {
-				method: 'POST',
+				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -564,13 +586,15 @@ export default function Profile() {
 
 			if (res.ok) {
 				setIsError(false);
-				setMessage("Avatar uploadé avec succès ! Sélectionnez-le pour l'enregistrer.");
-				
+				setMessage(
+					"Avatar uploadé avec succès ! Sélectionnez-le pour l'enregistrer."
+				);
+
 				// Stocker l'URL de l'avatar uploadé mais ne pas fermer le mode édition
 				setUploadedCustomAvatar(data.avatar);
 				setCustomAvatar(null);
 				setCustomAvatarPreview(null);
-				
+
 				setTimeout(() => setMessage(""), 3000);
 			} else {
 				setIsError(true);
@@ -699,7 +723,9 @@ export default function Profile() {
 			<SpaceBackground />
 			<ConfirmModal
 				isOpen={confirmModal.isOpen}
-				onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+				onClose={() =>
+					setConfirmModal({ ...confirmModal, isOpen: false })
+				}
 				onConfirm={confirmModal.onConfirm}
 				title={confirmModal.title}
 				message={confirmModal.message}
@@ -1221,7 +1247,7 @@ export default function Profile() {
 																			fill="none"
 																			stroke="currentColor"
 																			viewBox="0 0 24 24"
-																			>
+																		>
 																			<path
 																				strokeLinecap="round"
 																				strokeLinejoin="round"
@@ -1642,7 +1668,7 @@ export default function Profile() {
 										{/* Ajouter un ami */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-												 ➕ {t("profile.friend.add")}
+												➕ {t("profile.friend.add")}
 											</h4>
 											<div className="flex gap-3">
 												<input
@@ -1754,7 +1780,9 @@ export default function Profile() {
 																								friendId:
 																									friend.id,
 																								options:
-																									gameSettings,
+																									{
+																										bonus: bonusEnabled,
+																									},
 																							},
 																						}
 																					)
@@ -1763,7 +1791,9 @@ export default function Profile() {
 																		}}
 																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
 																	>
-																		{t('profile.friend.invite')}
+																		{t(
+																			"profile.friend.invite"
+																		)}
 																	</button>
 																)}
 																<button
@@ -1774,7 +1804,9 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
 																>
-																	{t('profile.friend.block')}
+																	{t(
+																		"profile.friend.block"
+																	)}
 																</button>
 																<button
 																	onClick={() =>
@@ -1784,7 +1816,9 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
 																>
-																	{t('profile.friend.remove')}
+																	{t(
+																		"profile.friend.remove"
+																	)}
 																</button>
 															</div>
 														</div>
@@ -1832,39 +1866,79 @@ export default function Profile() {
 												)
 											</h4>
 											<div className="space-y-3">
-												{requests.filter(r => r.type === "received").length > 0 ? (
-													requests.filter(r => r.type === "received").map(r => (
-														<div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-															<div className="flex items-center gap-3">
-																<img
-																	src={r.avatar || "/avatars/avatar1.png"}
-																	alt={r.display_name}
-																	className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-																/>
-																<span className="font-medium text-white">{r.display_name}</span>
+												{requests.filter(
+													(r) => r.type === "received"
+												).length > 0 ? (
+													requests
+														.filter(
+															(r) =>
+																r.type ===
+																"received"
+														)
+														.map((r) => (
+															<div
+																key={
+																	r.sender_id
+																}
+																className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+															>
+																<div className="flex items-center gap-3">
+																	<img
+																		src={
+																			r.avatar ||
+																			"/avatars/avatar1.png"
+																		}
+																		alt={
+																			r.display_name
+																		}
+																		className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																	/>
+																	<span className="font-medium text-white">
+																		{
+																			r.display_name
+																		}
+																	</span>
+																</div>
+																<div className="flex gap-2">
+																	<button
+																		onClick={() =>
+																			handleAcceptRequest(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.accept"
+																		)}
+																	</button>
+																	<button
+																		onClick={() =>
+																			handleRejectRequest(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.reject"
+																		)}
+																	</button>
+																	<button
+																		onClick={() =>
+																			handleBlockUser(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.block"
+																		)}
+																	</button>
+																</div>
 															</div>
-															<div className="flex gap-2">
-																<button
-																	onClick={() => handleAcceptRequest(r.sender_id)}
-																	className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.accept')}
-																</button>
-																<button
-																	onClick={() => handleRejectRequest(r.sender_id)}
-																	className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.reject')}
-																</button>
-																<button
-																	onClick={() => handleBlockUser(r.sender_id)}
-																	className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.block')}
-																</button>
-															</div>
-														</div>
-													))
+														))
 												) : (
 													<div className="text-center py-8 text-gray-400">
 														<div className="text-4xl mb-2">
@@ -2004,7 +2078,9 @@ export default function Profile() {
 															}
 															className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
 														>
-															{t('profile.friend.unblock')}
+															{t(
+																"profile.friend.unblock"
+															)}
 														</button>
 													</div>
 												))
@@ -2189,7 +2265,7 @@ export default function Profile() {
 														placeholder="••••••••"
 													/>
 												</div>
-																								<div>
+												<div>
 													<label className="block text-sm font-medium text-gray-300 mb-2">
 														{t(
 															"profile.settings.customAvatar"
@@ -2230,11 +2306,19 @@ export default function Profile() {
 																key={avatarUrl}
 																type="button"
 																onClick={() => {
-																	setSelectedAvatar(avatarUrl);
-																	setAvatar(avatarUrl);
+																	setSelectedAvatar(
+																		avatarUrl
+																	);
+																	setAvatar(
+																		avatarUrl
+																	);
 																}}
 																className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-																	selectedAvatar === avatarUrl || (!selectedAvatar && avatar === avatarUrl)
+																	selectedAvatar ===
+																		avatarUrl ||
+																	(!selectedAvatar &&
+																		avatar ===
+																			avatarUrl)
 																		? "ring-4 ring-purple-500 scale-110"
 																		: "hover:scale-105 opacity-70 hover:opacity-100"
 																}`}
@@ -2255,22 +2339,31 @@ export default function Profile() {
 												{uploadedCustomAvatar && (
 													<div className="mt-4">
 														<p className="text-sm font-medium text-gray-300 mb-2">
-															📸 Avatar personnalisé disponible
+															📸 Avatar
+															personnalisé
+															disponible
 														</p>
 														<button
 															type="button"
 															onClick={() => {
-																setSelectedAvatar(uploadedCustomAvatar);
-																setAvatar(uploadedCustomAvatar);
+																setSelectedAvatar(
+																	uploadedCustomAvatar
+																);
+																setAvatar(
+																	uploadedCustomAvatar
+																);
 															}}
 															className={`relative rounded-full overflow-hidden transition-all duration-300 ${
-																selectedAvatar === uploadedCustomAvatar
+																selectedAvatar ===
+																uploadedCustomAvatar
 																	? "ring-4 ring-green-500 scale-110"
 																	: "hover:scale-105 opacity-70 hover:opacity-100"
 															}`}
 														>
 															<img
-																src={uploadedCustomAvatar}
+																src={
+																	uploadedCustomAvatar
+																}
 																alt="Avatar personnalisé"
 																className="w-20 h-20 object-cover"
 															/>
@@ -2286,7 +2379,10 @@ export default function Profile() {
 															)}
 														</p>
 														<img
-															src={selectedAvatar || avatar}
+															src={
+																selectedAvatar ||
+																avatar
+															}
 															alt={t(
 																"profile.settings.previewAvatar"
 															)}
@@ -2306,21 +2402,36 @@ export default function Profile() {
 												{uploadingAvatar ? (
 													<span className="flex items-center gap-2">
 														<div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-														{t("profile.settings.uploading")}
+														{t(
+															"profile.settings.uploading"
+														)}
 													</span>
 												) : customAvatar ? (
-													<span>📤 {t("profile.settings.upload")}</span>
+													<span>
+														📤{" "}
+														{t(
+															"profile.settings.upload"
+														)}
+													</span>
 												) : (
-													<span>💾 {t("profile.settings.save")}</span>
+													<span>
+														💾{" "}
+														{t(
+															"profile.settings.save"
+														)}
+													</span>
 												)}
 											</button>
 											<button
 												type="button"
-												onClick={() => setEditMode(false)}
+												onClick={() =>
+													setEditMode(false)
+												}
 												disabled={uploadingAvatar}
 												className="px-8 py-3 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
 											>
-												❌ {t("profile.settings.cancel")}
+												❌{" "}
+												{t("profile.settings.cancel")}
 											</button>
 										</div>
 									</form>

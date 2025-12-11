@@ -116,7 +116,7 @@ export class TurnTimer {
 export function useTurnTimer(timer: TurnTimer, isActive: boolean) {
   const [remainingMs, setRemainingMs] = useState(0);
   const zeroCountRef = useRef(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateTimer = useCallback(() => {
     console.log('[useTurnTimer] updateTimer appele', {

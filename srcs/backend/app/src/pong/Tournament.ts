@@ -194,7 +194,6 @@ export default class Tournament {
 			--depth;
 		}
 		this.root = nodes[0] ?? null;
-		this.printTree();
 	}
 
 	joinMatch(node: Node) {
@@ -370,29 +369,6 @@ export default class Tournament {
 		if (this.players.length === 0) this.onEnd();
 	}
 
-	printTree(root: Node | null = this.root) {
-		if (!root) {
-			return;
-		}
-		const label = (n: Node) => {
-			const type = !n.left && !n.right ? "P" : "N"; // P = feuille (player), N = noeud interne
-			const id = n.bracketId !== undefined ? `#${n.bracketId}` : "";
-			const depth = n.depth !== undefined ? ` d${n.depth}` : "";
-			return `${type}${id}${depth}`;
-		};
-		const traverse = (
-			n: Node | undefined,
-			prefix: string,
-			isLeft: boolean
-		) => {
-			if (!n) return;
-			if (n.right)
-				traverse(n.right, prefix + (isLeft ? "│   " : "    "), false);
-			if (n.left)
-				traverse(n.left, prefix + (isLeft ? "    " : "│   "), true);
-		};
-		traverse(root, "", true);
-	}
 	isEmpty() {
 		return this.players.length === 0;
 	}

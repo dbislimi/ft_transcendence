@@ -207,12 +207,8 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 
 			socket.on("message", (message: any) => processInput(message));
 			socket.on("close", () => {
-				// console.log("close ", client.name);
 				games.stop_online(client);
 				client.socket = undefined;
-				// console.log(
-				// 	`Removing client ${client.name} (id=${client.id}) on disconnect`
-				// );
 				fastify.clients.delete(client.id);
 			});
 		}
