@@ -87,8 +87,11 @@ export default function Pong() {
 	const activeSessionRef = useRef(false);
 	const gameRef = useRef<PongState>(initGameState());
 	const controlsReadyRef = useRef(false);
-	const pendingInputsRef = useRef<PendingInput[]>([]);
-	const inputIdRef = useRef(0);
+	const pendingInputsRefs = useRef<[PendingInput[], PendingInput[]]>([
+		[],
+		[],
+	]);
+	const inputIdRefs = useRef<[number, number]>([0, 0]);
 	const [view, setView] = useState<Ui>({ kind: "rules" });
 	const enableIplusPRef = useRef(true);
 	const enableInterpolationRef = useRef(true);
@@ -110,14 +113,6 @@ export default function Pong() {
 	}, []);
 	const isControlsReady = useCallback(() => controlsReadyRef.current, []);
 
-	const me = useMemo(() => {
-		const myState =
-			session?.side === 0
-				? gameRef.current.players.p1
-				: gameRef.current.players.p2;
-		return myState;
-	}, [session]);
-
 	const sendPongMessage = useCallback(
 		(message: any) => {
 			pongWsRef.current?.send(JSON.stringify(message));
@@ -125,18 +120,29 @@ export default function Pong() {
 		[pongWsRef]
 	);
 
+	const getPlayer = useCallback((id: number) => {
+		return id === 0
+			? gameRef.current.players.p1
+			: gameRef.current.players.p2;
+	}, []);
+
+	const isLocalMode = useMemo(() => {
+		return session?.sessionType === "offline" && !session.botDifficulty;
+	}, [session?.sessionType, session?.botDifficulty]);
+
 	usePongControls({
 		isEnabled: isControlsReady,
 		send: sendPongMessage,
-		player: me,
-		pendingInputsRef,
-		inputIdRef,
+		getPlayer,
+		pendingInputsRefs,
+		inputIdRefs,
+		isLocalMode,
 	});
 
 	const resetGameState = useCallback(() => {
 		gameRef.current = initGameState();
-		pendingInputsRef.current = [];
-		inputIdRef.current = 0;
+		pendingInputsRefs.current = [[], []];
+		inputIdRefs.current = [0, 0];
 	}, []);
 
 	const clearTrainingState = useCallback(() => {
@@ -165,6 +171,24 @@ export default function Pong() {
 		activeSessionRef.current = false;
 		clearSession();
 	}, [resetGameState, setControlsReady, clearSession]);
+
+	const getPlayersBySide = (side: number, snapshot: any) => {
+		const isP1 = side === 0;
+		return {
+			me: isP1 ? gameRef.current.players.p1 : gameRef.current.players.p2,
+			opponent: isP1
+				? gameRef.current.players.p2
+				: gameRef.current.players.p1,
+			serverMe: isP1 ? snapshot.p1 : snapshot.p2,
+			serverOpponent: isP1 ? snapshot.p2 : snapshot.p1,
+		};
+	};
+
+	const syncPlayerInputs = (playerId: number, lastProcessedId: number) => {
+		pendingInputsRefs.current[playerId] = pendingInputsRefs.current[
+			playerId
+		].filter((input: PendingInput) => input.inputId > lastProcessedId);
+	};
 
 	const onMessage = useCallback(
 		(data: any) => {
@@ -224,47 +248,53 @@ export default function Pong() {
 					if (gameRef.current.serverUpdates.length > 60)
 						gameRef.current.serverUpdates.shift();
 					gameRef.current.bonuses = data.body.bonuses;
+
 					if (session?.side !== undefined) {
-						const clientMe =
-							session.side === 0
-								? gameRef.current.players.p1
-								: gameRef.current.players.p2;
-						const serverMe =
-							session.side === 0
-								? data.body.players.p1
-								: data.body.players.p2;
-						const clientOpponent =
-							session.side === 0
-								? gameRef.current.players.p2
-								: gameRef.current.players.p1;
-						const serverOpponent =
-							session.side === 0
-								? data.body.players.p2
-								: data.body.players.p1;
+						const { me, opponent, serverMe, serverOpponent } =
+							getPlayersBySide(session.side, data.body.players);
 
-						[clientMe.score, clientMe.size] = [
-							serverMe.score,
-							serverMe.size,
-						];
-						[clientOpponent.score, clientOpponent.size] = [
-							serverOpponent.score,
-							serverOpponent.size,
-						];
+						me.score = serverMe.score;
+						me.size = serverMe.size;
+						opponent.score = serverOpponent.score;
+						opponent.size = serverOpponent.size;
 
-						if (enableIplusPRef.current)
-							reconcileWithServer(
-								clientMe,
-								serverMe,
-								data.body.timestamp,
-								pendingInputsRef.current
+						if (isLocalMode) {
+							if (enableIplusPRef.current) {
+								reconcileWithServer(
+									gameRef.current.players.p1,
+									data.body.players.p1,
+									data.body.timestamp,
+									pendingInputsRefs.current[0]
+								);
+								reconcileWithServer(
+									gameRef.current.players.p2,
+									data.body.players.p2,
+									data.body.timestamp,
+									pendingInputsRefs.current[1]
+								);
+							}
+							syncPlayerInputs(
+								0,
+								data.body.players.p1.lastProcessedInputId ?? -1
 							);
-						const lastProcessedId =
-							serverMe.lastProcessedInputId ?? -1;
-						pendingInputsRef.current =
-							pendingInputsRef.current.filter(
-								(input: PendingInput) =>
-									input.inputId > lastProcessedId
+							syncPlayerInputs(
+								1,
+								data.body.players.p2.lastProcessedInputId ?? -1
 							);
+						} else {
+							if (enableIplusPRef.current) {
+								reconcileWithServer(
+									me,
+									serverMe,
+									data.body.timestamp,
+									pendingInputsRefs.current[session.side]
+								);
+							}
+							syncPlayerInputs(
+								session.side,
+								serverMe.lastProcessedInputId ?? -1
+							);
+						}
 					}
 					break;
 				case "result":
@@ -315,7 +345,7 @@ export default function Pong() {
 					break;
 			}
 		},
-		[applyTournamentRound, clearSession, pendingInputsRef]
+		[applyTournamentRound, clearSession, pendingInputsRefs]
 	);
 
 	useEffect(() => {
@@ -633,6 +663,7 @@ export default function Pong() {
 					interpolationDelayRef={interpolationDelayRef}
 					enableIplusPRef={enableIplusPRef}
 					enableInterpolationRef={enableInterpolationRef}
+					isLocalMode={isLocalMode}
 				/>
 			)}
 			<PingController

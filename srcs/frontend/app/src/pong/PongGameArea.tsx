@@ -13,6 +13,7 @@ type PongGameAreaProps = {
 	interpolationDelayRef: MutableRefObject<number>;
 	enableIplusPRef: MutableRefObject<boolean>;
 	enableInterpolationRef: MutableRefObject<boolean>;
+	isLocalMode: boolean;
 };
 
 const PongGameArea = memo(function PongGameArea({
@@ -22,6 +23,7 @@ const PongGameArea = memo(function PongGameArea({
 	interpolationDelayRef,
 	enableIplusPRef,
 	enableInterpolationRef,
+	isLocalMode,
 }: PongGameAreaProps) {
 	return (
 		<div className="relative">
@@ -36,6 +38,7 @@ const PongGameArea = memo(function PongGameArea({
 				interpolationDelayRef={interpolationDelayRef}
 				enableIplusPRef={enableIplusPRef}
 				enableInterpolationRef={enableInterpolationRef}
+				isLocalMode={isLocalMode}
 			/>
 		</div>
 	);

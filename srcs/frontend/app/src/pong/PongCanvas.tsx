@@ -8,6 +8,7 @@ interface Props {
 	interpolationDelayRef: MutableRefObject<number>;
 	enableIplusPRef: MutableRefObject<boolean>;
 	enableInterpolationRef: MutableRefObject<boolean>;
+	isLocalMode: boolean;
 }
 
 const SCALE = 4;
@@ -171,17 +172,23 @@ const interpolate = (
 	gameRefCurrent: PongState,
 	side: 0 | 1,
 	interpolationDelay: number,
-	enableInterpolation: boolean
+	enableInterpolation: boolean,
+	isLocalMode: boolean
 ) => {
 	const buff = gameRefCurrent.serverUpdates;
-	const opp = side === 0 ? "p2" : "p1";
 
 	if (!enableInterpolation) {
 		const latest = getLatestSnapshot(buff);
 		if (latest) {
-			gameRefCurrent.players[opp].y = latest.players[opp].y;
-			gameRefCurrent.ball.x = latest.ball.x;
-			gameRefCurrent.ball.y = latest.ball.y;
+			if (isLocalMode) {
+				gameRefCurrent.ball.x = latest.ball.x;
+				gameRefCurrent.ball.y = latest.ball.y;
+			} else {
+				const opp = side === 0 ? "p2" : "p1";
+				gameRefCurrent.players[opp].y = latest.players[opp].y;
+				gameRefCurrent.ball.x = latest.ball.x;
+				gameRefCurrent.ball.y = latest.ball.y;
+			}
 		}
 		return;
 	}
@@ -204,7 +211,10 @@ const interpolate = (
 	const isTeleport = ballDistX > 50;
 
 	if (isTeleport) {
-		gameRefCurrent.players[opp].y = futureUpdate.players[opp].y;
+		if (!isLocalMode) {
+			const opp = side === 0 ? "p2" : "p1";
+			gameRefCurrent.players[opp].y = futureUpdate.players[opp].y;
+		}
 		gameRefCurrent.ball.x = futureUpdate.ball.x;
 		gameRefCurrent.ball.y = futureUpdate.ball.y;
 		return;
@@ -214,13 +224,18 @@ const interpolate = (
 	const ratio = elapsed / total;
 	const lerp = (start: number, end: number, r: number) =>
 		start + (end - start) * r;
+
 	gameRefCurrent.ball.x = lerp(pastUpdate.ball.x, futureUpdate.ball.x, ratio);
 	gameRefCurrent.ball.y = lerp(pastUpdate.ball.y, futureUpdate.ball.y, ratio);
-	gameRefCurrent.players[opp].y = lerp(
-		pastUpdate.players[opp].y,
-		futureUpdate.players[opp].y,
-		ratio
-	);
+
+	if (!isLocalMode) {
+		const opp = side === 0 ? "p2" : "p1";
+		gameRefCurrent.players[opp].y = lerp(
+			pastUpdate.players[opp].y,
+			futureUpdate.players[opp].y,
+			ratio
+		);
+	}
 };
 
 function PongCanvas({
@@ -229,6 +244,7 @@ function PongCanvas({
 	interpolationDelayRef,
 	enableIplusPRef,
 	enableInterpolationRef,
+	isLocalMode,
 }: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const frameIdRef = useRef<number>(0);
@@ -254,25 +270,41 @@ function PongCanvas({
 				gameRef.current,
 				side,
 				interpolationDelayRef.current,
-				enableInterpolationRef.current
+				enableInterpolationRef.current,
+				isLocalMode
 			);
 			const { players, ball, bonuses } = gameRef.current;
-			const me = side === 0 ? players.p1 : players.p2;
 
 			if (enableIplusPRef.current) {
 				const move = PLAYER_SPEED * deltaTime;
-				if (me.movingDown) {
-					me.y = Math.min(me.y + move, 100 - me.size);
-				}
-				if (me.movingUp) {
-					me.y = Math.max(me.y - move, 0);
+				if (isLocalMode) {
+					const p1 = players.p1;
+					const p2 = players.p2;
+
+					if (p1.movingDown)
+						p1.y = Math.min(p1.y + move, 100 - p1.size);
+					if (p1.movingUp) p1.y = Math.max(p1.y - move, 0);
+					if (p2.movingDown)
+						p2.y = Math.min(p2.y + move, 100 - p2.size);
+					if (p2.movingUp) p2.y = Math.max(p2.y - move, 0);
+				} else {
+					const me = side === 0 ? players.p1 : players.p2;
+					if (me.movingDown)
+						me.y = Math.min(me.y + move, 100 - me.size);
+					if (me.movingUp) me.y = Math.max(me.y - move, 0);
 				}
 			} else {
 				const latest = getLatestSnapshot(gameRef.current.serverUpdates);
 				if (latest) {
-					const serverMe =
-						side === 0 ? latest.players.p1 : latest.players.p2;
-					me.y = serverMe.y;
+					if (isLocalMode) {
+						players.p1.y = latest.players.p1.y;
+						players.p2.y = latest.players.p2.y;
+					} else {
+						const serverMe =
+							side === 0 ? latest.players.p1 : latest.players.p2;
+						const me = side === 0 ? players.p1 : players.p2;
+						me.y = serverMe.y;
+					}
 				}
 			}
 
@@ -323,6 +355,7 @@ function PongCanvas({
 		interpolationDelayRef,
 		enableIplusPRef,
 		enableInterpolationRef,
+		isLocalMode,
 	]);
 
 	return (
