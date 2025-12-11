@@ -57,12 +57,12 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
 
 	return (
 		<div
-			className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+			className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 pt-24"
 			onClick={(e) => {
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div className="bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-700/50 max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+			<div className="bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-700/50 max-w-6xl w-full max-h-[85vh] overflow-hidden shadow-2xl">
 				<div className="flex items-center justify-between p-6 border-b border-gray-700/50">
 					<div className="flex items-center space-x-3">
 						<span className="text-3xl">🛒</span>
@@ -90,7 +90,7 @@ export default function ShopModal({ isOpen, onClose }: ShopModalProps) {
 						</svg>
 					</button>
 				</div>
-				<div className="flex h-[calc(90vh-120px)]">
+				<div className="flex h-[calc(85vh-120px)]">
 					<div className="flex-1 p-6 overflow-y-auto">
 						<div className="space-y-6">
 							<div className="flex gap-2 mb-4 bg-gray-800/50 rounded-lg p-1">
