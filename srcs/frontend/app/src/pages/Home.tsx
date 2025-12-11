@@ -52,16 +52,19 @@ export default function Home() {
 							</h1>
 						</div>
 
-            {isAuthenticated && user && (
-              <div className="mb-8">
-                <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
-                  <span className="text-2xl">👋</span>
-                  <p className="text-aesthetic-accent text-lg font-medium">
-                    {t('home.welcome', { name: user.display_name || user.name })}
-                  </p>
-                </div>
-              </div>
-            )}
+						{isAuthenticated && user && (
+							<div className="mb-8">
+								<div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-full px-6 py-3">
+									<span className="text-2xl">👋</span>
+									<p className="text-aesthetic-accent text-lg font-medium">
+										{t("home.welcome", {
+											name:
+												user.display_name || user.name,
+										})}
+									</p>
+								</div>
+							</div>
+						)}
 
 						<div className="mb-16">
 							<p className="text-xl md:text-2xl home-subtitle-adaptive font-light leading-relaxed max-w-3xl mx-auto">
@@ -89,7 +92,6 @@ export default function Home() {
 						>
 							{!isAuthenticated && (
 								<>
-									{/* Bouton Connexion */}
 									<Link
 										to={"/Connection"}
 										className="action-btn-aesthetic"
@@ -117,7 +119,6 @@ export default function Home() {
 										</div>
 									</Link>
 
-									{/* Bouton Inscription */}
 									<Link
 										to={"/Registration"}
 										className="action-btn-aesthetic"

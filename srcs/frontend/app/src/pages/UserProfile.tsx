@@ -66,7 +66,6 @@ export default function UserProfile() {
 					userId
 				);
 
-				// Fetch user profile
 				const userRes = await fetch(
 					`${API_BASE_URL}/api/user/${userId}`,
 					{
@@ -89,7 +88,6 @@ export default function UserProfile() {
 				console.log("[UserProfile] User data reçu:", userData);
 				setUser(userData.user);
 
-				// Fetch user stats
 				const statsRes = await fetch(
 					`${API_BASE_URL}/api/user-stats/${userId}`,
 					{
@@ -102,7 +100,6 @@ export default function UserProfile() {
 					setStats(statsData);
 				}
 
-				// Fetch match history
 				const historyRes = await fetch(
 					`${API_BASE_URL}/api/match-history/${userId}`,
 					{
@@ -151,7 +148,6 @@ export default function UserProfile() {
 		<>
 			<div className="relative min-h-screen py-8 px-4">
 				<div className="max-w-5xl mx-auto">
-					{/* Back button */}
 					<button
 						onClick={() => navigate(-1)}
 						className="mb-4 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-white rounded-lg transition-colors"
@@ -159,7 +155,6 @@ export default function UserProfile() {
 						← {t("common.back") || "Back"}
 					</button>
 
-					{/* User Header */}
 					<div className="bg-gray-900/70 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-700/50">
 						<div className="flex items-center gap-6">
 							<img
@@ -215,7 +210,6 @@ export default function UserProfile() {
 						</div>
 					</div>
 
-					{/* Tabs */}
 					<div className="flex gap-2 mb-6">
 						<button
 							onClick={() => setActiveTab("overview")}
@@ -239,7 +233,6 @@ export default function UserProfile() {
 						</button>
 					</div>
 
-					{/* Content */}
 					{activeTab === "overview" && stats && (
 						<div className="bg-gray-900/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
 							<h2 className="text-2xl font-bold text-white mb-4">

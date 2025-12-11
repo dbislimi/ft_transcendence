@@ -29,11 +29,6 @@ export function useGameWebsocket(
 			}
 
 			isConnecting = true;
-
-			// Always prefer Nginx proxy (port 443) over direct backend port (3001)
-			// to avoid certificate trust issues and CORS complications.
-			// If on port 5173 (Vite), target localhost (Nginx).
-			// If on port 443 (Nginx), target window.location.host (relative).
 			const wsHost = getWebSocketHost();
 			const wsProtocol =
 				window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -51,7 +46,12 @@ export function useGameWebsocket(
 						authToken
 				  )}`
 				: `${wsProtocol}//${wsHost}/${api}`;
-			console.log(`[ws:${api}] Attempting to connect to: ${url.replace(/token=[^&]+/, 'token=***')}`);
+			console.log(
+				`[ws:${api}] Attempting to connect to: ${url.replace(
+					/token=[^&]+/,
+					"token=***"
+				)}`
+			);
 
 			try {
 				ws = new WebSocket(url);
@@ -100,9 +100,18 @@ export function useGameWebsocket(
 			let attempts = 0;
 			poll = setInterval(() => {
 				attempts++;
-				const currentToken = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('token') : null;
-				if (currentToken && (!ws || ws.readyState === WebSocket.CLOSED) && !stopped) {
-					console.log(`[ws:${api}] Token found after ${attempts} attempts, reconnecting with auth`);
+				const currentToken =
+					typeof sessionStorage !== "undefined"
+						? sessionStorage.getItem("token")
+						: null;
+				if (
+					currentToken &&
+					(!ws || ws.readyState === WebSocket.CLOSED) &&
+					!stopped
+				) {
+					console.log(
+						`[ws:${api}] Token found after ${attempts} attempts, reconnecting with auth`
+					);
 					if (ws && ws.readyState !== WebSocket.CLOSED) {
 						ws.close();
 					}

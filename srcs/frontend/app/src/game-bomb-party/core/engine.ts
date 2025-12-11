@@ -51,7 +51,6 @@ export class BombPartyEngine {
 			history: [],
 		};
 	}
-
 	startGame(config: GameConfig, player1Name?: string): void {
 		const players: Player[] = [];
 		for (let i = 0; i < config.playersCount; i++) {
@@ -94,7 +93,6 @@ export class BombPartyEngine {
 			history: [],
 		};
 
-		// Init
 		this.currentSyllableUsageCount = 0;
 		this.totalPlayersInRound = config.playersCount;
 	}
@@ -142,7 +140,6 @@ export class BombPartyEngine {
 			return newSyllable;
 		} catch (error) {
 			console.error("[Engine] Error fetching random syllable:", error);
-			// Fallback to avoid breaking the game
 			return "CH";
 		}
 	}
@@ -152,7 +149,6 @@ export class BombPartyEngine {
 		msTaken: number,
 		externalValidation?: { ok: boolean; reason?: string }
 	): { ok: boolean; reason?: string; consumedDoubleChance?: boolean } {
-		// Use external validation if provided (e.g. from backend), otherwise fallback to local
 		const validation =
 			externalValidation ||
 			validateLocal(

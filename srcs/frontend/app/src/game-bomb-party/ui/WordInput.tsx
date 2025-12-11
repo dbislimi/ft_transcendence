@@ -67,7 +67,6 @@ export default function WordInput({
 						setSuggestions(newSuggestions);
 						setSyllableInfo(info);
 					} else {
-						// If engine not available, fetch directly from API
 						const newSuggestions =
 							await bombPartyApiService.getWordSuggestions(
 								syllable,

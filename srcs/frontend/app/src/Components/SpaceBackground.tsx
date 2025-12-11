@@ -112,7 +112,7 @@ export default function SpaceBackground() {
 					backgroundAlpha: 0,
 					resolution: 1,
 					autoStart: false,
-					preference: 'webgl',
+					preference: "webgl",
 				});
 				if (cancelled) {
 					app.destroy(true);
@@ -121,27 +121,34 @@ export default function SpaceBackground() {
 				appRef.current = app;
 				e.appendChild(app.canvas);
 
-				// Gérer la perte du contexte WebGL
 				const canvas = app.canvas as HTMLCanvasElement;
 				const handleContextLost = (event: Event) => {
 					event.preventDefault();
-					console.warn('[SpaceBackground] Contexte WebGL perdu, tentative de restauration...');
+					console.warn(
+						"[SpaceBackground] Contexte WebGL perdu, tentative de restauration..."
+					);
 				};
 
 				const handleContextRestored = () => {
-					console.log('[SpaceBackground] Contexte WebGL restauré');
-					// Recréer les textures et les étoiles
+					console.log("[SpaceBackground] Contexte WebGL restauré");
 					if (appRef.current && !cancelled) {
 						init_stars();
 					}
 				};
 
-				canvas.addEventListener('webglcontextlost', handleContextLost);
-				canvas.addEventListener('webglcontextrestored', handleContextRestored);
-
+				canvas.addEventListener("webglcontextlost", handleContextLost);
+				canvas.addEventListener(
+					"webglcontextrestored",
+					handleContextRestored
+				);
 			} catch (error) {
-				console.error('[SpaceBackground] Erreur lors de l\'initialisation WebGL:', error);
-				console.log('[SpaceBackground] Switching to fallback mode due to initialization error.');
+				console.error(
+					"[SpaceBackground] Erreur lors de l'initialisation WebGL:",
+					error
+				);
+				console.log(
+					"[SpaceBackground] Switching to fallback mode due to initialization error."
+				);
 				setWebGLSupported(false);
 				return;
 			}
@@ -194,7 +201,6 @@ export default function SpaceBackground() {
 					0,
 					Math.round((area / 1000000) * STAR_DENSITY_PER_MEGAPIXEL)
 				);
-				// Recréer les textures si nécessaire (après perte de contexte)
 				if (!coreTexture || coreTexture.destroyed) {
 					coreTexture = makeCoreTexture();
 				}
@@ -307,7 +313,6 @@ export default function SpaceBackground() {
 		return (
 			<div className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-black">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#000000] to-black opacity-80" />
-				{/* Fallback star pattern using CSS or just a dark background */}
 				<div className="absolute inset-0 bg-black opacity-30" />
 			</div>
 		);

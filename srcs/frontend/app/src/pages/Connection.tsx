@@ -55,7 +55,6 @@ export default function Connection() {
 					sessionStorage.setItem("userData", JSON.stringify(data));
 					navigate("/auth");
 				} else {
-					// Utiliser setToken au lieu de localStorage directement
 					setToken(data.token);
 					navigate("/");
 				}

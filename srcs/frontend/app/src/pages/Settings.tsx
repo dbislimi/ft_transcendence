@@ -49,7 +49,6 @@ export default function Settings() {
 		<>
 			<div className="flex items-center justify-center min-h-screen">
 				<div className="text-center max-w-4xl mx-auto px-6">
-					{/* titre principal */}
 					<div className="relative mb-12">
 						<h1 className="text-6xl md:text-8xl font-black text-white tracking-wider">
 							{t("nav.settings") || "ReGLAGES"}
@@ -91,7 +90,6 @@ export default function Settings() {
 							</div>
 						</button>
 
-						{/* reglages de jeu */}
 						<button
 							onClick={() => openModal("game")}
 							className="action-btn-aesthetic"
@@ -120,7 +118,6 @@ export default function Settings() {
 							</div>
 						</button>
 
-						{/* reglages de compte */}
 						<button
 							onClick={() =>
 								isAuthenticated && openModal("account")
@@ -169,7 +166,6 @@ export default function Settings() {
 							</div>
 						</button>
 
-						{/* retour à l'accueil */}
 						<Link to="/" className="action-btn-aesthetic">
 							<div className="flex flex-col items-center gap-3">
 								<svg
@@ -199,7 +195,6 @@ export default function Settings() {
 				</div>
 			</div>
 
-			{/* Modales */}
 			{activeModal === "display" && (
 				<DisplaySettingsModal isOpen={true} onClose={closeModal} />
 			)}

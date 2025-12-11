@@ -61,7 +61,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 	const { token } = useUser();
 
 	useEffect(() => {
-		// Always prefer Nginx proxy (port 443) over direct backend port (3001)
 		const wsHost = getWebSocketHost();
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 		const WS_BASE_URL = `${protocol}//${wsHost}`;
@@ -78,7 +77,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 				console.log("Pong Websocket fermé (guest)");
 			pongWsRef.current.onmessage = (event) => {
 				const data = JSON.parse(event.data);
-				//console.log("received pong (guest): ", data);
 				if (!data.to) return;
 				const handler = pongRoutesRef.current.get(data.to);
 				if (!handler) return;

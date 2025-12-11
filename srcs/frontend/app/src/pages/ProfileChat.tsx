@@ -180,8 +180,6 @@ export default function PublicProfile() {
 		);
 	}
 
-	// --- Render : Error (User Not Found) ---
-
 	if (error || !targetUser) {
 		return (
 			<>
@@ -209,8 +207,6 @@ export default function PublicProfile() {
 		);
 	}
 
-	// --- Render : Main Profile ---
-
 	return (
 		<>
 			<div
@@ -219,14 +215,11 @@ export default function PublicProfile() {
 				}`}
 			>
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-					{/* HEADER PROFIL */}
 					<div className="bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 mb-8 shadow-2xl relative overflow-hidden">
-						{/* Effet de fond décoratif */}
 						<div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
 						<div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
 						<div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-							{/* Avatar */}
 							<div className="relative group">
 								<div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-500"></div>
 								<img
@@ -237,7 +230,6 @@ export default function PublicProfile() {
 									alt={targetUser.display_name}
 									className="relative w-36 h-36 rounded-full border-4 border-slate-900 object-cover shadow-2xl"
 								/>
-								{/* Indicateur en ligne (optionnel si tu as l'info) */}
 								{targetUser.online === 1 && (
 									<div
 										className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-800 rounded-full"
@@ -246,13 +238,11 @@ export default function PublicProfile() {
 								)}
 							</div>
 
-							{/* Infos Texte */}
 							<div className="flex-1 text-center md:text-left">
 								<h1 className="text-5xl font-black text-white mb-2 tracking-tight">
 									{targetUser.display_name}
 								</h1>
 
-								{/* Badges / Petites stats header */}
 								<div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
 									<div className="bg-slate-700/50 dark:bg-slate-700/50 border border-slate-600 dark:border-slate-600 rounded-lg px-4 py-2 flex items-center gap-2">
 										<span
@@ -290,7 +280,6 @@ export default function PublicProfile() {
 								</div>
 							</div>
 
-							{/* Bouton Retour */}
 							<button
 								onClick={() => navigate(-1)}
 								className="px-6 py-3 bg-white/5 hover:bg-white/10 dark:bg-white/5 dark:hover:bg-white/10 border border-white/10 dark:border-white/10 rounded-xl text-white dark:text-white transition-all duration-200 flex items-center gap-2 hover:scale-105"
@@ -315,7 +304,6 @@ export default function PublicProfile() {
 						</div>
 					</div>
 
-					{/* ONGLETS DE NAVIGATION */}
 					<div className="flex justify-center mb-8">
 						<div className="bg-slate-800/80 backdrop-blur rounded-2xl p-1 border border-slate-700 inline-flex shadow-lg">
 							{(["overview", "stats", "history"] as const).map(
@@ -341,9 +329,7 @@ export default function PublicProfile() {
 						</div>
 					</div>
 
-					{/* CONTENU DES ONGLETS */}
 					<div className="min-h-[400px]">
-						{/* --- VUE D'ENSEMBLE --- */}
 						{activeTab === "overview" && (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fadeIn">
 								<div className="bg-gradient-to-br from-blue-900/40 to-slate-900/40 dark:from-blue-900/40 dark:to-slate-900/40 border border-blue-500/20 dark:border-blue-500/20 rounded-2xl p-6 text-center shadow-xl">
@@ -381,7 +367,6 @@ export default function PublicProfile() {
 							</div>
 						)}
 
-						{/* --- STATISTIQUES DÉTAILLÉES --- */}
 						{activeTab === "stats" && (
 							<div className="bg-slate-800/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 dark:border-slate-700/50 p-8 shadow-xl animate-fadeIn">
 								<h3 className="text-2xl font-bold text-white dark:text-white mb-8 border-b border-slate-700 dark:border-slate-700 pb-4">
@@ -389,7 +374,6 @@ export default function PublicProfile() {
 								</h3>
 
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-									{/* VS BOTS */}
 									<div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
 										<div
 											className="text-4xl mb-4"
@@ -410,7 +394,6 @@ export default function PublicProfile() {
 										</div>
 									</div>
 
-									{/* VS HUMAINS */}
 									<div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
 										<div
 											className="text-4xl mb-4"
@@ -431,7 +414,6 @@ export default function PublicProfile() {
 										</div>
 									</div>
 
-									{/* TOURNOIS */}
 									<div className="bg-slate-700/30 dark:bg-slate-700/30 rounded-2xl p-6 border border-slate-600 dark:border-slate-600 text-center hover:bg-slate-700/50 dark:hover:bg-slate-700/50 transition">
 										<div
 											className="text-4xl mb-4"
@@ -453,7 +435,6 @@ export default function PublicProfile() {
 							</div>
 						)}
 
-						{/* --- HISTORIQUE --- */}
 						{activeTab === "history" && (
 							<div className="bg-slate-800/60 dark:bg-slate-800/60 backdrop-blur-md rounded-3xl border border-slate-700/50 dark:border-slate-700/50 p-6 md:p-8 shadow-xl animate-fadeIn">
 								<h3 className="text-2xl font-bold text-white dark:text-white mb-6">
@@ -473,7 +454,6 @@ export default function PublicProfile() {
 													}`}
 												>
 													<div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
-														{/* Partie Gauche : Adversaire */}
 														<div className="flex items-center gap-4">
 															<div className="relative">
 																{match.opponent
@@ -566,7 +546,6 @@ export default function PublicProfile() {
 															</div>
 														</div>
 
-														{/* Partie Droite : Score */}
 														<div className="text-right pl-4 border-l border-white/5">
 															{match.scores && (
 																<div className="text-2xl font-mono font-bold text-white tracking-widest">
@@ -586,7 +565,6 @@ export default function PublicProfile() {
 												</div>
 											))}
 
-											{/* Bouton Charger Plus */}
 											{hasMoreHistory && (
 												<div className="flex justify-center mt-8">
 													<button

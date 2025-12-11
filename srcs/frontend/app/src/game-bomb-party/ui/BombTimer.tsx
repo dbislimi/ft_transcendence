@@ -68,7 +68,6 @@ export default function BombTimer({
 
 	const difficultyInfo = getDifficultyInfo(difficulty);
 
-	// debug temporaire
 	if (isActive && remainingMs <= 0) {
 		console.warn("[BombTimer] Timer actif mais remainingMs <= 0", {
 			isActive,

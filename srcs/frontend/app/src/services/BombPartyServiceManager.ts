@@ -1,275 +1,251 @@
-import { BombPartyService } from './bombPartyService';
-import { useBombPartyStore } from '../store/useBombPartyStore';
-import { logger } from '../utils/logger';
-
-/**
- * Gestionnaire centralisé des instances de BombPartyService.
- * Crée et détruit automatiquement les instances selon le cycle de vie des parties.
- */
+import { BombPartyService } from "./bombPartyService";
+import { useBombPartyStore } from "../store/useBombPartyStore";
+import { logger } from "../utils/logger";
 export class BombPartyServiceManager {
-    private services: Map<string, BombPartyService> = new Map();
-    private activeRoomId: string | null = null;
-    private cleanupTimers: Map<string, number> = new Map();
-    private readonly CLEANUP_DELAY_MS = 30000; // 30s après GAME_OVER
-    private managerId: string;
+	private services: Map<string, BombPartyService> = new Map();
+	private activeRoomId: string | null = null;
+	private cleanupTimers: Map<string, number> = new Map();
+	private readonly CLEANUP_DELAY_MS = 30000;
+	private managerId: string;
 
-    constructor() {
-        this.managerId = `bpsm_${Math.random().toString(36).substring(2, 10)}`;
-        logger.info('BombPartyServiceManager créé', { managerId: this.managerId });
-    }
+	constructor() {
+		this.managerId = `bpsm_${Math.random().toString(36).substring(2, 10)}`;
+		logger.info("BombPartyServiceManager créé", {
+			managerId: this.managerId,
+		});
+	}
 
-    /**
-     * Obtient ou crée une instance de service pour une room donnée
-     */
-    getOrCreateService(roomId?: string): BombPartyService {
-        const targetRoomId = roomId || this.activeRoomId || 'default';
+	getOrCreateService(roomId?: string): BombPartyService {
+		const targetRoomId = roomId || this.activeRoomId || "default";
 
-        let service = this.services.get(targetRoomId);
+		let service = this.services.get(targetRoomId);
 
-        if (!service) {
-            logger.info('Création d\'une nouvelle instance BombPartyService', {
-                managerId: this.managerId,
-                roomId: targetRoomId,
-                totalServices: this.services.size
-            });
+		if (!service) {
+			logger.info("Création d'une nouvelle instance BombPartyService", {
+				managerId: this.managerId,
+				roomId: targetRoomId,
+				totalServices: this.services.size,
+			});
 
-            service = new BombPartyService(targetRoomId);
-            this.services.set(targetRoomId, service);
-            this.activeRoomId = targetRoomId;
+			service = new BombPartyService(targetRoomId);
+			this.services.set(targetRoomId, service);
+			this.activeRoomId = targetRoomId;
+			logger.debug(
+				"Initialisation automatique de la connexion WebSocket",
+				{
+					managerId: this.managerId,
+					roomId: targetRoomId,
+				}
+			);
+			service.init();
+			this.cancelCleanupTimer(targetRoomId);
+		}
 
-            // Initialiser automatiquement la connexion WebSocket
-            logger.debug('Initialisation automatique de la connexion WebSocket', {
-                managerId: this.managerId,
-                roomId: targetRoomId
-            });
-            service.init();
+		return service;
+	}
 
-            // Annuler tout timer de nettoyage en attente pour cette room
-            this.cancelCleanupTimer(targetRoomId);
-        }
+	getActiveService(): BombPartyService | null {
+		if (this.activeRoomId) {
+			return this.services.get(this.activeRoomId) || null;
+		}
 
-        return service;
-    }
+		const firstService = Array.from(this.services.values())[0];
+		return firstService || null;
+	}
 
-    /**
-     * Obtient le service actif (dernière room active)
-     */
-    getActiveService(): BombPartyService | null {
-        if (this.activeRoomId) {
-            return this.services.get(this.activeRoomId) || null;
-        }
+	destroyService(roomId: string): void {
+		const service = this.services.get(roomId);
 
-        // Fallback : retourner le premier service disponible
-        const firstService = Array.from(this.services.values())[0];
-        return firstService || null;
-    }
+		if (!service) {
+			logger.debug("Tentative de destruction d'un service inexistant", {
+				managerId: this.managerId,
+				roomId,
+			});
+			return;
+		}
 
-    /**
-     * Détruit une instance de service spécifique
-     */
-    destroyService(roomId: string): void {
-        const service = this.services.get(roomId);
+		logger.info("Destruction d'une instance BombPartyService", {
+			managerId: this.managerId,
+			roomId,
+			remainingServices: this.services.size - 1,
+		});
 
-        if (!service) {
-            logger.debug('Tentative de destruction d\'un service inexistant', {
-                managerId: this.managerId,
-                roomId
-            });
-            return;
-        }
+		try {
+			service.disconnect();
+		} catch (error) {
+			logger.error("Erreur lors de la déconnexion du service", error, {
+				managerId: this.managerId,
+				roomId,
+			});
+		}
 
-        logger.info('Destruction d\'une instance BombPartyService', {
-            managerId: this.managerId,
-            roomId,
-            remainingServices: this.services.size - 1
-        });
+		this.services.delete(roomId);
+		this.cancelCleanupTimer(roomId);
 
-        try {
-            service.disconnect();
-        } catch (error) {
-            logger.error('Erreur lors de la déconnexion du service', error, {
-                managerId: this.managerId,
-                roomId
-            });
-        }
+		if (this.activeRoomId === roomId) {
+			this.activeRoomId = null;
+		}
+	}
 
-        this.services.delete(roomId);
-        this.cancelCleanupTimer(roomId);
+	scheduleCleanup(
+		roomId: string,
+		delay: number = this.CLEANUP_DELAY_MS
+	): void {
+		this.cancelCleanupTimer(roomId);
 
-        if (this.activeRoomId === roomId) {
-            this.activeRoomId = null;
-        }
-    }
+		logger.info("Planification du nettoyage d'un service", {
+			managerId: this.managerId,
+			roomId,
+			delayMs: delay,
+		});
 
-    /**
-     * Planifie la destruction d'un service après un délai
-     */
-    scheduleCleanup(roomId: string, delay: number = this.CLEANUP_DELAY_MS): void {
-        // Annuler tout timer existant
-        this.cancelCleanupTimer(roomId);
+		const timer = window.setTimeout(() => {
+			logger.info("Exécution du nettoyage planifié", {
+				managerId: this.managerId,
+				roomId,
+			});
+			this.destroyService(roomId);
+		}, delay);
 
-        logger.info('Planification du nettoyage d\'un service', {
-            managerId: this.managerId,
-            roomId,
-            delayMs: delay
-        });
+		this.cleanupTimers.set(roomId, timer);
+	}
 
-        const timer = window.setTimeout(() => {
-            logger.info('Exécution du nettoyage planifié', {
-                managerId: this.managerId,
-                roomId
-            });
-            this.destroyService(roomId);
-        }, delay);
+	cancelCleanupTimer(roomId: string): void {
+		const timer = this.cleanupTimers.get(roomId);
+		if (timer) {
+			clearTimeout(timer);
+			this.cleanupTimers.delete(roomId);
+			logger.debug("Timer de nettoyage annulé", {
+				managerId: this.managerId,
+				roomId,
+			});
+		}
+	}
 
-        this.cleanupTimers.set(roomId, timer);
-    }
+	destroyAll(): void {
+		logger.info("Destruction de tous les services", {
+			managerId: this.managerId,
+			count: this.services.size,
+		});
 
-    /**
-     * Annule le nettoyage planifié pour une room
-     */
-    cancelCleanupTimer(roomId: string): void {
-        const timer = this.cleanupTimers.get(roomId);
-        if (timer) {
-            clearTimeout(timer);
-            this.cleanupTimers.delete(roomId);
-            logger.debug('Timer de nettoyage annulé', {
-                managerId: this.managerId,
-                roomId
-            });
-        }
-    }
+		for (const roomId of Array.from(this.services.keys())) {
+			this.destroyService(roomId);
+		}
 
-    /**
-     * Détruit tous les services
-     */
-    destroyAll(): void {
-        logger.info('Destruction de tous les services', {
-            managerId: this.managerId,
-            count: this.services.size
-        });
+		this.activeRoomId = null;
+	}
 
-        for (const roomId of Array.from(this.services.keys())) {
-            this.destroyService(roomId);
-        }
+	getActiveCount(): number {
+		return this.services.size;
+	}
 
-        this.activeRoomId = null;
-    }
+	init(): void {
+		const service = this.getOrCreateService();
+		service.init();
+	}
 
-    /**
-     * Obtient le nombre de services actifs
-     */
-    getActiveCount(): number {
-        return this.services.size;
-    }
+	createRoom(
+		name: string,
+		isPrivate: boolean,
+		password?: string,
+		maxPlayers: number = 4
+	): void {
+		const service = this.getOrCreateService();
+		service.createRoom(name, isPrivate, password, maxPlayers);
+	}
 
-    // ========================================
-    // Méthodes déléguées pour compatibilité
-    // ========================================
+	joinRoom(roomId: string, password?: string): void {
+		const service = this.getActiveService() || this.getOrCreateService();
+		service.joinRoom(roomId, password);
+	}
 
-    init(): void {
-        const service = this.getOrCreateService();
-        service.init();
-    }
+	leaveRoom(): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.leaveRoom();
+		}
+	}
 
-    createRoom(name: string, isPrivate: boolean, password?: string, maxPlayers: number = 4): void {
-        const service = this.getOrCreateService();
-        service.createRoom(name, isPrivate, password, maxPlayers);
-    }
+	startGame(): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.startGame();
+		}
+	}
 
-    joinRoom(roomId: string, password?: string): void {
-        // Utiliser le service actif ou créer un service par défaut
-        // Ne PAS créer un service avec le roomId cible car on n'a pas encore rejoint
-        const service = this.getActiveService() || this.getOrCreateService();
-        service.joinRoom(roomId, password);
-    }
+	submitWord(word: string, msTaken: number): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.submitWord(word, msTaken);
+		}
+	}
 
-    leaveRoom(): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.leaveRoom();
-        }
-    }
+	activateBonus(bonusKey: string): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.activateBonus(bonusKey);
+		}
+	}
 
-    startGame(): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.startGame();
-        }
-    }
+	requestLobbyList(): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.requestLobbyList();
+		}
+	}
 
-    submitWord(word: string, msTaken: number): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.submitWord(word, msTaken);
-        }
-    }
+	authenticateWithName(playerName: string): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.authenticateWithName(playerName);
+		}
+	}
 
-    activateBonus(bonusKey: string): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.activateBonus(bonusKey);
-        }
-    }
+	disconnect(): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.disconnect();
+		}
+	}
 
-    requestLobbyList(): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.requestLobbyList();
-        }
-    }
-
-    authenticateWithName(playerName: string): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.authenticateWithName(playerName);
-        }
-    }
-
-    disconnect(): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.disconnect();
-        }
-    }
-
-    requestRoomState(roomId: string): void {
-        const service = this.getActiveService();
-        if (service) {
-            service.requestRoomState(roomId);
-        }
-    }
+	requestRoomState(roomId: string): void {
+		const service = this.getActiveService();
+		if (service) {
+			service.requestRoomState(roomId);
+		}
+	}
 }
 
-// Export singleton du gestionnaire
 export const bombPartyServiceManager = new BombPartyServiceManager();
+if (typeof window !== "undefined") {
+	useBombPartyStore.subscribe(
+		(state: ReturnType<typeof useBombPartyStore.getState>) =>
+			state.gamePhase,
+		(phase: string, previousPhase: string) => {
+			if (phase === "GAME_OVER" && previousPhase !== "GAME_OVER") {
+				const roomId = useBombPartyStore.getState().connection.roomId;
+				if (roomId) {
+					logger.info(
+						"GAME_OVER détecté - planification du nettoyage",
+						{
+							roomId,
+							phase,
+							previousPhase,
+						}
+					);
+					bombPartyServiceManager.scheduleCleanup(roomId);
+				}
+			}
+		}
+	);
 
-// Écouter les changements de phase pour nettoyer automatiquement
-if (typeof window !== 'undefined') {
-    // Subscribe au store pour détecter GAME_OVER
-    useBombPartyStore.subscribe(
-        (state: ReturnType<typeof useBombPartyStore.getState>) => state.gamePhase,
-        (phase: string, previousPhase: string) => {
-            if (phase === 'GAME_OVER' && previousPhase !== 'GAME_OVER') {
-                const roomId = useBombPartyStore.getState().connection.roomId;
-                if (roomId) {
-                    logger.info('GAME_OVER détecté - planification du nettoyage', {
-                        roomId,
-                        phase,
-                        previousPhase
-                    });
-                    bombPartyServiceManager.scheduleCleanup(roomId);
-                }
-            }
-        }
-    );
-
-    // Écouter les événements de quitter le lobby
-    window.addEventListener('bp:lobby:left', () => {
-        const roomId = useBombPartyStore.getState().connection.roomId;
-        if (roomId) {
-            logger.info('Lobby quitté - destruction immédiate du service', { roomId });
-            bombPartyServiceManager.destroyService(roomId);
-        }
-    });
+	window.addEventListener("bp:lobby:left", () => {
+		const roomId = useBombPartyStore.getState().connection.roomId;
+		if (roomId) {
+			logger.info("Lobby quitté - destruction immédiate du service", {
+				roomId,
+			});
+			bombPartyServiceManager.destroyService(roomId);
+		}
+	});
 }

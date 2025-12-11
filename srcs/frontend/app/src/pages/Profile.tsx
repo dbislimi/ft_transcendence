@@ -67,7 +67,6 @@ export default function Profile() {
 	>("list");
 	const [isLoaded, setIsLoaded] = useState(false);
 
-	// États pour la modale de confirmation
 	const [confirmModal, setConfirmModal] = useState({
 		isOpen: false,
 		title: "",
@@ -81,14 +80,14 @@ export default function Profile() {
 	const [displayName, setDisplayName] = useState("");
 	const [password, setPassword] = useState("");
 	const [avatar, setAvatar] = useState("/avatars/avatar1.png");
-	const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null); // Nouvel état pour l'avatar sélectionné
+	const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
 	const [customAvatar, setCustomAvatar] = useState<File | null>(null);
 	const [customAvatarPreview, setCustomAvatarPreview] = useState<
 		string | null
 	>(null);
 	const [uploadedCustomAvatar, setUploadedCustomAvatar] = useState<
 		string | null
-	>(null); // URL de l'avatar uploadé
+	>(null);
 	const [uploadingAvatar, setUploadingAvatar] = useState(false);
 	const [message, setMessage] = useState("");
 	const [isError, setIsError] = useState(false);
@@ -366,13 +365,12 @@ export default function Profile() {
 		fetchData();
 	}, [user, token]);
 
-	// Initialiser les champs quand on entre en mode édition
 	useEffect(() => {
 		if (editMode && user) {
 			setEmail(user.email || "");
 			setDisplayName(user.display_name || "");
 			setAvatar(user.avatar || "/avatars/avatar1.png");
-			setSelectedAvatar(null); // Réinitialiser la sélection
+			setSelectedAvatar(null);
 			setPassword("");
 			setCustomAvatar(null);
 			setCustomAvatarPreview(null);
@@ -536,7 +534,6 @@ export default function Profile() {
 	) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			// Vérifier la taille (max 5MB)
 			if (file.size > 5 * 1024 * 1024) {
 				setIsError(true);
 				setMessage("L'image ne doit pas dépasser 5MB");
@@ -544,7 +541,6 @@ export default function Profile() {
 				return;
 			}
 
-			// Vérifier le type
 			if (!file.type.startsWith("image/")) {
 				setIsError(true);
 				setMessage("Veuillez sélectionner une image valide");
@@ -554,7 +550,6 @@ export default function Profile() {
 
 			setCustomAvatar(file);
 
-			// Créer une preview
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				setCustomAvatarPreview(reader.result as string);
@@ -590,7 +585,6 @@ export default function Profile() {
 					"Avatar uploadé avec succès ! Sélectionnez-le pour l'enregistrer."
 				);
 
-				// Stocker l'URL de l'avatar uploadé mais ne pas fermer le mode édition
 				setUploadedCustomAvatar(data.avatar);
 				setCustomAvatar(null);
 				setCustomAvatarPreview(null);
@@ -613,7 +607,6 @@ export default function Profile() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		// Si une image custom est en attente d'upload, uploader d'abord
 		if (customAvatar) {
 			await handleUploadCustomAvatar();
 			return;
@@ -737,7 +730,6 @@ export default function Profile() {
 				}`}
 			>
 				<div className="max-w-7xl mx-auto px-6 py-8">
-					{/* Header Profil */}
 					<div className="bg-gradient-to-r from-slate-800/80 via-purple-900/80 to-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/20 p-8 mb-8 shadow-2xl">
 						<div className="flex flex-col md:flex-row items-center gap-8">
 							<div className="relative">
@@ -793,7 +785,6 @@ export default function Profile() {
 						</div>
 					</div>
 
-					{/* Navigation Onglets */}
 					<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 mb-8 shadow-2xl">
 						<div className="flex flex-wrap">
 							<button
@@ -934,9 +925,7 @@ export default function Profile() {
 						</div>
 					</div>
 
-					{/* Contenu Onglets */}
 					<div className="space-y-8">
-						{/* VUE D'ENSEMBLE */}
 						{activeTab === "overview" && (
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 								<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
@@ -1074,7 +1063,6 @@ export default function Profile() {
 							</div>
 						)}
 
-						{/* STATISTIQUES DeTAILLeES */}
 						{activeTab === "stats" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-8 flex items-center gap-2">
@@ -1204,7 +1192,6 @@ export default function Profile() {
 							</div>
 						)}
 
-						{/* HISTORIQUE */}
 						{activeTab === "history" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-8 flex items-center gap-2">
@@ -1570,7 +1557,6 @@ export default function Profile() {
 							</div>
 						)}
 
-						{/* AMIS */}
 						{activeTab === "friends" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-8 flex items-center gap-2">
@@ -1618,7 +1604,6 @@ export default function Profile() {
 									</div>
 								)}
 
-								{/* Navigation des sous-onglets */}
 								<div className="flex flex-wrap gap-2 mb-8">
 									{[
 										{
@@ -1662,10 +1647,8 @@ export default function Profile() {
 									))}
 								</div>
 
-								{/* Liste des amis */}
 								{friendsSubTab === "list" && (
 									<div className="space-y-6">
-										{/* Ajouter un ami */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
 												➕ {t("profile.friend.add")}
@@ -1703,7 +1686,6 @@ export default function Profile() {
 											</p>
 										</div>
 
-										{/* Liste des amis */}
 										<div className="space-y-4">
 											{friends.length > 0 ? (
 												friends.map((friend) => (
@@ -1845,10 +1827,8 @@ export default function Profile() {
 									</div>
 								)}
 
-								{/* Demandes d'amis */}
 								{friendsSubTab === "requests" && (
 									<div className="space-y-6">
-										{/* Demandes reçues */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
 												📥{" "}
@@ -1954,7 +1934,6 @@ export default function Profile() {
 											</div>
 										</div>
 
-										{/* Demandes envoyees */}
 										<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 											<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
 												📤{" "}
@@ -2028,7 +2007,6 @@ export default function Profile() {
 									</div>
 								)}
 
-								{/* Utilisateurs bloques */}
 								{friendsSubTab === "blocked" && (
 									<div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
 										<h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400 mb-4">
@@ -2107,7 +2085,6 @@ export default function Profile() {
 							</div>
 						)}
 
-						{/* PARAMeTRES */}
 						{activeTab === "settings" && (
 							<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">
 								<div className="flex justify-between items-center mb-8">
@@ -2335,7 +2312,6 @@ export default function Profile() {
 													)}
 												</div>
 
-												{/* Avatar personnalisé uploadé */}
 												{uploadedCustomAvatar && (
 													<div className="mt-4">
 														<p className="text-sm font-medium text-gray-300 mb-2">
