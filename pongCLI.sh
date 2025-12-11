@@ -1,6 +1,7 @@
 #!/bin/bash
 
-WS_URL="wss://192.168.0.142:8443/game" 
+HOST="${localhost}"
+WS_URL="wss://${HOST}:8443/game" 
 PIPE="/tmp/pong_cmd_pipe" 
 READY_FLAG="/tmp/pong_ready_flag" 
 
