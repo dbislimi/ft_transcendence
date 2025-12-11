@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BackgroundSurface from "../Components/BackgroundSurface";
 import ChoiceGroup from "../Components/ChoiceGroup";
 import { useGameSettings } from "../contexts/GameSettingsContext";
 
@@ -14,22 +13,20 @@ export function SettingsCard({
 	onUpdateGameSettings,
 }: SettingsCardProps) {
 	const { t } = useTranslation();
-	const { settings } = useGameSettings();
+	const { bonusEnabled, setBonusEnabled } = useGameSettings();
 
-	const [bonusEnabled, setBonusEnabled] = useState(settings.bonusNb > 0);
+	const [localBonusEnabled, setLocalBonusEnabled] = useState(bonusEnabled);
 
-	const hasChanges = bonusEnabled !== (settings.bonusNb > 0);
+	const hasChanges = localBonusEnabled !== bonusEnabled;
 
 	const handleSave = () => {
-		const newSettings = {
-			bonus: bonusEnabled,
-		};
-		onUpdateGameSettings(newSettings);
+		setBonusEnabled(localBonusEnabled);
+		onUpdateGameSettings({ bonus: localBonusEnabled });
 		onCancel();
 	};
 
 	return (
-		<BackgroundSurface game="pong">
+		<>
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl relative animate-fadeIn">
 					<div className="flex items-center justify-between mb-8">
@@ -53,13 +50,14 @@ export function SettingsCard({
 									t("common.disabled") || "Disabled",
 								]}
 								value={
-									bonusEnabled
+									localBonusEnabled
 										? t("common.enabled") || "Enabled"
 										: t("common.disabled") || "Disabled"
 								}
 								onChange={(value) =>
-									setBonusEnabled(
-										value === (t("common.enabled") || "Enabled")
+									setLocalBonusEnabled(
+										value ===
+											(t("common.enabled") || "Enabled")
 									)
 								}
 								columns={2}
@@ -90,6 +88,6 @@ export function SettingsCard({
 					</div>
 				</div>
 			</div>
-		</BackgroundSurface>
+		</>
 	);
 }

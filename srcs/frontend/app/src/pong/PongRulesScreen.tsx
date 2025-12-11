@@ -1,36 +1,29 @@
-import React from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import BackgroundSurface from "../Components/BackgroundSurface";
 import { useUser } from "../contexts/UserContext";
+import { useGameSettings } from "../contexts/GameSettingsContext";
 
 interface PongRulesScreenProps {
 	onContinue: (mode: "offline" | "online", config?: any) => void;
-	onBack?: () => void;
 	onSettings?: () => void;
-	bonusEnabled: boolean;
-	setBonusEnabled: (enabled: boolean) => void;
 }
 
 export default function PongRulesScreen({
 	onContinue,
-	onBack,
 	onSettings,
-	bonusEnabled,
-	setBonusEnabled,
 }: PongRulesScreenProps) {
 	const { t } = useTranslation();
 	const { isAuthenticated, user, setGuestName } = useUser();
-	const [selectedMode, setSelectedMode] = React.useState<
+	const { bonusEnabled, setBonusEnabled } = useGameSettings();
+	const [selectedMode, setSelectedMode] = useState<
 		"offline" | "online" | null
 	>(null);
 
-	const [offlineMode, setOfflineMode] = React.useState<"solo" | "duo">(
-		"solo"
+	const [offlineMode, setOfflineMode] = useState<"solo" | "duo">("solo");
+	const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+		"medium"
 	);
-	const [difficulty, setDifficulty] = React.useState<
-		"easy" | "medium" | "hard"
-	>("medium");
 
 	const handleModeClick = (mode: "offline" | "online") => {
 		setSelectedMode(mode);
@@ -50,35 +43,39 @@ export default function PongRulesScreen({
 	};
 
 	return (
-		<BackgroundSurface game="pong">
-			<div className="min-h-screen flex items-center justify-center p-6">
+		<>
+			<div className="min-h-screen flex items-center justify-center p-4">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl relative">
 					<div className="flex items-center justify-between mb-6">
 						<h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-							{t("pong.rules.title") || "Pong Rules"}
+							{t("pong.rules.title")}
 						</h1>
 						<div className="flex gap-2 items-center">
-								<span className="text-xs text-slate-400">
-									{t("pong.rules.bonus") || "Bonus"}
-								</span>
-								<button
-									onClick={() => setBonusEnabled(!bonusEnabled)}
-									className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-										bonusEnabled ? "bg-purple-500" : "bg-slate-600"
+							<span className="text-xs text-slate-400">
+								{t("pong.rules.bonus")}
+							</span>
+							<button
+								onClick={() => setBonusEnabled(!bonusEnabled)}
+								className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+									bonusEnabled
+										? "bg-purple-500"
+										: "bg-slate-600"
+								}`}
+								aria-label="Toggle bonus"
+							>
+								<span
+									className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+										bonusEnabled
+											? "translate-x-5"
+											: "translate-x-1"
 									}`}
-									aria-label="Toggle bonus"
-								>
-									<span
-										className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-											bonusEnabled ? "translate-x-5" : "translate-x-1"
-										}`}
-									/>
-								</button>
+								/>
+							</button>
 							{onSettings && (
 								<button
 									onClick={onSettings}
 									className="px-3 py-1 rounded border border-slate-600 text-slate-300 hover:text-white"
-									aria-label={t("nav.settings") || "Settings"}
+									aria-label={t("nav.settings")}
 								>
 									⚙️
 								</button>
@@ -100,7 +97,7 @@ export default function PongRulesScreen({
 						</li>
 						<li>
 							{t("pong.rules.rule2") ||
-								"Use paddle to hit the ball."}
+								"The bounce angle depends on the impact point on the paddle."}
 						</li>
 						<li>
 							{t("pong.rules.rule3") ||
@@ -111,9 +108,9 @@ export default function PongRulesScreen({
 						</li>
 					</ul>
 
-				<div className="space-y-4">
+					<div className="space-y-4">
 						<h3 className="text-xl font-semibold text-slate-200 mb-3">
-							{t("pong.rules.modeSelection") || "Select Mode"}
+							{t("pong.rules.modeSelection")}
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<button
@@ -126,12 +123,10 @@ export default function PongRulesScreen({
 								}`}
 							>
 								<div className="text-lg">
-									🎮{" "}
-									{t("pong.rules.offlineMode") || "Offline"}
+									🎮 {t("pong.rules.offlineMode")}
 								</div>
 								<div className="text-sm opacity-80">
-									{t("pong.rules.offlineModeDesc") ||
-										"Play locally or against bot"}
+									{t("pong.rules.offlineModeDesc")}
 								</div>
 							</button>
 							<button
@@ -144,13 +139,10 @@ export default function PongRulesScreen({
 								}`}
 							>
 								<div className="text-lg">
-									🌐{" "}
-									{t("pong.rules.onlineMode") ||
-										"Multiplayer"}
+									🌐 {t("pong.rules.onlineMode")}
 								</div>
 								<div className="text-sm opacity-80">
-									{t("pong.rules.onlineModeDesc") ||
-										"Play online with others"}
+									{t("pong.rules.onlineModeDesc")}
 								</div>
 							</button>
 						</div>
@@ -159,7 +151,7 @@ export default function PongRulesScreen({
 							<div className="mt-6 p-4 bg-slate-700/30 rounded-lg border border-green-500/30 space-y-4 animate-fadeIn">
 								<div>
 									<h4 className="text-lg font-semibold text-green-400 mb-2">
-										{t("pong.rules.players") || "Players"}
+										{t("pong.rules.players")}
 									</h4>
 									<div className="flex gap-4">
 										<button
@@ -172,8 +164,7 @@ export default function PongRulesScreen({
 													: "bg-slate-800/50 border-slate-600 text-slate-400 hover:border-slate-500"
 											}`}
 										>
-											{t("pong.rules.solo") ||
-												"Solo (vs Bot)"}
+											{t("pong.rules.solo")}
 										</button>
 										<button
 											onClick={() =>
@@ -185,8 +176,7 @@ export default function PongRulesScreen({
 													: "bg-slate-800/50 border-slate-600 text-slate-400 hover:border-slate-500"
 											}`}
 										>
-											{t("pong.rules.duo") ||
-												"Duo (Local)"}
+											{t("pong.rules.duo")}
 										</button>
 									</div>
 								</div>
@@ -194,8 +184,7 @@ export default function PongRulesScreen({
 								{offlineMode === "solo" && (
 									<div>
 										<h4 className="text-lg font-semibold text-green-400 mb-2">
-											{t("pong.rules.difficulty") ||
-												"Difficulty"}
+											{t("pong.rules.difficulty")}
 										</h4>
 										<div className="flex gap-2">
 											{(
@@ -230,8 +219,7 @@ export default function PongRulesScreen({
 									onClick={handleOfflineStart}
 									className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl mt-4"
 								>
-									{t("pong.rules.startOffline") ||
-										"Start Game"}
+									{t("pong.rules.startOffline")}
 								</button>
 							</div>
 						)}
@@ -241,8 +229,7 @@ export default function PongRulesScreen({
 								{!isAuthenticated && (
 									<div>
 										<h4 className="text-lg font-semibold text-cyan-400 mb-2">
-											{t("pong.rules.enterName") ||
-												"Enter Your Name"}
+											{t("pong.rules.enterName")}
 										</h4>
 										<input
 											type="text"
@@ -250,18 +237,16 @@ export default function PongRulesScreen({
 											onChange={(e) =>
 												setGuestName(e.target.value)
 											}
-											placeholder={
-												t(
-													"pong.rules.namePlaceholder"
-												) || "Your name"
-											}
+											placeholder={t(
+												"pong.rules.namePlaceholder"
+											)}
 											className="w-full py-2 px-4 rounded border bg-slate-800/50 border-slate-600 text-slate-300 placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
 											maxLength={20}
 										/>
 									</div>
 								)}
 								<h4 className="text-lg font-semibold text-cyan-400 mb-2">
-									{t("pong.rules.matchType") || "Match Type"}
+									{t("pong.rules.matchType")}
 								</h4>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 									<button
@@ -282,13 +267,10 @@ export default function PongRulesScreen({
 										}`}
 									>
 										<span className="text-lg font-bold">
-											⚡{" "}
-											{t("pong.rules.quickMatch") ||
-												"Quick Match"}
+											⚡ {t("pong.rules.quickMatch")}
 										</span>
 										<span className="text-xs opacity-70">
-											{t("pong.rules.quickMatchDesc") ||
-												"Find an opponent instantly"}
+											{t("pong.rules.quickMatchDesc")}
 										</span>
 									</button>
 									<button
@@ -309,13 +291,10 @@ export default function PongRulesScreen({
 										}`}
 									>
 										<span className="text-lg font-bold">
-											🏆{" "}
-											{t("pong.rules.tournament") ||
-												"Tournament"}
+											🏆 {t("pong.rules.tournament")}
 										</span>
 										<span className="text-xs opacity-70">
-											{t("pong.rules.tournamentDesc") ||
-												"Join or create a tournament"}
+											{t("pong.rules.tournamentDesc")}
 										</span>
 									</button>
 								</div>
@@ -324,6 +303,6 @@ export default function PongRulesScreen({
 					</div>
 				</div>
 			</div>
-		</BackgroundSurface>
+		</>
 	);
 }

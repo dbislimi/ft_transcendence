@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameConfig } from "../core/types";
-import SpaceBackground from "../../Components/SpaceBackground";
 import ChoiceGroup from "../../Components/ChoiceGroup";
 import GameCard from "../../Components/GameCard";
 
@@ -25,7 +24,6 @@ export default function Menu({ onStart, onBack }: MenuProps) {
 
   return (
     <>
-      <SpaceBackground />
       <div className="flex items-center justify-center min-h-screen p-6">
         <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-md w-full shadow-2xl relative">
           {onBack && (

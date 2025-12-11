@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BackgroundSurface from "../Components/BackgroundSurface";
 import PongLobbyList from "./PongLobbyList";
 import PlayersCountDropdown from "../game-bomb-party/ui/PlayersCountDropdown";
 import { useWebSocket } from "../contexts/WebSocketContext";
@@ -16,9 +15,8 @@ export default function PongTournamentLobby({
 }: PongTournamentLobbyProps) {
 	const { t } = useTranslation();
 	const { pongWsRef } = useWebSocket();
-	const { isAuthenticated } = useUser();
-	const { settings: gameSettings } = useGameSettings();
-	const [tab, setTab] = useState<"create" | "join">("create");
+	const { bonusEnabled } = useGameSettings();
+	const [tab, setTab] = useState<"create" | "join">("join");
 	const [name, setName] = useState("");
 	const [isPrivate, setIsPrivate] = useState(false);
 	const [password, setPassword] = useState("");
@@ -27,7 +25,7 @@ export default function PongTournamentLobby({
 	const isConnected = pongWsRef.current?.readyState === WebSocket.OPEN;
 
 	return (
-		<BackgroundSurface game="pong">
+		<>
 			<div className="min-h-screen flex items-center justify-center p-6">
 				<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-purple-500/30 p-8 max-w-2xl w-full shadow-2xl">
 					<div className="flex items-center justify-between mb-6">
@@ -168,7 +166,9 @@ export default function PongTournamentLobby({
 												id: name,
 												size: maxPlayers,
 												passwd: password || "",
-												options: gameSettings,
+												options: {
+													bonus: bonusEnabled,
+												},
 											},
 										})
 									);
@@ -197,6 +197,6 @@ export default function PongTournamentLobby({
 					)}
 				</div>
 			</div>
-		</BackgroundSurface>
+		</>
 	);
 }

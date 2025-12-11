@@ -1,6 +1,6 @@
-import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
-type PongScoreboardProps = {
+type PongLabelsProps = {
 	selfLabel: string;
 	opponentLabel: string;
 	side: 0 | 1;
@@ -10,10 +10,12 @@ export default function PongLabels({
 	selfLabel,
 	opponentLabel,
 	side,
-}: PongScoreboardProps) {
+}: PongLabelsProps) {
+	const { t } = useTranslation();
 	const selfOnLeft = side === 0;
-	const playerPaddle = side === 0 ? "P1" : "P2";
-	const opponentPaddle = side === 0 ? "P2" : "P1";
+	const playerPaddle = side === 0 ? t("pong.labels.p1") : t("pong.labels.p2");
+	const opponentPaddle =
+		side === 0 ? t("pong.labels.p2") : t("pong.labels.p1");
 
 	return (
 		<div className="absolute -top-10 left-0 right-0 flex justify-between text-xs sm:text-sm font-semibold px-2">

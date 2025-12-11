@@ -4,8 +4,8 @@ import { useUser } from "../contexts/UserContext";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import { useGameSettings } from "../contexts/GameSettingsContext";
 import { useNotifications } from "../contexts/NotificationContext";
-import SpaceBackground from "../Components/SpaceBackground";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import { API_BASE_URL } from "../config/api";
 
 interface Friend {
@@ -43,9 +43,10 @@ interface Stats {
 interface Match {
 	id: number;
 	opponent: {
-		name: string;
+		name: string | null;
 		avatar: string;
 		isBot: boolean;
+		botDifficulty?: string;
 	};
 	isWinner: boolean;
 	scores: number[] | null;
@@ -58,7 +59,7 @@ export default function Profile() {
 	const navigate = useNavigate();
 	const { user, refreshUser, token } = useUser();
 	const { pongWsRef, friendsWsRef } = useWebSocket();
-	const { settings: gameSettings } = useGameSettings();
+	const { bonusEnabled } = useGameSettings();
 	const { notify } = useNotifications();
 	const [activeTab, setActiveTab] = useState("overview");
 	const [friendsSubTab, setFriendsSubTab] = useState<
@@ -238,7 +239,7 @@ export default function Profile() {
 
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
-		return date.toLocaleDateString("fr-FR", {
+		return date.toLocaleDateString(i18n.language, {
 			day: "numeric",
 			month: "short",
 			year: "numeric",
@@ -558,7 +559,6 @@ export default function Profile() {
 	if (!user) {
 		return (
 			<>
-				<SpaceBackground />
 				<div className="flex items-center justify-center min-h-screen">
 					<div className="text-center">
 						<div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -573,7 +573,6 @@ export default function Profile() {
 
 	return (
 		<>
-			<SpaceBackground />
 			<div
 				className={`relative min-h-screen overflow-hidden transition-opacity duration-700 ${
 					isLoaded ? "opacity-100" : "opacity-0"
@@ -594,7 +593,6 @@ export default function Profile() {
 									<div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
 								</div>
 							</div>
-
 							<div className="flex-1 text-center md:text-left">
 								<h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 mb-2">
 									{user.display_name}
@@ -605,12 +603,12 @@ export default function Profile() {
 								<div className="flex flex-wrap gap-4 justify-center md:justify-start">
 									<div className="bg-gradient-to-r from-emerald-600/20 to-cyan-600/20 border border-emerald-500/30 rounded-lg px-4 py-2">
 										<span className="text-emerald-300 font-semibold">
-											{stats.winRate}% WR
+											{stats.winRate}%{" "}
+											{t("common.winRateShort")}
 										</span>
 									</div>
 								</div>
-							</div>
-
+							</div>{" "}
 							<button
 								onClick={() => navigate("/")}
 								className="group relative overflow-hidden rounded-lg px-6 py-3 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 hover:scale-105"
@@ -1176,11 +1174,25 @@ export default function Profile() {
 																		{t(
 																			"profile.history.vs"
 																		)}{" "}
-																		{
-																			match
-																				.opponent
-																				.name
-																		}
+																		{match
+																			.opponent
+																			.isBot
+																			? `${t(
+																					"profile.history.bot"
+																			  )} (${t(
+																					`profile.history.difficulty.${
+																						match
+																							.opponent
+																							.botDifficulty ||
+																						"medium"
+																					}`
+																			  )})`
+																			: match
+																					.opponent
+																					.name ||
+																			  t(
+																					"profile.history.unknownPlayer"
+																			  )}
 																	</span>
 																	{match
 																		.opponent
@@ -1623,7 +1635,9 @@ export default function Profile() {
 																								friendId:
 																									friend.id,
 																								options:
-																									gameSettings,
+																									{
+																										bonus: bonusEnabled,
+																									},
 																							},
 																						}
 																					)
@@ -1632,7 +1646,9 @@ export default function Profile() {
 																		}}
 																		className="px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-300 rounded-lg border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200 font-medium"
 																	>
-																		{t('profile.friend.invite')}
+																		{t(
+																			"profile.friend.invite"
+																		)}
 																	</button>
 																)}
 																<button
@@ -1643,7 +1659,9 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-orange-600/20 text-orange-300 rounded-lg border border-orange-500/30 hover:border-orange-400/50 transition-all duration-200 font-medium"
 																>
-																	{t('profile.friend.block')}
+																	{t(
+																		"profile.friend.block"
+																	)}
 																</button>
 																<button
 																	onClick={() =>
@@ -1653,7 +1671,9 @@ export default function Profile() {
 																	}
 																	className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
 																>
-																	{t('profile.friend.remove')}
+																	{t(
+																		"profile.friend.remove"
+																	)}
 																</button>
 															</div>
 														</div>
@@ -1701,39 +1721,79 @@ export default function Profile() {
 												)
 											</h4>
 											<div className="space-y-3">
-												{requests.filter(r => r.type === "received").length > 0 ? (
-													requests.filter(r => r.type === "received").map(r => (
-														<div key={r.sender_id} className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30">
-															<div className="flex items-center gap-3">
-																<img
-																	src={r.avatar || "/avatars/avatar1.png"}
-																	alt={r.display_name}
-																	className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
-																/>
-																<span className="font-medium text-white">{r.display_name}</span>
+												{requests.filter(
+													(r) => r.type === "received"
+												).length > 0 ? (
+													requests
+														.filter(
+															(r) =>
+																r.type ===
+																"received"
+														)
+														.map((r) => (
+															<div
+																key={
+																	r.sender_id
+																}
+																className="flex items-center justify-between p-4 bg-slate-600/50 rounded-lg border border-slate-500/30"
+															>
+																<div className="flex items-center gap-3">
+																	<img
+																		src={
+																			r.avatar ||
+																			"/avatars/avatar1.png"
+																		}
+																		alt={
+																			r.display_name
+																		}
+																		className="w-12 h-12 rounded-full object-cover border-2 border-slate-500"
+																	/>
+																	<span className="font-medium text-white">
+																		{
+																			r.display_name
+																		}
+																	</span>
+																</div>
+																<div className="flex gap-2">
+																	<button
+																		onClick={() =>
+																			handleAcceptRequest(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.accept"
+																		)}
+																	</button>
+																	<button
+																		onClick={() =>
+																			handleRejectRequest(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.reject"
+																		)}
+																	</button>
+																	<button
+																		onClick={() =>
+																			handleBlockUser(
+																				r.sender_id
+																			)
+																		}
+																		className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
+																	>
+																		{t(
+																			"profile.friend.block"
+																		)}
+																	</button>
+																</div>
 															</div>
-															<div className="flex gap-2">
-																<button
-																	onClick={() => handleAcceptRequest(r.sender_id)}
-																	className="px-3 py-2 bg-green-600/20 text-green-300 rounded-lg border border-green-500/30 hover:border-green-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.accept')}
-																</button>
-																<button
-																	onClick={() => handleRejectRequest(r.sender_id)}
-																	className="px-3 py-2 bg-gray-600/20 text-gray-300 rounded-lg border border-gray-500/30 hover:border-gray-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.reject')}
-																</button>
-																<button
-																	onClick={() => handleBlockUser(r.sender_id)}
-																	className="px-3 py-2 bg-red-600/20 text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all duration-200 font-medium"
-																>
-																	{t('profile.friend.block')}
-																</button>
-															</div>
-														</div>
-													))
+														))
 												) : (
 													<div className="text-center py-8 text-gray-400">
 														<div className="text-4xl mb-2">
@@ -1873,7 +1933,9 @@ export default function Profile() {
 															}
 															className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:border-blue-400/50 transition-all duration-200 font-medium"
 														>
-															{t('profile.friend.unblock')}
+															{t(
+																"profile.friend.unblock"
+															)}
 														</button>
 													</div>
 												))

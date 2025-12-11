@@ -14,10 +14,10 @@
     "welcome": "مرحباً",
     "connectDesc": "الوصول إلى حسابك",
     "registrationDesc": "انضم إلى المغامرة",
-    "pongTitle": "Pong",
+    "pongTitle": "بونغ",
     "pongDesc": "تشغيل بونغ",
     "shopDesc": "تخصيص التجربة",
-    "bombPartyTitle": "Bomb Party",
+    "bombPartyTitle": "حفلة القنابل",
     "bombPartyDesc": "تشغيل حفلة القنابل",
     "aboutDesc": "اكتشف الفريق",
     "readyToTranscend": "مستعد لتجاوز حدودك؟",
@@ -27,7 +27,7 @@
     "rules": {
       "title": "قواعد البونغ",
       "rule1": "الأول الذي يصل إلى 11 نقطة يفوز.",
-      "rule2": "استخدم المضرب لضرب الكرة.",
+      "rule2": "زاوية الارتداد تعتمد على نقطة التأثير على المضرب.",
       "rule3": "لا تدع الكرة تمر من خلفك.",
       "rule4": "قد تظهر مكافآت!",
       "modeSelection": "اختيار الوضع",
@@ -46,12 +46,23 @@
       "tournament": "البطولة",
       "tournamentDesc": "الانضمام أو إنشاء بطولة",
       "enterName": "أدخل اسمك",
-      "namePlaceholder": "اسمك"
+      "namePlaceholder": "اسمك",
+      "bonus": "مكافأة"
     },
     "difficulty": {
       "easy": "سهل",
       "medium": "متوسط",
       "hard": "صعب"
+    },
+    "labels": {
+      "defaultSelf": "أنت",
+      "defaultOpponent": "الخصم",
+      "selfWithName": "{{name}} (أنت)",
+      "bot": "بوت ({{difficulty}})",
+      "player1": "اللاعب 1",
+      "player2": "اللاعب 2",
+      "p1": "ل1",
+      "p2": "ل2"
     },
     "lobby": {
       "title": "غرفة البطولة",
@@ -79,28 +90,6 @@
       "cancel": "إلغاء",
       "connected": "متصل",
       "disconnected": "غير متصل"
-    },
-    "gameOver": {
-      "defeat": "هزيمة",
-      "congratulations": "تهانينا، لقد فزت بالبطولة!",
-      "wonRound": "لقد فزت بهذه الجولة.",
-      "lostRound": "لقد خسرت هذه الجولة.",
-      "opponent": "الخصم:",
-      "finalScore": "النتيجة النهائية:",
-      "quit": "خروج",
-      "continue": "متابعة",
-      "replay": "إعادة اللعب",
-      "tournamentChampion": "بطل البطولة!",
-      "victoryTitle": "انتصار!",
-      "defeatTitle": "هزيمة"
-    },
-    "waitingOverlay": {
-      "waitingOpponent": "في انتظار الخصم",
-      "waitingForOpponent": "في انتظار ",
-      "gamePaused": "اللعبة متوقفة مؤقتاً في انتظار إعادة اتصال خصمك"
-    },
-    "gameOverlay": {
-      "mode": "الوضع"
     },
     "readyPhase": {
       "opponent": "الخصم",
@@ -156,6 +145,32 @@
         "smaller": "أصغر",
         "faster": "أسرع"
       }
+    },
+    "gameOver": {
+      "tournamentChampion": "بطل البطولة!",
+      "victory": "فوز!",
+      "defeat": "هزيمة",
+      "congratulations": "تهانينا، لقد فزت بالبطولة!",
+      "wonRound": "لقد فزت بهذه الجولة.",
+      "lostRound": "لقد خسرت هذه الجولة.",
+      "opponent": "الخصم:",
+      "finalScore": "النتيجة النهائية",
+      "quit": "مغادرة",
+      "continue": "متابعة",
+      "replay": "إعادة اللعب"
+    },
+    "gameOverlay": {
+      "offline": "غير متصل",
+      "tournament": "البطولة",
+      "final": "النهائي",
+      "semiFinal": "نصف النهائي",
+      "quarterFinal": "ربع النهائي",
+      "roundOf": "دور الـ {{count}}"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "في انتظار الخصم",
+      "waitingForOpponent": "في انتظار",
+      "gamePaused": "اللعبة متوقفة مؤقتاً"
     },
     "victory": "نصر",
     "offline": "غير متصل",
@@ -231,19 +246,25 @@
     },
     "history": {
       "matchHistory": "سجل المباريات",
-      "victory": "انتصار",
+      "victory": "فوز",
       "defeat": "هزيمة",
       "vs": "ضد",
       "bot": "بوت",
+      "unknownPlayer": "لاعب غير معروف",
       "tournament": "بطولة",
       "quick": "سريع",
       "training": "تدريب",
       "matchNumber": "مباراة #",
       "loading": "جاري التحميل...",
       "loadMore": "تحميل المزيد من المباريات",
-      "noGamesPlayed": "لم يتم لعب أي ألعاب",
+      "noGamesPlayed": "لم تُلعب أي مباراة",
       "historyPlaceholder": "سيظهر سجل مبارياتك هنا",
-      "playFirstGame": "العب أول لعبة"
+      "playFirstGame": "العب أول مباراة",
+      "difficulty": {
+        "easy": "سهل",
+        "medium": "متوسط",
+        "hard": "صعب"
+      }
     },
     "friend": {
       "manage": "إدارة الأصدقاء",
@@ -270,9 +291,8 @@
       "blockedUsers": "المستخدمون المحظورون",
       "blockedOn": "محظور في",
       "unblock": "إلغاء الحظر",
-      "noBlockedUsersTitle": "لا يوجد مستخدمون محظورون",
-      "peaceMessage": "أنت في سلام مع الجميع!",
-      "noBlockedUsers": "لا يوجد مستخدمون محظورون"
+      "noBlockedUsers": "لا يوجد مستخدمون محظورون",
+      "peaceMessage": "أنت في سلام مع الجميع!"
     },
     "settings": {
       "title": "إعدادات الملف الشخصي",
@@ -287,8 +307,7 @@
       "preview": "معاينة",
       "previewAvatar": "معاينة الصورة الرمزية",
       "save": "حفظ"
-    },
-    "editProfile": "تحرير الملف الشخصي"
+    }
   },
   "bombParty": {
     "info": {
@@ -634,7 +653,9 @@
     "registrationSuccess": "تم التسجيل بنجاح",
     "serverError": "خطأ في الخادم",
     "networkError": "خطأ في الشبكة",
-    "error": "خطأ"
+    "error": "خطأ",
+	"invalidCode": "كود غير صالح",
+    "yourCode": "الكود الخاص بك"
   },
   "notFound": {
     "title": "404",
@@ -800,11 +821,18 @@
       "win": "فوز",
       "loss": "خسارة",
       "vs": "ضد",
-      "standard": "قياسي",
-      "loadMore": "تحميل المزيد من المباريات",
+      "bot": "بوت",
+      "unknownPlayer": "لاعب غير معروف",
+      "standard": "عادي",
+      "loadMore": "عرض المزيد من المباريات",
       "loading": "جاري التحميل...",
       "empty": "سجل فارغ",
-      "noMatches": "لا توجد مباريات مسجلة لهذا الطيار."
+      "noMatches": "لا توجد مباريات مسجلة لهذا اللاعب.",
+      "difficulty": {
+        "easy": "سهل",
+        "medium": "متوسط",
+        "hard": "صعب"
+      }
     }
   },
   "common": {
@@ -826,7 +854,8 @@
     "unblock": "إلغاء الحظر",
     "send": "إرسال",
     "sending": "جارٍ الإرسال...",
-    "players": "لاعبين"
+    "players": "اللاعبين",
+    "winRateShort": "ف"
   },
   "errors": {
     "network": "خطأ في الشبكة",
@@ -864,17 +893,7 @@
   "account": {
     "confirmNewPassword": "تأكيد كلمة المرور الجديدة"
   },
-  "auth": {
-    "invalidCode": "رمز غير صالح",
-    "yourCode": "رمزك"
-  },
   "notifications": {
-    "tournament": {
-      "rejoinTitle": "البطولة قيد التقدم",
-      "rejoinMessage": "لقد غادرت جولة. أعد الانضمام قبل انتهاء الصلاحية.",
-      "rejoinButton": "إعادة الانضمام",
-      "ignoreButton": "تجاهل"
-    },
     "invitation": {
       "sentTitle": "تم إرسال الدعوة",
       "sentMessage": "تم إرسال دعوة إلى {{to}}. في انتظار القبول أو الرفض.",
@@ -945,27 +964,6 @@
       "medium": "متوسط",
       "hard": "صعب"
     }
-  },
-  "gameOver": {
-    "tournamentChampion": "بطل البطولة!",
-    "victory": "فوز!",
-    "defeat": "هزيمة",
-    "congratulations": "تهانينا، لقد فزت بالبطولة!",
-    "wonRound": "لقد فزت بهذه الجولة.",
-    "lostRound": "لقد خسرت هذه الجولة.",
-    "finalScore": "النتيجة النهائية",
-    "quit": "مغادرة",
-    "continue": "متابعة",
-    "replay": "إعادة اللعب"
-  },
-  "gameOverlay": {
-    "mode": "الوضع",
-    "offline": "غير متصل",
-    "tournament": "البطولة",
-    "final": "النهائي",
-    "semiFinal": "نصف النهائي",
-    "quarterFinal": "ربع النهائي",
-    "roundOf": "دور الـ {{count}}"
   },
   "theme": {
     "switchToLight": "التبديل إلى الوضع الفاتح",

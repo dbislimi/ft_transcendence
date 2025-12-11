@@ -48,7 +48,9 @@ export default class GamesManager {
 		matchType: string = "quick"
 	) {
 		if (!this.fastify) {
-			console.warn("Fastify instance not available for saving game result");
+			console.warn(
+				"Fastify instance not available for saving game result"
+			);
 			return;
 		}
 
@@ -65,7 +67,6 @@ export default class GamesManager {
 				botDifficulty,
 				matchType
 			);
-
 		} catch (error) {
 			console.error("Error saving game result:", error);
 		}
@@ -97,7 +98,12 @@ export default class GamesManager {
 				break;
 			}
 			case "accepted": {
-				this.startInvitedGame(inv.sent, inv.receiv, inv.id, inv.options);
+				this.startInvitedGame(
+					inv.sent,
+					inv.receiv,
+					inv.id,
+					inv.options
+				);
 				break;
 			}
 			case "declined": {
@@ -224,8 +230,7 @@ export default class GamesManager {
 			try {
 				await game.startAsync(signal);
 			} catch (e) {
-				if (signal.aborted)
-					break;
+				if (signal.aborted) break;
 			}
 		}
 		if (game.board.botController[0] !== undefined)
@@ -274,7 +279,7 @@ export default class GamesManager {
 						null,
 						{
 							id: winnerId,
-							name: didWin ? c.name : `Bot (${diff})`,
+							name: didWin ? c.name : "@bot",
 						} as Client,
 						scores,
 						diff,
@@ -363,7 +368,14 @@ export default class GamesManager {
 					})
 				);
 			}
-			this.saveGameResult(sent, receiv, winner, scores, undefined, "quick");
+			this.saveGameResult(
+				sent,
+				receiv,
+				winner,
+				scores,
+				undefined,
+				"quick"
+			);
 			this.removeRoom(c);
 		};
 		this.invitManager.removeForClient(sent);
@@ -401,7 +413,8 @@ export default class GamesManager {
 								is: "quick",
 								didWin,
 								scores,
-								opponent: this.getRoom(c)?.getOpp(c)?.name ?? null,
+								opponent:
+									this.getRoom(c)?.getOpp(c)?.name ?? null,
 							},
 						})
 					);
@@ -451,17 +464,15 @@ export default class GamesManager {
 		}
 		for (const client of clients) {
 			if (!client?.socket) continue;
-			let opponent = game.getOpp(client)?.name ?? "Opponent";
-			let selfLabel = `${client.name} (You)`;
+			let opponent = game.getOpp(client)?.name ?? "@opponent";
+			let selfLabel = client.name;
 
 			if (sessionType === "offline") {
 				if (botDiff) {
-					opponent = `Bot (${
-						botDiff.charAt(0).toUpperCase() + botDiff.slice(1)
-					})`;
+					opponent = "@bot";
 				} else {
-					selfLabel = "Player 1";
-					opponent = "Player 2";
+					selfLabel = "@player1";
+					opponent = "@player2";
 				}
 			}
 
@@ -476,7 +487,10 @@ export default class GamesManager {
 						sessionType,
 						side: client.inGameId ?? null,
 						labels: { self: selfLabel, opponent },
-						...(tournamentDepth !== undefined ? { tournamentDepth } : {}),
+						...(botDiff ? { botDifficulty: botDiff } : {}),
+						...(tournamentDepth !== undefined
+							? { tournamentDepth }
+							: {}),
 						countdownStart: GamesManager.COUNTDOWN_SECONDS,
 					},
 				})
@@ -545,7 +559,9 @@ export default class GamesManager {
 					readyState.p2Ready
 				);
 
-				await new Promise((resolve) => setTimeout(resolve, checkInterval));
+				await new Promise((resolve) =>
+					setTimeout(resolve, checkInterval)
+				);
 				readyState.remaining -= 1;
 			}
 			if (!readyState.cancelled) {
@@ -614,7 +630,8 @@ export default class GamesManager {
 	setRoom(client: Client, game: Game) {
 		const room = this.rooms.get(client);
 		if (room) {
-			if (room.clients[0] && room.clients[1]) room.disconnectPlayer(client);
+			if (room.clients[0] && room.clients[1])
+				room.disconnectPlayer(client);
 			else {
 				room.pause();
 				this.removeRoom(client);
@@ -685,13 +702,5 @@ export default class GamesManager {
 		if (!t) return;
 		if (this.getRoom(client)) return;
 		t.playerReady(client);
-	}
-
-	handleRejoin(client: Client) {
-		if (!client.tournament) return;
-		const t = this.tournaments[client.tournament.tournamentId];
-		if (!t) return;
-		client.quit = false;
-		t.reconnect(client);
 	}
 }

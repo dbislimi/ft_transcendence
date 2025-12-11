@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import SpaceBackground from "../Components/SpaceBackground";
 import ShopModal from "../Components/ShopModal";
 import { useUser } from "../contexts/UserContext";
 
@@ -32,7 +31,6 @@ export default function Home() {
 
 	return (
 		<>
-			<SpaceBackground />
 			<div
 				className="relative min-h-screen overflow-hidden"
 				onMouseMove={handleMouseMove}

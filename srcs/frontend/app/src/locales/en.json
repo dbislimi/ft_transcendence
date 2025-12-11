@@ -27,7 +27,7 @@
     "rules": {
       "title": "Pong Rules",
       "rule1": "First to 11 points wins.",
-      "rule2": "Use paddle to hit the ball.",
+      "rule2": "The bounce angle depends on the impact point on the paddle.",
       "rule3": "Don't let the ball pass you.",
       "rule4": "Bonuses may appear!",
       "modeSelection": "Select Mode",
@@ -46,12 +46,23 @@
       "tournament": "Tournament",
       "tournamentDesc": "Join or create a tournament",
       "enterName": "Enter Your Name",
-      "namePlaceholder": "Your name"
+      "namePlaceholder": "Your name",
+      "bonus": "Bonus"
     },
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard"
+    },
+    "labels": {
+      "defaultSelf": "You",
+      "defaultOpponent": "Opponent",
+      "selfWithName": "{{name}} (You)",
+      "bot": "Bot ({{difficulty}})",
+      "player1": "Player 1",
+      "player2": "Player 2",
+      "p1": "P1",
+      "p2": "P2"
     },
     "lobby": {
       "title": "Tournament Lobby",
@@ -79,28 +90,6 @@
       "cancel": "Cancel",
       "connected": "Connected",
       "disconnected": "Disconnected"
-    },
-    "gameOver": {
-      "defeat": "Defeat",
-      "congratulations": "Congratulations, you won the tournament!",
-      "wonRound": "You won this round.",
-      "lostRound": "You lost this round.",
-      "opponent": "Opponent:",
-      "finalScore": "Final Score:",
-      "quit": "Quit",
-      "continue": "Continue",
-      "replay": "Replay",
-      "tournamentChampion": "Tournament Champion!",
-      "victoryTitle": "Victory!",
-      "defeatTitle": "Defeat"
-    },
-    "waitingOverlay": {
-      "waitingOpponent": "Waiting for opponent",
-      "waitingForOpponent": "Waiting for ",
-      "gamePaused": "The game is paused while waiting for your opponent to reconnect"
-    },
-    "gameOverlay": {
-      "mode": "Mode"
     },
     "readyPhase": {
       "opponent": "Opponent",
@@ -156,6 +145,32 @@
         "smaller": "Smaller",
         "faster": "Faster"
       }
+    },
+    "gameOver": {
+      "tournamentChampion": "Tournament Champion!",
+      "victory": "Victory!",
+      "defeat": "Defeat",
+      "congratulations": "Congratulations, you won the tournament!",
+      "wonRound": "You won this round.",
+      "lostRound": "You lost this round.",
+      "opponent": "Opponent:",
+      "finalScore": "Final Score",
+      "quit": "Quit",
+      "continue": "Continue",
+      "replay": "Replay"
+    },
+    "gameOverlay": {
+      "offline": "Offline",
+      "tournament": "Tournament",
+      "final": "Final",
+      "semiFinal": "Semi-final",
+      "quarterFinal": "Quarter-final",
+      "roundOf": "Round of {{count}}"
+    },
+    "waitingOverlay": {
+      "waitingOpponent": "Waiting for opponent",
+      "waitingForOpponent": "Waiting for",
+      "gamePaused": "Game paused"
     },
     "victory": "Victory",
     "offline": "Offline",
@@ -235,6 +250,7 @@
       "defeat": "DEFEAT",
       "vs": "vs",
       "bot": "BOT",
+      "unknownPlayer": "Unknown Player",
       "tournament": "TOURNAMENT",
       "quick": "QUICK",
       "training": "TRAINING",
@@ -243,7 +259,12 @@
       "loadMore": "Load more matches",
       "noGamesPlayed": "No games played",
       "historyPlaceholder": "Your match history will appear here",
-      "playFirstGame": "Play my first game"
+      "playFirstGame": "Play my first game",
+      "difficulty": {
+        "easy": "easy",
+        "medium": "medium",
+        "hard": "hard"
+      }
     },
     "friend": {
       "manage": "Friend Management",
@@ -800,11 +821,18 @@
       "win": "WIN",
       "loss": "LOSS",
       "vs": "vs",
+      "bot": "Bot",
+      "unknownPlayer": "Unknown Player",
       "standard": "Standard",
-      "loadMore": "Load more matches",
+      "loadMore": "View more matches",
       "loading": "Loading...",
-      "empty": "Empty History",
-      "noMatches": "No matches recorded for this pilot."
+      "empty": "Blank History",
+      "noMatches": "No matches recorded for this pilot.",
+      "difficulty": {
+        "easy": "easy",
+        "medium": "medium",
+        "hard": "hard"
+      }
     }
   },
   "common": {
@@ -826,7 +854,8 @@
     "unblock": "Unblock",
     "send": "Send",
     "sending": "Sending...",
-    "players": "players"
+    "players": "players",
+    "winRateShort": "WR"
   },
   "errors": {
     "network": "Network error",
@@ -864,17 +893,7 @@
   "account": {
     "confirmNewPassword": "Confirm new password"
   },
-  "auth": {
-    "invalidCode": "Invalid code",
-    "yourCode": "Your code"
-  },
   "notifications": {
-    "tournament": {
-      "rejoinTitle": "Tournament in progress",
-      "rejoinMessage": "You left a round. Rejoin before it expires.",
-      "rejoinButton": "Rejoin",
-      "ignoreButton": "Ignore"
-    },
     "invitation": {
       "sentTitle": "Invitation sent",
       "sentMessage": "Invitation sent to {{to}}. Waiting for acceptance or decline.",
@@ -945,27 +964,6 @@
       "medium": "Medium",
       "hard": "Hard"
     }
-  },
-  "gameOver": {
-    "tournamentChampion": "Tournament Champion!",
-    "victory": "Victory!",
-    "defeat": "Defeat",
-    "congratulations": "Congratulations, you won the tournament!",
-    "wonRound": "You won this round.",
-    "lostRound": "You lost this round.",
-    "finalScore": "Final Score",
-    "quit": "Quit",
-    "continue": "Continue",
-    "replay": "Replay"
-  },
-  "gameOverlay": {
-    "mode": "Mode",
-    "offline": "Offline",
-    "tournament": "Tournament",
-    "final": "Final",
-    "semiFinal": "Semi-final",
-    "quarterFinal": "Quarter-final",
-    "roundOf": "Round of {{count}}"
   },
   "theme": {
     "switchToLight": "Switch to light mode",

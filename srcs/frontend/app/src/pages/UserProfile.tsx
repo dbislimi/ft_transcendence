@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import SpaceBackground from "../Components/SpaceBackground";
+import i18n from "../i18n";
 import { API_BASE_URL } from "../config/api";
 
 interface UserStats {
@@ -17,9 +17,10 @@ interface UserStats {
 interface Match {
 	id: number;
 	opponent: {
-		name: string;
+		name: string | null;
 		avatar: string;
 		isBot: boolean;
+		botDifficulty?: string;
 	};
 	isWinner: boolean;
 	scores: number[] | null;
@@ -47,7 +48,9 @@ export default function UserProfile() {
 	const [matchHistory, setMatchHistory] = useState<Match[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [activeTab, setActiveTab] = useState<"overview" | "history">("overview");
+	const [activeTab, setActiveTab] = useState<"overview" | "history">(
+		"overview"
+	);
 
 	useEffect(() => {
 		const fetchUserData = async () => {
@@ -58,14 +61,24 @@ export default function UserProfile() {
 					return;
 				}
 
-				console.log("[UserProfile] Chargement profil pour userId:", userId);
+				console.log(
+					"[UserProfile] Chargement profil pour userId:",
+					userId
+				);
 
 				// Fetch user profile
-				const userRes = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
-					headers: { Authorization: `Bearer ${token}` },
-				});
+				const userRes = await fetch(
+					`${API_BASE_URL}/api/user/${userId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
 
-				console.log("[UserProfile] Réponse user:", userRes.status, userRes.ok);
+				console.log(
+					"[UserProfile] Réponse user:",
+					userRes.status,
+					userRes.ok
+				);
 
 				if (!userRes.ok) {
 					const errorData = await userRes.json();
@@ -77,9 +90,12 @@ export default function UserProfile() {
 				setUser(userData.user);
 
 				// Fetch user stats
-				const statsRes = await fetch(`${API_BASE_URL}/api/user-stats/${userId}`, {
-					headers: { Authorization: `Bearer ${token}` },
-				});
+				const statsRes = await fetch(
+					`${API_BASE_URL}/api/user-stats/${userId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
 
 				if (statsRes.ok) {
 					const statsData = await statsRes.json();
@@ -87,9 +103,12 @@ export default function UserProfile() {
 				}
 
 				// Fetch match history
-				const historyRes = await fetch(`${API_BASE_URL}/api/match-history/${userId}`, {
-					headers: { Authorization: `Bearer ${token}` },
-				});
+				const historyRes = await fetch(
+					`${API_BASE_URL}/api/match-history/${userId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
 
 				if (historyRes.ok) {
 					const historyData = await historyRes.json();
@@ -98,7 +117,9 @@ export default function UserProfile() {
 
 				setLoading(false);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Error loading profile");
+				setError(
+					err instanceof Error ? err.message : "Error loading profile"
+				);
 				setLoading(false);
 			}
 		};
@@ -111,7 +132,6 @@ export default function UserProfile() {
 	if (loading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
-				<SpaceBackground />
 				<div className="text-white text-xl">Loading...</div>
 			</div>
 		);
@@ -120,15 +140,15 @@ export default function UserProfile() {
 	if (error || !user) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
-				<SpaceBackground />
-				<div className="text-red-500 text-xl">{error || "User not found"}</div>
+				<div className="text-red-500 text-xl">
+					{error || "User not found"}
+				</div>
 			</div>
 		);
 	}
 
 	return (
 		<>
-			<SpaceBackground />
 			<div className="relative min-h-screen py-8 px-4">
 				<div className="max-w-5xl mx-auto">
 					{/* Back button */}
@@ -136,7 +156,7 @@ export default function UserProfile() {
 						onClick={() => navigate(-1)}
 						className="mb-4 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-white rounded-lg transition-colors"
 					>
-						← {t('common.back') || 'Back'}
+						← {t("common.back") || "Back"}
 					</button>
 
 					{/* User Header */}
@@ -159,21 +179,36 @@ export default function UserProfile() {
 												: "bg-gray-500/20 text-gray-400"
 										}`}
 									>
-										{user.online ? "🟢 Online" : "⚫ Offline"}
+										{user.online
+											? "🟢 Online"
+											: "⚫ Offline"}
 									</span>
 								</div>
 								<div className="mt-4 flex gap-6 text-sm">
 									<div className="text-center">
-										<div className="text-2xl font-bold text-green-400">{user.wins}</div>
-										<div className="text-gray-400">{t('profile.wins') || 'Wins'}</div>
+										<div className="text-2xl font-bold text-green-400">
+											{user.wins}
+										</div>
+										<div className="text-gray-400">
+											{t("profile.wins") || "Wins"}
+										</div>
 									</div>
 									<div className="text-center">
-										<div className="text-2xl font-bold text-red-400">{user.losses}</div>
-										<div className="text-gray-400">{t('profile.losses') || 'Losses'}</div>
+										<div className="text-2xl font-bold text-red-400">
+											{user.losses}
+										</div>
+										<div className="text-gray-400">
+											{t("profile.losses") || "Losses"}
+										</div>
 									</div>
 									<div className="text-center">
-										<div className="text-2xl font-bold text-yellow-400">{user.tournaments_won}</div>
-										<div className="text-gray-400">{t('profile.tournaments') || 'Tournaments'}</div>
+										<div className="text-2xl font-bold text-yellow-400">
+											{user.tournaments_won}
+										</div>
+										<div className="text-gray-400">
+											{t("profile.tournaments") ||
+												"Tournaments"}
+										</div>
 									</div>
 								</div>
 							</div>
@@ -190,7 +225,7 @@ export default function UserProfile() {
 									: "bg-gray-800/50 text-gray-400 hover:bg-gray-700/50"
 							}`}
 						>
-							{t('profile.overview') || 'Overview'}
+							{t("profile.overview") || "Overview"}
 						</button>
 						<button
 							onClick={() => setActiveTab("history")}
@@ -200,30 +235,49 @@ export default function UserProfile() {
 									: "bg-gray-800/50 text-gray-400 hover:bg-gray-700/50"
 							}`}
 						>
-							{t('profile.matchHistory') || 'Match History'}
+							{t("profile.matchHistory") || "Match History"}
 						</button>
 					</div>
 
 					{/* Content */}
 					{activeTab === "overview" && stats && (
 						<div className="bg-gray-900/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-							<h2 className="text-2xl font-bold text-white mb-4">{t('profile.statistics') || 'Statistics'}</h2>
+							<h2 className="text-2xl font-bold text-white mb-4">
+								{t("profile.statistics") || "Statistics"}
+							</h2>
 							<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 								<div className="bg-gray-800/50 p-4 rounded-lg">
-									<div className="text-gray-400 text-sm">{t('profile.totalGames') || 'Total Games'}</div>
-									<div className="text-2xl font-bold text-white">{stats.totalGames}</div>
+									<div className="text-gray-400 text-sm">
+										{t("profile.totalGames") ||
+											"Total Games"}
+									</div>
+									<div className="text-2xl font-bold text-white">
+										{stats.totalGames}
+									</div>
 								</div>
 								<div className="bg-gray-800/50 p-4 rounded-lg">
-									<div className="text-gray-400 text-sm">{t('profile.winRate') || 'Win Rate'}</div>
-									<div className="text-2xl font-bold text-white">{stats.winRate.toFixed(1)}%</div>
+									<div className="text-gray-400 text-sm">
+										{t("profile.winRate") || "Win Rate"}
+									</div>
+									<div className="text-2xl font-bold text-white">
+										{stats.winRate.toFixed(1)}%
+									</div>
 								</div>
 								<div className="bg-gray-800/50 p-4 rounded-lg">
-									<div className="text-gray-400 text-sm">{t('profile.vsPlayers') || 'Vs Players'}</div>
-									<div className="text-2xl font-bold text-white">{stats.playerWins}</div>
+									<div className="text-gray-400 text-sm">
+										{t("profile.vsPlayers") || "Vs Players"}
+									</div>
+									<div className="text-2xl font-bold text-white">
+										{stats.playerWins}
+									</div>
 								</div>
 								<div className="bg-gray-800/50 p-4 rounded-lg">
-									<div className="text-gray-400 text-sm">{t('profile.vsBots') || 'Vs Bots'}</div>
-									<div className="text-2xl font-bold text-white">{stats.botWins}</div>
+									<div className="text-gray-400 text-sm">
+										{t("profile.vsBots") || "Vs Bots"}
+									</div>
+									<div className="text-2xl font-bold text-white">
+										{stats.botWins}
+									</div>
 								</div>
 							</div>
 						</div>
@@ -231,10 +285,12 @@ export default function UserProfile() {
 
 					{activeTab === "history" && (
 						<div className="bg-gray-900/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-							<h2 className="text-2xl font-bold text-white mb-4">{t('profile.matchHistory') || 'Match History'}</h2>
+							<h2 className="text-2xl font-bold text-white mb-4">
+								{t("profile.matchHistory") || "Match History"}
+							</h2>
 							{matchHistory.length === 0 ? (
 								<div className="text-center text-gray-400 py-8">
-									{t('profile.noMatches') || 'No matches yet'}
+									{t("profile.noMatches") || "No matches yet"}
 								</div>
 							) : (
 								<div className="space-y-3">
@@ -245,31 +301,67 @@ export default function UserProfile() {
 										>
 											<div className="flex items-center gap-4">
 												<img
-													src={match.opponent.avatar || "/avatars/avatar1.png"}
-													alt={match.opponent.name}
+													src={
+														match.opponent.avatar ||
+														"/avatars/avatar1.png"
+													}
+													alt={
+														match.opponent.isBot
+															? "Bot"
+															: match.opponent
+																	.name ||
+															  "Unknown"
+													}
 													className="w-12 h-12 rounded-full"
 												/>
 												<div>
 													<div className="text-white font-medium">
-														vs {match.opponent.name}
-														{match.opponent.isBot && " 🤖"}
+														vs{" "}
+														{match.opponent.isBot
+															? `${t(
+																	"profile.history.bot"
+															  )} (${t(
+																	`profile.history.difficulty.${
+																		match
+																			.opponent
+																			.botDifficulty ||
+																		"medium"
+																	}`
+															  )})`
+															: match.opponent
+																	.name ||
+															  t(
+																	"profile.history.unknownPlayer"
+															  )}
+														{match.opponent.isBot &&
+															" 🤖"}
 													</div>
 													<div className="text-sm text-gray-400">
-														{new Date(match.date).toLocaleDateString()}
+														{new Date(
+															match.date
+														).toLocaleDateString(
+															i18n.language
+														)}
 													</div>
 												</div>
 											</div>
 											<div className="text-right">
 												<div
 													className={`font-bold ${
-														match.isWinner ? "text-green-400" : "text-red-400"
+														match.isWinner
+															? "text-green-400"
+															: "text-red-400"
 													}`}
 												>
-													{match.isWinner ? "WIN" : "LOSS"}
+													{match.isWinner
+														? "WIN"
+														: "LOSS"}
 												</div>
 												{match.scores && (
 													<div className="text-sm text-gray-400">
-														{match.scores.join(" - ")}
+														{match.scores.join(
+															" - "
+														)}
 													</div>
 												)}
 											</div>

@@ -22,7 +22,6 @@ services:
     container_name: api
     working_dir: /usr/app
     volumes:
-      - ../AI:/usr/AI
       - ./backend/app:/usr/app
       - ./certs:/usr/certs
       - /usr/app/node_modules

@@ -1,73 +1,37 @@
-import React, {
-	createContext,
-	useContext,
-	useState,
-	useCallback,
-	useEffect,
-} from "react";
-
-export type GameSettings = {
-	bonusNb: number;
-	bonusTypes: string[];
-	playerSpeed: number;
-};
+import React, { createContext, useContext, useState, useCallback } from "react";
 
 interface GameSettingsContextValue {
-	settings: GameSettings;
-	setSettings: (settings: GameSettings) => void;
-	updateSettings: (updates: Partial<GameSettings>) => void;
-	resetToDefaults: () => void;
+	bonusEnabled: boolean;
+	setBonusEnabled: (enabled: boolean) => void;
 }
 
-const defaultSettings: GameSettings = {
-	bonusNb: 1,
-	bonusTypes: ["Bigger", "Smaller", "Faster"],
-	playerSpeed: 90,
-};
-
+const defaultBonus = false;
 const GameSettingsContext = createContext<GameSettingsContextValue | undefined>(
 	undefined
 );
 
-const STORAGE_KEY = "pong-game-settings";
+const STORAGE_KEY = "pong-bonus-enabled";
 
 export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [settings, setSettingsState] = useState<GameSettings>(() => {
+	const [bonusEnabled, setBonusEnabledState] = useState<boolean>(() => {
 		try {
 			const stored = sessionStorage.getItem(STORAGE_KEY);
-			return stored
-				? { ...defaultSettings, ...JSON.parse(stored) }
-				: defaultSettings;
+			return stored !== null ? JSON.parse(stored) : defaultBonus;
 		} catch {
-			return defaultSettings;
+			return defaultBonus;
 		}
 	});
 
-	const setSettings = useCallback((newSettings: GameSettings) => {
-		setSettingsState(newSettings);
-		sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-	}, []);
-
-	const updateSettings = useCallback((updates: Partial<GameSettings>) => {
-		setSettingsState((prev) => {
-			const newSettings = { ...prev, ...updates };
-			sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-			return newSettings;
-		});
-	}, []);
-
-	const resetToDefaults = useCallback(() => {
-		setSettingsState(defaultSettings);
-		sessionStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
+	const setBonusEnabled = useCallback((enabled: boolean) => {
+		setBonusEnabledState(enabled);
+		sessionStorage.setItem(STORAGE_KEY, JSON.stringify(enabled));
 	}, []);
 
 	const value = {
-		settings,
-		setSettings,
-		updateSettings,
-		resetToDefaults,
+		bonusEnabled,
+		setBonusEnabled,
 	};
 
 	return (

@@ -20,8 +20,30 @@ function drawField(
 	width: number,
 	height: number
 ) {
-	ctx.fillStyle = "rgba(0,0,0,0.8)";
+	// Gradient background
+	const gradient = ctx.createLinearGradient(0, 0, width, height);
+	gradient.addColorStop(0, "rgba(15, 23, 42, 0.3)");
+	gradient.addColorStop(0.5, "rgba(30, 41, 59, 0.35)");
+	gradient.addColorStop(1, "rgba(15, 23, 42, 0.3)");
+	ctx.fillStyle = gradient;
 	ctx.fillRect(0, 0, width, height);
+	
+	// Center line
+	ctx.strokeStyle = "rgba(148, 163, 184, 0.3)";
+	ctx.lineWidth = 4;
+	ctx.setLineDash([15, 15]);
+	ctx.beginPath();
+	ctx.moveTo(width / 2, 0);
+	ctx.lineTo(width / 2, height);
+	ctx.stroke();
+	ctx.setLineDash([]);
+	
+	// Center circle
+	ctx.strokeStyle = "rgba(148, 163, 184, 0.3)";
+	ctx.lineWidth = 3;
+	ctx.beginPath();
+	ctx.arc(width / 2, height / 2, 80, 0, 2 * Math.PI);
+	ctx.stroke();
 }
 
 function drawScore(
@@ -32,7 +54,7 @@ function drawScore(
 	height: number
 ) {
 	ctx.font = "300px Audiowide";
-	ctx.fillStyle = "white";
+	ctx.fillStyle = "rgba(148, 163, 184, 0.15)";
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 
@@ -48,13 +70,33 @@ function drawPaddle(
 	x: number,
 	y: number,
 	width: number,
-	height: number
+	height: number,
+	time: number
 ) {
+	// Animate hue over time
+	const hue = (time * 10) % 360;
+	const color1 = `hsla(${hue}, 80%, 60%, 0.8)`;
+	const color2 = `hsla(${(hue + 30) % 360}, 85%, 65%, 1)`;
+	const color3 = `hsla(${hue}, 80%, 60%, 0.8)`;
+	const shadowColor = `hsla(${hue}, 85%, 65%, 0.8)`;
+	
+	// Paddle gradient
+	const gradient = ctx.createLinearGradient(x, y, x, y + height);
+	gradient.addColorStop(0, color1);
+	gradient.addColorStop(0.5, color2);
+	gradient.addColorStop(1, color3);
+	
+	ctx.fillStyle = gradient;
+	ctx.shadowBlur = 20;
+	ctx.shadowColor = shadowColor;
+	
+	// Rounded rectangle
+	const radius = 8;
 	ctx.beginPath();
-	ctx.rect(x, y, width, height);
-	ctx.shadowBlur = 10;
-	ctx.shadowColor = "white";
+	ctx.roundRect(x, y, width, height, radius);
 	ctx.fill();
+	
+	ctx.shadowBlur = 0;
 }
 
 function drawBall(
@@ -63,11 +105,25 @@ function drawBall(
 	y: number,
 	radius: number
 ) {
+	// Outer glow
+	ctx.beginPath();
+	ctx.arc(x, y, radius + 4, 0, 2 * Math.PI, false);
+	const outerGlow = ctx.createRadialGradient(x, y, radius, x, y, radius + 4);
+	outerGlow.addColorStop(0, "rgba(244, 63, 94, 0.6)");
+	outerGlow.addColorStop(1, "rgba(244, 63, 94, 0)");
+	ctx.fillStyle = outerGlow;
+	ctx.fill();
+	
+	// Main ball
 	ctx.beginPath();
 	ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-	ctx.shadowBlur = 10;
-	ctx.shadowColor = "rgba(102, 14, 237, 1)";
-	ctx.fillStyle = "#f43f5e";
+	const ballGradient = ctx.createRadialGradient(x - radius/3, y - radius/3, 0, x, y, radius);
+	ballGradient.addColorStop(0, "rgba(252, 165, 165, 1)");
+	ballGradient.addColorStop(0.6, "rgba(248, 113, 113, 1)");
+	ballGradient.addColorStop(1, "rgba(239, 68, 68, 1)");
+	ctx.fillStyle = ballGradient;
+	ctx.shadowBlur = 15;
+	ctx.shadowColor = "rgba(244, 63, 94, 0.8)";
 	ctx.fill();
 	ctx.shadowBlur = 0;
 }
@@ -77,17 +133,31 @@ function drawBonuses(
 	bonuses: Array<{ y: number; radius: number }>
 ) {
 	for (const bonus of bonuses) {
+		const x = 100 * 4;
+		const y = bonus.y * 4;
+		const r = bonus.radius * SCALE;
+		
+		// Outer glow
 		ctx.beginPath();
-		ctx.arc(
-			100 * 4,
-			bonus.y * 4,
-			bonus.radius * SCALE,
-			0,
-			2 * Math.PI,
-			false
-		);
-		ctx.fillStyle = "rgba(31, 226, 200, 1)";
+		ctx.arc(x, y, r + 3, 0, 2 * Math.PI, false);
+		const outerGlow = ctx.createRadialGradient(x, y, r, x, y, r + 3);
+		outerGlow.addColorStop(0, "rgba(45, 212, 191, 0.6)");
+		outerGlow.addColorStop(1, "rgba(45, 212, 191, 0)");
+		ctx.fillStyle = outerGlow;
 		ctx.fill();
+		
+		// Main bonus
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+		const gradient = ctx.createRadialGradient(x - r/3, y - r/3, 0, x, y, r);
+		gradient.addColorStop(0, "rgba(153, 246, 228, 1)");
+		gradient.addColorStop(0.5, "rgba(94, 234, 212, 1)");
+		gradient.addColorStop(1, "rgba(45, 212, 191, 1)");
+		ctx.fillStyle = gradient;
+		ctx.shadowBlur = 15;
+		ctx.shadowColor = "rgba(45, 212, 191, 0.8)";
+		ctx.fill();
+		ctx.shadowBlur = 0;
 	}
 }
 
@@ -155,8 +225,10 @@ function PongCanvas({ gameRef, side, interpolationDelayRef, enableIplusPRef, ena
 		if (!ctx) return;
 
 		let lastFrameTime = performance.now();
+		const startTime = performance.now();
 		const loop = (now: number) => {
 			const deltaTime = (now - lastFrameTime) / 1000;
+			const elapsedTime = (now - startTime) / 1000;
 			lastFrameTime = now;
 			interpolate(gameRef.current, side, interpolationDelayRef.current, enableInterpolationRef.current);			
 			const { players, ball, bonuses } = gameRef.current;
@@ -196,8 +268,8 @@ function PongCanvas({ gameRef, side, interpolationDelayRef, enableIplusPRef, ena
 			const p1X = playerWidth;
 			const p2X = fieldWidth - 2 * playerWidth;
 
-			drawPaddle(ctx, p1X, players.p1.y * SCALE, playerWidth, p1Size);
-			drawPaddle(ctx, p2X, players.p2.y * SCALE, playerWidth, p2Size);
+			drawPaddle(ctx, p1X, players.p1.y * SCALE, playerWidth, p1Size, elapsedTime);
+			drawPaddle(ctx, p2X, players.p2.y * SCALE, playerWidth, p2Size, elapsedTime);
 			drawBall(ctx, ball.x * 4, ball.y * 4, BALL_RADIUS * SCALE);
 
 			frameIdRef.current = requestAnimationFrame(loop);
@@ -210,7 +282,7 @@ function PongCanvas({ gameRef, side, interpolationDelayRef, enableIplusPRef, ena
 	return (
 		<canvas
 			ref={canvasRef}
-			className="z-5 border-4 border-gray border-t-gray-300 border-b-gray-300 rounded-lg"
+			className="z-5 border-4 border-slate-700 shadow-2xl shadow-indigo-500/20 rounded-2xl"
 		/>
 	);
 }

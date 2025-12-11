@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import SpaceBackground from "../Components/SpaceBackground";
 import { API_BASE_URL } from "../config/api";
 
 export default function Registration() {
@@ -120,7 +119,6 @@ export default function Registration() {
 
 	return (
 		<>
-			<SpaceBackground />
 			<div className="flex items-center justify-center min-h-screen">
 				<div className="w-full max-w-lg px-6">
 					<div className="bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-600/30 p-8 shadow-2xl">

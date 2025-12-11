@@ -21,7 +21,6 @@ services:
     build: ./backend
     container_name: api
     volumes:
-      - ../AI:/usr/AI
       - ./certs:/usr/certs
     env_file:
       - ./backend/app/.env
