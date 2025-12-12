@@ -750,7 +750,9 @@
     "networkError": "Network error",
     "error": "Error",
     "invalidCode": "Invalid code",
-    "yourCode": "Your code"
+    "yourCode": "Verification code",
+    "enterCode": "Enter the code received by email",
+    "verify": "Verify code"
   },
   "notFound": {
     "title": "404",

@@ -748,7 +748,9 @@
     "networkError": "Error de red",
     "error": "Error",
     "invalidCode": "Código inválido",
-    "yourCode": "Tu código"
+    "yourCode": "Código de verificación",
+    "enterCode": "Introduce el código recibido por correo",
+    "verify": "Verificar código"
   },
   "notFound": {
     "title": "404",

@@ -578,7 +578,9 @@
     "networkError": "Erreur réseau",
     "error": "Erreur",
     "invalidCode": "Code invalide",
-    "yourCode": "Votre code"
+    "yourCode": "Code de vérification",
+    "enterCode": "Entrez le code reçu par mail",
+    "verify": "Vérifier le code"
   },
   "notFound": {
     "title": "404",

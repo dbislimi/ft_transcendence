@@ -9,7 +9,7 @@ export default function Layout() {
 		<>
 			<BackgroundSurface />
 			<Header />
-			<main className="w-full h-full">
+			<main className="w-full h-full relative z-10">
 				<Outlet />
 			</main>
 			<ChatWidget />
