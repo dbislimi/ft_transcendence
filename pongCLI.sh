@@ -1,12 +1,16 @@
 #!/bin/bash
 
-HOST="${localhost}"
+if [ -f "./srcs/.env" ]; then
+    export $(cat ./srcs/.env | xargs)
+fi
+
+HOST="${HOSTNAME:-localhost}"
 WS_URL="wss://${HOST}:8443/game" 
 PIPE="/tmp/pong_cmd_pipe" 
 READY_FLAG="/tmp/pong_ready_flag" 
 
 if ! command -v jq &> /dev/null; then
-    echo "Erreur: 'jq' n'est pas installé. Fais 'apt install jq' ou 'brew install jq'"
+    echo "Erreur: 'jq' n'est pas installé.'apt install jq'"
     exit 1
 fi
 
@@ -31,7 +35,7 @@ mkfifo $PIPE
 process_dashboard() {
     clear
     echo "============================================================"
-    echo "   🏓  SERVER-SIDE PONG mini-CLI  🏓"
+    echo "         🏓  SERVER-SIDE PONG mini-CLI  🏓"
     echo "============================================================"
 
     while read -r line; do
@@ -58,7 +62,7 @@ process_dashboard() {
     done
 }
 
-tail -f $PIPE | wscat -n -c "$WS_URL" 2>/dev/null | process_dashboard &
+tail -f $PIPE | wscat -n -c "$WS_URL" --no-check 2>/dev/null | process_dashboard &
 BG_PID=$!
 sleep 2
 
