@@ -10,36 +10,17 @@ function simulateYAtX(
 	dy: number,
 	targetX: number,
 	height: number,
-	maxBounces: number = 10
+	radius: number
 ): number {
 	if (dx === 0 || (targetX - startX) / dx <= 0) return startY;
-
-	let simX = startX;
-	let simY = startY;
-	let simDx = dx;
-	let simDy = dy;
-	let bounces = 0;
-
-	while (Math.abs(simX - targetX) > 0.1 && bounces < maxBounces) {
-		const dt = (targetX - simX) / simDx;
-		const nextY = simY + simDy * dt;
-		if (nextY < 0) {
-			const timeToWall = -simY / simDy;
-			simX += simDx * timeToWall;
-			simY = 0;
-			simDy = -simDy;
-			bounces++;
-		} else if (nextY > height) {
-			const timeToWall = (height - simY) / simDy;
-			simX += simDx * timeToWall;
-			simY = height;
-			simDy = -simDy;
-			bounces++;
-		} else {
-			return nextY;
-		}
-	}
-	return Math.max(0, Math.min(height, simY));
+	const distanceX = targetX - startX;
+	const distanceY = (dy / dx) * distanceX;
+	let finalY = startY + distanceY;
+	const validHeight = height - 2 * radius;
+	const doubleHeight = 2 * validHeight;
+	finalY = ((finalY % doubleHeight) + doubleHeight) % doubleHeight;
+	if (finalY > validHeight) finalY = doubleHeight - finalY;
+	return finalY + radius;
 }
 
 export default abstract class BotController {
@@ -283,8 +264,9 @@ export class MediumBot extends BotController {
 			board.ball.y,
 			board.ball.dx,
 			board.ball.dy,
-			xp,
-			board.H
+			xp - board.ballRadius,
+			board.H,
+			board.ballRadius
 		);
 		const ballZone = Math.floor(
 			(this.predictedY / board.H) * this.nbOfActions
@@ -374,8 +356,9 @@ export class HardBot extends BotController {
 			board.ball.y,
 			board.ball.dx,
 			board.ball.dy,
-			xp,
-			board.H
+			xp - board.ballRadius,
+			board.H,
+			board.ballRadius
 		);
 		const bonusY = board.bonus.length > 0 ? board.bonus[0]!.y : null;
 		const bonusCut = 17;
@@ -459,8 +442,9 @@ export class HardBot extends BotController {
 				board.ball.y,
 				board.ball.dx,
 				board.ball.dy,
-				faceX,
-				board.H
+				faceX - board.ballRadius,
+				board.H,
+				board.ballRadius
 			);
 			const oppCenter = opponent.y + opponent.size / 2;
 			const dist = Math.abs(landingY - oppCenter);
@@ -475,8 +459,9 @@ export class HardBot extends BotController {
 				board.ball.y,
 				board.ball.dx,
 				board.ball.dy,
-				board.W / 2,
-				board.H
+				board.W / 2 - board.ballRadius,
+				board.H,
+				board.ballRadius
 			);
 			const dist = Math.abs(landingY - bonusY);
 			const normalizedDist = Math.min(1, dist / 50);

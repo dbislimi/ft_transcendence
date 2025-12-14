@@ -150,9 +150,16 @@ export default class Board {
 		const prevRightEdge = x + radius;
 		const nextRightEdge = nextX + radius;
 		this.checkBonusCollision();
-		if (nextY - radius <= 0 || nextY + radius >= this.height) {
+		if (nextY - radius <= 0 && this.ball.dy < 0) {
+			const timeToWall = (radius - y) / this.ball.dy;
+			const overshoot = this.ball.dy * (dt - timeToWall);
+			nextY = radius - overshoot;
 			this.bounceBallY(null);
-			nextY = Math.max(radius, Math.min(nextY, this.height - radius));
+		} else if (nextY + radius >= this.height && this.ball.dy > 0) {
+			const timeToWall = (this.height - radius - y) / this.ball.dy;
+			const overshoot = this.ball.dy * (dt - timeToWall);
+			nextY = this.height - radius - overshoot;
+			this.bounceBallY(null);
 		}
 		if (prevLeftEdge > face1 && nextLeftEdge <= face1) {
 			const t = (face1 - prevLeftEdge) / (nextLeftEdge - prevLeftEdge);
