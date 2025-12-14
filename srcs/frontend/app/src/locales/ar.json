@@ -196,6 +196,9 @@
     }
   },
   "profile": {
+    "overview": "نظرة عامة",
+    "matchHistory": "سجل المباريات",
+    "noMatches": "لا توجد مباريات بعد",
     "error_msg": {
       "invalidEmail": "البريد الإلكتروني غير صالح.",
       "invalidDisplayName": "يجب أن يحتوي اسم المستخدم على أحرف أو أرقام أو شرطات فقط.",

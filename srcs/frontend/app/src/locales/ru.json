@@ -196,6 +196,9 @@
     }
   },
   "profile": {
+    "overview": "Обзор",
+    "matchHistory": "История матчей",
+    "noMatches": "Матчей пока нет",
     "error_msg": {
       "invalidEmail": "Неверный email.",
       "invalidDisplayName": "Имя пользователя должно содержать только буквы, цифры или дефисы.",

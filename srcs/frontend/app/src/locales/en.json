@@ -196,6 +196,9 @@
     }
   },
   "profile": {
+    "overview": "Overview",
+    "matchHistory": "Match History",
+    "noMatches": "No matches yet",
     "error_msg": {
       "invalidEmail": "Invalid email.",
       "invalidDisplayName": "Username must contain only letters, numbers or hyphens.",

@@ -181,6 +181,9 @@
     "round": "Manche"
   },
   "profile": {
+    "overview": "Vue d'ensemble",
+    "matchHistory": "Historique des parties",
+    "noMatches": "Aucun match pour le moment",
     "error_msg": {
       "invalidEmail": "Email invalide.",
       "invalidDisplayName": "Le pseudo ne doit contenir que des lettres, chiffres ou tirets.",

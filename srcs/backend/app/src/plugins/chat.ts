@@ -28,7 +28,7 @@ export async function sendTournamentMessage(
 
 	const payload = {
 		type: "info",
-		message,
+		text: message,
 		date: new Date().toISOString(),
 	};
 
@@ -208,7 +208,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 								if (err) return fastify.log.error({ err }, "Erreur DB block:");
 								sendToClient(client, {
 									type: "info",
-									message: ` ${data.name} bloqué`,
+									text: ` ${data.name} bloqué`,
 								});
 								// Rediffuser la liste des utilisateurs pour que le statut "bloque" soit à jour
 								broadcastUsers();
@@ -225,7 +225,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 									return fastify.log.error({ err }, "Erreur DB unblock:");
 								sendToClient(client, {
 									type: "info",
-									message: ` ${data.name} débloqué`,
+									text: ` ${data.name} débloqué`,
 								});
 								// Rediffuser la liste des utilisateurs
 								broadcastUsers();

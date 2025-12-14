@@ -196,6 +196,9 @@
     }
   },
   "profile": {
+    "overview": "Resumen",
+    "matchHistory": "Historial de partidas",
+    "noMatches": "Aún no hay partidos",
     "error_msg": {
       "invalidEmail": "Email inválido.",
       "invalidDisplayName": "El nombre de usuario solo debe contener letras, números o guiones.",
