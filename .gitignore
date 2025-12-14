@@ -20,7 +20,6 @@ package-lock.json
 .env.local
 .env.*.local
 srcs/.env
-srcs/backend/app/.env
 
 # Build outputs
 dist/

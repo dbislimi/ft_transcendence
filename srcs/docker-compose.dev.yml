@@ -7,7 +7,7 @@ services:
     volumes:
       - ./certs:/etc/nginx/ssl:ro
     env_file:
-      - ./backend/app/.env
+      - .env
     environment:
       - VITE_PORT=5173
     depends_on:
@@ -28,7 +28,7 @@ services:
       - ./backend/app/public/avatars/custom:/usr/app/public/avatars/custom
       - /usr/app/node_modules
     env_file:
-      - ./backend/app/.env
+      - .env
     expose:
       - "3001"
     restart: unless-stopped
@@ -57,7 +57,7 @@ services:
       - ./certs:/usr/certs
       - /usr/app/node_modules
     env_file:
-      - ./backend/app/.env
+      - .env
     environment:
       - VITE_HOSTNAME=${HOSTNAME:-localhost}
     expose:

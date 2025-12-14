@@ -1,10 +1,7 @@
 all : up
 
-hostname:
-	@cd srcs && chmod +x generate_hostname.sh && ./generate_hostname.sh
-
-certs : hostname
-	@cd srcs && ./generate_certs.sh
+certs:
+	@cd srcs && chmod +x generate_certs.sh && ./generate_certs.sh
 
 up : certs
 	@echo "\033[1;32mLancement en mode PRODUCTION...\033[0m"
@@ -41,4 +38,4 @@ fclean: clean clear
 
 re: fclean up
 
-.PHONY: all hostname certs clean fclean re status dev
+.PHONY: all certs clean fclean re status dev

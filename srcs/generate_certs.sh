@@ -10,9 +10,16 @@ ENV_FILE=".env"
 LOCAL_IP=$(hostname -I | awk '{print $1}')
 HOSTNAME=${LOCAL_IP:-localhost}
 
-# Update .env file with local IP
+# Update .env file with local IP (preserve other variables)
 if [ -n "$LOCAL_IP" ]; then
-    echo "HOSTNAME=$LOCAL_IP" > "$ENV_FILE"
+    if [ -f "$ENV_FILE" ]; then
+        # Remove existing HOSTNAME line and add new one
+        grep -v "^HOSTNAME=" "$ENV_FILE" > "$ENV_FILE.tmp" 2>/dev/null || true
+        echo "HOSTNAME=$LOCAL_IP" >> "$ENV_FILE.tmp"
+        mv "$ENV_FILE.tmp" "$ENV_FILE"
+    else
+        echo "HOSTNAME=$LOCAL_IP" > "$ENV_FILE"
+    fi
     echo "✅ Fichier .env mis à jour avec IP locale: $LOCAL_IP"
 fi
 
