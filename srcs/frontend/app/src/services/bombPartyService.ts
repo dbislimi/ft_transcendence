@@ -1226,7 +1226,7 @@ export class BombPartyService {
 								delta.turnDurationMs &&
 								store.gameState?.turnDurationMs &&
 								delta.turnDurationMs !==
-									store.gameState.turnDurationMs;
+								store.gameState.turnDurationMs;
 
 							if (
 								needsUpdate ||
@@ -1839,9 +1839,8 @@ export class BombPartyService {
 				}
 				return {
 					type: "POLICY_VIOLATION",
-					description: `Policy violation (1008) - ${
-						reason || "unknown reason"
-					}`,
+					description: `Policy violation (1008) - ${reason || "unknown reason"
+						}`,
 					shouldReconnect: false,
 					isServerError: false,
 				};
@@ -1983,10 +1982,10 @@ export class BombPartyService {
 		const store = useBombPartyStore.getState();
 		const delay =
 			this.reconnectDelays[
-				Math.min(
-					this.reconnectAttempts,
-					this.reconnectDelays.length - 1
-				)
+			Math.min(
+				this.reconnectAttempts,
+				this.reconnectDelays.length - 1
+			)
 			];
 
 		const nextAttempt = this.reconnectAttempts + 1;
@@ -2178,14 +2177,21 @@ export class BombPartyService {
 			});
 		}
 
+		const token = sessionStorage.getItem("token");
+		const payload: any = { playerName: safeName };
+		if (token) {
+			payload.token = token;
+		}
+
 		logger.debug("Authentication", {
 			playerName: safeName,
 			connectionId: this.connectionId,
+			hasToken: !!token
 		});
 		this.ws.send(
 			JSON.stringify({
 				event: "bp:auth",
-				payload: { playerName: safeName },
+				payload: payload,
 			})
 		);
 
@@ -2194,7 +2200,7 @@ export class BombPartyService {
 			if (!sessionStorage.getItem("bombparty_fallback_name")) {
 				sessionStorage.setItem("bombparty_fallback_name", safeName);
 			}
-		} catch {}
+		} catch { }
 
 		this.pendingPlayerName = safeName;
 	}

@@ -439,9 +439,8 @@ export async function handleGameInput(
 			);
 			return {
 				success: false,
-				error: `Invalid time value: ${
-					msValidation.reason || "msTaken validation failed"
-				}`,
+				error: `Invalid time value: ${msValidation.reason || "msTaken validation failed"
+					}`,
 			};
 		}
 
@@ -572,7 +571,7 @@ export function handlePlayerDisconnect(
 	players: Map<string, PlayerConnection>,
 	rooms: Map<string, Room>,
 	roomEngines: Map<string, BombPartyEngine>
-): void {
+): { winner: any; finalStats: any[] } | void {
 	const player = players.get(playerId);
 	if (!player) return;
 
@@ -628,11 +627,11 @@ export function handlePlayerDisconnect(
 				broadcastGameState(player.roomId, roomEngines, rooms);
 
 				if (engine.isGameOver()) {
-					handleGameEnd(player.roomId, roomEngines, rooms);
+					return handleGameEnd(player.roomId, roomEngines, rooms) || undefined;
 				} else {
 					const aliveCount = engine.getAlivePlayersCount();
 					if (aliveCount < 2) {
-						handleGameEnd(player.roomId, roomEngines, rooms);
+						return handleGameEnd(player.roomId, roomEngines, rooms) || undefined;
 					}
 				}
 			} else if (room.players.size === 0) {
@@ -650,10 +649,10 @@ export function handleGameEnd(
 	roomId: string,
 	roomEngines: Map<string, BombPartyEngine>,
 	rooms: Map<string, Room>
-): void {
+): { winner: any; finalStats: any[] } | null {
 	const engine = roomEngines.get(roomId);
 	const room = rooms.get(roomId);
-	if (!engine || !room) return;
+	if (!engine || !room) return null;
 
 	const winner = engine.getWinner();
 	const finalStats = engine.getFinalStats();
@@ -675,6 +674,8 @@ export function handleGameEnd(
 	if (room.players.size === 0) {
 		rooms.delete(roomId);
 	}
+
+	return { winner, finalStats };
 }
 
 export function broadcastTurnStarted(

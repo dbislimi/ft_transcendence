@@ -8,7 +8,8 @@ export const clientMessageSchema = z.object({
 export const authMessageSchema = z.object({
   event: z.literal('bp:auth'),
   payload: z.object({
-    playerName: z.string().min(1).max(50)
+    playerName: z.string().min(1).max(50),
+    token: z.string().optional()
   })
 });
 

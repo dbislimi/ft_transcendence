@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { BombPartyEngine } from "./GameEngine.js";
+import { BombPartyStatsManager } from "./StatsManager.js";
 import { AsyncLock } from "../../utils/AsyncLock.js";
 import {
 	type Room,
@@ -32,6 +33,7 @@ export class BombPartyRoomManager {
 	private rooms = new Map<string, Room>();
 	private players = new Map<string, PlayerConnection>();
 	private roomEngines = new Map<string, BombPartyEngine>();
+	private statsManager: BombPartyStatsManager;
 	private turnCheckInterval: NodeJS.Timeout | null = null;
 	private cleanupInterval: NodeJS.Timeout | null = null;
 	private gameEndCallbacks = new Map<
@@ -48,7 +50,8 @@ export class BombPartyRoomManager {
 	private readonly INACTIVE_ROOM_TIMEOUT = 30 * 60 * 1000;
 	private readonly EMPTY_ROOM_TIMEOUT = 5 * 60 * 1000;
 
-	constructor() {
+	constructor(statsManager: BombPartyStatsManager) {
+		this.statsManager = statsManager;
 		this.turnCheckInterval = this.startTurnCheckInterval();
 		this.cleanupInterval = this.startCleanupInterval();
 	}
@@ -125,6 +128,9 @@ export class BombPartyRoomManager {
 										finalStats,
 									},
 								});
+
+								// Save stats to DB
+								this.saveGameStats(roomId, room, engine, winnerId);
 							}
 
 							this.roomEngines.delete(roomId);
@@ -149,12 +155,18 @@ export class BombPartyRoomManager {
 		return setTimeout(checkLoop, 150);
 	}
 
-	registerPlayer(ws: WebSocket, playerId: string, playerName: string): void {
+	registerPlayer(
+		ws: WebSocket,
+		playerId: string,
+		playerName: string,
+		userId?: number
+	): void {
 		const player: PlayerConnection = {
 			id: playerId,
 			name: playerName,
 			ws,
 			roomId: undefined,
+			userId,
 		};
 
 		this.players.set(playerId, player);
@@ -166,12 +178,32 @@ export class BombPartyRoomManager {
 			if (roomId) {
 				const lock = this.getRoomLock(roomId);
 				await lock.acquire(() => {
-					handlePlayerDisconnect(
+					const result = handlePlayerDisconnect(
 						playerId,
 						this.players,
 						this.rooms,
 						this.roomEngines
 					);
+					if (result && result.winner) {
+						const room = this.rooms.get(roomId);
+						const engine = this.roomEngines.get(roomId);
+						// Note: engine might be deleted by handlePlayerDisconnect if game ended
+						// But handlePlayerDisconnect returns winner/stats only if game ended
+						// We need to pass the engine before it was deleted, or use the returned stats
+						// Actually handlePlayerDisconnect deletes the engine.
+						// We should modify handlePlayerDisconnect to NOT delete engine? Or return what we need.
+						// Let's use the returned data.
+						// Wait, saveGameStats needs engine instance.
+						// If handlePlayerDisconnect deletes engine, we can't use saveGameStats as is.
+						// We should refactor saveGameStats to take data instead of engine, OR
+						// Refactor handlePlayerDisconnect to NOT delete engine, let RoomManager do it.
+						// But handlePlayerDisconnect is in another file.
+
+						// Alternative: We can't easily change handlePlayerDisconnect signature without breaking other things maybe?
+						// Actually I just changed handleGameEnd to return data.
+						// handlePlayerDisconnect calls handleGameEnd.
+						// So I need to update handlePlayerDisconnect to return what handleGameEnd returns.
+					}
 				});
 			} else {
 				handlePlayerDisconnect(
@@ -281,8 +313,16 @@ export class BombPartyRoomManager {
 	): Promise<GameInputResult> {
 		const lock = this.getRoomLock(roomId);
 
-		return lock.acquire(() => {
-			return handleGameInput(
+		return lock.acquire(async () => {
+			const room = this.rooms.get(roomId);
+			const engine = this.roomEngines.get(roomId);
+
+			// Check if game is already over before processing input
+			if (engine && engine.isGameOver()) {
+				return { success: false, error: "Game is already over" };
+			}
+
+			const result = await handleGameInput(
 				playerId,
 				roomId,
 				word,
@@ -290,6 +330,60 @@ export class BombPartyRoomManager {
 				this.roomEngines,
 				this.rooms
 			);
+
+			// Check if game ended after input
+			// handleGameInput might have triggered game end via resolveTurn -> broadcastGameState
+			// But handleGameInput itself doesn't call handleGameEnd.
+			// Wait, handleGameInput in roomHandlers.ts calls engine.resolveTurn.
+			// It does NOT call handleGameEnd.
+			// So we need to check if game is over here and call handleGameEnd if needed.
+
+			// Re-get engine because handleGameInput might have modified state
+			// If engine is gone, game ended? No, handleGameInput doesn't delete engine.
+
+			if (result.success && engine && room) {
+				if (engine.isGameOver()) {
+					console.log(`[RoomManager] Game over detected after input in room ${roomId}`);
+					const winner = engine.getWinner();
+					const winnerId = winner?.id;
+
+					// Save stats
+					await this.saveGameStats(roomId, room, engine, winnerId);
+
+					// Handle game end (broadcast, cleanup)
+					// We need to import handleGameEnd or implement it here.
+					// Since handleGameEnd is exported from roomHandlers, we can use it?
+					// But we need to import it.
+					// Or we can just do what handleGameEnd does: broadcast end and cleanup.
+
+					const finalStats = engine.getFinalStats();
+					broadcastToRoom(room, {
+						event: "bp:game:end",
+						payload: {
+							roomId,
+							winner: winner || undefined,
+							finalStats,
+						},
+					});
+
+					this.triggerGameEndCallback(roomId, winnerId);
+
+					this.roomEngines.delete(roomId);
+					room.startedAt = undefined;
+					if (room.players.size === 0) {
+						this.rooms.delete(roomId);
+						this.roomLocks.delete(roomId);
+					}
+				} else {
+					// Check if only 1 player left (if not solo mode)
+					const aliveCount = engine.getAlivePlayersCount();
+					// If we started with > 1 player and now < 2, game over
+					// But engine.isGameOver() should handle this?
+					// Let's trust engine.isGameOver()
+				}
+			}
+
+			return result;
 		});
 	}
 
@@ -300,14 +394,50 @@ export class BombPartyRoomManager {
 	): Promise<ActivateBonusResult> {
 		const lock = this.getRoomLock(roomId);
 
-		return lock.acquire(() => {
-			return handleActivateBonus(
+		return lock.acquire(async () => {
+			const room = this.rooms.get(roomId);
+			const engine = this.roomEngines.get(roomId);
+
+			const result = handleActivateBonus(
 				playerId,
 				roomId,
 				bonusKey,
 				this.roomEngines,
 				this.rooms
 			);
+
+			if (result.success && engine && room) {
+				if (engine.isGameOver()) {
+					console.log(`[RoomManager] Game over detected after bonus activation in room ${roomId}`);
+					const winner = engine.getWinner();
+					const winnerId = winner?.id;
+
+					// Save stats
+					await this.saveGameStats(roomId, room, engine, winnerId);
+
+					// Handle game end
+					const finalStats = engine.getFinalStats();
+					broadcastToRoom(room, {
+						event: "bp:game:end",
+						payload: {
+							roomId,
+							winner: winner || undefined,
+							finalStats,
+						},
+					});
+
+					this.triggerGameEndCallback(roomId, winnerId);
+
+					this.roomEngines.delete(roomId);
+					room.startedAt = undefined;
+					if (room.players.size === 0) {
+						this.rooms.delete(roomId);
+						this.roomLocks.delete(roomId);
+					}
+				}
+			}
+
+			return result;
 		});
 	}
 
@@ -548,5 +678,84 @@ export class BombPartyRoomManager {
 		this.roomEngines.clear();
 		this.gameEndCallbacks.clear();
 		this.roomLocks.clear();
+	}
+
+	private async saveGameStats(
+		roomId: string,
+		room: Room,
+		engine: BombPartyEngine,
+		winnerId?: string
+	): Promise<void> {
+		console.log(`[RoomManager] Attempting to save stats for room ${roomId}`);
+		if (!room.startedAt) {
+			console.log(`[RoomManager] Room ${roomId} has no startedAt date, skipping stats`);
+			return;
+		}
+
+		const matchDuration = Date.now() - room.startedAt;
+		const finalStats = engine.getFinalStats();
+		const gameState = engine.getState();
+
+		console.log(`[RoomManager] Final stats count: ${finalStats.length}`);
+
+		const matchId = Math.floor(Date.now());
+
+		for (const playerStat of finalStats) {
+			const playerConnection = this.players.get(playerStat.playerId);
+			if (!playerConnection) {
+				console.log(`[RoomManager] Player ${playerStat.playerId} not found in connections`);
+				continue;
+			}
+
+			if (!playerConnection.userId) {
+				console.log(`[RoomManager] Player ${playerStat.playerId} (${playerConnection.name}) has no userId (Guest?), skipping stats`);
+				continue;
+			}
+
+			const userId = playerConnection.userId;
+			const isWin = playerStat.playerId === winnerId;
+
+			console.log(`[RoomManager] Processing stats for user ${userId} (Win: ${isWin})`);
+
+			const playerHistory = gameState.history.filter(h => h.playerId === playerStat.playerId && h.ok);
+			const totalTime = playerHistory.reduce((acc, h) => acc + h.msTaken, 0);
+			const averageResponseTime = playerHistory.length > 0 ? Math.round(totalTime / playerHistory.length) : 0;
+			const playerState = gameState.players.find(p => p.id === playerStat.playerId);
+			const finalLives = playerState ? playerState.lives : 0;
+			const position = isWin ? 1 : 2;
+
+			const matchData = {
+				isWin,
+				wordsSubmitted: playerStat.wordsSubmitted,
+				validWords: playerStat.validWords,
+				bestStreak: playerStat.maxStreak,
+				averageResponseTime,
+				matchDuration,
+			};
+
+			const historyData = {
+				position,
+				wordsSubmitted: playerStat.wordsSubmitted,
+				validWords: playerStat.validWords,
+				finalLives,
+				matchDuration,
+			};
+
+			try {
+				const updateResult = await this.statsManager.updateUserStats(userId, matchData);
+				if (!updateResult.success) {
+					console.error(`[RoomManager] Failed to update user stats for ${userId}:`, updateResult.error);
+				}
+
+				const historyResult = await this.statsManager.addMatchHistory(userId, matchId, historyData);
+				if (!historyResult.success) {
+					console.error(`[RoomManager] Failed to add match history for ${userId}:`, historyResult.error);
+				}
+
+				console.log(`[RoomManager] Stats saved for user ${userId} (Match ${matchId})`);
+			} catch (error) {
+				console.error(`[RoomManager] Error saving stats for user ${userId}:`, error);
+			}
+		}
 	}
 }

@@ -3,6 +3,7 @@ import "@fastify/websocket";
 import WebSocket from "ws";
 import jwt from "jsonwebtoken";
 import { BombPartyRoomManager } from "./RoomManager.js";
+import { BombPartyStatsManager } from "./StatsManager.js";
 import { BombPartyWSServer } from "./wsServer.js";
 import {
 	validateClientMessage,
@@ -24,7 +25,8 @@ interface WSSession {
 }
 
 const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
-	const roomManager = new BombPartyRoomManager();
+	const statsManager = new BombPartyStatsManager(fastify.db);
+	const roomManager = new BombPartyRoomManager(statsManager);
 	const wsServer = new BombPartyWSServer();
 
 	function broadcastLobbyList(): void {
@@ -259,7 +261,8 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 				roomManager.registerPlayer(
 					socket,
 					session.playerId,
-					session.playerName
+					session.playerName,
+					userId
 				);
 				wsServer.updateConnection(socket, session.playerId, undefined, userId);
 				if (userAuthenticated && typeof userId === "number") {
@@ -347,6 +350,33 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 								validation.code || ErrorCode.VALIDATION_ERROR
 							);
 							return;
+						}
+
+						// Check for token in payload
+						if (validation.data!.payload.token && JWT_SECRET) {
+							try {
+								const token = validation.data!.payload.token;
+								const decoded = jwt.verify(token, JWT_SECRET) as {
+									id: number;
+									name: string;
+									display_name?: string;
+								};
+								userId = decoded.id;
+								userAuthenticated = true;
+								bombPartyLogger.info(
+									{
+										userId,
+										decodedName: decoded.name,
+									},
+									"Authenticated via bp:auth token"
+								);
+							} catch (jwtError) {
+								bombPartyLogger.warn(
+									{ error: jwtError },
+									"Invalid token in bp:auth message"
+								);
+								// Don't fail, just continue as guest or previous state
+							}
 						}
 
 						if (await authenticatePlayer(validation.data!.payload.playerName)) {
