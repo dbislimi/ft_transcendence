@@ -14,14 +14,13 @@
 
       console.error = function (...args) {
         const msg = args.join(' ');
-        // Filter out Vite HMR related errors
         if (msg.includes('[vite]') ||
           msg.includes('WebSocket connection') ||
           msg.includes('failed to connect to websocket') ||
           msg.includes('HMR') ||
           msg.includes('WebGL context was lost') ||
           (msg.includes('wss://') && (msg.includes('8443') || msg.includes('5173')))) {
-          return; // Suppress HMR errors
+          return;
         }
         originalError.apply(console, args);
       };
@@ -34,7 +33,7 @@
           msg.includes('React Router Future Flag Warning') ||
           msg.includes('texImage: Alpha-premult and y-flip are deprecated') ||
           msg.includes('drawElementsInstanced: Tex image TEXTURE_2D')) {
-          return; // Suppress HMR warnings
+          return;
         }
         originalWarn.apply(console, args);
       };

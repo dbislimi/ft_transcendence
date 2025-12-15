@@ -93,7 +93,6 @@ export default function ChatWidget() {
 
       {open && (
         <div className="w-80 h-[32rem] bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl mt-4 flex flex-col border border-slate-700/50 relative overflow-hidden animate-fadeIn">
-          {/* Header */}
           <div className="flex justify-between items-center px-4 py-3 bg-gradient-to-r from-blue-900/80 to-slate-900/80 border-b border-slate-700/50">
             <div className="flex gap-2 bg-slate-800/50 p-1 rounded-lg">
               <button
@@ -123,7 +122,6 @@ export default function ChatWidget() {
             </button>
           </div>
 
-          {/* Content */}
           {view === "chat" ? (
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {messages
@@ -131,18 +129,18 @@ export default function ChatWidget() {
                 .map((msg, i) => (
                   <div key={i} className={`flex flex-col ${msg.from?.id === user.id ? "items-end" : "items-start"} mb-2`}>
                     {msg.type !== "info" && msg.from?.id !== user.id && (
-                      <span className="text-[10px] font-bold text-blue-400 ml-2 mb-1 uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-blue-400 ml-2 mb-1">
                         {msg.from?.name} {msg.type === "private" ? t('chat.private') : ""}
                       </span>
                     )}
                     <div
                       className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm shadow-md backdrop-blur-sm border ${msg.type === "info"
-                          ? "bg-yellow-500/20 border-yellow-500/30 text-yellow-100 italic text-center w-full my-1"
-                          : msg.type === "private"
-                            ? "bg-purple-500/20 border-purple-500/20 text-purple-100"
-                            : msg.from?.id === user.id
-                              ? "bg-blue-600 text-white border-blue-500/50 rounded-br-none"
-                              : "bg-slate-700/50 text-gray-100 border-slate-600/50 rounded-bl-none"
+                        ? "bg-yellow-500/20 border-yellow-500/30 text-yellow-100 italic text-center w-full my-1"
+                        : msg.type === "private"
+                          ? "bg-purple-500/20 border-purple-500/20 text-purple-100"
+                          : msg.from?.id === user.id
+                            ? "bg-blue-600 text-white border-blue-500/50 rounded-br-none"
+                            : "bg-slate-700/50 text-gray-100 border-slate-600/50 rounded-bl-none"
                         }`}
                     >
                       {msg.text}
@@ -203,7 +201,6 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* Input Area */}
           <div className="p-3 bg-slate-800/30 border-t border-slate-700/50 backdrop-blur-md">
             <div className="flex gap-2 relative">
               <input

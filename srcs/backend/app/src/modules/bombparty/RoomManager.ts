@@ -129,7 +129,6 @@ export class BombPartyRoomManager {
 									},
 								});
 
-								// Save stats to DB
 								this.saveGameStats(roomId, room, engine, winnerId);
 							}
 
@@ -187,22 +186,6 @@ export class BombPartyRoomManager {
 					if (result && result.winner) {
 						const room = this.rooms.get(roomId);
 						const engine = this.roomEngines.get(roomId);
-						// Note: engine might be deleted by handlePlayerDisconnect if game ended
-						// But handlePlayerDisconnect returns winner/stats only if game ended
-						// We need to pass the engine before it was deleted, or use the returned stats
-						// Actually handlePlayerDisconnect deletes the engine.
-						// We should modify handlePlayerDisconnect to NOT delete engine? Or return what we need.
-						// Let's use the returned data.
-						// Wait, saveGameStats needs engine instance.
-						// If handlePlayerDisconnect deletes engine, we can't use saveGameStats as is.
-						// We should refactor saveGameStats to take data instead of engine, OR
-						// Refactor handlePlayerDisconnect to NOT delete engine, let RoomManager do it.
-						// But handlePlayerDisconnect is in another file.
-
-						// Alternative: We can't easily change handlePlayerDisconnect signature without breaking other things maybe?
-						// Actually I just changed handleGameEnd to return data.
-						// handlePlayerDisconnect calls handleGameEnd.
-						// So I need to update handlePlayerDisconnect to return what handleGameEnd returns.
 					}
 				});
 			} else {
@@ -317,7 +300,6 @@ export class BombPartyRoomManager {
 			const room = this.rooms.get(roomId);
 			const engine = this.roomEngines.get(roomId);
 
-			// Check if game is already over before processing input
 			if (engine && engine.isGameOver()) {
 				return { success: false, error: "Game is already over" };
 			}
@@ -330,31 +312,13 @@ export class BombPartyRoomManager {
 				this.roomEngines,
 				this.rooms
 			);
-
-			// Check if game ended after input
-			// handleGameInput might have triggered game end via resolveTurn -> broadcastGameState
-			// But handleGameInput itself doesn't call handleGameEnd.
-			// Wait, handleGameInput in roomHandlers.ts calls engine.resolveTurn.
-			// It does NOT call handleGameEnd.
-			// So we need to check if game is over here and call handleGameEnd if needed.
-
-			// Re-get engine because handleGameInput might have modified state
-			// If engine is gone, game ended? No, handleGameInput doesn't delete engine.
-
 			if (result.success && engine && room) {
 				if (engine.isGameOver()) {
 					console.log(`[RoomManager] Game over detected after input in room ${roomId}`);
 					const winner = engine.getWinner();
 					const winnerId = winner?.id;
 
-					// Save stats
 					await this.saveGameStats(roomId, room, engine, winnerId);
-
-					// Handle game end (broadcast, cleanup)
-					// We need to import handleGameEnd or implement it here.
-					// Since handleGameEnd is exported from roomHandlers, we can use it?
-					// But we need to import it.
-					// Or we can just do what handleGameEnd does: broadcast end and cleanup.
 
 					const finalStats = engine.getFinalStats();
 					broadcastToRoom(room, {
@@ -375,11 +339,7 @@ export class BombPartyRoomManager {
 						this.roomLocks.delete(roomId);
 					}
 				} else {
-					// Check if only 1 player left (if not solo mode)
 					const aliveCount = engine.getAlivePlayersCount();
-					// If we started with > 1 player and now < 2, game over
-					// But engine.isGameOver() should handle this?
-					// Let's trust engine.isGameOver()
 				}
 			}
 
@@ -412,10 +372,8 @@ export class BombPartyRoomManager {
 					const winner = engine.getWinner();
 					const winnerId = winner?.id;
 
-					// Save stats
 					await this.saveGameStats(roomId, room, engine, winnerId);
 
-					// Handle game end
 					const finalStats = engine.getFinalStats();
 					broadcastToRoom(room, {
 						event: "bp:game:end",

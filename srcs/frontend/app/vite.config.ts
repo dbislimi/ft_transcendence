@@ -9,14 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function getHttpsOptions() {
-	// Try Docker path first, then local path
 	const dockerCertPath = "/usr/certs/cert.pem";
 	const dockerKeyPath = "/usr/certs/key.pem";
 	const localCertPath = path.resolve(__dirname, "../../certs/cert.pem");
 	const localKeyPath = path.resolve(__dirname, "../../certs/key.pem");
 
 	try {
-		// Check Docker paths first
 		if (fs.existsSync(dockerCertPath) && fs.existsSync(dockerKeyPath)) {
 			console.log("Using HTTPS certificates from Docker path");
 			return {
@@ -24,7 +22,6 @@ function getHttpsOptions() {
 				cert: fs.readFileSync(dockerCertPath),
 			};
 		}
-		// Fallback to local paths
 		if (fs.existsSync(localCertPath) && fs.existsSync(localKeyPath)) {
 			console.log("Using HTTPS certificates from local path");
 			return {
@@ -46,7 +43,6 @@ const backendHost = isDocker ? "back" : "localhost";
 export default defineConfig({
 	plugins: [tailwindcss(), react()],
 	build: {
-		// Disable source maps in dev to reduce noise
 		sourcemap: false,
 	},
 	server: {
@@ -54,9 +50,7 @@ export default defineConfig({
 		host: "0.0.0.0",
 		port: 5173,
 		strictPort: true,
-		// Configure which URLs to print
 		open: false,
-		// Disable automatic printing of all network interfaces
 		cors: true,
 		hmr: {
 			protocol: "wss",

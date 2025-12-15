@@ -40,9 +40,7 @@ export class BombPartyStatsManager {
 		isSuccess: boolean,
 		responseTime: number
 	): Promise<DBResult<void>> {
-		// TODO: Implement updateTrigramStats in persistence layer
 		return { success: true };
-		// return this.persistence.updateTrigramStats(userId, trigram, isSuccess, responseTime);
 	}
 
 	async getUserStats(userId: number): Promise<DBResult<UserStats>> {

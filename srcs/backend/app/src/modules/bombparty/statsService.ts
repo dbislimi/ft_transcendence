@@ -21,7 +21,6 @@ function getXpForLevel(level: number): number {
 	if (level <= LEVEL_XP_REQUIREMENTS.length) {
 		return LEVEL_XP_REQUIREMENTS[level - 1];
 	}
-	// formule exponentielle pour niveaux > 10
 	const baseXp = LEVEL_XP_REQUIREMENTS[LEVEL_XP_REQUIREMENTS.length - 1];
 	const levelDiff = level - LEVEL_XP_REQUIREMENTS.length;
 	return baseXp + levelDiff * levelDiff * 2000;
@@ -121,7 +120,6 @@ export class BombPartyStatsService {
 		this.db = database;
 	}
 
-	// Calculer le XP gagne apres une partie
 	calculateXpGain(matchData: {
 		isWin: boolean;
 		wordsSubmitted: number;
@@ -141,7 +139,6 @@ export class BombPartyStatsService {
 
 		xp += matchData.bestStreak * 5;
 
-		// bonus rapidite: moins de temps = plus de xp
 		const avgTimePerWord =
 			matchData.matchDuration / Math.max(matchData.wordsSubmitted, 1);
 		if (avgTimePerWord < 3) {
@@ -275,7 +272,6 @@ export class BombPartyStatsService {
 				const newLevelInfo = calculateLevel(newTotalXp);
 				const levelUp = newLevelInfo.level > oldLevel;
 
-				// Mettre à jour le streak
 				let newStreak = currentProgress.streak;
 				let newLongestStreak = currentProgress.longestStreak;
 				if (matchData.isWin) {
@@ -285,7 +281,6 @@ export class BombPartyStatsService {
 					newStreak = 0;
 				}
 
-				// Verifier les nouveaux badges
 				const currentBadges = currentProgress.badges;
 				const newBadges: Badge[] = [];
 				const badgeTypes = Object.keys(

@@ -58,7 +58,6 @@ export function submitWord(
 			msTaken,
 		});
 
-		// double chance: annule la penalite si bonus actif
 		if (
 			currentPlayer?.pendingEffects?.doubleChance &&
 			!doubleChanceConsumedThisTurn
@@ -98,7 +97,6 @@ function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
 		0
 	);
 
-	// selection ponderee: random puis soustrait les poids jusqu'a <= 0
 	let random = Math.random() * totalWeight;
 
 	for (const [key, weight] of availableBonuses) {
@@ -107,7 +105,6 @@ function selectWeightedBonus(playerBonuses: PlayerBonuses): BonusKey | null {
 			return key;
 		}
 	}
-	// fallback (ne devrait pas arriver)
 	return availableBonuses[0][0];
 }
 

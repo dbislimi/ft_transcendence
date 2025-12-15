@@ -28,7 +28,6 @@ export function getTurnDurationForCurrentPlayer(state: GameState): number {
       baseDuration = MEDIUM_SYLLABLE_DURATION_MS;
       break;
   }
-  // cap max pour eviter duree trop longue
   return Math.min(baseDuration, MAX_TURN_DURATION_MS);
 }
 
@@ -54,11 +53,9 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       }
       return { ok: false };
     case 'vitesseEclair':
-      // applique au prochain joueur vivant, pas au joueur actuel
       const targetIdx = peekNextAliveIndex(state);
       const targetId = targetIdx >= 0 ? state.players[targetIdx].id : undefined;
 
-      // Validation supplementaire: verifier que la cible n'est pas eliminee (meme si peekNextAliveIndex le fait deja)
       const targetPlayer = targetId ? state.players.find(p => p.id === targetId) : undefined;
 
       if (targetId && targetPlayer && !targetPlayer.isEliminated) {
@@ -74,7 +71,6 @@ export function activateBonus(state: GameState, playerId: string, bonusKey: Bonu
       return { ok: true };
     case 'extraLife':
       if (player.isEliminated) return { ok: false };
-      // cap a 9 vies max
       player.lives = Math.min(player.lives + 1, 9);
       player.bonuses.extraLife -= 1;
       return { ok: true };

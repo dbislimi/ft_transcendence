@@ -99,7 +99,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 	async function broadcastUsers() {
 		const snapshot = await clientsLock.acquire(() => [...clients]);
 		const allUsers = Array.from(
-			new Map(snapshot.map((c) => [c.id, { id: c.id, name: c.name }])).values()
+			new Map(
+				snapshot.map((c) => [c.id, { id: c.id, name: c.name }])
+			).values()
 		);
 
 		fastify.log.info(
@@ -118,9 +120,14 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 				}));
 
 				fastify.log.info(
-					`[Chat] Envoi à ${client.name}: ${JSON.stringify(usersForThisClient)}`
+					`[Chat] Envoi à ${client.name}: ${JSON.stringify(
+						usersForThisClient
+					)}`
 				);
-				sendToClient(client, { type: "users", users: usersForThisClient });
+				sendToClient(client, {
+					type: "users",
+					users: usersForThisClient,
+				});
 			} catch (err) {
 				fastify.log.error(
 					{ err },
@@ -130,7 +137,7 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 		}
 	}
 
-	fastify.get("/chat", { websocket: true }, (socket, req) => {
+	fastify.get("/chat", { websocket: true }, async (socket, req) => {
 		const { token } = req.query as { token?: string };
 		if (!token) {
 			socket.close();
@@ -143,9 +150,32 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 				display_name: string;
 				email: string;
 			};
+
+			let displayName = decoded.display_name;
+			try {
+				const user = await new Promise<any>((resolve, reject) => {
+					fastify.db.get(
+						"SELECT display_name FROM users WHERE id = ?",
+						[decoded.id],
+						(err, row) => {
+							if (err) reject(err);
+							else resolve(row);
+						}
+					);
+				});
+				if (user?.display_name) {
+					displayName = user.display_name;
+				}
+			} catch (dbError) {
+				fastify.log.error(
+					{ err: dbError, userId: decoded.id },
+					"Erreur lors de la récupération du display_name depuis la DB"
+				);
+			}
+
 			const client: Client = {
 				id: decoded.id,
-				name: decoded.display_name,
+				name: displayName,
 				socket,
 			};
 
@@ -160,7 +190,6 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 					broadcastUsers();
 				});
 
-			// Reception de message
 			socket.on("message", async (raw: Buffer) => {
 				try {
 					const data = JSON.parse(raw.toString());
@@ -178,19 +207,25 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 							[msg.from.id, msg.to, msg.text, msg.date]
 						);
 
-						const snapshot = await clientsLock.acquire(() => [...clients]);
+						const snapshot = await clientsLock.acquire(() => [
+							...clients,
+						]);
 
 						if (msg.to) {
 							// Message prive
-							const targets = snapshot.filter((c) => c.id === msg.to);
+							const targets = snapshot.filter(
+								(c) => c.id === msg.to
+							);
 							for (const t of targets) {
 								if (!(await isBlocked(t.id, client.id))) {
-									sendToClient(t, { type: "private", ...msg });
+									sendToClient(t, {
+										type: "private",
+										...msg,
+									});
 								}
 							}
 							sendToClient(client, { type: "private", ...msg });
 						} else {
-							// Optimisation: Recuperer tous ceux qui m'ont bloque en une seule requête
 							const blockers = await getBlockers(client.id);
 
 							for (const c of snapshot) {
@@ -205,12 +240,15 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 							"INSERT OR IGNORE INTO blocks (blockerId, blockedId) VALUES (?, ?)",
 							[client.id, data.userId],
 							(err) => {
-								if (err) return fastify.log.error({ err }, "Erreur DB block:");
+								if (err)
+									return fastify.log.error(
+										{ err },
+										"Erreur DB block:"
+									);
 								sendToClient(client, {
 									type: "info",
 									text: ` ${data.name} bloqué`,
 								});
-								// Rediffuser la liste des utilisateurs pour que le statut "bloque" soit à jour
 								broadcastUsers();
 							}
 						);
@@ -222,12 +260,14 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 							[client.id, data.userId],
 							(err) => {
 								if (err)
-									return fastify.log.error({ err }, "Erreur DB unblock:");
+									return fastify.log.error(
+										{ err },
+										"Erreur DB unblock:"
+									);
 								sendToClient(client, {
 									type: "info",
 									text: ` ${data.name} débloqué`,
 								});
-								// Rediffuser la liste des utilisateurs
 								broadcastUsers();
 							}
 						);
@@ -239,7 +279,9 @@ export default fp(async function Chat(fastify: FastifyInstance) {
 
 			socket.on("close", async () => {
 				await clientsLock.acquire(() => {
-					const index = clients.findIndex((c: Client) => c.socket === socket);
+					const index = clients.findIndex(
+						(c: Client) => c.socket === socket
+					);
 					if (index !== -1) {
 						const [removedClient] = clients.splice(index, 1);
 						fastify.log.info(

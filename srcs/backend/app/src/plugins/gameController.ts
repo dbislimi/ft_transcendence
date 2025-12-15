@@ -14,13 +14,13 @@ const gameController: FastifyPluginAsync<{ prefix?: string }> = async (
 	fastify.get(
 		"/game",
 		{ websocket: true },
-		(
+		async (
 			connection: any,
 			req: FastifyRequest<{ Querystring: { token?: string } }>
 		) => {
 			const socket = connection.socket || connection;
 			// console.log("pong WS connected");
-			const client = fastify.getClient(req, socket);
+			const client = await fastify.getClient(req, socket);
 			if (!client) {
 				socket.close();
 				return;

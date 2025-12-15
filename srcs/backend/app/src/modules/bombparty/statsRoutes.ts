@@ -197,7 +197,6 @@ export default fp(async function StatsRoutes(fastify: any) {
 		}
 	});
 
-	// Statistiques globales (accessible à tous)
 	fastify.get("/bomb-party/global-stats", async (request, reply) => {
 		try {
 			const result = await statsManager.getGlobalStats();
@@ -214,7 +213,6 @@ export default fp(async function StatsRoutes(fastify: any) {
 		}
 	});
 
-	// Historique global des parties (accessible à tous)
 	fastify.get("/bomb-party/global-history", async (request, reply) => {
 		try {
 			const { limit = "20", offset = "0" } = request.query;

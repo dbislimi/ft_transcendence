@@ -1,18 +1,36 @@
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { Database } from "sqlite3";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) {
 	throw new Error("JWT_SECRET non defini");
 }
 
-// user typing is declared in module augmentation at src/types/fastify.d.ts
+async function getUserDisplayName(
+	db: Database,
+	userId: number
+): Promise<string | undefined> {
+	return new Promise((resolve, reject) => {
+		db.get(
+			"SELECT display_name FROM users WHERE id = ?",
+			[userId],
+			(err, row: any) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(row?.display_name);
+				}
+			}
+		);
+	});
+}
 
-export function verifyToken(
+export async function verifyToken(
 	request: FastifyRequest,
 	reply: FastifyReply
-): { id: number; name?: string; email?: string } | null {
+): Promise<{ id: number; name?: string; email?: string } | null> {
 	const authHeader = request.headers.authorization;
 	if (!authHeader?.startsWith("Bearer ")) {
 		reply.log.warn("Header Authorization manquant ou malforme");
@@ -25,6 +43,22 @@ export function verifyToken(
 			name?: string;
 			email?: string;
 		};
+
+		const db = (request.server as any).db;
+		if (db) {
+			try {
+				const displayName = await getUserDisplayName(db, decoded.id);
+				if (displayName) {
+					decoded.name = displayName;
+				}
+			} catch (dbError) {
+				reply.log.warn(
+					{ error: dbError, userId: decoded.id },
+					"Erreur lors de la récupération du display_name depuis la DB"
+				);
+			}
+		}
+
 		return decoded;
 	} catch (error) {
 		reply.log.error(
@@ -38,15 +72,33 @@ export function verifyToken(
 	}
 }
 
-export function verifyTokenFromQuery(
-	token: string
-): { id: number; name?: string; email?: string } | null {
+export async function verifyTokenFromQuery(
+	token: string,
+	db?: Database
+): Promise<{ id: number; name?: string; email?: string } | null> {
 	try {
 		const decoded = jwt.verify(token, JWT_SECRET) as {
 			id: number;
 			name?: string;
 			email?: string;
 		};
+
+		if (db) {
+			try {
+				const displayName = await getUserDisplayName(db, decoded.id);
+				if (displayName) {
+					decoded.name = displayName;
+				}
+			} catch (dbError) {
+				console.warn(
+					"Erreur lors de la récupération du display_name depuis la DB:",
+					dbError,
+					"userId:",
+					decoded.id
+				);
+			}
+		}
+
 		return decoded;
 	} catch (error) {
 		console.error("Token JWT invalide depuis query:", {

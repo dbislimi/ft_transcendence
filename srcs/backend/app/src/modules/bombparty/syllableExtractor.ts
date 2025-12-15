@@ -99,7 +99,6 @@ export function isValidSyllableInWord(word: string, syllable: string): boolean {
     return false;
   }
   
-  // mots composes avec tirets
   if (normalizedWord.includes('-')) {
     const parts = normalizedWord.split('-');
     for (const part of parts) {

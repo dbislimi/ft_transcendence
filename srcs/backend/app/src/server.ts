@@ -15,7 +15,6 @@ import authHook from "./plugins/authHook.js";
 import userPlugin from "./plugins/user.js";
 import wsFriends from "./plugins/ws-friends.js";
 import matchHistoryPlugin from "./plugins/matchHistory.js";
-// import friendsPlugin supprimé - tout est en WebSocket maintenant
 import googleAuth from "./plugins/google.js";
 import settingsPlugin from "./plugins/settings.js";
 import twoFaPlugin from "./plugins/2fa.js";
@@ -41,15 +40,12 @@ const fastify = Fastify({
 });
 
 async function main() {
-	// Allow CORS from any origin on the same network
 	await fastify.register(cors, {
 		origin: (origin, cb) => {
-			// Allow requests with no origin (like mobile apps or curl)
 			if (!origin) {
 				cb(null, true);
 				return;
 			}
-			// Allow localhost, 127.0.0.1, and any IP in local network
 			const allowed =
 				/^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr|.*\.local)(:\d+)?$/;
 			if (allowed.test(origin)) {
@@ -76,7 +72,7 @@ async function main() {
 	await fastify.register(fastifyFormbody);
 	await fastify.register(multipart);
 
-	// 3. Database (db est une instance directe, pas un plugin Fastify ici)
+	// 3. Database
 	await fastify.register(dbPlugin);
 
 	// 4. Nettoyage des statuts en ligne au demarrage
@@ -97,10 +93,10 @@ async function main() {
 		});
 	});
 
-	// 5. WebSocket Friends (APRES db, comme dans la reference)
+	// 5. WebSocket Friends
 	await fastify.register(wsFriends);
 
-	// 6. Auth et utilisateurs (comme dans la reference)
+	// 6. Auth et utilisateurs
 	await fastify.register(authHook);
 	await fastify.register(authPlugin);
 	await fastify.register(googleAuth);
@@ -115,7 +111,6 @@ async function main() {
 	await fastify.register(bombPartyStatsRoutes);
 	console.log("[Stats] Statistics routes registered");
 
-	// Serve static (for possible public assets)
 	await fastify.register(fastifyStatic, {
 		root: path.join(__dirname, "public"),
 		prefix: "/",

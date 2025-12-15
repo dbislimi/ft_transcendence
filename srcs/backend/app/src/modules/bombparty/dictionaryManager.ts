@@ -15,7 +15,6 @@ interface PartitionCache {
 	lastAccessed: number;
 }
 
-// lazy loading des partitions pour eviter de charger tout le dico en memoire
 export class DictionaryManager {
   private partitions: Map<number, PartitionCache> = new Map();
   private totalWords: number = 0;
@@ -31,7 +30,7 @@ export class DictionaryManager {
   constructor() {
     this.frenchWordsPath = path.join(__dirname, 'data', 'francais.txt');
     this.englishWordsPath = path.join(__dirname, 'data', 'anglais.txt');
-    this.allWordsPath = path.join(__dirname, 'data', 'francais.txt'); // Pour compatibilité
+    this.allWordsPath = path.join(__dirname, 'data', 'francais.txt');
     this.partitionsDir = path.join(__dirname, 'data', 'partitions');
     this.metadataPath = path.join(this.partitionsDir, '.metadata.json');
     this.ensurePartitionsDir();
@@ -54,7 +53,6 @@ export class DictionaryManager {
       this.partitionCount = this.partitionFiles.length;
     }
 
-		// Compter les mots des deux fichiers
 		let totalCount = 0;
 		if (fs.existsSync(this.frenchWordsPath)) {
 			const frenchWords = fs.readFileSync(this.frenchWordsPath, "utf8");
@@ -176,7 +174,6 @@ export class DictionaryManager {
   }
 
 	private async createPartitions(): Promise<void> {
-		// Charger les mots français
 		let words: string[] = [];
 		if (fs.existsSync(this.frenchWordsPath)) {
 			const frenchWords = fs.readFileSync(this.frenchWordsPath, "utf8");
@@ -188,7 +185,6 @@ export class DictionaryManager {
 			words = [...words, ...frenchWordsList];
 		}
 		
-		// Charger les mots anglais
 		if (fs.existsSync(this.englishWordsPath)) {
 			const englishWords = fs.readFileSync(this.englishWordsPath, "utf8");
 			const englishWordsList = englishWords
@@ -231,7 +227,6 @@ export class DictionaryManager {
 		fs.writeFileSync(partitionPath, words.join("\n"), "utf8");
 	}
 
-	// cache LRU: garde max 5 partitions en memoire
 	private async loadPartition(partitionIndex: number): Promise<Set<string>> {
 		const cached = this.partitions.get(partitionIndex);
 		if (cached) {

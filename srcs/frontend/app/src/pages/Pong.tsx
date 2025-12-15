@@ -390,6 +390,7 @@ export default function Pong() {
 				"training",
 				"search",
 				"lobby",
+				"rules",
 			].includes(view.kind)
 		)
 			return;

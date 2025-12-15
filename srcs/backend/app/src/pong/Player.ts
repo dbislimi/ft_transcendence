@@ -40,7 +40,6 @@ export default class Player {
 		return { size: this.size, y: this.y, lastProcessedInputId: this.lastProcessedInputId, movingUp: this.movingUp, movingDown: this.movingDown };
 	}
 	reset() {
-		//this.bot = undefined;
 		this.ActiveBonus = this.ActiveBonus.filter((bonus) => {
 			bonus.remove(this);
 			return false;

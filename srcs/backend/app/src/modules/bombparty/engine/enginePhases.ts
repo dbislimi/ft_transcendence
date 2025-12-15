@@ -16,7 +16,6 @@ export function startTurn(state: GameState, getNewSyllable: () => string, getTur
     }
   }
 
-  // Validation du Bonus vts eclair: verifier si la cible est toujours en vie
   if (state.pendingFastForNextPlayerId) {
     const targetPlayer = state.players.find(p => p.id === state.pendingFastForNextPlayerId);
     if (!targetPlayer || targetPlayer.isEliminated) {
@@ -34,7 +33,6 @@ export function startTurn(state: GameState, getNewSyllable: () => string, getTur
   state.turnDurationMs = duration;
   state.currentPlayerId = state.players[state.currentPlayerIndex]?.id || '';
 
-  // reset du bonus vitesse eclair si c'est le tour du joueur cible
   const currentId = state.players[state.currentPlayerIndex]?.id;
   if (currentId && state.pendingFastForNextPlayerId === currentId) {
     state.pendingFastForNextPlayerId = undefined;
@@ -67,7 +65,6 @@ export function resolveTurn(
     currentLives: currentPlayer.lives
   }, '[resolveTurn] Debut de resolution du tour');
 
-  // Nettoyage du bonus Double Chance à la fin du tour (qu'il ait ete utilise ou non)
   if (currentPlayer.pendingEffects?.doubleChance) {
     currentPlayer.pendingEffects.doubleChance = false;
   }
@@ -109,7 +106,6 @@ export function nextPlayer(state: GameState): void {
   let attempts = 0;
   const maxAttempts = state.players.length * 2;
 
-  // boucle pour sauter les joueurs elimines, protection contre boucle infinie
   do {
     const step = state.turnDirection === 1 ? 1 : -1;
     const len = state.players.length;

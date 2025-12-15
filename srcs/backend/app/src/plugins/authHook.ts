@@ -9,7 +9,6 @@ if (!JWT_SECRET) {
 
 export default fp(async function authHook(fastify: FastifyInstance) {
 	fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
-		// Exclude public/auth routes and WebSocket endpoints used for BombParty and Game
 		const excludedRoutes = [
 			"/login",
 			"/register",
@@ -56,7 +55,28 @@ export default fp(async function authHook(fastify: FastifyInstance) {
 					display_name: string;
 					email: string;
 				};
-				// attach decoded user to request (fastify extended type)
+
+				try {
+					const user = await new Promise<any>((resolve, reject) => {
+						fastify.db.get(
+							"SELECT display_name FROM users WHERE id = ?",
+							[decoded.id],
+							(err, row) => {
+								if (err) reject(err);
+								else resolve(row);
+							}
+						);
+					});
+					if (user?.display_name) {
+						decoded.display_name = user.display_name;
+					}
+				} catch (dbError) {
+					console.warn(
+						"Erreur récupération display_name depuis DB:",
+						dbError
+					);
+				}
+
 				(request as any).user = decoded;
 			} catch (err) {
 				console.warn("Token invalide :", err);

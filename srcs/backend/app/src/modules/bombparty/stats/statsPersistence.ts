@@ -202,7 +202,6 @@ export class StatsPersistence {
     userId: number,
     limit: number = 10
   ): Promise<DBResult<TrigramStats[]>> {
-    // table supprimee, retour vide
     return Promise.resolve({ success: true, data: [] });
   }
 

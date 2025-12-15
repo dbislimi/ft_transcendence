@@ -5,7 +5,6 @@ import { getDictionaryManager } from './dictionaryManager.js';
 const francaisWordsPath = new URL('./data/francais.txt', import.meta.url);
 const anglaisWordsPath = new URL('./data/anglais.txt', import.meta.url);
 
-// Charger les mots français
 const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
 const frenchWords = francaisWordsData
   .split('\n')
@@ -13,7 +12,6 @@ const frenchWords = francaisWordsData
   .filter(line => line.length > 0)
   .map(word => normalizeText(word));
 
-// Charger les mots anglais
 let englishWords: string[] = [];
 if (fs.existsSync(anglaisWordsPath)) {
   const anglaisWordsData = fs.readFileSync(anglaisWordsPath, 'utf8');
@@ -27,7 +25,6 @@ if (fs.existsSync(anglaisWordsPath)) {
   console.log('[BP] Avertissement: fichier anglais.txt introuvable, utilisation uniquement du français');
 }
 
-// Combiner les deux lexiques
 const combinedLexicon: Set<string> = new Set([...frenchWords, ...englishWords]);
 const frenchLexicon: Set<string> = new Set(frenchWords);
 

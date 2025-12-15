@@ -52,10 +52,10 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 	});
 	fastify.decorate(
 		"getClient",
-		(
+		async (
 			req: FastifyRequest<{ Querystring: { token?: string } }>,
 			socket: any
-		): Client | null => {
+		): Promise<Client | null> => {
 			try {
 				const token = req.query?.token;
 				if (!token) {
@@ -76,16 +76,40 @@ const wsController: FastifyPluginAsync<{ prefix?: string }> = async (
 					display_name: string;
 					email: string;
 				};
+
+				let displayName = decoded.display_name;
+				try {
+					const user = await new Promise<any>((resolve, reject) => {
+						fastify.db.get(
+							"SELECT display_name FROM users WHERE id = ?",
+							[decoded.id],
+							(err, row) => {
+								if (err) reject(err);
+								else resolve(row);
+							}
+						);
+					});
+					if (user?.display_name) {
+						displayName = user.display_name;
+					}
+				} catch (dbError) {
+					console.error(
+						"Erreur lors de la récupération du display_name depuis la DB:",
+						dbError
+					);
+				}
+
 				let client = fastify.clients.get(decoded.id);
 				if (client) {
 					console.log("Changement de socket");
 					client.socket = socket;
 					client.id = decoded.id;
+					client.name = displayName;
 				} else {
 					console.log("Nouvelle connexion");
 					client = {
 						id: decoded.id,
-						name: decoded.display_name,
+						name: displayName,
 						socket,
 					};
 					fastify.clients.set(decoded.id, client);

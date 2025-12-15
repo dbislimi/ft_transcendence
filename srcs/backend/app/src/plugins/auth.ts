@@ -68,7 +68,6 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
 
 	fastify.post("/register", async (request, reply) => {
 		const body = request.body as any;
-		// accept both displayName and display_name (frontend variants)
 		let { name, email, password, displayName, avatar } = body as {
 			name: string;
 			email: string;

@@ -20,7 +20,6 @@ export interface PlayerConnection {
 	ws: any;
 	roomId?: string;
 	userId?: number;
-	// support multi-onglets: un joueur peut avoir plusieurs websockets
 	sockets?: Set<any>;
 }
 

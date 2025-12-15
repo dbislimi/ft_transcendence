@@ -352,7 +352,6 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 							return;
 						}
 
-						// Check for token in payload
 						if (validation.data!.payload.token && JWT_SECRET) {
 							try {
 								const token = validation.data!.payload.token;
@@ -375,7 +374,6 @@ const bombPartyWSHandlers: FastifyPluginAsync = async (fastify) => {
 									{ error: jwtError },
 									"Invalid token in bp:auth message"
 								);
-								// Don't fail, just continue as guest or previous state
 							}
 						}
 

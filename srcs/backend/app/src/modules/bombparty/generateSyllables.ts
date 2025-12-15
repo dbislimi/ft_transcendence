@@ -9,7 +9,6 @@ const syllablesPath = new URL('./data/syllabes.txt', import.meta.url);
 
 console.log('[BP] Génération des syllabes avec >=', MIN_WORDS_REQUIRED, 'mots...');
 
-// Charger les mots français
 const francaisWordsData = fs.readFileSync(francaisWordsPath, 'utf8');
 const frenchWords = francaisWordsData
   .split('\n')
@@ -20,7 +19,6 @@ const frenchWords = francaisWordsData
 
 console.log(`[BP] ${frenchWords.length} mots français chargés depuis francais.txt`);
 
-// Charger les mots anglais
 let englishWords: string[] = [];
 if (fs.existsSync(anglaisWordsPath)) {
   const anglaisWordsData = fs.readFileSync(anglaisWordsPath, 'utf8');
@@ -35,7 +33,6 @@ if (fs.existsSync(anglaisWordsPath)) {
   console.log('[BP] Avertissement: fichier anglais.txt introuvable, utilisation uniquement du français');
 }
 
-// Combiner les deux listes
 const words = [...frenchWords, ...englishWords];
 console.log(`[BP] ${words.length} mots totaux (français + anglais)`);
 const syllableCount = new Map<string, number>();

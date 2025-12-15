@@ -52,7 +52,6 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
         try {
           existingConnection.close(1000, "New connection established");
         } catch (e) {
-          // Ignore errors when closing old connection
         }
       }
       
@@ -813,7 +812,6 @@ const wsFriends: FastifyPluginAsync = async (fastify) => {
       try {
         connection.close(1000, "Server shutting down");
       } catch (e) {
-        // Ignore errors
       }
     });
     globalActiveConnections.clear();

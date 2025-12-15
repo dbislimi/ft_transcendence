@@ -18,7 +18,6 @@ export function checkAllActiveTurns(
   for (const [roomId, engine] of roomEngines) {
     if (engine.checkAndEndExpiredTurn()) {
       const gameState = engine.getState();
-      // si nouveau tour demarre, on envoie turn + state en une fois
       if (gameState.phase === 'TURN_ACTIVE') {
         broadcastTurnStartedWithState(roomId, roomEngines, rooms);
       } else {
