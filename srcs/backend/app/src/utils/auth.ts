@@ -114,7 +114,7 @@ export default fp(async function authPlugin(fastify: FastifyInstance) {
 	fastify.decorate(
 		"authenticate",
 		async (req: FastifyRequest, reply: FastifyReply) => {
-			const decoded = verifyToken(req, reply);
+			const decoded = await verifyToken(req, reply);
 			if (!decoded) {
 				return reply
 					.code(401)
