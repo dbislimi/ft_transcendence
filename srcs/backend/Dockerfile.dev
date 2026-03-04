@@ -2,7 +2,7 @@ FROM node:24-alpine
 
 WORKDIR /usr/app
 
-RUN apk add --no-cache sqlite sqlite-dev python3 make g++
+RUN apk add --no-cache sqlite sqlite-dev python3 make g++ wget
 
 COPY ./app/package*.json ./
 

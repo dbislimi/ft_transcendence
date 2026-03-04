@@ -5,22 +5,57 @@ CERT_FILE="$CERT_DIR/cert.pem"
 KEY_FILE="$CERT_DIR/key.pem"
 CONFIG_FILE="$CERT_DIR/openssl.cnf"
 ENV_FILE=".env"
+ENV_EXAMPLE=".env.example"
 
 # Get local IP address
 LOCAL_IP=$(hostname -I | awk '{print $1}')
 HOSTNAME=${LOCAL_IP:-localhost}
 
+# Initialize .env from .env.example if it doesn't exist
+if [ ! -f "$ENV_FILE" ]; then
+    if [ -f "$ENV_EXAMPLE" ]; then
+        cp "$ENV_EXAMPLE" "$ENV_FILE"
+        echo "Fichier .env cree depuis .env.example"
+        
+        # Generate JWT_SECRET automatically
+        if command -v openssl &> /dev/null; then
+            JWT_SECRET=$(openssl rand -base64 32)
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s|JWT_SECRET=.*|JWT_SECRET=$JWT_SECRET|g" "$ENV_FILE"
+            else
+                sed -i "s|JWT_SECRET=.*|JWT_SECRET=$JWT_SECRET|g" "$ENV_FILE"
+            fi
+            echo "JWT_SECRET genere automatiquement"
+        else
+            echo "ATTENTION: Veuillez configurer JWT_SECRET dans $ENV_FILE"
+        fi
+    else
+        echo "ATTENTION: $ENV_EXAMPLE introuvable, creation d'un .env minimal"
+        touch "$ENV_FILE"
+    fi
+fi
+
 # Update .env file with local IP (preserve other variables)
 if [ -n "$LOCAL_IP" ]; then
     if [ -f "$ENV_FILE" ]; then
-        # Remove existing HOSTNAME line and add new one
+        # Preserve all variables except HOSTNAME, then add updated HOSTNAME
         grep -v "^HOSTNAME=" "$ENV_FILE" > "$ENV_FILE.tmp" 2>/dev/null || true
         echo "HOSTNAME=$LOCAL_IP" >> "$ENV_FILE.tmp"
         mv "$ENV_FILE.tmp" "$ENV_FILE"
-    else
-        echo "HOSTNAME=$LOCAL_IP" > "$ENV_FILE"
+        echo "HOSTNAME mis a jour avec IP locale: $LOCAL_IP"
     fi
-    echo "✅ Fichier .env mis à jour avec IP locale: $LOCAL_IP"
+fi
+
+# Warn about missing critical variables
+if [ -f "$ENV_FILE" ]; then
+    if ! grep -q "^JWT_SECRET=" "$ENV_FILE" || grep -q "^JWT_SECRET=your-secret-key-here-change-me" "$ENV_FILE"; then
+        echo "ATTENTION: JWT_SECRET non configure dans $ENV_FILE"
+        echo "Generez-en un avec: openssl rand -base64 32"
+    fi
+    
+    if ! grep -q "^GOOGLE_CLIENT_ID=" "$ENV_FILE" || grep -q "^GOOGLE_CLIENT_ID=your-google-client-id" "$ENV_FILE"; then
+        echo "Info: GOOGLE_CLIENT_ID non configure (requis pour OAuth Google)"
+    fi
 fi
 
 mkdir -p "$CERT_DIR"
@@ -79,7 +114,7 @@ else
     CERT_SAN=$(openssl x509 -noout -text -in "$CERT_FILE" 2>/dev/null | grep -A1 "Subject Alternative Name" | tail -n1 || echo "")
     
     if [ "$CERT_CN" != "$HOSTNAME" ] || ! echo "$CERT_SAN" | grep -q "$HOSTNAME"; then
-        echo "🔐 Regeneration des certificats pour $HOSTNAME avec SAN..."
+        echo "Regeneration des certificats pour $HOSTNAME avec SAN..."
         generate_cert
         echo "Certificats regeneres"
     else

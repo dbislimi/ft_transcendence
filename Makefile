@@ -5,11 +5,11 @@ certs:
 
 up : certs
 	@echo "\033[1;32mLancement en mode PRODUCTION...\033[0m"
-	docker compose -f ./srcs/docker-compose.yml up --build
+	docker compose -f ./srcs/docker-compose.yml up --build --abort-on-container-exit
 
 dev : certs
 	@echo "\033[1;33mLancement en mode DÉVELOPPEMENT...\033[0m"
-	docker compose -f ./srcs/docker-compose.dev.yml up
+	docker compose -f ./srcs/docker-compose.dev.yml up --abort-on-container-exit
 
 down :
 	docker compose -f ./srcs/docker-compose.yml down

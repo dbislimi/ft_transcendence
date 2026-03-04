@@ -31,35 +31,30 @@ const httpsOptions = {
 };
 
 const fastify = Fastify({
-	logger: {
-		transport: {
-			target: "pino-pretty",
-		},
-	},
+	logger:
+		process.env.NODE_ENV === "development"
+			? {
+					transport: {
+						target: "pino-pretty",
+						options: {
+							colorize: true,
+							translateTime: "SYS:standard",
+							ignore: "pid,hostname",
+						},
+					},
+				}
+			: true,
 	https: httpsOptions,
 });
 
 async function main() {
 	await fastify.register(cors, {
-		origin: (origin, cb) => {
-			if (!origin) {
-				cb(null, true);
-				return;
-			}
-			const allowed =
-				/^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|[^:]+\.42nice\.fr|.*\.local)(:\d+)?$/;
-			if (allowed.test(origin)) {
-				cb(null, true);
-			} else {
-				cb(new Error("Not allowed by CORS"), false);
-			}
-		},
+		origin: true,
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		exposedHeaders: ["Content-Length"],
 		credentials: true,
 		maxAge: 86400,
-		strictPreflight: true,
 	});
 
 	await fastify.register(websocket);
@@ -81,12 +76,12 @@ async function main() {
 			if (err) {
 				fastify.log.error(
 					{ err },
-					"Erreur lors du nettoyage des statuts en ligne"
+					"Erreur lors du nettoyage des statuts en ligne",
 				);
 				reject(err);
 			} else {
 				fastify.log.info(
-					"Statuts des utilisateurs remis à zero au demarrage"
+					"Statuts des utilisateurs remis à zero au demarrage",
 				);
 				resolve();
 			}
@@ -117,6 +112,8 @@ async function main() {
 	});
 
 	fastify.get("/", async () => ({ hello: "from docker" }));
+
+	fastify.get("/health", async () => ({ status: "ok" }));
 
 	try {
 		// Port 3001 avec HTTPS
