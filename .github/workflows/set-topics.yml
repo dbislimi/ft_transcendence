@@ -1,0 +1,49 @@
+name: Set Repository Topics
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/set-topics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  set-topics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set repository topics
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.replaceAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              names: [
+                'ft-transcendence',
+                '42school',
+                'pong',
+                'websocket',
+                'react',
+                'typescript',
+                'fastify',
+                'sqlite',
+                'docker',
+                'nginx',
+                'multiplayer',
+                'real-time',
+                'game',
+                'oauth2',
+                'tailwindcss',
+                'vite',
+                'nodejs',
+                'two-factor-authentication',
+                'bomb-party',
+                'pixijs'
+              ]
+            });
+            console.log('Repository topics updated successfully.');
