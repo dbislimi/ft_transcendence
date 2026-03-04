@@ -23,18 +23,15 @@ status :
 	@echo "\n\033[1;32mIMAGES:\033[0m"
 	@docker images
 
-clear :
-	@docker system prune -af --volumes
-
 clean : down
 	@cd srcs && rm -rf certs/*.pem
-	@echo "Certificats supprimer"
-	@docker ps -q | xargs -r docker stop
-	@docker ps -a -q | xargs -r docker rm
-	@docker images -q | xargs -r docker rmi
-	@docker network prune -f
+	@echo "Certificats supprimés"
+	@docker stop nginx api front db_admin 2>/dev/null || true
+	@docker rm nginx api front db_admin 2>/dev/null || true
+	@docker rmi srcs-nginx srcs-back srcs-front 2>/dev/null || true
+	@docker network rm srcs_default 2>/dev/null || true
 
-fclean: clean clear
+fclean: clean
 
 re: fclean up
 

@@ -31,3 +31,10 @@ out/
 # SSL Certificates
 *.pem
 srcs/certs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+srcs/backend/app/data/*.db
+srcs/backend/app/data/*.sqlite

@@ -6,7 +6,7 @@ interface PlayerInfoCardProps {
 }
 
 export default function PlayerInfoCard({ profile }: PlayerInfoCardProps) {
-    const avatar = profile.avatarUrl && profile.avatarUrl.trim() !== "" ? profile.avatarUrl : "/vite.svg";
+    const avatar = profile.avatarUrl && profile.avatarUrl.trim() !== "" ? profile.avatarUrl : "/logo.png";
     const formatMs = (ms: number) => {
         const hours = Math.floor(ms / 3_600_600);
         const minutes = Math.floor((ms % 3_600_600) / 60_000);
