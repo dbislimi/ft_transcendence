@@ -84,27 +84,27 @@ Single-Page application with React Router. State is split between Zustand stores
 ## Structure
 
 ```
-Makefile
-srcs/
-  .env.example
-  generate_certs.sh
-  docker-compose.yml           - production
-  docker-compose.dev.yml       - dev (+ Adminer)
-  nginx/
-    nginx.conf                 - reverse proxy config
-  backend/
-    app/src/
-      server.ts                - Fastify entry point
-      plugins/                 - auth, chat, friends, games, settings
-      pong/                    - Pong engine
-      modules/bombparty/       - Bomb Party engine
-  frontend/
-    app/src/
-      main.tsx                 - React entry point
-      pages/                   - app pages
-      Components/              - UI components
-      contexts/                - React contexts
-      pong/                    - Pong rendering (Canvas)
-      game-bomb-party/         - Bomb Party UI
-      locales/                 - i18n
+├── Makefile
+└── srcs/
+    ├── .env.example
+    ├── generate_certs.sh
+    ├── docker-compose.yml           - production
+    ├── docker-compose.dev.yml       - dev (+ Adminer)
+    ├── nginx/
+    │   └── nginx.conf               - reverse proxy config
+    ├── backend/
+    │   └── app/src/
+    │       ├── server.ts            - Fastify entry point
+    │       ├── plugins/             - auth, chat, friends, games, settings
+    │       ├── pong/                - Pong engine
+    │       └── modules/bombparty/   - Bomb Party engine
+    └── frontend/
+        └── app/src/
+            ├── main.tsx             - React entry point
+            ├── pages/               - app pages
+            ├── Components/          - UI components
+            ├── contexts/            - React contexts
+            ├── pong/                - Pong rendering (Canvas)
+            ├── game-bomb-party/     - Bomb Party UI
+            └── locales/             - i18n
 ```
