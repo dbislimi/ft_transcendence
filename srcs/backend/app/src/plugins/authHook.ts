@@ -10,6 +10,8 @@ if (!JWT_SECRET) {
 export default fp(async function authHook(fastify: FastifyInstance) {
 	fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
 		const excludedRoutes = [
+			"/health",
+			"/db-check",
 			"/login",
 			"/register",
 			"/check-user",

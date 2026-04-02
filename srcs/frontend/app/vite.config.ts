@@ -45,6 +45,12 @@ export default defineConfig({
 	build: {
 		sourcemap: false,
 	},
+	preview: {
+		https: getHttpsOptions(),
+		host: "0.0.0.0",
+		port: 4173,
+		strictPort: true,
+	},
 	server: {
 		https: getHttpsOptions(),
 		host: "0.0.0.0",
